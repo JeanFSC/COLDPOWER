@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+  <title id="title">Split Carrier 12000 BTU</title>
+  <desc id="desc">Aire acondicionado residencial y comercial</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1320"/>
+      <stop offset="1" stop-color="#1A2233"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".74" cy=".22" r=".6">
+      <stop offset="0" stop-color="#0FB5A6" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#0FB5A6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="900" rx="24" fill="url(#bg)"/>
+  <rect width="900" height="900" rx="24" fill="url(#glow)"/>
+  <g transform="translate(220 130)">
+    <rect x="0" y="0" width="520" height="140" rx="28" fill="#E6EAF0"/>
+    <rect x="28" y="40" width="464" height="16" rx="8" fill="#9AA4B2"/>
+    <rect x="28" y="70" width="464" height="16" rx="8" fill="#9AA4B2"/>
+    <rect x="28" y="100" width="464" height="16" rx="8" fill="#0FB5A6"/>
+    <circle cx="460" cy="20" r="10" fill="#0FB5A6"/>
+    <path d="M180 210q80 60 160 0" stroke="#0FB5A6" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M160 250q100 76 200 0" stroke="#0FB5A6" stroke-width="8" fill="none" opacity=".5" stroke-linecap="round"/>
+  </g>
+  <text x="48" y="836" fill="#ffffff" font-family="'Sora',Arial,sans-serif" font-size="30" font-weight="900">Split Carrier 12000 BTU</text>
+  <text x="48" y="870" fill="#B8C0CC" font-family="Arial,sans-serif" font-size="16" font-weight="600">Aire acondicionado residencial y comercial</text>
+</svg>

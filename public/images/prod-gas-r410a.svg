@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+  <title id="title">Gas refrigerante R410A</title>
+  <desc id="desc">Cilindro 11.3 kg</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1320"/>
+      <stop offset="1" stop-color="#1A2233"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".74" cy=".22" r=".6">
+      <stop offset="0" stop-color="#E11D48" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#E11D48" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="900" rx="24" fill="url(#bg)"/>
+  <rect width="900" height="900" rx="24" fill="url(#glow)"/>
+  <g transform="translate(370 70)">
+    <rect x="0" y="40" width="130" height="300" rx="50" fill="#1F2A3D" stroke="#E11D48" stroke-width="10"/>
+    <rect x="30" y="0" width="70" height="60" rx="16" fill="#E11D48"/>
+    <path d="M0 200h130" stroke="#0E1320" stroke-width="8"/>
+    <path d="M20 240h90M20 280h90" stroke="#E11D48" stroke-width="8" opacity=".6" stroke-linecap="round"/>
+  </g>
+  <text x="48" y="836" fill="#ffffff" font-family="'Sora',Arial,sans-serif" font-size="30" font-weight="900">Gas refrigerante R410A</text>
+  <text x="48" y="870" fill="#B8C0CC" font-family="Arial,sans-serif" font-size="16" font-weight="600">Cilindro 11.3 kg</text>
+</svg>

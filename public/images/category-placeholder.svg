@@ -1,0 +1,10 @@
+<svg width="960" height="640" viewBox="0 0 960 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Placeholder de categoría ColdPower</title>
+  <desc id="desc">Composición gráfico oscuro con acento naranja y teal inspirada en refrigeración.</desc>
+  <rect width="960" height="640" rx="28" fill="#0E1320"/>
+  <path d="M0 474C170 390 326 424 486 340C652 252 768 170 960 204V640H0V474Z" fill="#1A2233"/>
+  <circle cx="734" cy="158" r="118" fill="#F2620B" fill-opacity=".18"/>
+  <path d="M255 350H706" stroke="#F2620B" stroke-width="18" stroke-linecap="round"/>
+  <path d="M314 291H648" stroke="#0FB5A6" stroke-width="12" stroke-linecap="round"/>
+  <path d="M358 408H603" stroke="#E3E6EC" stroke-opacity=".55" stroke-width="10" stroke-linecap="round"/>
+</svg>

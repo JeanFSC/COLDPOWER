@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Equipo de aire acondicionado y refrigeración ColdPower</title>
+  <desc id="desc">Composición gráfica de una unidad condensadora, snowflake y gradiente oscuro para el hero de ColdPower.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0F1A"/>
+      <stop offset="1" stop-color="#1A2233"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".78" cy=".3" r=".6">
+      <stop offset="0" stop-color="#F2620B" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#F2620B" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx=".2" cy=".75" r=".5">
+      <stop offset="0" stop-color="#0FB5A6" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#0FB5A6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+  <rect width="1600" height="1000" fill="url(#glow2)"/>
+  <g transform="translate(980 300)" opacity=".9">
+    <rect x="0" y="0" width="520" height="150" rx="30" fill="#1F2A3D" stroke="#F2620B" stroke-width="8"/>
+    <path d="M40 45h240M40 80h240M40 115h240" stroke="#F2620B" stroke-width="12" stroke-linecap="round" opacity=".8"/>
+    <circle cx="470" cy="30" r="10" fill="#0FB5A6"/>
+  </g>
+  <g transform="translate(160 560)" stroke="#0FB5A6" stroke-width="14" stroke-linecap="round" opacity=".55">
+    <path d="M0 -90V90M-78 -45 78 45M78 -45 -78 45"/>
+  </g>
+  <g transform="translate(1160 680)" stroke="#F2620B" stroke-width="10" stroke-linecap="round" opacity=".35">
+    <path d="M0 -60V60M-52 -30 52 30M52 -30 -52 30"/>
+  </g>
+</svg>

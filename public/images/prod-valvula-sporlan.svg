@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+  <title id="title">Válvula de expansión Sporlan</title>
+  <desc id="desc">1/4 pulgada · Sistemas de refrigeración</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1320"/>
+      <stop offset="1" stop-color="#1A2233"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".74" cy=".22" r=".6">
+      <stop offset="0" stop-color="#16A34A" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#16A34A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="900" rx="24" fill="url(#bg)"/>
+  <rect width="900" height="900" rx="24" fill="url(#glow)"/>
+  <g transform="translate(300 110)">
+    <rect x="60" y="120" width="240" height="70" rx="18" fill="#1F2A3D" stroke="#16A34A" stroke-width="10"/>
+    <rect x="0" y="140" width="60" height="30" rx="8" fill="#5B6577"/>
+    <rect x="300" y="140" width="60" height="30" rx="8" fill="#5B6577"/>
+    <rect x="164" y="30" width="32" height="100" rx="10" fill="#16A34A"/>
+    <rect x="120" y="10" width="120" height="28" rx="10" fill="#E6EAF0"/>
+  </g>
+  <text x="48" y="836" fill="#ffffff" font-family="'Sora',Arial,sans-serif" font-size="30" font-weight="900">Válvula de expansión Sporlan</text>
+  <text x="48" y="870" fill="#B8C0CC" font-family="Arial,sans-serif" font-size="16" font-weight="600">1/4 pulgada · Sistemas de refrigeración</text>
+</svg>

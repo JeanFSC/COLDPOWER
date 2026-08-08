@@ -1,0 +1,41 @@
+{
+  "name": "coldpower",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test:phase3": "node scripts/phase3-home-structure.test.mjs",
+    "test:phase4": "node scripts/phase4-catalog-structure.test.mjs",
+    "test:phase5": "node scripts/phase5-quote-flow.test.mjs",
+    "test:phase6": "node scripts/phase6-v1-readiness.test.mjs",
+    "test:phase7": "node scripts/phase7-preproduction.test.mjs",
+    "test:phase8": "node scripts/phase8-visual-readiness.test.mjs",
+    "test:phase9a": "node scripts/phase9a-predeploy-guards.test.mjs",
+    "test:phase9a2": "node scripts/phase9a2-preview-readiness.test.mjs",
+    "test:phase9a3": "node scripts/phase9a3-github-readiness.test.mjs",
+    "test:phase10": "node scripts/phase10-cart-flow.test.mjs",
+    "test:all": "pnpm test:phase3 && pnpm test:phase4 && pnpm test:phase5 && pnpm test:phase6 && pnpm test:phase7 && pnpm test:phase8 && pnpm test:phase9a && pnpm test:phase9a2 && pnpm test:phase9a3 && pnpm test:phase10"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "prettier": "^3.8.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
