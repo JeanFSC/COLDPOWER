@@ -1,18 +1,22 @@
 export type ProductStatus = "in-stock" | "low-stock" | "on-request" | "out-of-stock";
 
 export type ProductCategory =
-  | "compresores"
-  | "aires-acondicionados"
-  | "refrigeracion-industrial"
-  | "condensadores-y-evaporadores"
-  | "termostatos-y-controles"
-  | "ventiladores-y-motores"
-  | "valvulas-de-expansion"
-  | "filtros-y-secadores"
-  | "refrigerantes-y-gases"
-  | "repuestos-linea-blanca"
-  | "tuberias-y-accesorios"
-  | "herramientas-de-refrigeracion";
+  | "refrigeracion"
+  | "repuestos-y-accesorios-generales"
+  | "lavadora"
+  | "licuadora"
+  | "bomba-de-agua"
+  | "cocina"
+  | "motores-automotrices"
+  | "campana-extractora"
+  | "secadora"
+  | "lustradoras"
+  | "otros-electrodomesticos"
+  | "terma"
+  | "hervidor"
+  | "extractor"
+  | "plancha"
+  | "arrocera";
 
 export type ProductSpec = {
   label: string;
@@ -25,7 +29,8 @@ export type Product = {
   name: string;
   category: ProductCategory;
   brand: string;
-  price: number;
+  /** `null` significa que el precio todavía no fue cargado: la UI debe mostrar "Cotizar". */
+  price: number | null;
   oldPrice?: number;
   discount?: number;
   stock: number;

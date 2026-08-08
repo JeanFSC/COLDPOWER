@@ -1,6 +1,6 @@
 import { Badge } from "@/components/shared/Badge";
 import { company } from "@/data/company";
-import { formatCurrencyPEN } from "@/lib/formatters";
+import { formatProductPrice } from "@/lib/formatters";
 import type { Product } from "@/types/product";
 
 type QuoteSummaryProps = {
@@ -59,7 +59,7 @@ export function QuoteSummary({ product }: QuoteSummaryProps) {
                 Precio referencial
               </dt>
               <dd className="mt-2 font-display text-3xl font-black text-primary">
-                {formatCurrencyPEN(product.price)}
+                {formatProductPrice(product.price)}
               </dd>
             </div>
           </>

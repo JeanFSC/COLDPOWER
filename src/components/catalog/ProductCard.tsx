@@ -4,7 +4,7 @@ import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
-import { formatCurrencyPEN } from "@/lib/formatters";
+import { formatProductPrice } from "@/lib/formatters";
 
 type ProductCardProps = {
   product: Product;
@@ -34,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
         className="relative block aspect-square overflow-hidden bg-background"
       >
         <Image
-          src={product.images[0] ?? "/images/product-repuesto.jpg"}
+          src={product.images[0] ?? "/images/product-placeholder-repuesto.svg"}
           alt={product.name}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
@@ -61,12 +61,18 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="mt-3 font-mono text-xs font-bold text-gray-text">SKU: {product.sku}</p>
 
         <div className="mt-4 flex items-end gap-2">
-          <p className="font-display text-2xl font-black text-dark">
-            {formatCurrencyPEN(product.price)}
+          <p
+            className={
+              product.price === null
+                ? "font-display text-lg font-black text-gray-text"
+                : "font-display text-2xl font-black text-dark"
+            }
+          >
+            {formatProductPrice(product.price)}
           </p>
           {product.oldPrice ? (
             <p className="pb-1 text-sm font-semibold text-gray-text line-through">
-              {formatCurrencyPEN(product.oldPrice)}
+              {formatProductPrice(product.oldPrice)}
             </p>
           ) : null}
         </div>

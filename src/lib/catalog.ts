@@ -80,12 +80,12 @@ export function filterProducts(filters: CatalogFilters) {
 
 function sortProducts(items: Product[], sort: ProductSort) {
   return [...items].sort((a, b) => {
-    if (sort === "price-asc") {
-      return a.price - b.price;
-    }
-
-    if (sort === "price-desc") {
-      return b.price - a.price;
+    if (sort === "price-asc" || sort === "price-desc") {
+      // Los productos sin precio cargado (null) siempre quedan al final, sin importar el orden.
+      if (a.price === null && b.price === null) return a.name.localeCompare(b.name);
+      if (a.price === null) return 1;
+      if (b.price === null) return -1;
+      return sort === "price-asc" ? a.price - b.price : b.price - a.price;
     }
 
     return a.name.localeCompare(b.name);

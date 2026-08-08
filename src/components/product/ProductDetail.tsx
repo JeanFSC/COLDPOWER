@@ -7,7 +7,7 @@ import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { company } from "@/data/company";
-import { formatCurrencyPEN } from "@/lib/formatters";
+import { formatProductPrice } from "@/lib/formatters";
 import { createWhatsAppLink } from "@/lib/whatsapp";
 import { getRelatedProducts } from "@/lib/catalog";
 
@@ -92,7 +92,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <p className="text-sm text-gray-light">
                   Precio referencial
                   <span className="block font-display text-2xl font-black text-primary">
-                    {formatCurrencyPEN(product.price)}
+                    {formatProductPrice(product.price)}
                   </span>
                 </p>
               </div>

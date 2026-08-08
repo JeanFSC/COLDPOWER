@@ -34,22 +34,24 @@ export function ProductSection() {
           </div>
         </div>
 
-        <div className="mt-14">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <h3 className="font-display text-2xl font-black text-dark">En oferta</h3>
-            <Link
-              href="/catalogo?oferta=true"
-              className="text-sm font-extrabold text-primary hover:text-primary-hover"
-            >
-              Ver ofertas
-            </Link>
+        {saleProducts.length > 0 ? (
+          <div className="mt-14">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <h3 className="font-display text-2xl font-black text-dark">En oferta</h3>
+              <Link
+                href="/catalogo?oferta=true"
+                className="text-sm font-extrabold text-primary hover:text-primary-hover"
+              >
+                Ver ofertas
+              </Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {saleProducts.map((product) => (
+                <OfferCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {saleProducts.map((product) => (
-              <OfferCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );

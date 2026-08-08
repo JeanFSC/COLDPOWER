@@ -3,10 +3,10 @@ import { OfferCard } from "@/components/catalog/OfferCard";
 import { products } from "@/data/products";
 
 const promoProductIds = new Set([
-  "prod-split-carrier-12000btu",
-  "prod-condensadora-carrier-12000",
-  "prod-termostato-itc1000",
-  "prod-gas-r410a",
+  "prod-ref-0001",
+  "prod-lav-0001",
+  "prod-lic-0001",
+  "prod-bom-0001",
 ]);
 
 const promoProducts = products.filter((product) => promoProductIds.has(product.id));

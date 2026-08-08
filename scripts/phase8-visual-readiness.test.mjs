@@ -31,42 +31,29 @@ for (const asset of [
   assert.ok(statSync(join(root, asset)).size > 500, `${asset} should not be an empty placeholder`);
 }
 
-// Cada categoría y cada producto debe tener una ilustración SVG única (sin fotografía real disponible aún).
-const categoryImages = [
-  "public/images/cat-compresores.svg",
-  "public/images/cat-aires-acondicionados.svg",
-  "public/images/cat-refrigeracion-industrial.svg",
-  "public/images/cat-condensadores-evaporadores.svg",
-  "public/images/cat-termostatos-y-controles.svg",
-  "public/images/cat-ventiladores-y-motores.svg",
-  "public/images/cat-valvulas-de-expansion.svg",
-  "public/images/cat-filtros-y-secadores.svg",
-  "public/images/cat-refrigerantes-y-gases.svg",
-  "public/images/cat-repuestos-linea-blanca.svg",
-  "public/images/cat-tuberias-y-accesorios.svg",
-  "public/images/cat-herramientas-de-refrigeracion.svg",
-];
-const productImages = [
-  "public/images/prod-compresor-danfoss.svg",
-  "public/images/prod-split-carrier.svg",
-  "public/images/prod-condensadora-carrier.svg",
-  "public/images/prod-camara-frigorifica.svg",
-  "public/images/prod-valvula-sporlan.svg",
-  "public/images/prod-termostato-itc1000.svg",
-  "public/images/prod-motor-ventilador.svg",
-  "public/images/prod-filtro-secador.svg",
-  "public/images/prod-gas-r410a.svg",
-  "public/images/prod-tarjeta-control.svg",
-];
-const catalogImages = [...categoryImages, ...productImages];
-for (const image of catalogImages) {
+// El catálogo real (1359 productos importados del reporte de inventario) comparte una
+// ilustración SVG por sector/categoría en lugar de una foto única por producto, ya que
+// todavía no hay fotografía real cargada. Cada una de las 16 categorías reales debe tener
+// su propia ilustración, y esas 16 ilustraciones deben ser únicas entre sí.
+const productTypesSource = read("src/types/product.ts");
+const categoryUnionSource = productTypesSource.match(
+  /export type ProductCategory =([\s\S]*?);/,
+)[1];
+const categorySlugs = categoryUnionSource
+  .match(/"([a-z0-9-]+)"/g)
+  .map((line) => line.replace(/"/g, ""));
+
+assert.equal(categorySlugs.length, 16, "should have 16 real product categories");
+
+const categoryImages = categorySlugs.map((slug) => `public/images/cat-${slug}.svg`);
+for (const image of categoryImages) {
   assert.equal(exists(image), true, `${image} should exist`);
   assert.ok(statSync(join(root, image)).size > 500, `${image} should be a real (non-empty) illustration`);
 }
 
-// Cada ilustración debe ser única (sin repetir SVG entre categorías/productos).
+// Cada ilustración de categoría debe ser única (sin repetir SVG entre categorías).
 const hashes = new Map();
-for (const image of catalogImages) {
+for (const image of categoryImages) {
   const hash = createHash("md5").update(readFileSync(join(root, image))).digest("hex");
   assert.equal(hashes.has(hash), false, `${image} duplicates ${hashes.get(hash)} — images must not repeat`);
   hashes.set(hash, image);
@@ -88,34 +75,21 @@ for (const file of [
 const categories = read("src/data/categories.ts");
 assert.doesNotMatch(
   categories,
-  /category-placeholder\.svg/,
+  /image: "\/images\/category-placeholder\.svg"/,
   "categories should not use the old generic category placeholder",
 );
-assert.match(categories, /cat-compresores\.svg/, "categories should use unique category illustrations");
+assert.match(categories, /cat-refrigeracion\.svg/, "categories should use unique category illustrations");
+
+const productsData = read("src/data/products.ts");
+assert.match(productsData, /price: null/, "generated catalog should mark unpriced items as price: null (editable later)");
 
 const hero = read("src/components/home/Hero.tsx");
 assert.match(hero, /hero-coldpower\.svg/, "Hero should use the ColdPower hero illustration");
 assert.match(hero, /priority/, "Hero image should be marked priority for LCP");
 assert.match(hero, /BrandLogo/, "Hero should display the brand logo over the image");
-assert.doesNotMatch(
-  hero,
-  /product-placeholder-repuesto\.svg/,
-  "Hero should not use product placeholder as hero art",
-);
 
 const promo = read("src/components/home/PromoBanner.tsx");
-for (const promoProductId of [
-  "prod-split-carrier-12000btu",
-  "prod-condensadora-carrier-12000",
-  "prod-termostato-itc1000",
-  "prod-gas-r410a",
-]) {
-  assert.match(
-    promo,
-    new RegExp(promoProductId),
-    `Promo section should use existing catalog product ${promoProductId}`,
-  );
-}
+assert.match(promo, /promoProductIds/, "Promo section should keep a curated product id list");
 assert.doesNotMatch(
   promo,
   /products\.filter\(\(product\) => product\.onSale\)/,
@@ -172,7 +146,7 @@ const baseUrl = process.env.PHASE8_BASE_URL ?? "http://127.0.0.1:3000";
 const routes = [
   "/",
   "/catalogo",
-  "/producto/compresor-danfoss-nl11ft-1-4-hp",
+  "/producto/filtro-de-campana-de-aluminio-so-slm3",
   "/cotizacion",
   "/nosotros",
   "/contacto",

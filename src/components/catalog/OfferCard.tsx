@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { Button } from "@/components/shared/Button";
-import { formatCurrencyPEN } from "@/lib/formatters";
+import { formatProductPrice } from "@/lib/formatters";
 
 type OfferCardProps = {
   product: Product;
@@ -33,7 +33,7 @@ export function OfferCard({
 
       <Link href={productHref} className="relative block aspect-square overflow-hidden bg-background">
         <Image
-          src={product.images[0] ?? "/images/product-repuesto.jpg"}
+          src={product.images[0] ?? "/images/product-placeholder-repuesto.svg"}
           alt={product.name}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
@@ -57,11 +57,11 @@ export function OfferCard({
           </p>
           <div className="flex items-end gap-2">
             <p className="font-display text-2xl font-black leading-none text-dark">
-              {formatCurrencyPEN(product.price)}
+              {formatProductPrice(product.price)}
             </p>
             {product.oldPrice ? (
               <p className="pb-0.5 text-sm font-semibold text-gray-text line-through">
-                {formatCurrencyPEN(product.oldPrice)}
+                {formatProductPrice(product.oldPrice)}
               </p>
             ) : null}
           </div>

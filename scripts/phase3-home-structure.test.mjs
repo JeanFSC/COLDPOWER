@@ -38,7 +38,7 @@ assert.match(faq, /aria-controls/, "FAQ accordion should expose aria-controls");
 
 const productCard = readFileSync(join(root, "src/components/catalog/ProductCard.tsx"), "utf8");
 assert.match(productCard, /AddToCartButton/, "ProductCard should offer add-to-cart");
-assert.match(productCard, /formatCurrencyPEN/, "ProductCard should format PEN prices");
+assert.match(productCard, /formatProductPrice/, "ProductCard should format PEN prices (or show 'Cotizar' when unset)");
 
 // La conversión por WhatsApp se conserva a nivel de carrito (flujo agregar → cotizar).
 const cartQuotePanel = readFileSync(join(root, "src/components/cart/CartQuotePanel.tsx"), "utf8");

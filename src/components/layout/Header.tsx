@@ -11,8 +11,8 @@ import { CartButton } from "@/components/cart/CartButton";
 const navLinks = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
-  { label: "Aires acondicionados", href: "/categoria/aires-acondicionados" },
-  { label: "Repuestos", href: "/categoria/repuestos-linea-blanca" },
+  { label: "Refrigeración", href: "/categoria/refrigeracion" },
+  { label: "Lavadoras", href: "/categoria/lavadora" },
   { label: "Nosotros", href: "/nosotros" },
   { label: "Contacto", href: "/contacto" },
 ] as const;

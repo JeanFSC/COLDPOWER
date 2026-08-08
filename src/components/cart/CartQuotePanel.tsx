@@ -18,9 +18,10 @@ export function CartQuotePanel() {
     return product ? [{ ...item, product }] : [];
   });
   const subtotal = resolvedItems.reduce(
-    (total, item) => total + item.product.price * item.quantity,
+    (total, item) => total + (item.product.price ?? 0) * item.quantity,
     0,
   );
+  const hasUnpricedItems = resolvedItems.some((item) => item.product.price === null);
   const whatsappHref = createWhatsAppLink({
     phone: company.whatsapp,
     message: buildCartQuoteMessage(
@@ -29,7 +30,7 @@ export function CartQuotePanel() {
         quantity: item.quantity,
         name: item.product.name,
         sku: item.product.sku,
-        price: item.product.price,
+        price: item.product.price ?? undefined,
       })),
     ),
   });
@@ -71,7 +72,7 @@ export function CartQuotePanel() {
                   className="relative aspect-square overflow-hidden rounded-md bg-white"
                 >
                   <Image
-                    src={item.product.images[0] ?? "/images/product-repuesto.jpg"}
+                    src={item.product.images[0] ?? "/images/product-placeholder-repuesto.svg"}
                     alt={item.product.name}
                     fill
                     sizes="72px"
@@ -130,10 +131,12 @@ export function CartQuotePanel() {
               Total referencial
             </p>
             <p className="mt-1 font-display text-3xl font-black text-dark">
-              {formatCurrencyPEN(subtotal)}
+              {hasUnpricedItems && subtotal === 0 ? "Cotizar" : formatCurrencyPEN(subtotal)}
             </p>
             <p className="mt-1 text-xs font-semibold leading-5 text-gray-text">
-              El asesor confirma compatibilidad, stock y precio final antes de pago.
+              {hasUnpricedItems
+                ? "Incluye productos sin precio cargado aún. El asesor confirma compatibilidad, stock y precio final."
+                : "El asesor confirma compatibilidad, stock y precio final antes de pago."}
             </p>
           </div>
 

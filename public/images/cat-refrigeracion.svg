@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
-  <title id="title">Compresores</title>
-  <desc id="desc">Compresores herméticos y semiherméticos ColdPower</desc>
+  <title id="title">Refrigeración</title>
+  <desc id="desc">Compresores, capacitores, válvulas y gases refrigerantes</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0E1320"/>
@@ -20,6 +20,6 @@
     <path d="M300 60V10M300 280V330" stroke="#F2620B" stroke-width="14" stroke-linecap="round"/>
     <rect x="250" y="120" width="90" height="100" rx="16" fill="#0E1320" stroke="#5B6577" stroke-width="6"/>
   </g>
-  <text x="48" y="576" fill="#ffffff" font-family="'Sora',Arial,sans-serif" font-size="30" font-weight="900">Compresores</text>
-  <text x="48" y="610" fill="#B8C0CC" font-family="Arial,sans-serif" font-size="16" font-weight="600">Compresores herméticos y semiherméticos ColdPower</text>
+  <text x="48" y="576" fill="#ffffff" font-family="'Sora',Arial,sans-serif" font-size="30" font-weight="900">Refrigeración</text>
+  <text x="48" y="610" fill="#B8C0CC" font-family="Arial,sans-serif" font-size="16" font-weight="600">Compresores, capacitores, válvulas y gases refrigerantes</text>
 </svg>
