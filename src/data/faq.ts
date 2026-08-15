@@ -27,6 +27,6 @@ export const faqItems = [
     id: "precios-web",
     question: "¿Los precios son finales?",
     answer:
-      "Los precios mock son referenciales para esta fase. En producción deben validarse contra inventario y cotización vigente.",
+      "Los precios y la disponibilidad se confirman mediante una cotización comercial vigente.",
   },
 ] as const;

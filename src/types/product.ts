@@ -1,51 +1,5 @@
 export type ProductStatus = "in-stock" | "low-stock" | "on-request" | "out-of-stock";
-
-export type ProductCategory =
-  | "refrigeracion"
-  | "repuestos-y-accesorios-generales"
-  | "lavadora"
-  | "licuadora"
-  | "bomba-de-agua"
-  | "cocina"
-  | "motores-automotrices"
-  | "campana-extractora"
-  | "secadora"
-  | "lustradoras"
-  | "otros-electrodomesticos"
-  | "terma"
-  | "hervidor"
-  | "extractor"
-  | "plancha"
-  | "arrocera";
-
-export type ProductSpec = {
-  label: string;
-  value: string;
-};
-
-export type Product = {
-  id: string;
-  slug: string;
-  name: string;
-  category: ProductCategory;
-  brand: string;
-  /** `null` significa que el precio todavía no fue cargado: la UI debe mostrar "Cotizar". */
-  price: number | null;
-  oldPrice?: number;
-  discount?: number;
-  stock: number;
-  sku: string;
-  status: ProductStatus;
-  type: string;
-  origin: string;
-  capacity?: string;
-  compatibility: string[];
-  specs: ProductSpec[];
-  images: string[];
-  shortDescription: string;
-  longDescription: string;
-  description: string;
-  featured: boolean;
-  onSale: boolean;
-  relatedIds: string[];
-};
+export type ProductAvailabilityStatus = "unknown" | "in_stock" | "low_stock" | "out_of_stock" | "on_request";
+export type ProductCategory = string;
+export type ProductSpec = { label: string; value: string };
+export type Product = { id: string; slug: string; name: string; originalName?: string; commercialName?: string | null; category: ProductCategory; family?: string; familyId?: string; brand: string; price: number | null; priceCurrency?: string | null; oldPrice?: number; discount?: number; stock: number | null; sku: string; status: ProductStatus; type: string; origin: string; sourceStatus?: string; availabilityStatus?: ProductAvailabilityStatus; publicationStatus?: "draft" | "review" | "published" | "hidden" | "archived"; capacity?: string; compatibility: string[]; compatibilityBrands?: string[]; specs: ProductSpec[]; images: string[]; shortDescription: string; longDescription: string; description: string; featured: boolean; onSale: boolean; relatedIds: string[] };

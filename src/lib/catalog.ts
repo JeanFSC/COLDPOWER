@@ -1,101 +1,15 @@
-import { categories } from "@/data/categories";
-import { products } from "@/data/products";
+import { getCatalogBrands, getCatalogCategories, getCatalogCategoryBySlug, getCatalogProductBySlug, getCatalogProducts, getCatalogRelatedProducts } from "@/lib/catalog-repository";
 import type { Product, ProductStatus } from "@/types/product";
 
-export type ProductSort = "name-asc" | "price-asc" | "price-desc";
+export type ProductSort = "relevance" | "availability" | "consulted" | "price-asc" | "price-desc" | "updated" | "name-asc";
+export type CatalogFilters = { query?: string; category?: string | string[]; family?: string | string[]; brand?: string | string[]; status?: ProductStatus | ProductStatus[] | "all"; sort?: ProductSort; application?: string; relation?: string };
 
-export type CatalogFilters = {
-  query?: string;
-  category?: string;
-  brand?: string;
-  status?: ProductStatus | "all";
-  sort?: ProductSort;
-};
+export { getCatalogBrands as getBrands, getCatalogCategories as getCategories, getCatalogCategoryBySlug as getCategoryBySlug, getCatalogProductBySlug as getProductBySlug, getCatalogRelatedProducts as getRelatedProducts };
 
-export function getCategoryBySlug(slug: string) {
-  return categories.find((category) => category.slug === slug);
-}
+export function parseFacetValues(value: string | string[] | undefined) { if (value === undefined) return []; const values = Array.isArray(value) ? value : value.split(","); return values.map((item) => item.trim()).filter(Boolean); }
+export function normalizeTechnicalValue(value = "") { return value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[^\p{Letter}\p{Number}]+/gu, ""); }
 
-export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
-}
-
-export function getRelatedProducts(product: Product) {
-  const explicit = product.relatedIds
-    .map((id) => products.find((item) => item.id === id))
-    .filter((item): item is Product => Boolean(item));
-
-  if (explicit.length > 0) {
-    return explicit.slice(0, 4);
-  }
-
-  return products
-    .filter((item) => item.category === product.category && item.id !== product.id)
-    .slice(0, 4);
-}
-
-export function getBrands() {
-  return Array.from(new Set(products.map((product) => product.brand))).sort((a, b) =>
-    a.localeCompare(b),
-  );
-}
-
-export function searchProducts(query: string) {
-  return filterProducts({ query });
-}
-
-export function filterProducts(filters: CatalogFilters) {
-  const normalizedQuery = normalize(filters.query);
-
-  const filtered = products.filter((product) => {
-    const matchesQuery =
-      !normalizedQuery ||
-      [
-        product.name,
-        product.brand,
-        product.sku,
-        product.category,
-        product.type,
-        product.origin,
-        product.description,
-        product.shortDescription,
-        product.longDescription,
-        ...product.compatibility,
-      ]
-        .map(normalize)
-        .some((value) => value.includes(normalizedQuery));
-
-    const matchesCategory =
-      !filters.category || filters.category === "all" || product.category === filters.category;
-    const matchesBrand =
-      !filters.brand || filters.brand === "all" || product.brand === filters.brand;
-    const matchesStatus =
-      !filters.status || filters.status === "all" || product.status === filters.status;
-
-    return matchesQuery && matchesCategory && matchesBrand && matchesStatus;
-  });
-
-  return sortProducts(filtered, filters.sort ?? "name-asc");
-}
-
-function sortProducts(items: Product[], sort: ProductSort) {
-  return [...items].sort((a, b) => {
-    if (sort === "price-asc" || sort === "price-desc") {
-      // Los productos sin precio cargado (null) siempre quedan al final, sin importar el orden.
-      if (a.price === null && b.price === null) return a.name.localeCompare(b.name);
-      if (a.price === null) return 1;
-      if (b.price === null) return -1;
-      return sort === "price-asc" ? a.price - b.price : b.price - a.price;
-    }
-
-    return a.name.localeCompare(b.name);
-  });
-}
-
-function normalize(value = "") {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .trim();
-}
+export async function filterProducts(filters: CatalogFilters) { return (await getCatalogProducts({ query: filters.query, categorySlug: parseFacetValues(filters.category)[0], familySlug: parseFacetValues(filters.family)[0], brandSlug: parseFacetValues(filters.brand)[0], status: parseFacetValues(filters.status)[0], pageSize: 48 })).products; }
+export async function searchProducts(query: string) { return (await getCatalogProducts({ query, pageSize: 48 })).products; }
+export async function searchProductsForQuote(query: string, limit = 8) { if (normalizeTechnicalValue(query).length < 2) return []; return (await getCatalogProducts({ query, pageSize: Math.min(12, Math.max(1, Math.floor(limit))) })).products; }
+export async function getRelatedProductsForView(product: Product) { return getCatalogRelatedProducts(product.id, product.familyId); }

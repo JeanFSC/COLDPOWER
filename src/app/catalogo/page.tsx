@@ -1,53 +1,80 @@
 import type { Metadata } from "next";
+import { AppliedFilters } from "@/components/catalog/AppliedFilters";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
+import { CatalogPagination } from "@/components/catalog/CatalogPagination";
+import { CatalogUnavailable } from "@/components/catalog/CatalogUnavailable";
+import { EmptyState } from "@/components/catalog/EmptyState";
+import { BrandsDirectory } from "@/components/catalog/BrandsDirectory";
+import { MobileFilterDrawer } from "@/components/catalog/MobileFilterDrawer";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
-import { SectionTitle } from "@/components/shared/SectionTitle";
+import { PublicPageHeader } from "@/components/shared/PublicPageHeader";
 import type { CatalogFilters as CatalogFiltersType, ProductSort } from "@/lib/catalog";
-import { filterProducts } from "@/lib/catalog";
+import { getCatalogBrands, getCatalogCategories, getCatalogFamilies, getCatalogProducts } from "@/lib/catalog-repository";
 import type { ProductStatus } from "@/types/product";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Catálogo",
-  description:
-    "Explora equipos y repuestos de refrigeración, aire acondicionado y línea blanca ColdPower con filtros por categoría, marca y disponibilidad.",
+  title: "Catalogo tecnico",
+  description: "Explora equipos y repuestos ColdPower por código, marca, familia y especificaciones técnicas.",
 };
 
-type CatalogPageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+type SearchParams = Record<string, string | string[] | undefined>;
+type CatalogPageProps = { searchParams: Promise<SearchParams> };
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams;
+  if (getFirst(params.vista) === "marcas") {
+    return <BrandsCatalogView />;
+  }
+  const relation = getRelation(params.relacion);
+  if (relation) return <RelationCatalogView relation={relation} />;
   const filters = readCatalogFilters(params);
-  const filteredProducts = filterProducts(filters);
+  const mode = getCatalogMode(getFirst(params.modo));
+  const catalogData = await loadCatalogPageData(filters, params);
 
+  if (!catalogData) return <CatalogUnavailable />;
+
+  const [catalog, categories, families, brands] = catalogData;
+  const publicCategories = categories.filter((category) => category.productCount > 0);
+  const publicFamilies = families.filter((family) => family.productCount > 0);
+  const publicBrands = brands.filter((brand) => brand.productCount > 0);
   return (
-    <section className="bg-background py-10 sm:py-14">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-dark px-6 py-9 text-white shadow-float sm:px-8">
-          <SectionTitle
-            eyebrow="Catálogo"
-            title="Equipos y repuestos para cotización asistida"
-            description="Filtra por categoría, marca y disponibilidad para encontrar una opción referencial antes de hablar con un especialista."
-            dark
+    <section className="bg-surface-page py-8 sm:py-10">
+      <div className="cp-container">
+        <div className="border-b border-border pb-7">
+          <PublicPageHeader
+            eyebrow="Inicio / Catalogo"
+            title={mode?.title ?? "Encuentra la referencia correcta"}
+            description={mode?.description ?? "Busca por SKU, nombre, marca, familia o atributo tecnico. La ficha te muestra la informacion disponible para solicitar una cotizacion."}
           />
         </div>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[300px_1fr]">
-          <CatalogFilters filters={filters} />
+        <div className="mt-6 flex items-center justify-between gap-3 lg:hidden">
+          <p className="text-sm font-bold text-dark">{catalog.total} referencias encontradas</p>
+          <MobileFilterDrawer>
+            <CatalogFilters filters={filters} categories={publicCategories} families={publicFamilies} brands={publicBrands} />
+          </MobileFilterDrawer>
+        </div>
+        <div className="mt-7 grid gap-6 lg:grid-cols-[248px_minmax(0,1fr)]">
+          <div className="hidden lg:block">
+            <CatalogFilters filters={filters} categories={publicCategories} families={publicFamilies} brands={publicBrands} />
+          </div>
           <div>
-            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <AppliedFilters filters={filters} />
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-primary">
-                  {filteredProducts.length} resultados
+                <p className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary-600">
+                  {catalog.total} referencias disponibles
                 </p>
-                <h1 className="font-display text-2xl font-black text-dark">Listado de productos</h1>
+                <h1 className="mt-1 font-display text-2xl font-black text-brand-primary-900">Listado de productos</h1>
               </div>
-              <p className="text-sm font-semibold text-gray-text">
-                Precios y stock son referenciales para esta versión frontend.
-              </p>
+              <p className="text-sm text-text-secondary">Pagina {catalog.page} de {catalog.totalPages}</p>
             </div>
-            <ProductGrid products={filteredProducts} />
+            <ProductGrid
+              products={catalog.products}
+              emptyTitle="No hay referencias con esos filtros"
+              emptyDescription="Prueba otra combinacion o busca por SKU, modelo o nombre."
+            />
+            <CatalogPagination basePath="/catalogo" page={catalog.page} totalPages={catalog.totalPages} searchParams={params} />
           </div>
         </div>
       </div>
@@ -55,18 +82,111 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   );
 }
 
-function readCatalogFilters(
-  params: Record<string, string | string[] | undefined>,
-): CatalogFiltersType {
+async function BrandsCatalogView() {
+  const brands = await loadPublicBrands();
+  if (!brands) return <CatalogUnavailable />;
+
+  return (
+    <section className="bg-surface-page py-8 sm:py-10">
+      <div className="cp-container">
+        <div className="border-b border-border pb-7">
+          <PublicPageHeader eyebrow="Inicio / Marcas" title="Marcas presentes en el catálogo" description="Explora fabricantes con referencias publicadas y filtra el catálogo por marca." />
+        </div>
+        <div className="mt-7"><BrandsDirectory brands={brands} /></div>
+      </div>
+    </section>
+  );
+}
+
+async function loadPublicBrands() {
+  try {
+    return await getCatalogBrands();
+  } catch (error) {
+    console.error("ColdPower: directorio de marcas no disponible", error);
+    return null;
+  }
+}
+
+async function loadCatalogPageData(filters: CatalogFiltersType, params: SearchParams) {
+  try {
+    return await Promise.all([
+      getCatalogProducts({
+        query: filters.query,
+        categorySlug: firstFacet(filters.category),
+        familySlug: firstFacet(filters.family),
+        brandSlug: firstFacet(filters.brand),
+        status: firstFacet(filters.status),
+        page: numberParam(params.pagina),
+        pageSize: 24,
+      }),
+      getCatalogCategories(),
+      getCatalogFamilies(),
+      getCatalogBrands(),
+    ]);
+  } catch (error) {
+    console.error("ColdPower: catalogo persistente no disponible", error);
+    return null;
+  }
+}
+
+function readCatalogFilters(params: SearchParams): CatalogFiltersType {
   return {
-    query: getParam(params.q),
-    category: getParam(params.categoria),
-    brand: getParam(params.marca),
-    status: getParam(params.disponibilidad) as ProductStatus | "all" | undefined,
-    sort: getParam(params.orden) as ProductSort | undefined,
+    query: getFirst(params.q) ?? getFirst(params.aplicacion),
+    category: getFacet(params.categoria),
+    family: getFacet(params.familia),
+    brand: getFacet(params.marca),
+    status: getFacet(params.disponibilidad) as ProductStatus | ProductStatus[] | "all" | undefined,
+    sort: getFirst(params.orden) as ProductSort | undefined,
   };
 }
 
-function getParam(value: string | string[] | undefined) {
+function getFirst(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getFacet(value: string | string[] | undefined) {
+  return value === undefined ? undefined : Array.isArray(value) ? value : value.split(",");
+}
+
+function firstFacet(value: string | string[] | undefined) {
+  const item = getFirst(value);
+  return item && item !== "all" ? item : undefined;
+}
+
+function numberParam(value: string | string[] | undefined) {
+  const parsed = Number(getFirst(value) ?? "1");
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+const relationLabels = {
+  alternativa: "Alternativas técnicas",
+  compatible: "Relaciones compatibles",
+  consumible: "Herramientas y consumibles",
+} as const;
+
+function getRelation(value: string | string[] | undefined) {
+  const relation = getFirst(value);
+  return relation && relation in relationLabels ? relation as keyof typeof relationLabels : undefined;
+}
+
+const catalogModes = {
+  equipo: { title: "Encuentra piezas para tu equipo", description: "Explora familias y aplicaciones para partir del equipo que necesitas reparar." },
+  especificaciones: { title: "Busca por especificaciones técnicas", description: "Filtra por código, modelo, refrigerante, voltaje, capacidad y otros datos disponibles." },
+} as const;
+
+function getCatalogMode(value: string | undefined) {
+  return value && value in catalogModes ? catalogModes[value as keyof typeof catalogModes] : undefined;
+}
+
+function RelationCatalogView({ relation }: { relation: keyof typeof relationLabels }) {
+  return (
+    <section className="bg-surface-page py-8 sm:py-10">
+      <div className="cp-container">
+        <div className="border-b border-border pb-7">
+          <PublicPageHeader eyebrow="Inicio / Catálogo" title={relationLabels[relation]} description="Estas relaciones se mostrarán únicamente cuando estén verificadas y publicadas por el equipo técnico." />
+        </div>
+        <div className="mt-7"><EmptyState title="Aún no hay relaciones publicadas" description="Puedes explorar el catálogo general o enviar una solicitud para que un asesor revise la combinación adecuada." /></div>
+      </div>
+    </section>
+  );
 }

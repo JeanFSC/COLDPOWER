@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const read = (file) => readFileSync(join(root, file), "utf8");
+const exists = (file) => existsSync(join(root, file));
+for (const file of ["src/app/api/catalog/search/route.ts", "src/app/api/cotizacion/cart/route.ts"]) assert.equal(exists(file), true, `${file} should exist`);
+const searchRoute = read("src/app/api/catalog/search/route.ts");
+const cartRoute = read("src/app/api/cotizacion/cart/route.ts");
+const quoteForm = read("src/components/quote/QuoteForm.tsx");
+const cartProvider = read("src/components/cart/CartProvider.tsx");
+const schema = read("src/db/schema.ts");
+assert.match(searchRoute, /getCatalogProducts/);
+assert.match(searchRoute, /limit/);
+assert.match(searchRoute, /NextResponse/);
+assert.match(cartRoute, /coldpower-quote-session/);
+assert.match(cartRoute, /quoteCarts/);
+assert.match(schema, /quoteCarts/);
+assert.match(quoteForm, /api[\\/]+catalog[\\/]+search/);
+assert.match(quoteForm, /listbox/);
+assert.match(quoteForm, /No encontr[eé] mi producto/i);
+assert.doesNotMatch(quoteForm, /from ["']@\/data\/products["']/);
+assert.match(cartProvider, /api[\\/]+cotizacion[\\/]+cart/);
+assert.match(cartProvider, /credentials:\s*["']include["']/);
+console.log("Phase 25 persistent quote search and session cart contract: PASS");

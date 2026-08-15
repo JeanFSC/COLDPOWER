@@ -1,0 +1,10 @@
+coldpower.pe, www.coldpower.pe {
+    encode zstd gzip
+
+    log {
+        output file /var/log/caddy/coldpower-access.log
+        format json
+    }
+
+    reverse_proxy 127.0.0.1:3000
+}

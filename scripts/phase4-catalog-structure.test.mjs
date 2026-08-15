@@ -31,17 +31,16 @@ const productGrid = readFileSync(join(root, "src/components/catalog/ProductGrid.
 assert.match(productGrid, /ProductCard/, "ProductGrid should use ProductCard");
 
 const productDetail = readFileSync(join(root, "src/components/product/ProductDetail.tsx"), "utf8");
-assert.match(productDetail, /Solicitar cotización/, "ProductDetail should include quote CTA");
-assert.match(productDetail, /createWhatsAppLink/, "ProductDetail should use WhatsApp helper");
+assert.match(productDetail, /TransactionBox/, "ProductDetail should delegate quote actions to TransactionBox");
+const transactionBox = readFileSync(join(root, "src/components/product/TransactionBox.tsx"), "utf8");
+assert.match(transactionBox, /Solicitar cotizaci/, "TransactionBox should expose the quote CTA");
+assert.match(transactionBox, /WhatsAppLeadButton/, "TransactionBox should use the persisted WhatsApp lead flow");
+assert.match(readFileSync(join(root, "src/components/shared/WhatsAppLeadButton.tsx"), "utf8"), /api\/whatsapp\/lead/, "WhatsApp flow should persist the lead through its API");
 
 const quoteSuccess = readFileSync(join(root, "src/components/quote/QuoteSuccess.tsx"), "utf8");
-assert.match(
-  quoteSuccess,
-  /Solicitud registrada/,
-  "QuoteSuccess should show registered request state",
-);
+assert.match(quoteSuccess, /Solicitud registrada/, "QuoteSuccess should show registered request state");
 
-const products = readFileSync(join(root, "src/data/products.ts"), "utf8");
+const productType = readFileSync(join(root, "src/types/product.ts"), "utf8");
 for (const field of ["shortDescription", "longDescription", "stock", "status"]) {
-  assert.match(products, new RegExp(`${field}:`), `products data should include ${field}`);
+  assert.match(productType, new RegExp(`${field}:`), `the persistent product view model should include ${field}`);
 }

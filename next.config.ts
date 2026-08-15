@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
+const allowIframePreview = process.env.COLDPOWER_ALLOW_IFRAME_PREVIEW === "true";
+
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["dev.coldpower.pe"],
+  experimental: { cpus: 1, workerThreads: true, webpackBuildWorker: false, parallelServerCompiles: false, parallelServerBuildTraces: false },
   async headers() {
     return [
       {
@@ -14,10 +18,14 @@ const nextConfig: NextConfig = {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
+          ...(!allowIframePreview
+            ? [
+                {
+                  key: "X-Frame-Options",
+                  value: "DENY",
+                },
+              ]
+            : []),
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",

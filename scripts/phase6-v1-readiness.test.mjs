@@ -64,17 +64,17 @@ assert(
   "Contact page should include required title metadata",
 );
 assert(
-  contactPage.includes("company.") && contactPage.includes("branches"),
-  "Contact page should use centralized company/branch data",
+  contactPage.includes("getPublicCompanySettings") && contactPage.includes("settings."),
+  "Contact page should use centralized runtime company settings",
 );
 assert(contactPage.includes("Mapa referencial"), "Contact page should include a map placeholder");
 assert(contactPage.includes("/cotizacion"), "Contact page should link to quote flow");
 
 assert(
-  notFoundPage.includes("No encontramos esta página"),
+  notFoundPage.includes("No encontramos esta pagina"),
   "not-found page should include the required message",
 );
-assert(notFoundPage.includes("Volver al catálogo"), "not-found page should link back to catalog");
+assert(notFoundPage.includes("Volver al catalogo"), "not-found page should link back to catalog");
 assert(notFoundPage.includes("Cotizar por WhatsApp"), "not-found page should expose WhatsApp CTA");
 
 assert(finalCta.includes("FinalCTA"), "FinalCTA component should be implemented");

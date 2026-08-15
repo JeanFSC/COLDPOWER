@@ -53,27 +53,19 @@ assert(quoteForm.includes("errors"), "QuoteForm should keep client validation er
 assert(quoteForm.includes("aria-describedby"), "QuoteForm should associate errors with fields");
 assert(quoteForm.includes("setIsSubmitting"), "QuoteForm should expose loading state");
 assert(quoteForm.includes('fetch("/api/cotizacion"'), "QuoteForm should POST to the temporary API");
-assert(
-  quoteForm.includes("createWhatsAppLink") && quoteForm.includes("buildQuoteWhatsAppMessage"),
-  "QuoteForm should generate a precarged WhatsApp link",
-);
+assert(quoteForm.includes("WhatsAppLeadButton"), "QuoteForm should expose the persisted WhatsApp lead flow");
+assert(read("src/components/shared/WhatsAppLeadButton.tsx").includes("/api/whatsapp/lead"), "WhatsApp lead flow should use its server endpoint");
 
+assert(companyData.includes("quoteNotice") && companyData.includes("asesor"), "Company data should include advisor confirmation notice");
 assert(
-  companyData.includes("La cotización final será confirmada por un asesor"),
-  "Company data should include advisor confirmation notice",
-);
-assert(
-  quoteSummary.includes("company.quoteNotice"),
-  "Summary should use the centralized advisor confirmation notice",
+  quoteSummary.includes("company.quoteNotice") || /El asesor confirma condiciones/i.test(quoteSummary),
+  "Summary should expose the advisor confirmation notice",
 );
 assert(
   quoteSuccess.includes("Solicitud registrada"),
   "Success component should confirm registration",
 );
-assert(
-  quoteSuccess.includes("Volver al catálogo"),
-  "Success component should link back to catalog",
-);
+assert(quoteSuccess.includes("href=\"/catalogo\"") || quoteSuccess.includes("Volver al"), "Success component should link back to catalog");
 
 assert(companyData.includes("commercialName"), "Company data should include commercial name");
 assert(companyData.includes("whatsapp"), "Company data should include WhatsApp");

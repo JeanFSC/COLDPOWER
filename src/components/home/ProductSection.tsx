@@ -1,57 +1,29 @@
 import Link from "next/link";
-import { products } from "@/data/products";
-import { OfferCard } from "@/components/catalog/OfferCard";
+import { ArrowRight } from "lucide-react";
+import type { Product } from "@/types/product";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { EmptyState } from "@/components/catalog/EmptyState";
 import { SectionTitle } from "@/components/shared/SectionTitle";
 
-export function ProductSection() {
-  const featuredProducts = products.filter((product) => product.featured).slice(0, 4);
-  const saleProducts = products.filter((product) => product.onSale).slice(0, 4);
-
+export function ProductSection({ products }: { products: Product[] }) {
   return (
-    <section className="bg-background py-16 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionTitle
-          eyebrow="Productos"
-          title="Equipos y repuestos listos para cotizar"
-          description="Una selección inicial con información comercial, SKU y compatibilidad para acelerar la atención por WhatsApp."
-        />
-
-        <div className="mt-10">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <h3 className="font-display text-2xl font-black text-dark">Destacados</h3>
-            <Link
-              href="/catalogo"
-              className="text-sm font-extrabold text-primary hover:text-primary-hover"
-            >
-              Ver catálogo
-            </Link>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+    <section className="bg-white py-10 sm:py-14" data-home-block="priority-products">
+      <div className="cp-container">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <SectionTitle eyebrow="Productos destacados" title="Repuestos para empezar" description="Revisa rápidamente imagen, SKU, disponibilidad y ficha técnica." />
+          <Link href="/catalogo" className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-brand-secondary-600 hover:text-dark">
+            Ver catalogo <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
-
-        {saleProducts.length > 0 ? (
-          <div className="mt-14">
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <h3 className="font-display text-2xl font-black text-dark">En oferta</h3>
-              <Link
-                href="/catalogo?oferta=true"
-                className="text-sm font-extrabold text-primary hover:text-primary-hover"
-              >
-                Ver ofertas
-              </Link>
+        <div className="mt-6">
+          {products.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {products.slice(0, 10).map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {saleProducts.map((product) => (
-                <OfferCard key={product.id} product={product} />
-              ))}
-            </div>
-          </div>
-        ) : null}
+          ) : (
+            <EmptyState title="No hay productos publicados todavia" description="Las referencias aparecen cuando completan la revision editorial." />
+          )}
+        </div>
       </div>
     </section>
   );

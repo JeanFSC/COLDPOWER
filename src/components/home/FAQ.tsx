@@ -23,7 +23,7 @@ const extraFaqItems = [
     id: "metodos-pago",
     question: "¿Qué métodos de pago aceptan?",
     answer:
-      "La primera versión considera pago coordinado por asesor: transferencia, Yape, Plin y tarjetas según disponibilidad comercial.",
+      "Los medios de pago se confirman con el asesor junto con la cotizacion y la disponibilidad comercial.",
   },
 ] as const;
 

@@ -93,9 +93,15 @@ Mientras sigan en placeholder, el deploy de producción debe quedar bloqueado
 
 ## Limitaciones actuales
 
-- La cotización no persiste.
-- El rate limit es en memoria y no es suficiente para serverless distribuido.
-- No hay CMS.
-- No hay panel administrativo.
-- No hay pagos.
-- No hay email transaccional real.
+- El almacenamiento de multimedia local (	mp/media) es válido para localhost, pero no para varias instancias en producción.
+- El rate limiting público usa memoria del proceso; debe migrarse a Redis/Valkey antes de escalar horizontalmente.
+- El checkout no habilita un proveedor externo hasta configurar y probar credenciales reales; el pago manual autorizado permanece disponible.
+- No se inventan datos comerciales: empresa, locales, stock, precios, roles y políticas deben validarse antes del release.
+- El correo transaccional y las integraciones externas quedan pendientes de sus credenciales y proveedor reales.
+
+## CP-027: condiciones antes de producción
+
+- En localhost, `tmp/media` es el almacenamiento persistente de desarrollo para multimedia. Antes de desplegar varias instancias en Hetzner, migrar el adaptador a un volumen persistente compartido o R2/S3 compatible y conservar la misma interfaz de storage.
+- El rate limiting público actual es por proceso y memoria. Antes de exponer varias instancias o un balanceador, reemplazarlo por un almacén compartido (Redis/Valkey o proveedor equivalente) y validar los límites de cotización y WhatsApp.
+- No habilitar checkout de proveedor hasta configurar y probar un proveedor real; el flujo actual mantiene pago pendiente y permite confirmación manual autorizada.
+- Registrar datos legales, locales, stock, precios y roles reales antes del primer release; el sistema no crea datos operativos de ejemplo.
