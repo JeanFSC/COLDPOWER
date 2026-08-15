@@ -19,8 +19,8 @@ Alcance: verificar la experiencia pública con las cuatro referencias reales pub
 - Categoría: `/categoria/refrigeracion` responde y lista las 4 referencias.
 - PDP: la ficha del motocompresor responde HTTP 200 y muestra SKU, marca, categoría, familia, estado comercial, especificaciones y CTA.
 - PDP con slug codificado: el capacitor responde HTTP 200 con `µ` URL-encoded.
-- Cotización: `GET` vacío, agregar una unidad, modificar cantidad a 2 y eliminar la línea; cada operación respondió HTTP 200 y el carrito terminó vacío.
-- Consola Playwright: 0 errores de aplicación en las vistas capturadas; quedó 1 warning no bloqueante de desarrollo por vista.
+- Cotización: `GET` vacío, agregar una unidad desde la PDP, abrir el carrito, aumentar a 2, reducir a 1 y eliminar la línea desde la UI; el carrito terminó vacío. El mismo contrato también respondió HTTP 200 en la prueba directa.
+- Consola Playwright: 0 errores de aplicación en las vistas capturadas y en la interacción del carrito; quedaron únicamente warnings no bloqueantes de desarrollo.
 
 ## Dimensiones y evidencia
 
