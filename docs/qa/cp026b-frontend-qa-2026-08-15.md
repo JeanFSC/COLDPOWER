@@ -1,5 +1,7 @@
 # CP-026B — Informe de QA frontend
 
+> Nota de vigencia: este informe documenta la etapa previa a la publicación del piloto editorial. Para la verificación posterior con productos reales, consultar `cp026b-catalog-pilot-2026-08-15.md` y `cp026b-pilot-visual-qa-2026-08-15.md`.
+
 Fecha: 2026-08-15  
 Alcance: rediseño UI/UX público ColdPower Commerce 2.0  
 Regla aplicada: no se modificaron Neon, Drizzle, catálogo, productos, categorías, búsqueda, cotizaciones persistentes, inventario, autenticación ni RBAC.
