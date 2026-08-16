@@ -11,6 +11,7 @@ Rama: `release/coldpower-v1.0-rc2`
 - Rama UI publicada en GitHub: `origin/ui/coldpower-v1.0-final-pass`.
 - Backend revisado, sin mergear: `d18b9fd367199fcb388d5d474bf3bf5c757e4180` (`fix/cp029-be-blockers`).
 - RC2 antes de este reporte: `d2083763d14440e5d9351fd6335fe1aa9e93d358`.
+- SHA RC2 consolidada (código, antes de esta actualización documental): `971245eeb29916715f1cf8c6b04ce2679fcbd845`.
 
 La UI desciende de RC1. RC1 no fue modificada, no se mergeó `main` y no se desplegó producción.
 
@@ -73,7 +74,7 @@ El contrato de UI pasó con los KPI globales `1348`, `4`, `1344`, `62` y `57`, i
 
 La paginación conserva los filtros y cambia solamente `page`; el test de render verificó la navegación a página 2 conservando `publicationStatus=review`.
 
-La lógica server-side solicita las colas globales sin heredar filtros ni página. La reproducción visual autenticada del route admin queda pendiente del OTP indicado en la sección Clerk.
+La lógica server-side solicita las colas globales sin heredar filtros ni página. La reproducción visual autenticada del route admin quedó verificada en `dev.coldpower.pe` con sesión real SUPERADMIN.
 
 ## 6. Clerk real, webhook y RBAC
 
@@ -94,7 +95,7 @@ RBAC y protección no autenticada:
 - Las nueve rutas admin probadas en `dev.coldpower.pe` devolvieron `307` sin sesión.
 - PostgreSQL confirma para `xslync@gmail.com`: `roleCode=SUPERADMIN`, `status=ACTIVE`, sin duplicar usuario.
 
-Estado de login real: Clerk llegó correctamente a la pantalla OTP para `xslync@gmail.com`, pero el código no fue introducido. Por eso todavía no se afirma como verificado el acceso visual a `/auth/after-sign-in`, `/admin/dashboard`, refresh, logout/login ni las nueve pantallas admin con sesión SUPERADMIN.
+Estado de login real: Clerk completó el acceso de `xslync@gmail.com`; `/admin/dashboard` mostró `SUPERADMIN · SUPERADMINISTRADOR`, el refresh conservó la sesión, las nueve rutas administrativas respondieron HTTP 200, el logout redirigió al inicio público y el login posterior volvió a resolver `SUPERADMIN · SUPERADMINISTRADOR` sin bypass.
 
 ## 7. Suite de pruebas RC2
 
@@ -124,7 +125,7 @@ Estado de login real: Clerk llegó correctamente a la pantalla OTP para `xslync@
 | `https://dev.coldpower.pe/api/health` | HTTP 200 |
 | `https://dev.coldpower.pe/admin/dashboard` sin sesión | HTTP 307 |
 
-El webhook runtime verificó ambos orígenes. No se utilizó bypass para las pruebas autenticadas; la única parte autenticada pendiente es la continuación manual del OTP.
+El webhook runtime verificó ambos orígenes. No se utilizó bypass para las pruebas autenticadas; el bypass local fue retirado del worktree antes de la suite final.
 
 ## 9. Estado de no regresión y límites de alcance
 
@@ -132,6 +133,6 @@ CRM, inventario, cotizaciones, pricing, CMS, RBAC y webhook permanecen heredados
 
 Este ticket no desplegó `coldpower.pe`, no migró Neon, no configuró Hetzner, no modificó Cloudflare/DNS, no creó Clerk Production, no implementó SUNAT ni pagos, no publicó 1,344 productos, no inventó precios/stock y no hizo merge a `main`.
 
-## 10. Bloqueador restante
+## 10. Cierre de la auditoría P0
 
-RC2 está técnicamente consolidada, pero el cierre de la auditoría P0 queda pendiente de que el propietario introduzca el OTP en el navegador abierto. Tras ese paso se debe verificar `/auth/after-sign-in`, SUPERADMIN visible, refresh estable, logout/login y acceso a todas las rutas admin. No se debe sustituir ese paso con bypass.
+RC2 queda técnicamente consolidada. El inicio de sesión posterior al logout conservó `SUPERADMIN` sin bypass. No se modificó producción, `main`, Cloudflare, DNS ni Neon.
