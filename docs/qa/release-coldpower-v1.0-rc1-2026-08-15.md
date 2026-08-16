@@ -17,6 +17,7 @@ El estado de negocio sigue siendo deliberadamente de QA: 1,348 productos importa
 - La rama de trabajo estaba sincronizada con su remoto y contenía los cambios integrados de los agentes; no había cambios trackeados ajenos que descartar.
 - `tmp/` contiene logs/perfiles/artefactos locales y queda ignorado por seguridad; no se borró ni se incorporó al release.
 - La rama release se creará desde el estado verificado, sin `reset --hard`, `checkout` destructivo, `push --force` ni eliminación de trabajo.
+- Checkout limpio desde GitHub: clonó la rama release sin cambios; `corepack pnpm@11.20.0 install --frozen-lockfile`, TypeScript y build pasaron. El `pnpm` global 8.15.0 no es compatible con el lockfile 9 y debe usarse Corepack o la versión declarada por `packageManager`.
 
 ## Datos y PostgreSQL
 
