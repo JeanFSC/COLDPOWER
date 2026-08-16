@@ -36,7 +36,7 @@ import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import type { PricingFilters, PricingListResponse } from "@/lib/pricing-contract";
 
-const panel = "rounded-xl border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
+const panel = "min-w-0 rounded-xl border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
 type Tone = "blue" | "orange" | "green" | "red" | "purple";
 const toneInk: Record<Tone, string> = {
   blue: "text-[#2277ee]",
@@ -60,6 +60,15 @@ export type Metric = {
   tone?: Tone;
   icon?: LucideIcon;
   sparkline?: number[];
+};
+export type ProductCatalogMetrics = {
+  totalProducts: number;
+  publishedProducts: number;
+  draftProducts: number;
+  reviewProducts: number;
+  duplicateProducts: number;
+  productsRequiringReview: number;
+  totalBrands: number;
 };
 export type ListingRow = {
   id: string;
@@ -710,6 +719,9 @@ function Summary({
 export function ProductWorkspace({
   rows,
   total,
+  pagination,
+  queryString = "",
+  metrics,
   controls,
   canCreate = false,
   createOptions,
@@ -725,6 +737,9 @@ export function ProductWorkspace({
     possibleDuplicate?: boolean;
   }>;
   total: number;
+  pagination?: { page: number; totalPages: number; totalItems: number };
+  queryString?: string;
+  metrics: ProductCatalogMetrics;
   controls?: ReactNode;
   canCreate?: boolean;
   createOptions?: { categories: Array<{ id: string; name: string }>; families: Array<{ id: string; name: string }>; brands: Array<{ id: string; name: string }> };
@@ -747,6 +762,11 @@ export function ProductWorkspace({
     </StatusBadge>,
     <Link href={`/admin/catalogo/${encodeURIComponent(row.id)}`} className="inline-flex items-center rounded-md border border-[#dce6ee] px-2.5 py-1.5 text-[9px] font-extrabold text-[#2277ee] hover:border-[#2277ee]">Abrir ficha</Link>,
   ]);
+  const hrefForPage = pagination ? (page: number) => {
+    const next = new URLSearchParams(queryString);
+    next.set("page", String(page));
+    return `/admin/catalogo?${next.toString()}`;
+  } : undefined;
   return (
     <div className="space-y-4">
       <PageHeader
@@ -758,36 +778,36 @@ export function ProductWorkspace({
       <MetricGrid
         items={[
           {
-            label: "Productos encontrados",
-            value: total,
-            note: "Resultado de la consulta",
+            label: "Productos en catálogo",
+            value: metrics.totalProducts,
+            note: "Métrica global",
             icon: Package,
           },
           {
             label: "Publicados",
-            value: rows.filter((row) => row.publicationStatus === "published").length,
-            note: "Visibles en tienda",
+            value: metrics.publishedProducts,
+            note: "Estado editorial global",
             tone: "green",
             icon: Check,
           },
           {
             label: "En revisión",
-            value: rows.filter((row) => row.requiresReview).length,
-            note: "Requieren atención",
+            value: metrics.reviewProducts,
+            note: "Estado REVIEW global",
             tone: "orange",
             icon: Clock3,
           },
           {
-            label: "Duplicados",
-            value: rows.filter((row) => row.possibleDuplicate).length,
-            note: "Pendientes",
+            label: "Duplicados editoriales pendientes",
+            value: metrics.duplicateProducts,
+            note: "Pendientes de decisión",
             tone: "red",
             icon: CircleAlert,
           },
           {
             label: "Marcas",
-            value: new Set(rows.map((row) => row.brand).filter(Boolean)).size,
-            note: "En los resultados",
+            value: metrics.totalBrands,
+            note: "Métrica global",
             tone: "purple",
             icon: Tag,
           },
@@ -812,16 +832,28 @@ export function ProductWorkspace({
             description="No se encontraron referencias para esta consulta."
             icon={Package}
           />
-          <Pager label={`Mostrando ${data.length} de ${total} productos`} />
+          <Pager
+            label={`Mostrando ${data.length} visibles de ${pagination?.totalItems ?? total} productos`}
+            page={pagination?.page}
+            totalPages={pagination?.totalPages}
+            hrefForPage={hrefForPage}
+          />
         </Panel>
         <Summary
           title="Colas de catálogo"
-          items={["Publicados", "Borradores", "Revisión", "Duplicados"]}
+          items={[
+            "Publicados",
+            "Borradores",
+            "En revisión",
+            "Duplicados editoriales pendientes",
+            "Requieren revisión",
+          ]}
           values={[
-            rows.filter((row) => row.publicationStatus === "published").length,
-            rows.filter((row) => row.publicationStatus === "draft").length,
-            rows.filter((row) => row.requiresReview).length,
-            rows.filter((row) => row.possibleDuplicate).length,
+            metrics.publishedProducts,
+            metrics.draftProducts,
+            metrics.reviewProducts,
+            metrics.duplicateProducts,
+            metrics.productsRequiringReview,
           ]}
         />
       </div>

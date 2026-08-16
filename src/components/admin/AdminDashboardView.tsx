@@ -39,7 +39,7 @@ type AdminDashboardViewProps = {
 };
 
 const panelClass =
-  "rounded-xl border border-[#e3ebf2] bg-white shadow-[0_1px_2px_rgba(16,42,67,0.03)]";
+  "min-w-0 rounded-xl border border-[#e3ebf2] bg-white shadow-[0_1px_2px_rgba(16,42,67,0.03)]";
 const mutedClass = "text-[#8195aa]";
 const money = new Intl.NumberFormat("es-PE", {
   style: "currency",
@@ -311,7 +311,7 @@ function ManagementDashboard({
             </div>
           )}
           {isGerencia ? (
-            <div className="grid grid-cols-3 gap-2 rounded-lg border border-[#e5edf3] px-3 py-3 text-[10px]">
+            <div className="grid grid-cols-1 gap-2 rounded-lg border border-[#e5edf3] px-3 py-3 text-[10px] sm:grid-cols-3">
               <MiniStat
                 label="Margen bruto"
                 value={

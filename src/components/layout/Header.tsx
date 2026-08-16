@@ -95,7 +95,7 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
           <SearchBar id="desktop-search" compact placeholder={searchPlaceholder} className="hidden min-w-0 flex-1 lg:flex" />
           <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
             {!isAuthPage ? (authEnabled ? <AuthHeaderActions /> : <SignedOutHeaderActions />) : null}
-            <Button href="/catalogo#comparador" variant="ghost" size="sm" aria-label="Abrir comparador técnico">
+            <Button href="/comparar" variant="ghost" size="sm" aria-label="Abrir comparador técnico">
               <Scale className="h-4 w-4" aria-hidden="true" />
               <span className="hidden 2xl:inline">Comparar</span>
             </Button>

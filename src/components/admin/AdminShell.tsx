@@ -120,7 +120,7 @@ export function AdminShell({
   const contentOffset = compactSidebar ? "lg:pl-[190px]" : "lg:pl-[198px]";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#102a43]">
+    <div className="min-h-screen min-w-0 overflow-x-clip bg-[#f8fafc] text-[#102a43]">
       {isMenuOpen ? (
         <button
           type="button"
@@ -208,13 +208,13 @@ export function AdminShell({
             />
             <span>
               <strong className="block text-[10px] text-[#2e4964]">ColdPower Commerce 2.0</strong>
-              ColdPower S.A.C.
+              C&J COLD IMPORT PERÚ E.I.R.L.
             </span>
           </div>
         </div>
       </aside>
 
-      <div className={`min-h-screen ${contentOffset}`}>
+      <div className={`min-h-screen min-w-0 ${contentOffset}`}>
         <header className="sticky top-0 z-30 flex h-[76px] items-center gap-3 border-b border-[#e8eef4] bg-white/95 px-4 backdrop-blur sm:px-6 xl:px-5">
           <button
             type="button"
@@ -273,7 +273,7 @@ export function AdminShell({
             <ChevronDown className="hidden h-4 w-4 text-[#6c8298] sm:block" aria-hidden="true" />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-none px-4 py-6 sm:px-6 xl:px-5 xl:py-5">
+        <main className="mx-auto min-w-0 w-full max-w-none px-4 py-6 sm:px-6 xl:px-5 xl:py-5">
           {children}
         </main>
       </div>

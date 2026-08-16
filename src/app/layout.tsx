@@ -68,12 +68,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <>
               <Footer categories={categories} settings={publicSettings} />
               <WhatsAppCTA />
-              <CompareBar />
             </>
           }
         >
           {children}
         </AppChrome>
+        <CompareBar />
       </CompareProvider>
     </CartProvider>
   );

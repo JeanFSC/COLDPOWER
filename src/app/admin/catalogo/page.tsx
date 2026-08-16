@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
 import { getAdminCatalog, getAdminDuplicateGroups } from "@/lib/admin-catalog";
+import { getAdminCatalogPage } from "@/lib/catalog-admin-service";
 import {
   getCatalogBrands,
   getCatalogCategories,
@@ -34,7 +35,13 @@ export default async function AdminCatalogoPage({
     | undefined;
   const requiresReview = value("requiresReview");
   const possibleDuplicate = value("possibleDuplicate");
-  const [catalog, duplicateGroups, categories, families, brands] = await Promise.all([
+  const catalogQueryParams = new URLSearchParams();
+  for (const [key, raw] of Object.entries(params)) {
+    const entry = Array.isArray(raw) ? raw[0] : raw;
+    if (entry !== undefined && entry !== "") catalogQueryParams.set(key, entry);
+  }
+  const catalogQueryString = catalogQueryParams.toString();
+  const [catalog, catalogContract, duplicateGroups, categories, families, brands] = await Promise.all([
     getAdminCatalog({
       query: value("query"),
       sku: value("sku"),
@@ -50,6 +57,8 @@ export default async function AdminCatalogoPage({
       page: Number(value("page") || 1),
       pageSize: 48,
     }),
+    // El contrato entrega queues globales; no heredan los filtros ni la página actual.
+    getAdminCatalogPage({ page: 1, pageSize: 1 }),
     getAdminDuplicateGroups(),
     getCatalogCategories(false),
     getCatalogFamilies(undefined, false),
@@ -58,6 +67,17 @@ export default async function AdminCatalogoPage({
   return (
     <ProductWorkspace
       total={catalog.total}
+      pagination={{ page: catalog.page, totalPages: catalog.totalPages, totalItems: catalog.total }}
+      queryString={catalogQueryString}
+      metrics={{
+        totalProducts: catalogContract.queues.totalProducts,
+        publishedProducts: catalogContract.queues.publishedProducts,
+        draftProducts: catalogContract.queues.draftProducts,
+        reviewProducts: catalogContract.queues.reviewProducts,
+        duplicateProducts: catalogContract.queues.duplicateProducts,
+        productsRequiringReview: catalogContract.queues.productsRequiringReview,
+        totalBrands: catalogContract.queues.totalBrands,
+      }}
       rows={catalog.rows.map((row) => ({
         id: row.id,
         name: row.name,
