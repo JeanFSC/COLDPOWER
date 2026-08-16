@@ -95,7 +95,7 @@ RBAC y protección no autenticada:
 - Las nueve rutas admin probadas en `dev.coldpower.pe` devolvieron `307` sin sesión.
 - PostgreSQL confirma para `xslync@gmail.com`: `roleCode=SUPERADMIN`, `status=ACTIVE`, sin duplicar usuario.
 
-Estado de login real: Clerk completó el acceso de `xslync@gmail.com`; `/admin/dashboard` mostró `SUPERADMIN · SUPERADMINISTRADOR`, el refresh conservó la sesión, las nueve rutas administrativas respondieron HTTP 200, el logout redirigió al inicio público y el login posterior volvió a resolver `SUPERADMIN · SUPERADMINISTRADOR` sin bypass.
+Estado de login real: Clerk completó el acceso de `xslync@gmail.com`; `/auth/after-sign-in` respondió HTTP 200 y resolvió `/admin/dashboard`, que mostró `SUPERADMIN · SUPERADMINISTRADOR`. El refresh conservó la sesión, las nueve rutas administrativas respondieron HTTP 200, el logout redirigió al inicio público y el login posterior volvió a resolver `SUPERADMIN · SUPERADMINISTRADOR` sin bypass.
 
 ## 7. Suite de pruebas RC2
 
