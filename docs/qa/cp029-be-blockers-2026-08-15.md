@@ -63,7 +63,25 @@ Prueba de sesión real realizada en `https://dev.coldpower.pe`:
 - La sesión autenticada abrió `/admin/dashboard` y mostró `SUPERADMIN / Superadministrador`.
 - Se abrió el menú de usuario y se ejecutó `Sign out`.
 - Clerk cerró la sesión y devolvió el navegador al origen público; el acceso protegido volvió a la pantalla de inicio de sesión.
-- El reingreso quedó en el paso de código de verificación de Clerk. El código debe introducirse directamente en el navegador; no se evade MFA/OTP ni se registra el código en este informe.
+- La reautenticación Clerk quedó detenida en el paso de código OTP; el código no se evade ni se registra.
+
+## Bypass temporal de desarrollo
+
+Para continuar el QA local sin depender del OTP se implementó un bypass server-side, limitado a `localhost:3000`. Está activado únicamente en el `.env.local` ignorado por Git con el actor Clerk existente de `xslync@gmail.com`:
+
+```env
+CP_DEV_AUTH_BYPASS=true
+CP_DEV_AUTH_USER_ID=<id interno de Clerk ya existente>
+CP_DEV_AUTH_ALLOWED_HOSTS=localhost:3000
+```
+
+El bypass no inventa un rol: middleware y guards vuelven a consultar PostgreSQL y exigen `ACTIVE`, `SUPERADMIN` y los permisos `can(permission)`. No funciona en `dev.coldpower.pe`, no usa `NEXT_PUBLIC_`, correo hardcodeado ni frontend. Si el flag llega a una petición con `NODE_ENV=production` o `VERCEL_ENV=production`, falla cerrado. Antes de producción deben eliminarse las tres variables del entorno local/gestor de secretos.
+
+Runtime verificado con el bypass activo:
+
+- `http://localhost:3000/admin/dashboard`: HTTP 200, encabezado `Superadmin / Superadministrador`.
+- APIs administrativas locales de dashboard, catálogo, precios, clientes, cotizaciones, reportes, usuarios y configuración: HTTP 200.
+- `https://dev.coldpower.pe/admin/dashboard`: HTTP 307 a Clerk; el bypass no se expone al túnel público.
 
 ## Webhook de Clerk
 
@@ -77,12 +95,12 @@ La firma se valida exclusivamente con `CLERK_WEBHOOK_SECRET`, leído a través d
 |---|---:|---:|
 | `GET /` | 200 | 200 |
 | `GET /api/health` | 200 | 200 |
-| `GET /api/admin/catalogo` sin sesión | 403 `CATALOG_FORBIDDEN` | 403 `CATALOG_FORBIDDEN` |
+| `GET /api/admin/catalogo` sin bypass/sesión | 403 `CATALOG_FORBIDDEN` | 403 `CATALOG_FORBIDDEN` |
 | `GET /sign-in?redirect_url=/admin/dashboard` | 200 | 200 |
 
 El proxy conserva el hostname y el protocolo reenviado para los redirects de Clerk. `next.config.ts` permite `dev.coldpower.pe`; no se detectó una diferencia de código entre ambos hosts. Una sesión de Clerk en `dev.coldpower.pe` no debe asumirse disponible en `localhost:3000`, porque las cookies son específicas del origen. Esto explica diferencias de sesión/localStorage, no duplicación de datos ni entornos.
 
-Con la sesión autenticada se verificaron como HTTP 200 las páginas `/admin/dashboard`, `/admin/catalogo`, `/admin/inventario`, `/admin/precios`, `/admin/crm?view=clientes`, `/admin/cotizaciones`, `/admin/reportes`, `/admin/usuarios` y `/admin/configuracion`. También respondieron 200 las APIs administrativas de dashboard, catálogo, precios, clientes, cotizaciones, reportes, usuarios y configuración. No existe una ruta base `GET /api/admin/inventario`; el inventario expone rutas específicas de locales, mínimos, ajustes, reservas y transferencias.
+Con la sesión autenticada y posteriormente con el bypass local se verificaron como HTTP 200 las páginas `/admin/dashboard`, `/admin/catalogo`, `/admin/inventario`, `/admin/precios`, `/admin/crm?view=clientes`, `/admin/cotizaciones`, `/admin/reportes`, `/admin/usuarios` y `/admin/configuracion`. También respondieron 200 las APIs administrativas de dashboard, catálogo, precios, clientes, cotizaciones, reportes, usuarios y configuración. No existe una ruta base `GET /api/admin/inventario`; el inventario expone rutas específicas de locales, mínimos, ajustes, reservas y transferencias.
 
 ## Pruebas ejecutadas
 
@@ -93,6 +111,7 @@ Pasaron:
 - `corepack pnpm test:cp050`
 - `corepack pnpm test:cp050:runtime`
 - `corepack pnpm test:cp029:runtime`
+- `corepack pnpm test:dev-auth-bypass`
 - `corepack pnpm test:all`
 - `corepack pnpm exec tsc --noEmit`
 - `corepack pnpm exec eslint` — 0 errores y 17 warnings preexistentes fuera de este cambio
@@ -102,16 +121,21 @@ La prueba nueva `scripts/cp029-be-contract.test.ts` compara las colas del servic
 
 ## Archivos modificados
 
-- `package.json`: agrega el script `test:cp029:runtime`.
+- `package.json`: agrega los scripts runtime CP-029 y bypass temporal.
 - `scripts/cp029-be-contract.test.ts`: prueba runtime de conciliación PostgreSQL/servicio.
+- `scripts/dev-auth-bypass.test.ts`: regresión de host, entorno, flag y fail-closed.
+- `src/lib/dev-auth-bypass.ts`: resolver server-side del actor temporal.
+- `src/lib/auth.ts`: integración del actor temporal con guards y permisos existentes.
+- `src/proxy.ts`: integración del actor temporal con el middleware de rutas admin.
+- `.env.example`: documenta las variables temporales sin valores reales.
+- `docs/superpowers/specs/2026-08-16-temporary-dev-auth-bypass-design.md`: diseño y retiro del bypass.
 - `docs/superpowers/specs/2026-08-15-cp029-be-blockers-design.md`: alcance aprobado.
 - `docs/superpowers/plans/2026-08-15-cp029-be-blockers.md`: plan de ejecución.
 - `docs/qa/cp029-be-blockers-2026-08-15.md`: este reporte.
 
-No se modificaron archivos de UI, middleware de infraestructura, DNS, Cloudflare ni secretos.
+No se modificaron archivos de UI, middleware de infraestructura, DNS, Cloudflare ni secretos. `.env.local` se modificó solo localmente y permanece ignorado por Git.
 
-## Pendientes explícitos
+## Acciones antes de producción
 
 1. Codex1 debe cambiar el consumo de las métricas globales en `ProductWorkspace`/la página de catálogo para que las tarjetas no se calculen desde la página actual.
-2. Completar el código de verificación de Clerk en el navegador persistente y confirmar el redirect posterior al dashboard con `SUPERADMIN` conservado. El logout y la protección de rutas ya fueron comprobados.
-
+2. Eliminar `CP_DEV_AUTH_BYPASS`, `CP_DEV_AUTH_USER_ID` y `CP_DEV_AUTH_ALLOWED_HOSTS` de `.env.local` y de cualquier entorno de despliegue antes de publicar producción. La regla de producción es Clerk real + RBAC persistido; el bypass no debe viajar al dominio oficial.

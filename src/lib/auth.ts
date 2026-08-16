@@ -1,10 +1,12 @@
 ﻿import { eq } from "drizzle-orm";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { isAuthConfigured } from "@/lib/env";
 import { can, isAppRole, isStaffRole, type AppRole, type Permission } from "@/lib/roles";
+import { getDevAuthBypassUserId } from "@/lib/dev-auth-bypass";
 
 export type { AppRole };
 export { isAppRole, isStaffRole };
@@ -19,6 +21,22 @@ export class ApiAuthorizationError extends Error {
 }
 
 type AccessRecord = { role: AppRole | null; status: "ACTIVE" | "INACTIVE" | "SUSPENDED" };
+
+async function getRequestHost() {
+  try {
+    const requestHeaders = await headers();
+    return requestHeaders.get("x-forwarded-host")?.split(",", 1)[0]?.trim() || requestHeaders.get("host")?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+async function getRequestUserId() {
+  const devUserId = getDevAuthBypassUserId(await getRequestHost());
+  if (devUserId) return devUserId;
+  if (!isAuthConfigured) return null;
+  return (await auth()).userId;
+}
 
 async function resolveAccess(userId: string): Promise<AccessRecord> {
   try {
@@ -36,16 +54,15 @@ async function resolveAccess(userId: string): Promise<AccessRecord> {
 }
 
 export async function getCurrentUserRole(): Promise<AppRole | null> {
-  if (!isAuthConfigured) return null;
-  const { userId } = await auth();
+  const userId = await getRequestUserId();
   if (!userId) return null;
   const access = await resolveAccess(userId);
   return access.role;
 }
 
 export async function requireUser() {
-  if (!isAuthConfigured) redirect("/");
-  const { userId } = await auth();
+  const userId = await getRequestUserId();
+  if (!isAuthConfigured && !getDevAuthBypassUserId(await getRequestHost())) redirect("/");
   if (!userId) redirect("/sign-in");
   const access = await resolveAccess(userId);
   if (!access.role || access.status !== "ACTIVE") redirect("/sign-in");
@@ -53,8 +70,7 @@ export async function requireUser() {
 }
 
 export async function requireApiUser() {
-  if (!isAuthConfigured) throw new ApiAuthorizationError();
-  const { userId } = await auth();
+  const userId = await getRequestUserId();
   if (!userId) throw new ApiAuthorizationError();
   const access = await resolveAccess(userId);
   if (!access.role || access.status !== "ACTIVE") throw new ApiAuthorizationError();
@@ -62,6 +78,12 @@ export async function requireApiUser() {
 }
 
 export async function requireAdmin() {
+  const devUserId = getDevAuthBypassUserId(await getRequestHost());
+  if (devUserId) {
+    const access = await resolveAccess(devUserId);
+    if (!access.role || !isStaffRole(access.role) || access.status !== "ACTIVE") redirect("/");
+    return { userId: devUserId, role: access.role };
+  }
   if (!isAuthConfigured) redirect("/");
   const { userId, redirectToSignIn } = await auth();
   if (!userId) return redirectToSignIn({ returnBackUrl: "/admin" });
@@ -77,8 +99,7 @@ export async function requirePermission(permission: Permission) {
 }
 
 export async function requireApiPermission(permission: Permission) {
-  if (!isAuthConfigured) throw new ApiAuthorizationError();
-  const { userId } = await auth();
+  const userId = await getRequestUserId();
   if (!userId) throw new ApiAuthorizationError();
   const [record] = await getDb().select({ role: users.role, roleCode: users.roleCode, status: users.status }).from(users).where(eq(users.id, userId)).limit(1);
   const access: AccessRecord = record

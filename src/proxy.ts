@@ -5,6 +5,7 @@ import { authConfig, isAuthConfigured } from "@/lib/env";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { isStaffRole } from "@/lib/roles";
+import { getDevAuthBypassUserId } from "@/lib/dev-auth-bypass";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAccountRoute = createRouteMatcher(["/cuenta(.*)"]);
@@ -37,10 +38,15 @@ function getReturnBackUrl(req: Request) {
   return url.toString();
 }
 
+function getRequestHost(req: Request) {
+  return req.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim() || req.headers.get("host")?.trim() || null;
+}
+
 const middleware = isAuthConfigured
   ? clerkMiddleware(async (authFn, req) => {
       if (isAdminRoute(req)) {
-        const { userId, redirectToSignIn } = await authFn();
+        const { userId: clerkUserId, redirectToSignIn } = await authFn();
+        const userId = clerkUserId || getDevAuthBypassUserId(getRequestHost(req));
         if (!userId) return redirectToSignIn({ returnBackUrl: getReturnBackUrl(req) });
         if (!(await hasPersistedStaffAccess(userId))) return NextResponse.redirect(new URL("/", req.url));
       } else if (isAccountRoute(req)) {
