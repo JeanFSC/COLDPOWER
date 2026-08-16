@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { canTransitionPublication, publicationStatusLabels, publicationStatuses } from "@/lib/catalog-admin-contract";
@@ -30,4 +31,9 @@ test("CP-050 proyecta el flujo de negocio sin duplicar el estado persistido", ()
   assert.equal(getEditorialWorkflowState({ publicationStatus: "published", requiresReview: false }), "PUBLISHED");
   assert.equal(getEditorialWorkflowState({ publicationStatus: "hidden", requiresReview: false }), "REJECTED");
   assert.equal(getEditorialWorkflowState({ publicationStatus: "archived", requiresReview: false }), "ARCHIVED");
+});
+
+test("CP-050 conserva reviewReason importado al aprobar una publicación", () => {
+  const service = readFileSync(new URL("../src/lib/publication-service.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(service, /values\.reviewReason\s*=\s*null/);
 });

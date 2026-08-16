@@ -55,5 +55,5 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
-# local runtime uploads and database backups
-/tmp/media/
+# local runtime uploads, browser profiles, logs and database backups
+/tmp/

@@ -21,7 +21,7 @@ export async function changePublicationStatus(change: PublicationChange) {
     const before = { publicationStatus: product.publicationStatus, requiresReview: product.requiresReview, reviewReason: product.reviewReason, editorialDescription: product.editorialDescription };
     const values: Partial<typeof products.$inferInsert> = { publicationStatus: change.status, publicationChangedAt: new Date(), publicationChangedBy: change.actorId, publicationNote: change.note ?? null };
     if (change.editorialDescription !== undefined) values.editorialDescription = change.editorialDescription;
-    if (change.approveReview) { values.requiresReview = false; values.reviewReason = null; }
+    if (change.approveReview) values.requiresReview = false;
     await tx.update(products).set(values).where(eq(products.id, product.id));
     await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: change.actorId, actorRole: change.actorRole, action: "PRODUCT_PUBLICATION_CHANGED", entityType: "product", entityId: product.id, before, after: { publicationStatus: change.status, requiresReview: values.requiresReview ?? product.requiresReview, reviewReason: values.reviewReason ?? product.reviewReason, editorialDescription: values.editorialDescription ?? product.editorialDescription }, metadata: { note: change.note ?? null, reasons: decision.reasons } });
     return { productId: product.id, sku: product.sku, status: change.status, decision };

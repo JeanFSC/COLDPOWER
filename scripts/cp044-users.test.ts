@@ -45,7 +45,8 @@ test("usuarios: contrato de APIs, Clerk, invitaciones, RBAC y auditoría", () =>
   assert.match(read("src/app/api/webhooks/clerk/route.ts"), /idempotent/);
   assert.match(read("src/app/api/webhooks/clerk/route.ts"), /parseClerkWebhookEvent/);
   assert.match(read("src/app/api/webhooks/clerk/route.ts"), /pg_advisory_xact_lock/);
-  assert.doesNotMatch(read("src/app/api/webhooks/clerk/route.ts"), /getDb\(\)\.transaction/);
+  assert.match(read("src/app/api/webhooks/clerk/route.ts"), /getDb\(\)\.transaction/);
+  assert.match(read("src/db/index.ts"), /neon-serverless/);
   assert.match(read("src/db/schema.ts"), /clerkSyncStatus/);
   assert.match(read("src/app/api/admin/usuarios/[id]/route.ts"), /access\.user_role_changed|access\.user_status_changed/);
 });
