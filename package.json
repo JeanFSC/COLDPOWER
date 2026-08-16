@@ -46,6 +46,7 @@
     "test:cp031:runtime": "dotenv -e .env.local -- tsx --test scripts/cp031-runtime-data.test.ts",
     "test:cp030": "node --test scripts/cp030-runtime-data-contract.test.mjs scripts/cp030-schema-contract.test.mjs scripts/cp030-backup-compat.test.mjs scripts/cp030-customer-portal.test.mjs scripts/cp030-inventory-unknown.test.mjs scripts/cp030-error-contract.test.mjs && tsx --test scripts/cp030-consistency.test.ts scripts/cp030-company-settings.test.ts scripts/cp030-audit-sanitization.test.ts scripts/cp030-order-workflow.test.ts scripts/cp030-transfer-workflow.test.ts scripts/cp030-quote-workflow.test.ts scripts/inventory-domain.test.ts scripts/pricing-validation.test.ts",
     "test:cp029-ui": "node --test scripts/cp029-catalog-metrics-ui.test.mjs && tsx --test scripts/cp029-catalog-metrics-render.test.tsx",
+    "test:cp029:runtime": "dotenv -e .env.local -- tsx --test scripts/cp029-be-contract.test.ts",
     "test:cp033": "node --test scripts/cp033-pricing-route.test.mjs && tsx --test scripts/cp033-pricing.test.ts",
     "test:cp033:runtime": "dotenv -e .env.local -- tsx --test scripts/cp033-runtime-data.test.ts",
     "test:cp034": "node --test scripts/cp034-customers-route.test.mjs",
