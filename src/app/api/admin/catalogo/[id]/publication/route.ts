@@ -3,6 +3,7 @@ import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { changePublicationStatus } from "@/lib/publication-service";
 import { publicationStatuses, type PublicationStatus } from "@/lib/publication-governance";
+import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,6 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const input = (body && typeof body === "object" ? body : {}) as { status?: unknown; note?: unknown; editorialDescription?: unknown; approveReview?: unknown };
     if (typeof input.status !== "string" || !(publicationStatuses as readonly string[]).includes(input.status)) return apiError("CATALOG_PUBLICATION_INVALID", "Estado editorial inválido.", 400);
     const result = await changePublicationStatus({ productId: id, status: input.status as PublicationStatus, actorId: actor.userId, actorRole: actor.role, note: typeof input.note === "string" ? input.note.slice(0, 500) : undefined, editorialDescription: input.editorialDescription === undefined ? undefined : typeof input.editorialDescription === "string" ? input.editorialDescription.slice(0, 2000) : null, approveReview: input.approveReview === true });
+    clearPublicCatalogRuntimeCache();
     return NextResponse.json({ success: true, result });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para publicar el catálogo.", 403);

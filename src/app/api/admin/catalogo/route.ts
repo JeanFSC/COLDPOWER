@@ -3,6 +3,7 @@ import { apiError, apiSuccess } from "@/lib/api-errors";
 import { parseCatalogFilters } from "@/lib/catalog-admin-contract";
 import { createManualProduct } from "@/lib/catalog-product-service";
 import { getAdminCatalogPage } from "@/lib/catalog-admin-service";
+import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 
 export async function GET(request: Request) {
   try {
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
     const value = body as Record<string, unknown>;
     if (["originalName", "normalizedName", "sourcePage", "sourceRow", "sourceStatus"].some((key) => key in value)) return apiError("CATALOG_VALIDATION_ERROR", "La identidad importada no se puede enviar en una creación manual.", 400);
     const result = await createManualProduct({ sku: String(value.sku ?? ""), commercialName: String(value.commercialName ?? ""), categoryId: String(value.categoryId ?? ""), familyId: String(value.familyId ?? ""), brandId: value.brandId == null ? null : String(value.brandId), productType: value.productType == null ? undefined : String(value.productType) }, actor);
+    clearPublicCatalogRuntimeCache();
     return apiSuccess({ product: result }, 201);
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para crear productos.", 403);

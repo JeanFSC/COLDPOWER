@@ -11,7 +11,7 @@ type CategoryCardProps = {
 
 export function CategoryCard({ href, name, count, imageSrc = "/images/category-placeholder.svg", imageAlt = "" }: CategoryCardProps) {
   return (
-    <Link href={href} className="group rounded-md border border-border bg-white p-3 transition hover:-translate-y-0.5 hover:border-brand-secondary-600 hover:shadow-card">
+    <Link href={href} prefetch={false} className="group rounded-md border border-border bg-white p-3 transition hover:-translate-y-0.5 hover:border-brand-secondary-600 hover:shadow-card">
       <div className="relative aspect-square overflow-hidden rounded-md bg-surface-page">
         <Image src={imageSrc} alt={imageAlt} fill sizes="(min-width: 1024px) 16vw, 45vw" className="object-contain p-3 transition duration-300 group-hover:scale-105" />
       </div>

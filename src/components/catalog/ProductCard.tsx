@@ -33,7 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-border bg-white transition hover:-translate-y-0.5 hover:border-brand-secondary-600 hover:shadow-card">
       <div className="relative">
-        <Link href={productHref} onClick={trackOpen} className="block">
+        <Link href={productHref} prefetch={false} onClick={trackOpen} className="block">
           <ProductMedia product={product} />
           <div className="absolute left-3 top-3 flex max-w-[calc(100%-3.5rem)] flex-wrap gap-1.5">
             <Badge variant={statusVariant[product.status]}>{statusLabel[product.status]}</Badge>
@@ -46,7 +46,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="flex flex-1 flex-col p-3.5">
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand-secondary-600">{product.brand}</p>
         <h3 className="mt-2 min-h-12 text-sm font-extrabold leading-5 text-dark">
-          <Link href={productHref} onClick={trackOpen} className="hover:text-brand-secondary-600">{product.name}</Link>
+          <Link href={productHref} prefetch={false} onClick={trackOpen} className="hover:text-brand-secondary-600">{product.name}</Link>
         </h3>
         <p className="mt-2 font-mono text-[11px] font-semibold text-text-secondary">SKU: {product.sku}</p>
         {criticalSpecs.length > 0 ? (

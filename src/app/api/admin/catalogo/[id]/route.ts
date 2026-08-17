@@ -5,6 +5,7 @@ import { auditLogs, products } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { getAdminCatalogProductDetail } from "@/lib/catalog-admin-service";
+import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 import { can } from "@/lib/roles";
 
 function parseProductEditorial(body: unknown) {
@@ -56,6 +57,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_EDITORIAL_UPDATED", entityType: "product", entityId: id, before, after, metadata: null });
       return after;
     });
+    clearPublicCatalogRuntimeCache();
     return NextResponse.json({ product: result });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para editar productos.", 403);

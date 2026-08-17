@@ -11,7 +11,7 @@ export function ProductSection({ products }: { products: Product[] }) {
       <div className="cp-container">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <SectionTitle eyebrow="Productos destacados" title="Repuestos para empezar" description="Revisa rápidamente imagen, SKU, disponibilidad y ficha técnica." />
-          <Link href="/catalogo" className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-brand-secondary-600 hover:text-dark">
+          <Link href="/catalogo" prefetch={false} className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-brand-secondary-600 hover:text-dark">
             Ver catalogo <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>

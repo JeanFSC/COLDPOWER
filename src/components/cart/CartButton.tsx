@@ -19,6 +19,7 @@ export function CartButton({ className }: CartButtonProps) {
   return (
     <Link
       href="/cotizacion?carrito=1"
+      prefetch={false}
       aria-label={label}
       className={cn(
         "relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-white text-dark transition hover:border-primary hover:text-primary",

@@ -41,7 +41,7 @@ export function CategoriesGrid({ categories }: { categories: CatalogCategory[] }
       <div className="cp-container">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <SectionTitle eyebrow="Categorías principales" title="Encuentra por línea de producto" description="Explora las familias más consultadas del catálogo." />
-          <Link href="/catalogo" className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-brand-secondary-600 hover:text-dark">
+          <Link href="/catalogo" prefetch={false} className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-brand-secondary-600 hover:text-dark">
             Ver todas <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
@@ -62,7 +62,7 @@ export function CategoriesGrid({ categories }: { categories: CatalogCategory[] }
                 <p className="mt-1 text-sm leading-5 text-text-secondary">Las categorías aparecerán aquí cuando completen la revisión editorial.</p>
               </div>
             </div>
-            <Link href="/catalogo" className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-border px-4 text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
+            <Link href="/catalogo" prefetch={false} className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-border px-4 text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
               Explorar catálogo
             </Link>
           </div>

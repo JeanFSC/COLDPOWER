@@ -6,7 +6,7 @@ export function PromoBanner() {
   return (
     <section className="bg-surface-page py-6 sm:py-8" data-home-block="promo-banner">
       <div className="cp-container">
-        <Link href="/catalogo?categoria=lavadoras" className="group relative block min-h-[190px] overflow-hidden rounded-md bg-brand-primary-900 sm:min-h-[230px]">
+        <Link href="/catalogo?categoria=lavadoras" prefetch={false} className="group relative block min-h-[190px] overflow-hidden rounded-md bg-brand-primary-900 sm:min-h-[230px]">
           <Image src="/images/generated/coldpower-washing-parts-banner.png" alt="Repuestos y componentes para lavadoras" fill sizes="100vw" className="object-cover object-center transition duration-500 group-hover:scale-[1.02]" />
           <div className="absolute inset-0 bg-brand-primary-900/20" aria-hidden="true" />
           <div className="relative flex min-h-[190px] max-w-md flex-col justify-center px-6 py-7 sm:min-h-[230px] sm:px-10">

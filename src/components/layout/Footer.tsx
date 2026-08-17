@@ -32,13 +32,13 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
         </div>
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Ayuda</h2>
-          <ul className="mt-4 grid gap-2.5">{interestLinks.map((link) => <li key={link.href}><Link className="text-sm font-semibold text-gray-light transition hover:text-white" href={link.href}>{link.label}</Link></li>)}</ul>
+          <ul className="mt-4 grid gap-2.5">{interestLinks.map((link) => <li key={link.href}><Link className="text-sm font-semibold text-gray-light transition hover:text-white" href={link.href} prefetch={false}>{link.label}</Link></li>)}</ul>
           <Link href="/libro-de-reclamaciones" className="mt-5 inline-flex text-sm font-semibold text-gray-light transition hover:text-white">Libro de reclamaciones</Link>
         </div>
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Categorias</h2>
           {publicCategories.length > 0 ? (
-            <ul className="mt-4 grid gap-2.5">{publicCategories.map((category) => <li key={category.id}><Link className="text-sm font-semibold text-gray-light transition hover:text-white" href={"/categoria/" + category.slug}>{category.name}</Link></li>)}</ul>
+            <ul className="mt-4 grid gap-2.5">{publicCategories.map((category) => <li key={category.id}><Link className="text-sm font-semibold text-gray-light transition hover:text-white" href={"/categoria/" + category.slug} prefetch={false}>{category.name}</Link></li>)}</ul>
           ) : (
             <Link href="/catalogo" className="mt-4 inline-flex text-sm font-semibold text-gray-light transition hover:text-white">Explorar catálogo</Link>
           )}

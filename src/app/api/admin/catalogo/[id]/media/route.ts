@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { auditLogs, mediaAssetUsages, mediaAssets, products } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
+import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -24,6 +25,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_MEDIA_ASSOCIATED", entityType: "product", entityId: id, before: null, after: { assetId, slot, sortOrder }, metadata: null });
       return usage;
     });
+    clearPublicCatalogRuntimeCache();
     return NextResponse.json({ usage: result }, { status: 201 });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para editar media.", 403);
@@ -46,6 +48,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_MEDIA_REMOVED", entityType: "product", entityId: id, before: usage, after: null, metadata: null });
       return usage;
     });
+    clearPublicCatalogRuntimeCache();
     return NextResponse.json({ usage: result });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para editar media.", 403);

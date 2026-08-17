@@ -80,6 +80,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <div className="border-b border-border pb-7">
           <Link
             href="/catalogo"
+            prefetch={false}
             className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-dark"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver al catálogo

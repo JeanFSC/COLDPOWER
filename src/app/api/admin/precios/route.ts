@@ -4,6 +4,7 @@ import { parsePricingFilters } from "@/lib/pricing-contract";
 import { getPricingPage } from "@/lib/pricing-repository";
 import { createPrice } from "@/lib/pricing-service";
 import { can } from "@/lib/roles";
+import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 
 // Las mutaciones se delegan a pricing-service, que las ejecuta en transaction y registra auditLogs.
 
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     const productId = typeof input.productId === "string" ? input.productId.trim() : "";
     if (!productId) return apiError("PRODUCT_REQUIRED", "productId es obligatorio.", 400);
     const result = await createPrice({ productId, amount: input.amount, currency: input.currency, priceType: input.priceType, wholesaleMinQty: input.wholesaleMinQty, minimumAllowed: input.minimumAllowed, status: input.status, validFrom: input.validFrom, validUntil: input.validUntil, reason: input.reason, idempotencyKey: input.idempotencyKey ?? request.headers.get("Idempotency-Key") }, actor);
+    clearPublicCatalogRuntimeCache();
     return apiSuccess({ price: result.price, idempotent: result.idempotent }, 201);
   } catch (error) {
     if (error instanceof ApiAuthorizationError || (error instanceof Error && error.message === "PRICING_FORBIDDEN")) return apiError("PRICING_FORBIDDEN", "No tienes permiso para editar precios.", 403);
