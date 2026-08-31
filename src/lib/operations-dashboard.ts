@@ -207,16 +207,16 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   // the default 10-connection pool queueing most of them anyway, was the
   // dominant cost behind the ~2.1s dashboard load. See src/db/index.ts for
   // the pool-size half of this fix.
-  const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels, currentSalesSeries, previousSalesSeries, pipelineStages, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows, previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
+  const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels, currentSalesSeries, previousSalesSeries, pipelineStageCounts, pipelineStageAmounts, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows, previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
     salesMetric(db, filters, today, resolvedCurrency),
     salesMetric(db, filters, month, resolvedCurrency),
     salesMetric(db, filters, range, resolvedCurrency),
-    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, range, resolvedCurrency))).groupBy(orders.status),
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, range, filters.currency))).groupBy(orders.status),
     db.select({ total: count(), converted: sql.raw("count(*) filter (where quotes.workflow_status = 'CONVERTED' or quotes.status = 'convertida')") }).from(quotes).where(and(gte(quotes.createdAt, range.from), lt(quotes.createdAt, range.to))),
     db.select({ count: count() }).from(quotes).where(and(gte(quotes.createdAt, range.from), lt(quotes.createdAt, range.to), notInArray(quotes.workflowStatus, ["REJECTED", "EXPIRED", "CONVERTED", "CANCELLED"]))),
-    db.select({ count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
+    db.select({ count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, filters.currency), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
     db.select({ total: sql.raw("coalesce(sum(opportunities.total_amount), 0)") }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
-    db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(eq(payments.status, "PENDING"), eq(payments.status, "UNDER_REVIEW")), ...orderConditions(db, filters, range, resolvedCurrency))),
+    db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(eq(payments.status, "PENDING"), eq(payments.status, "UNDER_REVIEW")), ...orderConditions(db, filters, range, filters.currency))),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
     db.select({ count: sql.raw("count(distinct inventory_balances.product_id)") }).from(inventoryBalances).where(and(...stockScope, sql.raw("(inventory_balances.on_hand - inventory_balances.reserved) <= 0"))),
     db.select({ count: count() }).from(products).where(and(...productScope, sql.raw("not exists (select 1 from inventory_movements im where im.product_id = products.id and im.created_at >= '" + movementCutoff.toISOString() + "'::timestamptz)"))),
@@ -224,24 +224,29 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ count: count() }).from(locations).where(eq(locations.active, true)),
     db.select({ count: count() }).from(crmTasks).where(and(eq(crmTasks.status, "PENDING"), lt(crmTasks.dueAt, now), gte(crmTasks.createdAt, range.from), lt(crmTasks.createdAt, range.to), filters.sellerId ? eq(crmTasks.assignedTo, filters.sellerId) : undefined)),
     db.select({ status: transfers.status, count: count() }).from(transfers).where(and(gte(transfers.createdAt, range.from), lt(transfers.createdAt, range.to))).groupBy(transfers.status),
-    db.select({ id: customers.id }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency), gte(customers.createdAt, range.from), lt(customers.createdAt, range.to))).groupBy(customers.id),
-    db.select({ id: sales.customerId }).from(sales).where(and(...salesConditions(db, filters, range, resolvedCurrency), exists(db.select({ id: historicalSales.id }).from(historicalSales).where(and(eq(historicalSales.customerId, sales.customerId), lt(historicalSales.createdAt, range.from)))))).groupBy(sales.customerId),
-    db.select({ productsSold: sql<string>`count(distinct ${saleItems.productId})`, unitsSold: sql<string>`coalesce(sum(${saleItems.quantity}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct)),
+    db.select({ id: customers.id }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, filters.currency), gte(customers.createdAt, range.from), lt(customers.createdAt, range.to))).groupBy(customers.id),
+    db.select({ id: sales.customerId }).from(sales).where(and(...salesConditions(db, filters, range, filters.currency), exists(db.select({ id: historicalSales.id }).from(historicalSales).where(and(eq(historicalSales.customerId, sales.customerId), lt(historicalSales.createdAt, range.from)))))).groupBy(sales.customerId),
+    db.select({ productsSold: sql<string>`count(distinct ${saleItems.productId})`, unitsSold: sql<string>`coalesce(sum(${saleItems.quantity}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, filters.currency), selectedProduct)),
     db.select({ lineCount: count(saleItems.id), costedLineCount: count(productPrices.id), revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)`, cost: sql<string>`coalesce(sum(${saleItems.quantity} * ${productPrices.amount}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).leftJoin(productPrices, and(eq(productPrices.productId, saleItems.productId), eq(productPrices.priceType, "COST"), eq(productPrices.active, true))).where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct)),
     db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.originalName})`, sku: products.sku, units: sql.raw("coalesce(sum(sale_items.quantity), 0)"), revenue: sql.raw("coalesce(sum(sale_items.line_total), 0)") }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(products.id, products.commercialName, products.originalName, products.sku).orderBy(desc(sql.raw("sum(sale_items.line_total)"))).limit(5),
     db.select({ id: customers.id, name: customers.name, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(customers.id, customers.name).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
     db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
-    db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
+    db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, filters.currency))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
     salesSeries(db, filters, range, resolvedCurrency),
     salesSeries(db, filters, previous, resolvedCurrency),
-    db.select({ stage: opportunities.stage, count: count(), amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency))).groupBy(opportunities.stage).orderBy(opportunities.stage),
+    // Split into a count query (scoped only to the user's explicit currency filter, so it
+    // reflects real opportunity counts across currencies) and an amount query (scoped to the
+    // auto-resolved currency, since summing opportunities.total_amount across currencies would
+    // silently mix them). See task-3-report.md for why these can't share one query.
+    db.select({ stage: opportunities.stage, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, filters.currency))).groupBy(opportunities.stage).orderBy(opportunities.stage),
+    db.select({ stage: opportunities.stage, amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency))).groupBy(opportunities.stage).orderBy(opportunities.stage),
     db.select({ count: sql<string>`count(*)` }).from(products).where(and(...productScope, unknownBalanceCondition)),
     db.select({ role: users.roleCode, status: users.status, count: count() }).from(users).groupBy(users.roleCode, users.status),
     db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(8),
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
     salesMetric(db, filters, previous, resolvedCurrency),
     db.select({ total: count() }).from(quotes).where(and(gte(quotes.createdAt, previous.from), lt(quotes.createdAt, previous.to))),
-    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous, resolvedCurrency))).groupBy(orders.status),
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous, filters.currency))).groupBy(orders.status),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
   ]);
   const categorySummaryRows = await categorySummaryPromise;
@@ -257,7 +262,14 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const costOfSales = lineCount === 0 ? 0 : lineCount === costedLineCount ? Number(marginRow?.cost ?? 0) : null;
   const financial = financialMetrics({ revenue: Number(salesRange.total), costOfSales, operatingExpenses: null });
   const visibleFinancial = canViewFinancials ? financial : financialMetrics({ revenue: null, costOfSales: null, operatingExpenses: null });
-  const pipelineSummary = pipelineStages.map((row) => ({ stage: row.stage, stageCode: row.stage, stageLabel: pipelineLabels[row.stage] ?? "Etapa comercial", count: Number(row.count), amount: Number(row.amount ?? 0), weightedValue: Number(row.amount ?? 0) * (pipelineProbabilities[row.stage] ?? 0) }));
+  // Counts and amounts come from two separately-scoped queries (see the Promise.all comment
+  // above): merge them by stage rather than assuming the row sets line up 1:1, since the count
+  // query (filters.currency only) can include stages/rows the amount query (resolvedCurrency)
+  // excludes when currencies are mixed.
+  const pipelineCountByStage = new Map(pipelineStageCounts.map((row) => [row.stage, Number(row.count ?? 0)]));
+  const pipelineAmountByStage = new Map(pipelineStageAmounts.map((row) => [row.stage, Number(row.amount ?? 0)]));
+  const pipelineStageKeys = [...new Set([...pipelineCountByStage.keys(), ...pipelineAmountByStage.keys()])];
+  const pipelineSummary = pipelineStageKeys.map((stage) => ({ stage, stageCode: stage, stageLabel: pipelineLabels[stage] ?? "Etapa comercial", count: pipelineCountByStage.get(stage) ?? 0, amount: pipelineAmountByStage.get(stage) ?? 0, weightedValue: (pipelineAmountByStage.get(stage) ?? 0) * (pipelineProbabilities[stage] ?? 0) }));
   const activePipelineRows = pipelineSummary.filter((row) => getPipelineMacroStage(row.stage) !== "PERDIDA");
   const lostPipelineRows = pipelineSummary.filter((row) => getPipelineMacroStage(row.stage) === "PERDIDA");
   const pipelineActiveTotal = {
