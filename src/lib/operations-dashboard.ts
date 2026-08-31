@@ -1,5 +1,5 @@
 import { alias } from "drizzle-orm/pg-core";
-import { and, count, desc, eq, exists, gte, inArray, isNull, lt, ne, notInArray, or, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, exists, gte, inArray, isNull, lt, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, brands, categories, families, inventoryBalances, inventoryReservations, locations, productPrices, products, quotes, transfers, users } from "@/db/schema";
 import { crmTasks, customers, opportunityItems, opportunities } from "@/db/crm-schema";
@@ -10,6 +10,7 @@ import type { AppRole } from "@/lib/roles";
 import { can } from "@/lib/roles";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 import { withRuntimeCache } from "@/lib/runtime-cache";
+import { isActiveOrderStatus, getPipelineMacroStage, PIPELINE_MACRO_STAGE_ORDER, PIPELINE_MACRO_STAGE_LABELS } from "@/lib/dashboard-definitions";
 
 type Window = { from: Date; to: Date };
 export type DashboardActor = { userId?: string; role: AppRole };
@@ -231,7 +232,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
     salesMetric(db, filters, previous),
     db.select({ total: count() }).from(quotes).where(and(gte(quotes.createdAt, previous.from), lt(quotes.createdAt, previous.to))),
-    db.select({ count: count() }).from(orders).where(and(...orderConditions(db, filters, previous), ne(orders.status, "CANCELLED"))),
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous))).groupBy(orders.status),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
   ]);
   const categorySummaryRows = await categorySummaryPromise;
@@ -248,6 +249,29 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const financial = financialMetrics({ revenue: Number(salesRange.total), costOfSales, operatingExpenses: null });
   const visibleFinancial = canViewFinancials ? financial : financialMetrics({ revenue: null, costOfSales: null, operatingExpenses: null });
   const pipelineSummary = pipelineStages.map((row) => ({ stage: row.stage, stageCode: row.stage, stageLabel: pipelineLabels[row.stage] ?? "Etapa comercial", count: Number(row.count), amount: Number(row.amount ?? 0), weightedValue: Number(row.amount ?? 0) * (pipelineProbabilities[row.stage] ?? 0) }));
+  const activePipelineRows = pipelineSummary.filter((row) => getPipelineMacroStage(row.stage) !== "PERDIDA");
+  const lostPipelineRows = pipelineSummary.filter((row) => getPipelineMacroStage(row.stage) === "PERDIDA");
+  const pipelineActiveTotal = {
+    count: activePipelineRows.reduce((sum, row) => sum + row.count, 0),
+    amount: activePipelineRows.reduce((sum, row) => sum + row.amount, 0),
+  };
+  const pipelineLostTotal = {
+    count: lostPipelineRows.reduce((sum, row) => sum + row.count, 0),
+    amount: lostPipelineRows.reduce((sum, row) => sum + row.amount, 0),
+  };
+  const pipelineMacroSummary = PIPELINE_MACRO_STAGE_ORDER.map((macroStage) => {
+    const rows = activePipelineRows.filter((row) => getPipelineMacroStage(row.stage) === macroStage);
+    const amount = rows.reduce((sum, row) => sum + row.amount, 0);
+    const count = rows.reduce((sum, row) => sum + row.count, 0);
+    return {
+      macroStage,
+      macroStageLabel: PIPELINE_MACRO_STAGE_LABELS[macroStage],
+      count,
+      amount,
+      share: pipelineActiveTotal.amount ? amount / pipelineActiveTotal.amount : 0,
+      stages: rows.map((row) => row.stageCode),
+    };
+  });
   const categoryRevenueTotal = categorySummaryRows.reduce((sum, row) => sum + Number(row.revenue ?? 0), 0);
   const categorySummary = categorySummaryRows.map((row) => ({ categoryId: row.categoryId, categoryName: row.categoryName, units: Number(row.units ?? 0), revenue: Number(row.revenue ?? 0), percentage: categoryRevenueTotal ? (Number(row.revenue ?? 0) / categoryRevenueTotal) * 100 : 0 }));
   const productMedia = await getPublishedMediaForEntities("product", topProducts.map((row) => row.id));
@@ -255,11 +279,13 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const activityProducts = activityProductIds.length ? await db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})` }).from(products).where(inArray(products.id, activityProductIds)) : [];
   const activityProductLabels = new Map(activityProducts.map((row) => [row.id, row.name]));
   const recentActivityView = recentActivity.map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? "Actualización registrada", entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? "Registro"), actorName: row.actorName || "Sistema" }));
-  const activeOrderCount = [...orderCounts.entries()].filter(([status]) => status !== "CANCELLED").reduce((sum, [, value]) => sum + value, 0);
+  const activeOrderCount = [...orderCounts.entries()].filter(([status]) => isActiveOrderStatus(status)).reduce((sum, [, value]) => sum + value, 0);
+  const previousOrderMap = new Map(previousOrderTotals.map((row) => [row.status, Number(row.count)]));
+  const previousActiveOrderCount = [...previousOrderMap.entries()].filter(([status]) => isActiveOrderStatus(status)).reduce((sum, [, value]) => sum + value, 0);
   const comparisons = dashboardComparisons({
     sales: { current: Number(salesRange.total), previous: previousSalesRange.total },
     quotes: { current: totalQuotes, previous: Number(previousQuoteTotals[0]?.total ?? 0) },
-    orders: { current: activeOrderCount, previous: Number(previousOrderTotals[0]?.count ?? 0) },
+    orders: { current: activeOrderCount, previous: previousActiveOrderCount },
     criticalStock: { current: Number(criticalStock[0]?.count ?? 0), previous: Number(previousCriticalStock[0]?.count ?? 0) },
   });
   return {
@@ -291,6 +317,9 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     salesSeries: currentSalesSeries,
     previousSalesSeries,
     pipelineSummary,
+    pipelineMacroSummary,
+    pipelineActiveTotal,
+    pipelineLostTotal,
     comparisons,
     categorySummary,
     userSummary: userSummaryRows.map((row) => ({ role: row.role, roleCode: row.role, roleLabel: dashboardRoleLabel(row.role as AppRole | null), status: row.status, statusCode: row.status, statusLabel: statusLabels[row.status] ?? "Estado", count: Number(row.count) })),
