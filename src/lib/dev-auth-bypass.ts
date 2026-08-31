@@ -1,5 +1,6 @@
 export type DevAuthEnvironment = {
   NODE_ENV?: string;
+  VERCEL_ENV?: string;
   CP_DEV_AUTH_BYPASS?: string;
   CP_DEV_AUTH_USER_ID?: string;
   CP_DEV_AUTH_ALLOWED_HOSTS?: string;
@@ -14,7 +15,7 @@ function normalizeHost(host: string) {
 }
 
 export function getDevAuthUserId(host: string | null, env: DevAuthEnvironment = process.env) {
-  if (env.NODE_ENV === "production" || !isTruthy(env.CP_DEV_AUTH_BYPASS)) return null;
+  if (env.NODE_ENV === "production" || env.VERCEL_ENV === "production" || !isTruthy(env.CP_DEV_AUTH_BYPASS)) return null;
 
   const userId = env.CP_DEV_AUTH_USER_ID?.trim();
   if (!userId || !host) return null;

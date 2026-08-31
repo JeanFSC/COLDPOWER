@@ -19,6 +19,10 @@ test("dev bypass rejects production even when the flag is enabled", () => {
     getDevAuthUserId("localhost:3000", { ...enabledDev, NODE_ENV: "production" }),
     null,
   );
+  assert.equal(
+    getDevAuthUserId("localhost:3000", { ...enabledDev, VERCEL_ENV: "production" }),
+    null,
+  );
 });
 
 test("dev bypass rejects hosts outside the explicit allowlist", () => {
