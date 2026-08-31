@@ -4,7 +4,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  BriefcaseBusiness,
   Boxes,
   CalendarDays,
   ChevronDown,
@@ -13,20 +12,16 @@ import {
   Clock3,
   Download,
   FileText,
-  Headphones,
   Image as ImageIcon,
   Minus,
   Package,
   PackageCheck,
   Plus,
   ReceiptText,
-  ShieldCheck,
   ShoppingCart,
   Tag,
   Target,
   TriangleAlert,
-  UserRound,
-  Warehouse,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -34,7 +29,7 @@ import { can, type AppRole } from "@/lib/roles";
 import type { DashboardRange } from "@/lib/dashboard-contract";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
-import { AdminLineChart, AdminSparkline } from "@/components/admin/AdminCharts";
+import { AdminLineChart, AdminSparkline } from "@/components/admin/AdminChartsLazy";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type OperationsSnapshot = Awaited<ReturnType<typeof getOperationsWorkspace>>;

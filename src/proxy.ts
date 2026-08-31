@@ -5,20 +5,21 @@ import { authConfig, isAuthConfigured } from "@/lib/env";
 import { getDevAuthUserId } from "@/lib/dev-auth-bypass";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
-import { isStaffRole } from "@/lib/roles";
+import { isStaffRole, type AppRole } from "@/lib/roles";
+import { VERIFIED_ROLE_HEADER, VERIFIED_USER_HEADER } from "@/lib/auth-headers";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAccountRoute = createRouteMatcher(["/cuenta(.*)"]);
 
-async function hasPersistedStaffAccess(userId: string) {
+async function resolveStaffAccess(userId: string): Promise<{ role: AppRole } | null> {
   try {
     const [record] = await getDb().select({ role: users.role, roleCode: users.roleCode, status: users.status }).from(users).where(eq(users.id, userId)).limit(1);
-    if (!record || record.status !== "ACTIVE") return false;
+    if (!record || record.status !== "ACTIVE") return null;
     const persistedRole = record.roleCode ?? (record.role === "admin" ? "admin" : "customer");
-    return isStaffRole(persistedRole);
+    return isStaffRole(persistedRole) ? { role: persistedRole as AppRole } : null;
   } catch (error) {
     console.error("ColdPower: middleware no pudo verificar acceso persistido", error);
-    return false;
+    return null;
   }
 }
 
@@ -40,15 +41,34 @@ function getReturnBackUrl(req: Request) {
 
 const middleware = isAuthConfigured
   ? clerkMiddleware(async (authFn, req) => {
-      if (isAdminRoute(req) && getDevAuthUserId(req.headers.get("host"))) return NextResponse.next();
+      // Strip any client-supplied values for these headers unconditionally,
+      // on every request, before any branching below. Only the admin branch
+      // re-sets them, from a value it just computed itself. This guarantees
+      // a client can never smuggle a fake verified-role header through a
+      // route this proxy doesn't happen to special-case (present or future),
+      // instead of relying on each branch below remembering to overwrite it.
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.delete(VERIFIED_USER_HEADER);
+      requestHeaders.delete(VERIFIED_ROLE_HEADER);
+
+      if (isAdminRoute(req) && getDevAuthUserId(req.headers.get("host"))) {
+        return NextResponse.next({ request: { headers: requestHeaders } });
+      }
       if (isAdminRoute(req)) {
         const { userId, redirectToSignIn } = await authFn();
         if (!userId) return redirectToSignIn({ returnBackUrl: getReturnBackUrl(req) });
-        if (!(await hasPersistedStaffAccess(userId))) return NextResponse.redirect(new URL("/", req.url));
+        const access = await resolveStaffAccess(userId);
+        if (!access) return NextResponse.redirect(new URL("/", req.url));
+        // Hand the already-verified role to the page render so requireAdmin()
+        // doesn't repeat this same Neon lookup a second time per navigation.
+        requestHeaders.set(VERIFIED_USER_HEADER, userId);
+        requestHeaders.set(VERIFIED_ROLE_HEADER, access.role);
+        return NextResponse.next({ request: { headers: requestHeaders } });
       } else if (isAccountRoute(req)) {
         const { userId, redirectToSignIn } = await authFn();
         if (!userId) return redirectToSignIn({ returnBackUrl: getReturnBackUrl(req) });
       }
+      return NextResponse.next({ request: { headers: requestHeaders } });
     }, {
       signInUrl: authConfig.signInUrl,
       signUpUrl: authConfig.signUpUrl,

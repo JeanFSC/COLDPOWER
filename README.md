@@ -50,6 +50,13 @@ corepack pnpm dev
 
 Abrir http://localhost:3000.
 
+Para levantar el entorno público local en modo producción (`next build` + `next start`) junto con `https://dev.coldpower.pe`:
+
+1. Guarda el token del túnel `coldpower-local` en `.cloudflared/coldpower-local.token` (una sola línea).
+2. Ejecuta `corepack pnpm start:public`.
+
+Este comando compila la aplicación y luego inicia `next start` y `cloudflared` juntos; al detenerlo, ambos procesos se cierran. No se instala como servicio de Windows ni se inicia al encender la PC.
+
 ## Preview y produccion
 
 El entorno de preview puede mostrar estados de trabajo y datos comerciales pendientes, pero no debe confundirse con producción. Antes de publicar producción se deben completar los datos legales, contacto, dominio, políticas y aprobación editorial del catálogo. Usa `NEXT_PUBLIC_IS_PREVIEW=true` para preview y `NEXT_PUBLIC_ALLOW_PLACEHOLDER_COMPANY_DATA=false` en producción.

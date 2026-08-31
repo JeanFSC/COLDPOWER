@@ -10,7 +10,7 @@ export const quoteConfig = { quoteRateLimit: { max: readNumber("QUOTE_RATE_LIMIT
 export const whatsappRateLimitConfig = { max: readNumber("WHATSAPP_RATE_LIMIT_MAX", 5), windowMs: readNumber("WHATSAPP_RATE_LIMIT_WINDOW_MS", 600000) };
 export const authConfig = { clerkPublishableKey: readOptionalUrl("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"), clerkSecretKey: readOptionalUrl("CLERK_SECRET_KEY"), signInUrl: readString("NEXT_PUBLIC_CLERK_SIGN_IN_URL", "/sign-in"), signUpUrl: readString("NEXT_PUBLIC_CLERK_SIGN_UP_URL", "/sign-up"), webhookSecret: readOptionalUrl("CLERK_WEBHOOK_SECRET") };
 export const isAuthConfigured = Boolean(authConfig.clerkPublishableKey && authConfig.clerkSecretKey);
-export const databaseConfig = { url: readOptionalUrl("DATABASE_URL") };
+export const databaseConfig = { url: readOptionalUrl("DATABASE_URL"), poolMax: readNumber("DATABASE_POOL_MAX", 20) };
 const PLACEHOLDER_COMPANY_VALUES = { NEXT_PUBLIC_WHATSAPP_NUMBER: "51999999999", NEXT_PUBLIC_CONTACT_EMAIL: "ventas@coldpower.pe", NEXT_PUBLIC_CONTACT_PHONE: "+51 999 999 999", NEXT_PUBLIC_RUC: "00000000000" } as const;
 export const isProduction = process.env.NODE_ENV === "production";
 export const allowPlaceholderCompanyData = parseBoolean(process.env.NEXT_PUBLIC_ALLOW_PLACEHOLDER_COMPANY_DATA, false);

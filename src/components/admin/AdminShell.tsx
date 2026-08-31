@@ -26,7 +26,7 @@ import {
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { roleLabel, type AppRole } from "@/lib/roles";
 
@@ -105,6 +105,7 @@ export function AdminShell({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNavigating, startNavigation] = useTransition();
   const profile = profileByRole[role] ?? {
     name: roleLabel(role),
     title: roleLabel(role),
@@ -235,16 +236,29 @@ export function AdminShell({
               placeholder="Buscar productos, clientes, pedidos, cotizaciones..."
               aria-label="Buscar en el panel administrativo"
               onKeyDown={(event) => {
-                if (event.key === "Enter" && event.currentTarget.value.trim())
-                  router.push(
-                    `/admin/catalogo?query=${encodeURIComponent(event.currentTarget.value.trim())}`,
-                  );
+                const query = event.currentTarget.value.trim();
+                if (event.key === "Enter" && query) {
+                  // startTransition keeps the input responsive (marks the
+                  // navigation as non-urgent) and exposes isNavigating so we
+                  // can show immediate feedback while the RSC payload streams.
+                  startNavigation(() => {
+                    router.push(`/admin/catalogo?query=${encodeURIComponent(query)}`);
+                  });
+                }
               }}
             />
-            <span className="pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#8aa0b6] sm:flex">
+            <span
+              className={`pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#8aa0b6] sm:flex ${isNavigating ? "opacity-0" : ""}`}
+            >
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">Ctrl</kbd>
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">K</kbd>
             </span>
+            {isNavigating ? (
+              <span
+                className="absolute right-3.5 h-4 w-4 animate-spin rounded-full border-2 border-[#dce6ee] border-t-[#2277ee]"
+                aria-hidden="true"
+              />
+            ) : null}
           </label>
           <div className="ml-auto flex shrink-0 items-center gap-3">
             <Link

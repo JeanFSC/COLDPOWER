@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { companySettings } from "@/db/schema";
 import { company } from "@/data/company";
 import { publicCompanySettings, type CompanySettings } from "@/lib/company-settings";
+import { withRuntimeCache } from "@/lib/runtime-cache";
 
 const SETTINGS_ID = "default";
 
@@ -28,12 +29,17 @@ function fallbackSettings(): CompanySettings {
 }
 
 export async function getPublicCompanySettings(): Promise<CompanySettings> {
-  try {
-    const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1);
-    if (settings && settings.validationStatus !== "VALID") return fallbackSettings();
-    return settings ? publicCompanySettings(settings) : fallbackSettings();
-  } catch (error) {
-    console.warn("[ColdPower] Configuración empresarial persistente no disponible.", error instanceof Error ? error.message : error);
-    return fallbackSettings();
-  }
+  // Public, non-sensitive data (company contact/schedule) requested on every
+  // page including admin routes via the root layout; short process-local
+  // cache avoids a Neon round trip per navigation.
+  return withRuntimeCache("company-settings:public", async () => {
+    try {
+      const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1);
+      if (settings && settings.validationStatus !== "VALID") return fallbackSettings();
+      return settings ? publicCompanySettings(settings) : fallbackSettings();
+    } catch (error) {
+      console.warn("[ColdPower] Configuración empresarial persistente no disponible.", error instanceof Error ? error.message : error);
+      return fallbackSettings();
+    }
+  });
 }

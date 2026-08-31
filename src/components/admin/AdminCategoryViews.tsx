@@ -31,7 +31,13 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { AdminLineChart, AdminSparkline } from "@/components/admin/AdminCharts";
+// AdminLineChart stays lazy-loaded (ReportsWorkspace passes it real series data).
+// AdminSparkline is imported directly, not lazily: every MetricGrid caller in
+// this file (Catálogo included) omits the `sparkline` field, so it always
+// renders the static placeholder — the dynamic-import chunk fetch was pure
+// added latency with nothing to show for it.
+import { AdminLineChart } from "@/components/admin/AdminChartsLazy";
+import { AdminSparkline } from "@/components/admin/AdminCharts";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import type { PricingFilters, PricingListResponse } from "@/lib/pricing-contract";

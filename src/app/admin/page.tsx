@@ -22,21 +22,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   let filters: DashboardFilters = { range: "month" };
   try { filters = parseDashboardFilters(query); } catch (error) { if (!(error instanceof DashboardInvalidFilterError)) throw error; }
   let data: Awaited<ReturnType<typeof getOperationsDashboard>> | null = null;
-  try {
-    data = await getOperationsDashboard(filters, actor);
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar el dashboard", error);
-  }
   let actorName: string | null = null;
-  try {
-    const [profile] = await getDb()
-      .select({ name: users.name, email: users.email })
-      .from(users)
-      .where(eq(users.id, actor.userId))
-      .limit(1);
+  const [dashboardResult, actorResult] = await Promise.allSettled([
+    getOperationsDashboard(filters, actor),
+    getDb().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, actor.userId)).limit(1),
+  ]);
+  if (dashboardResult.status === "fulfilled") {
+    data = dashboardResult.value;
+  } else {
+    console.error("ColdPower: no se pudo cargar el dashboard", dashboardResult.reason);
+  }
+  if (actorResult.status === "fulfilled") {
+    const [profile] = actorResult.value;
     actorName = profile?.name ?? profile?.email ?? null;
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar el nombre del actor", error);
+  } else {
+    console.error("ColdPower: no se pudo cargar el nombre del actor", actorResult.reason);
   }
   return (
     <AdminDashboardView

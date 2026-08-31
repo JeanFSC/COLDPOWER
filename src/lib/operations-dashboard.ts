@@ -9,6 +9,7 @@ export type { DashboardFilters, DashboardRange } from "@/lib/dashboard-contract"
 import type { AppRole } from "@/lib/roles";
 import { can } from "@/lib/roles";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
+import { withRuntimeCache } from "@/lib/runtime-cache";
 
 type Window = { from: Date; to: Date };
 export type DashboardActor = { userId?: string; role: AppRole };
@@ -189,7 +190,14 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const categorySummaryPromise = db.select({ categoryId: categories.id, categoryName: categories.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).innerJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range), categoryScope)).groupBy(categories.id, categories.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
   const historicalSales = alias(sales, "historical_sales");
   const previous = previousWindow(range);
-  const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels] = await Promise.all([
+  // All 35 queries below (24 + 7 + 4 in the old code) are independent of each
+  // other (none reads another's result), so they are launched in a single
+  // Promise.all instead of three sequential waves. Each wave used to cost a
+  // full Neon (sa-east-1) round trip on top of the last; that, combined with
+  // the default 10-connection pool queueing most of them anyway, was the
+  // dominant cost behind the ~2.1s dashboard load. See src/db/index.ts for
+  // the pool-size half of this fix.
+  const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels, currentSalesSeries, previousSalesSeries, pipelineStages, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows, previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
     salesMetric(db, filters, today),
     salesMetric(db, filters, month),
     salesMetric(db, filters, range),
@@ -214,8 +222,6 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ id: customers.id, name: customers.name, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range))).groupBy(customers.id, customers.name).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
     db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
     db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
-  ]);
-  const [currentSalesSeries, previousSalesSeries, pipelineStages, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows] = await Promise.all([
     salesSeries(db, filters, range),
     salesSeries(db, filters, previous),
     db.select({ stage: opportunities.stage, count: count(), amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.stage).orderBy(opportunities.stage),
@@ -223,14 +229,12 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ role: users.roleCode, status: users.status, count: count() }).from(users).groupBy(users.roleCode, users.status),
     db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(8),
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
-  ]);
-  const categorySummaryRows = await categorySummaryPromise;
-  const [previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
     salesMetric(db, filters, previous),
     db.select({ total: count() }).from(quotes).where(and(gte(quotes.createdAt, previous.from), lt(quotes.createdAt, previous.to))),
     db.select({ count: count() }).from(orders).where(and(...orderConditions(db, filters, previous), ne(orders.status, "CANCELLED"))),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
   ]);
+  const categorySummaryRows = await categorySummaryPromise;
   const orderCounts = new Map(ordersByStatus.map((row) => [row.status, Number(row.count)]));
   const transferMap = new Map(transferCounts.map((row) => [row.status, Number(row.count)]));
   const totalQuotes = Number(quoteTotals[0]?.total ?? 0);
@@ -295,14 +299,26 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
 }
 export async function listReportOptions() {
   const db = getDb();
+  // Locations/categories/families/brands are non-sensitive reference lists
+  // reloaded on every reportes filter change; short cache avoids re-hitting
+  // Neon for data that rarely changes. Sellers/customers/products carry
+  // names/emails and are left uncached.
   const [locationRows, sellerRows, customerRows, productRows, categoryRows, familyRows, brandRows] = await Promise.all([
-    db.select({ id: locations.id, name: locations.name }).from(locations).where(eq(locations.active, true)).orderBy(locations.name),
+    withRuntimeCache("report-options:locations", () =>
+      db.select({ id: locations.id, name: locations.name }).from(locations).where(eq(locations.active, true)).orderBy(locations.name),
+    ),
     db.select({ id: users.id, name: users.name, email: users.email }).from(users).orderBy(users.name).limit(500),
     db.select({ id: customers.id, name: customers.name, email: customers.email }).from(customers).orderBy(customers.name).limit(500),
     db.select({ id: products.id, name: products.commercialName, normalizedName: products.normalizedName, sku: products.sku }).from(products).orderBy(products.sku).limit(2000),
-    db.select({ id: categories.id, name: categories.name }).from(categories).where(eq(categories.active, true)).orderBy(categories.name).limit(500),
-    db.select({ id: families.id, name: families.name }).from(families).where(eq(families.active, true)).orderBy(families.name).limit(500),
-    db.select({ id: brands.id, name: brands.name }).from(brands).where(eq(brands.active, true)).orderBy(brands.name).limit(500),
+    withRuntimeCache("report-options:categories", () =>
+      db.select({ id: categories.id, name: categories.name }).from(categories).where(eq(categories.active, true)).orderBy(categories.name).limit(500),
+    ),
+    withRuntimeCache("report-options:families", () =>
+      db.select({ id: families.id, name: families.name }).from(families).where(eq(families.active, true)).orderBy(families.name).limit(500),
+    ),
+    withRuntimeCache("report-options:brands", () =>
+      db.select({ id: brands.id, name: brands.name }).from(brands).where(eq(brands.active, true)).orderBy(brands.name).limit(500),
+    ),
   ]);
   return { locations: locationRows, sellers: sellerRows, customers: customerRows, products: productRows.map((row) => ({ id: row.id, name: row.name || row.normalizedName, sku: row.sku })), categories: categoryRows, families: familyRows, brands: brandRows };
 }

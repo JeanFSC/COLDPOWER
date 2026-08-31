@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "start:public": "powershell -NoProfile -ExecutionPolicy Bypass -File ./ops/start-public.ps1",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint",

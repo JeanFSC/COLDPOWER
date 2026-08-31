@@ -52,14 +52,14 @@ function PasswordInput({ name, placeholder, autoComplete }: { name: string; plac
   );
 }
 
-function SocialButtons() {
+function SocialButtons({ onUnavailable }: { onUnavailable: () => void }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-white text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:bg-surface-page">
+      <button type="button" onClick={onUnavailable} className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-white text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:bg-surface-page">
         <Globe2 className="h-4 w-4 text-[#4285f4]" aria-hidden="true" />
         Google
       </button>
-      <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-white text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:bg-surface-page">
+      <button type="button" onClick={onUnavailable} className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-white text-sm font-extrabold text-brand-primary-900 transition hover:border-brand-secondary-600 hover:bg-surface-page">
         <PanelsTopLeft className="h-4 w-4 text-[#f25022]" aria-hidden="true" />
         Microsoft
       </button>
@@ -79,9 +79,19 @@ function Divider() {
 
 export function AuthPreviewForm({ mode }: AuthPreviewFormProps) {
   const isSignIn = mode === "sign-in";
+  const [message, setMessage] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage(
+      isSignIn
+        ? "El inicio de sesión aún no está configurado en este entorno. Solicita configurar Clerk y la base de datos para poder ingresar."
+        : "El registro aún no está configurado en este entorno. Solicita configurar Clerk y la base de datos para crear una cuenta.",
+    );
+  }
+
+  function handleUnavailableSocialLogin() {
+    setMessage("El acceso con Google y Microsoft aún no está configurado en este entorno.");
   }
 
   if (isSignIn) {
@@ -106,8 +116,9 @@ export function AuthPreviewForm({ mode }: AuthPreviewFormProps) {
           <LockKeyhole className="h-4 w-4" aria-hidden="true" />
           Iniciar sesión
         </button>
+        {message ? <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-900" role="status" aria-live="polite">{message}</p> : null}
         <Divider />
-        <SocialButtons />
+        <SocialButtons onUnavailable={handleUnavailableSocialLogin} />
         <p className="pt-1 text-center text-sm font-semibold text-text-secondary">
           ¿Aún no tienes cuenta? <Link href="/sign-up" className="font-extrabold text-brand-secondary-600 hover:underline">Crear cuenta</Link>
         </p>
@@ -147,6 +158,7 @@ export function AuthPreviewForm({ mode }: AuthPreviewFormProps) {
         <UserRound className="h-4 w-4" aria-hidden="true" />
         Crear cuenta
       </button>
+      {message ? <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-900" role="status" aria-live="polite">{message}</p> : null}
       <p className="pt-1 text-center text-sm font-semibold text-text-secondary">
         ¿Ya tienes cuenta? <Link href="/sign-in" className="font-extrabold text-brand-secondary-600 hover:underline">Iniciar sesión</Link>
       </p>
