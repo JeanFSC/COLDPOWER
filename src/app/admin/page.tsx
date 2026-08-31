@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { users } from "@/db/schema";
 import { AdminDashboardView } from "@/components/admin/AdminDashboardView";
 import { DashboardInvalidFilterError, parseDashboardFilters, type DashboardFilters } from "@/lib/dashboard-contract";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
@@ -24,5 +27,24 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   } catch (error) {
     console.error("ColdPower: no se pudo cargar el dashboard", error);
   }
-  return <AdminDashboardView role={actor.role} data={data} snapshot={null} range={filters.range} />;
+  let actorName: string | null = null;
+  try {
+    const [profile] = await getDb()
+      .select({ name: users.name, email: users.email })
+      .from(users)
+      .where(eq(users.id, actor.userId))
+      .limit(1);
+    actorName = profile?.name ?? profile?.email ?? null;
+  } catch (error) {
+    console.error("ColdPower: no se pudo cargar el nombre del actor", error);
+  }
+  return (
+    <AdminDashboardView
+      role={actor.role}
+      data={data}
+      snapshot={null}
+      range={filters.range}
+      actorName={actorName}
+    />
+  );
 }

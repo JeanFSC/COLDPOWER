@@ -12,6 +12,35 @@ test("CP-031 runtime dashboard preserves the frontend contract", async () => {
   assert.ok(Array.isArray(data.previousSalesSeries));
   assert.equal(typeof data.unknownStock, "number");
   assert.equal(data.filters.range, "month");
+  assert.ok(data.unknownStock < 20, `unknownStock too large: ${data.unknownStock}`);
+  assert.ok(data.noMovement < 20, `noMovement too large: ${data.noMovement}`);
+});
+
+test("CP-031 runtime dashboard exposes truthful period comparisons", async () => {
+  const data = await getOperationsDashboard({ range: "month" }, { role: "SUPERADMIN" });
+  assert.deepEqual(Object.keys(data.comparisons).sort(), ["criticalStock", "orders", "quotes", "sales"]);
+  for (const key of ["sales", "quotes", "orders", "criticalStock"] as const) {
+    assert.equal(typeof data.comparisons[key].current, "number");
+    assert.equal(typeof data.comparisons[key].previous, "number");
+    assert.ok(data.comparisons[key].percentage === null || typeof data.comparisons[key].percentage === "number");
+  }
+});
+
+test("CP-031 development fixture populates every dashboard widget with real catalog products", async () => {
+  const data = await getOperationsDashboard({ range: "month" }, { role: "SUPERADMIN" });
+  assert.ok(data.salesRange.count >= 60, `expected large-company current sales volume, got ${data.salesRange.count}`);
+  assert.ok(data.previousSalesSeries.some((point) => point.total > 0));
+  assert.ok(data.comparisons.sales.previous > 0, "previous month sales must be populated");
+  assert.ok(data.quotes >= 30, `expected current quotes, got ${data.quotes}`);
+  assert.ok(data.opportunities >= 30, `expected current opportunities, got ${data.opportunities}`);
+  assert.ok(data.orders.total >= 30, `expected current orders, got ${data.orders.total}`);
+  assert.ok(data.pendingPayments >= 10, `expected pending payments, got ${data.pendingPayments}`);
+  assert.ok(data.pipelineSummary.some((stage) => stage.stage === "NEGOTIATION"));
+  assert.ok(data.topProducts.length > 0);
+  assert.ok(data.recentActivity.length >= 8, `expected recent activity widget data, got ${data.recentActivity.length}`);
+  assert.ok(data.userSummary.reduce((total, row) => total + row.count, 0) >= 12, "expected a larger active team");
+  assert.ok(data.topProducts.every((product) => !/QA|universal/i.test(product.name)));
+  assert.ok(data.userSummary.every((row) => row.roleLabel !== row.roleCode && row.statusLabel !== row.statusCode));
 });
 
 test("CP-031 runtime dashboard masks financial data for REPORTES", async () => {

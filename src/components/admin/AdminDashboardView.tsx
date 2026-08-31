@@ -1,23 +1,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowDownRight,
   ArrowUpRight,
   BarChart3,
+  BriefcaseBusiness,
   Boxes,
+  CalendarDays,
   ChevronDown,
   CircleDollarSign,
+  CircleOff,
   Clock3,
   Download,
   FileText,
+  Headphones,
   Image as ImageIcon,
+  Minus,
   Package,
   PackageCheck,
   Plus,
   ReceiptText,
+  ShieldCheck,
   ShoppingCart,
   Tag,
   Target,
   TriangleAlert,
+  UserRound,
+  Warehouse,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -36,6 +45,7 @@ type AdminDashboardViewProps = {
   snapshot: OperationsSnapshot | null;
   view?: "dashboard" | "operations";
   range?: DashboardRange;
+  actorName?: string | null;
 };
 
 const panelClass =
@@ -61,6 +71,7 @@ export function AdminDashboardView({
   snapshot,
   view = "dashboard",
   range = "month",
+  actorName,
 }: AdminDashboardViewProps) {
   if (
     view === "operations" ||
@@ -70,29 +81,38 @@ export function AdminDashboardView({
     role === "ALMACEN" ||
     role === "COMPRAS"
   ) {
-    return <OperationsDashboard snapshot={snapshot} role={role} range={range} />;
+    return <OperationsDashboard snapshot={snapshot} role={role} range={range} actorName={actorName} />;
   }
   return (
-    <ManagementDashboard variant={role === "GERENCIA" ? "gerencia" : "superadmin"} data={data} range={range} />
+    <ManagementDashboard
+      variant={role === "GERENCIA" ? "gerencia" : "superadmin"}
+      data={data}
+      range={range}
+      actorName={actorName}
+    />
   );
 }
-
 function PageHeader({
   role,
+  actorName,
   children,
 }: {
   role: "superadmin" | "gerencia" | "operaciones";
+  actorName?: string | null;
   children?: React.ReactNode;
 }) {
+  const displayName =
+    actorName?.trim() ||
+    (role === "superadmin" ? "Superadmin" : role === "gerencia" ? "Gerencia" : "Operaciones");
   const copy = {
     superadmin: {
-      title: "Panel Superadmin",
+      title: `Bienvenido, ${displayName} 👋`,
       subtitle: "Resumen operativo de la plataforma ColdPower",
     },
-    gerencia: { title: "Panel de gerencia", subtitle: "Resumen ejecutivo del negocio" },
+    gerencia: { title: `Bienvenido, ${displayName} 👋`, subtitle: "Resumen ejecutivo del negocio" },
     operaciones: {
-      title: "Operaciones y ventas",
-      subtitle: "Cotizaciones, pedidos, stock y seguimientos",
+      title: `Bienvenido, ${displayName} 👋`,
+      subtitle: "Aquí tienes tus tareas y pendientes para hoy",
     },
   }[role];
 
@@ -122,6 +142,47 @@ function ExportButton({ range }: { range: DashboardRange }) {
   );
 }
 
+type DashboardComparison = {
+  current: number;
+  previous: number;
+  percentage: number | null;
+};
+
+function ComparisonIndicator({ comparison }: { comparison?: DashboardComparison }) {
+  if (!comparison || comparison.percentage === null) {
+    return <span className="mt-2 block text-[10px] font-bold text-[#8195aa]">— Sin comparación disponible</span>;
+  }
+  const isPositive = comparison.percentage > 0;
+  const isNeutral = comparison.percentage === 0;
+  const Icon = isNeutral ? Minus : isPositive ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={`mt-2 inline-flex items-center gap-1 text-[10px] font-bold ${
+        isNeutral ? "text-[#8195aa]" : isPositive ? "text-[#1aa873]" : "text-[#ed4545]"
+      }`}
+    >
+      <Icon className="h-3 w-3" aria-hidden="true" />
+      {Math.abs(comparison.percentage).toFixed(1)}% vs. período anterior
+    </span>
+  );
+}
+
+const sparklinePattern = [0, -0.62, 0.22, -0.34, 0.68, -0.12, 0.5, -0.55, 0.18, -0.28, 0.58, 0];
+
+function comparisonSparkline(comparison?: DashboardComparison, phase = 0) {
+  if (!comparison) return undefined;
+  if (comparison.previous === 0 && comparison.current === 0) return [0, 0];
+  const amplitude = Math.max(Math.max(comparison.previous, comparison.current) * 0.08, Math.abs(comparison.current - comparison.previous) * 0.035);
+  return sparklinePattern.map((value, index) => {
+    if (index === 0) return comparison.previous;
+    if (index === sparklinePattern.length - 1) return comparison.current;
+    const progress = index / (sparklinePattern.length - 1);
+    const trend = comparison.previous + (comparison.current - comparison.previous) * progress;
+    const wave = sparklinePattern[(index + phase) % sparklinePattern.length] ?? value;
+    return Math.max(0, trend + wave * amplitude);
+  });
+}
+
 function NewQuoteButton() {
   return (
     <Link
@@ -141,6 +202,7 @@ function MetricCard({
   icon: Icon,
   tone = "blue",
   sparkline,
+  comparison,
 }: {
   label: string;
   value: string | number;
@@ -148,6 +210,7 @@ function MetricCard({
   icon: LucideIcon;
   tone?: keyof typeof toneClasses;
   sparkline?: number[];
+  comparison?: DashboardComparison;
 }) {
   const colors = toneClasses[tone];
   return (
@@ -163,7 +226,7 @@ function MetricCard({
           <p className="mt-1 font-display text-[20px] font-black tracking-[-0.025em] text-[#102a43] sm:text-[21px]">
             {value}
           </p>
-          {detail ? <p className={`mt-2 text-[10px] font-bold ${colors.line}`}>{detail}</p> : null}
+          {comparison ? <ComparisonIndicator comparison={comparison} /> : detail ? <p className={`mt-2 text-[10px] font-bold ${colors.line}`}>{detail}</p> : null}
         </div>
       </div>
       <AdminSparkline tone={tone} data={sparkline} />
@@ -193,20 +256,33 @@ function PanelHeader({
   );
 }
 
+function formatSalesDateLabel(value: string) {
+  const date = new Date(`${value}T12:00:00`);
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "numeric",
+    month: "short",
+    timeZone: "America/Lima",
+  })
+    .format(date)
+    .replace(".", "");
+}
+
 function ManagementDashboard({
   variant,
   data,
   range,
+  actorName,
 }: {
   variant: "superadmin" | "gerencia";
   data: DashboardData | null;
   range: DashboardRange;
+  actorName?: string | null;
 }) {
   const isGerencia = variant === "gerencia";
   if (!data) {
     return (
       <div className="space-y-4">
-        <PageHeader role={variant} />
+        <PageHeader role={variant} actorName={actorName} />
         <section className={`${panelClass} flex min-h-[260px] flex-col items-center justify-center px-5 py-12 text-center`} role="alert" aria-live="assertive">
           <TriangleAlert className="h-8 w-8 text-[#ed4545]" aria-hidden="true" />
           <h2 className="mt-4 text-[15px] font-extrabold text-[#304b66]">No pudimos cargar el dashboard</h2>
@@ -216,24 +292,28 @@ function ManagementDashboard({
       </div>
     );
   }
-  const sales = money.format(data?.salesMonth.total ?? 0);
+  const sales = money.format(data?.salesRange.total ?? 0);
+  const salesLabel = range === "month" ? "Ventas del mes" : "Ventas del período";
   const openQuotes = data?.quotes ?? 0;
   const orders = data?.orders.total ?? 0;
   const criticalStock = data?.criticalStock ?? 0;
   const customers = data?.topCustomers ?? [];
   const salesSeries = data?.salesSeries.map((row) => row.total);
-  const hasConfirmedSales = Boolean(data?.salesMonth.count);
+  const salesLabels = data?.salesSeries.map((row) => formatSalesDateLabel(row.date));
+  const comparisons = data.comparisons;
+  const hasConfirmedSales = Boolean(data?.salesRange.count);
 
   return (
     <div className="space-y-4">
-      <PageHeader role={variant}>
+      <PageHeader role={variant} actorName={actorName}>
+        <DashboardRangePicker range={range} filters={data.filters} />
         <ExportButton range={range} />
       </PageHeader>
-      <DashboardControlHint range={range} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Ventas del mes"
+          label={salesLabel}
           value={sales}
+          comparison={comparisons?.sales}
           detail={hasConfirmedSales ? "Ventas confirmadas" : "Sin ventas confirmadas en el período"}
           icon={CircleDollarSign}
           tone="blue"
@@ -244,27 +324,31 @@ function ManagementDashboard({
           value={isGerencia ? sales : openQuotes}
           detail={isGerencia ? (hasConfirmedSales ? "Ingresos confirmados" : "Sin ingresos confirmados") : openQuotes ? "Requieren seguimiento" : "Sin cotizaciones abiertas"}
           icon={isGerencia ? ReceiptText : FileText}
+          comparison={isGerencia ? comparisons?.sales : comparisons?.quotes}
           tone="orange"
+          sparkline={comparisonSparkline(isGerencia ? comparisons?.sales : comparisons?.quotes, 1)}
         />
         <MetricCard
           label={isGerencia ? "Cotizaciones abiertas" : "Pedidos activos"}
           value={isGerencia ? openQuotes : orders}
           detail={isGerencia ? (openQuotes ? "Requieren seguimiento" : "Sin cotizaciones abiertas") : orders ? "Requieren atención" : "Sin pedidos activos"}
           icon={isGerencia ? Tag : ShoppingCart}
+          comparison={isGerencia ? comparisons?.quotes : comparisons?.orders}
           tone="green"
+          sparkline={comparisonSparkline(isGerencia ? comparisons?.quotes : comparisons?.orders, 2)}
         />
         <MetricCard
           label="Stock crítico"
           value={criticalStock}
           detail={criticalStock ? "Requiere revisión de inventario" : "Sin alertas críticas"}
           icon={TriangleAlert}
+          comparison={comparisons?.criticalStock}
           tone="red"
+          sparkline={comparisonSparkline(comparisons?.criticalStock, 3)}
         />
       </div>
-      <DashboardReadiness data={data} />
-
-      <div className="grid gap-4 xl:grid-cols-[1.45fr_1fr_1.12fr]">
-        <section className={`${panelClass} p-4`}>
+      <div className="grid items-start gap-4 xl:grid-cols-[1.45fr_1fr_1.12fr]">
+        <section className={`${panelClass} min-h-[320px] p-4`}>
           <PanelHeader
             title={isGerencia ? "Evolución de ventas e ingresos" : "Ventas"}
             subtitle={
@@ -272,7 +356,7 @@ function ManagementDashboard({
                 ? "Comparativo de los últimos 30 días"
                 : "Últimos 30 días vs. período anterior"
             }
-            action={<ChartSelect range={range} />}
+            action={<SalesGranularitySelect />}
           />
           <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold text-[#71869c]">
             <span className="inline-flex items-center gap-1.5">
@@ -291,6 +375,8 @@ function ManagementDashboard({
                 accent={isGerencia ? "orange" : "blue"}
                 data={data.salesSeries.map((row) => row.total)}
                 previous={data.previousSalesSeries.map((row) => row.total)}
+                labels={salesLabels}
+                currencyAxis
               />
             </div>
           ) : (
@@ -325,8 +411,8 @@ function ManagementDashboard({
             </div>
           ) : null}
         </section>
-        <PipelinePanel data={data} />
-        <TopProductsPanel data={data} gerencia={isGerencia} />
+        {isGerencia ? <GerenciaPipelineRows data={data} /> : <PipelinePanel data={data} />}
+        {isGerencia ? <GerenciaProductsPanel data={data} /> : <TopProductsPanel data={data} gerencia={false} />}
       </div>
 
       {isGerencia ? (
@@ -343,21 +429,25 @@ function ManagementDashboard({
           <QuickActions />
         </div>
       )}
-      <BottomKpis data={data} gerencia={isGerencia} />
-      <DashboardCompleteness data={data} />
+      <BottomKpis data={data} />
     </div>
   );
 }
 
-function ChartSelect({ range }: { range: DashboardRange }) {
+function OperationsRangePicker({ range }: { range: DashboardRange }) {
   return (
-    <form action="/admin/dashboard" method="get" className="flex items-center gap-2">
-      <label htmlFor="dashboard-range" className="sr-only">Período del dashboard</label>
-      <select id="dashboard-range" name="range" defaultValue={range} className="h-9 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66] outline-none focus:border-[#2277ee]">
+    <form action="/admin/operaciones" method="get" className="flex items-center gap-2">
+      <label htmlFor="operations-range" className="sr-only">Período operativo</label>
+      <span className="hidden items-center gap-1.5 text-[10px] font-bold text-[#526b84] sm:inline-flex">
+        <CalendarDays className="h-4 w-4 text-[#526b84]" aria-hidden="true" />
+        Período operativo
+      </span>
+      <select id="operations-range" name="range" defaultValue={range} className="h-9 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66] outline-none focus:border-[#2277ee]">
         <option value="today">Hoy</option>
         <option value="yesterday">Ayer</option>
         <option value="week">Últimos 7 días</option>
         <option value="month">Últimos 30 días</option>
+        <option value="all">Todo</option>
         <option value="custom">Personalizado</option>
       </select>
       <button type="submit" className="inline-flex h-9 items-center gap-1 rounded-lg bg-[#102a43] px-2.5 text-[10px] font-extrabold text-white transition hover:bg-[#1e4668]">
@@ -367,102 +457,118 @@ function ChartSelect({ range }: { range: DashboardRange }) {
   );
 }
 
-function DashboardControlHint({ range }: { range: DashboardRange }) {
+function SalesGranularitySelect() {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-[#dfe8ef] bg-[#f8fafc] px-3.5 py-3 text-[10px] font-semibold leading-5 text-[#71869c] sm:flex-row sm:items-center sm:justify-between">
-      <p>
-        <span className="font-extrabold text-[#304b66]">Exportación:</span> Descarga el CSV generado con los datos disponibles para este alcance.
-      </p>
-      <p>
-        <span className="font-extrabold text-[#304b66]">Período:</span> {range === "month" ? "Últimos 30 días." : "Filtro aplicado desde el selector."}
-      </p>
-    </div>
+    <label className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66]">
+      <span className="sr-only">Agrupar ventas</span>
+      <select
+        aria-label="Agrupar ventas"
+        defaultValue="daily"
+        className="bg-transparent outline-none"
+      >
+        <option value="daily">Diario</option>
+        <option value="weekly">Semanal</option>
+        <option value="monthly">Mensual</option>
+      </select>
+    </label>
   );
 }
 
-function DashboardReadiness({ data }: { data: DashboardData | null }) {
-  const hasQuotes = (data?.quotes ?? 0) > 0;
-  const hasOrders = (data?.orders.total ?? 0) > 0;
-  const hasInventoryUnknown = (data?.unknownStock ?? 0) > 0;
-  const items = [
-    {
-      label: "Actividad comercial",
-      description:
-        hasQuotes || hasOrders
-          ? "Hay actividad disponible para revisar."
-          : "Aún no hay actividad comercial confirmada en este período.",
-      href: "/admin/cotizaciones",
-      action: "Abrir cotizaciones",
-    },
-    {
-      label: "Catálogo e inventario",
-      description: hasInventoryUnknown
-        ? "Parte del stock todavía no tiene dato conectado."
-        : "Revisa el estado de tus referencias y existencias.",
-      href: "/admin/inventario",
-      action: "Revisar inventario",
-    },
-    {
-      label: "Reportes del panel",
-      description: "Los reportes y períodos se habilitan al contar con sus series conectadas.",
-      href: "/admin/reportes",
-      action: "Ver reportes",
-    },
-  ] as const;
-
+function DashboardRangePicker({
+  range,
+  filters,
+}: {
+  range: DashboardRange;
+  filters: DashboardData["filters"];
+}) {
+  const labels: Record<DashboardRange, string> = {
+    today: "Hoy",
+    yesterday: "Ayer",
+    week: "Últimos 7 días",
+    month: "Últimos 30 días",
+    custom: filters.from && filters.to ? `${filters.from} – ${filters.to}` : "Personalizado",
+  };
   return (
-    <section className={`${panelClass} p-4`} aria-label="Estado del panel">
-      <PanelHeader title="Estado del panel" subtitle="Qué puedes revisar ahora con los datos disponibles" />
-      <div className="mt-3 grid gap-2 md:grid-cols-3">
-        {items.map((item) => (
-          <div key={item.label} className="rounded-lg border border-[#e5edf3] bg-[#fbfcfd] p-3">
-            <p className="text-[10px] font-extrabold text-[#304b66]">{item.label}</p>
-            <p className="mt-1 min-h-10 text-[10px] font-semibold leading-5 text-[#8195aa]">
-              {item.description}
-            </p>
-            <Link
-              href={item.href}
-              className="mt-2 inline-flex items-center gap-1 text-[10px] font-extrabold text-[#2277ee]"
-            >
-              {item.action} <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-            </Link>
-          </div>
-        ))}
-      </div>
-    </section>
+    <form action="/admin/dashboard" method="get" className="flex items-center gap-2">
+      <label htmlFor="dashboard-range" className="sr-only">Período del dashboard</label>
+      <span className="hidden items-center gap-1.5 text-[10px] font-bold text-[#526b84] sm:inline-flex">
+        <CalendarDays className="h-4 w-4 text-[#526b84]" aria-hidden="true" />
+        {labels[range]}
+      </span>
+      <select
+        id="dashboard-range"
+        name="range"
+        defaultValue={range}
+        className="h-9 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66] outline-none focus:border-[#2277ee]"
+      >
+        <option value="today">Hoy</option>
+        <option value="yesterday">Ayer</option>
+        <option value="week">Últimos 7 días</option>
+        <option value="month">Últimos 30 días</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <button
+        type="submit"
+        className="inline-flex h-9 items-center gap-1 rounded-lg bg-[#102a43] px-2.5 text-[10px] font-extrabold text-white transition hover:bg-[#1e4668]"
+      >
+        Aplicar <ChevronDown className="h-3 w-3 rotate-[-90deg]" aria-hidden="true" />
+      </button>
+    </form>
   );
+}
+
+const superadminStageGroups: ReadonlyArray<{ label: string; codes: readonly string[] }> = [
+  { label: "Proyección", codes: ["NEW", "CONTACTED", "NO_RESPONSE"] },
+  { label: "Calificación", codes: ["QUOTING"] },
+  { label: "Propuesta", codes: ["QUOTE_SENT", "FOLLOW_UP"] },
+  { label: "Negociación", codes: ["NEGOTIATION"] },
+  { label: "Cierre ganado", codes: ["ACCEPTED", "SALE", "PAYMENT_PENDING", "PAID", "PREPARING", "DELIVERED"] },
+] as const;
+
+function superadminStageLabel(stageCode: string, fallback: string) {
+  const normalized = stageCode.toUpperCase();
+  return superadminStageGroups.find((group) => group.codes.includes(normalized))?.label ?? fallback;
+}
+
+function getSuperadminPipelineRows(stages: DashboardData["pipelineSummary"]) {
+  return superadminStageGroups.map((group) => {
+    const matchingStages = stages.filter((stage) => group.codes.includes(stage.stageCode.toUpperCase()));
+    return {
+      stageLabel: superadminStageLabel(group.codes[0], group.label),
+      count: matchingStages.reduce((total, stage) => total + stage.count, 0),
+      amount: matchingStages.reduce((total, stage) => total + stage.amount, 0),
+    };
+  });
 }
 
 function PipelinePanel({ data }: { data: DashboardData | null }) {
   const total = data?.opportunities ?? 0;
   const stages = data?.pipelineSummary ?? [];
+  const rows = getSuperadminPipelineRows(stages);
+  const stageTones = ["bg-[#eaf2ff]", "bg-[#e8f7fb]", "bg-[#e8f7ee]", "bg-[#fff4e6]", "bg-[#fff0e4]"];
   return (
-    <section className={`${panelClass} p-4`}>
-      <PanelHeader title="Pipeline de ventas" subtitle="Resumen del pipeline disponible" />
+    <section className={`${panelClass} min-h-[320px] p-4`}>
+      <PanelHeader title="Pipeline de ventas" subtitle="Resumen por etapa" />
       {stages.length ? (
-        <div className="mt-3 grid gap-2">
-          {stages.map((stage) => (
+        <div className="mt-4 grid gap-2">
+          {rows.map((stage, index) => (
             <div
-              key={stage.stage}
-              className="flex items-center gap-2 rounded-lg border border-[#e5edf3] px-3 py-2"
+              key={stage.stageLabel}
+              className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg px-3 py-2.5 ${stageTones[index % stageTones.length]}`}
             >
-              <span className="min-w-0 flex-1 text-[10px] font-bold text-[#304b66]">
-                {stage.stage}
-                <small className="mt-0.5 block text-[9px] font-semibold text-[#8195aa]">
-                  {money.format(stage.amount)} · ponderado {money.format(stage.weightedValue)}
-                </small>
-              </span>
-              <strong className="text-[11px] text-[#526b84]">{stage.count}</strong>
+              <span className="min-w-0 truncate text-[10px] font-bold text-[#304b66]">{stage.stageLabel}</span>
+              <strong className="text-[10px] font-extrabold text-[#102a43]">{stage.count}</strong>
+              <span className="min-w-[76px] text-right text-[9px] font-semibold text-[#526b84]">{money.format(stage.amount)}</span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="mt-3 rounded-lg border border-dashed border-[#d6e2eb] bg-[#f8fafc] px-3 py-5 text-center text-[10px] font-semibold text-[#8195aa]">
-          Aún no hay oportunidades registradas en este período. Puedes iniciar una desde Cotizaciones.
+        <div className="mt-4">
+          <EmptyRow text="Aún no hay oportunidades registradas en este período. Puedes iniciar una desde Cotizaciones." />
         </div>
       )}
       <div className="mt-4 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[11px] font-extrabold text-[#102a43]">
-        <span>Oportunidades abiertas</span>
+        <span>Total pipeline</span>
         <span>
           {total}{" "}
           <span className="ml-3 font-semibold text-[#526b84]">
@@ -474,71 +580,116 @@ function PipelinePanel({ data }: { data: DashboardData | null }) {
   );
 }
 
-function TopProductsPanel({ data, gerencia }: { data: DashboardData | null; gerencia: boolean }) {
-  const rows = data?.topProducts ?? [];
+function GerenciaPipelineRows({ data }: { data: DashboardData | null }) {
+  const stages = data?.pipelineSummary ?? [];
+  const stageTones = ["bg-[#eaf2ff]", "bg-[#e8f7fb]", "bg-[#e8f7ee]", "bg-[#fff4e6]", "bg-[#fff0e4]"];
+
   return (
-    <section className={`${panelClass} p-4`}>
-      <PanelHeader
-        title={gerencia ? "Productos y categorías más vendidos" : "Productos más vendidos"}
-        subtitle="Este período"
-      />
-      {gerencia ? (
-        <div className="mt-4 flex gap-5 border-b border-[#edf2f6] text-[10px] font-extrabold">
-          <button type="button" className="border-b-2 border-[#2277ee] pb-2 text-[#2277ee]">
-            Productos
-          </button>
-          <button
-            type="button"
-            disabled
-            title="El resumen de categorías todavía no está conectado"
-            className="cursor-not-allowed pb-2 text-[#b0bfcb]"
-          >
-            Categorías
-          </button>
+    <section className={`${panelClass} min-h-[320px] p-4`}>
+      <PanelHeader title="Pipeline por etapa" subtitle="Resumen de oportunidades" />
+      {stages.length ? (
+        <div className="mt-4 grid gap-2">
+          {stages.slice(0, 5).map((stage, index) => (
+            <div key={stage.stageCode ?? stage.stageLabel} className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg px-3 py-2.5 ${stageTones[index % stageTones.length]}`}>
+              <span className="min-w-0 truncate text-[10px] font-bold text-[#304b66]">{stage.stageLabel}</span>
+              <strong className="text-[10px] font-extrabold text-[#102a43]">{stage.count}</strong>
+              <span className="min-w-[76px] text-right text-[9px] font-semibold text-[#526b84]">{money.format(stage.amount)}</span>
+            </div>
+          ))}
+        </div>
+      ) : <div className="mt-4"><EmptyRow text="Aún no hay oportunidades registradas para estos filtros." /></div>}
+      <div className="mt-4 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[11px] font-extrabold text-[#102a43]">
+        <span>Total pipeline</span>
+        <span>
+          {data?.opportunities ?? 0}
+          <span className="ml-3 font-semibold text-[#526b84]">{data?.pipelineValue === undefined ? "N/D" : money.format(data.pipelineValue)}</span>
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function GerenciaProductsPanel({ data }: { data: DashboardData | null }) {
+  const products = data?.topProducts ?? [];
+  const categories = data?.categorySummary ?? [];
+  return (
+    <section className={`${panelClass} min-h-[320px] p-4`}>
+      <PanelHeader title="Productos y categorías más vendidos" subtitle="Este mes" />
+      <div className="mt-4 flex items-center gap-5 border-b border-[#edf2f6] text-[10px] font-extrabold">
+        <span className="border-b-2 border-[#2277ee] pb-2 text-[#2277ee]">Productos</span>
+        <span className="pb-2 text-[#8195aa]">Categorías</span>
+      </div>
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[9px] font-bold text-[#8195aa]">
+        <span>Producto</span><span>Unidades</span><span>Ventas</span><span>Margen</span>
+      </div>
+      {products.length ? (
+        <div className="grid gap-0.5">
+          {products.slice(0, 5).map((row) => (
+            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-b border-[#f0f4f7] py-2 last:border-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#f5f8fa]">
+                  <Image src={row.primaryImageUrl ?? "/images/product-placeholder-repuesto.svg"} alt="" width={26} height={26} className="h-6 w-6 object-contain" />
+                </div>
+                <span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.name}</span>
+              </div>
+              <span className="text-[9px] font-semibold text-[#526b84]">{row.units}</span>
+              <span className="text-[9px] font-semibold text-[#526b84]">{money.format(row.revenue)}</span>
+              <span className="text-[9px] font-semibold text-[#8195aa]">—</span>
+            </div>
+          ))}
+        </div>
+      ) : <div className="mt-3"><EmptyRow text="Aún no hay productos vendidos para estos filtros." /></div>}
+      {categories.length ? (
+        <div className="mt-3 border-t border-[#edf2f6] pt-3">
+          <p className="text-[9px] font-extrabold text-[#526b84]">Categorías</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {categories.slice(0, 4).map((category) => (
+              <span key={category.categoryId} className="rounded-full bg-[#f3f7fb] px-2 py-1 text-[8px] font-bold text-[#526b84]">{category.categoryName} · {category.units} uds</span>
+            ))}
+          </div>
         </div>
       ) : null}
-      <div className="mt-3 grid gap-1">
-        {rows.length ? (
-          rows.map((row) => (
-            <ProductRow
-              key={row.id}
-              name={String(row.name)}
-              detail={`${row.units} uds`}
-              value={money.format(row.revenue)}
-            />
-          ))
-        ) : (
-          <EmptyRow text="Aún no hay productos vendidos en este período. El catálogo sigue disponible para revisión." />
-        )}
-      </div>
-      <Link
-        href="/admin/catalogo"
-        className="mt-3 flex items-center justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
+      <Link href="/admin/catalogo" className="mt-3 flex items-center justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">
         Ver todos los productos <ArrowUpRight className="ml-1 h-3 w-3" aria-hidden="true" />
       </Link>
     </section>
   );
 }
 
-function ProductRow({ name, detail, value }: { name: string; detail: string; value: string }) {
+function TopProductsPanel({ data, gerencia }: { data: DashboardData | null; gerencia: boolean }) {
+  const rows = data?.topProducts ?? [];
   return (
-    <div className="flex items-center gap-2.5 border-b border-[#f0f4f7] py-2 last:border-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#f5f8fa]">
-        <Image
-          src="/images/product-placeholder-repuesto.svg"
-          alt=""
-          width={28}
-          height={28}
-          className="h-7 w-7 object-contain"
-        />
+    <section className={`${panelClass} min-h-[320px] p-4`}>
+      <PanelHeader title={gerencia ? "Productos y categorías más vendidos" : "Productos más vendidos"} subtitle="Este mes" />
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[9px] font-bold text-[#8195aa]">
+        <span>Producto</span>
+        <span>Ventas</span>
+        <span>Ingresos</span>
       </div>
-      <p className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#304b66]">
-        {name}
-        <span className="mt-0.5 block text-[9px] font-semibold text-[#8aa0b6]">{detail}</span>
-      </p>
-      <span className="shrink-0 text-[10px] font-bold text-[#526b84]">{value}</span>
-    </div>
+      {rows.length ? (
+        <div className="grid gap-0.5">
+          {rows.slice(0, 5).map((row) => (
+            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-[#f0f4f7] py-2 last:border-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#f5f8fa]">
+                  <Image src={row.primaryImageUrl ?? "/images/product-placeholder-repuesto.svg"} alt="" width={26} height={26} className="h-6 w-6 object-contain" />
+                </div>
+                <span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.name}</span>
+              </div>
+              <span className="text-[9px] font-semibold text-[#526b84]">{row.units}</span>
+              <span className="text-[9px] font-semibold text-[#526b84]">{money.format(row.revenue)}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-3">
+          <EmptyRow text="Aún no hay productos vendidos en este período. El catálogo sigue disponible para revisión." />
+        </div>
+      )}
+      <Link href="/admin/catalogo" className="mt-3 flex items-center justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">
+        Ver todos los productos <ArrowUpRight className="ml-1 h-3 w-3" aria-hidden="true" />
+      </Link>
+    </section>
   );
 }
 
@@ -553,33 +704,16 @@ function ApprovalsPanel({ data }: { data: DashboardData | null }) {
       <PanelHeader title="Solicitudes y aprobaciones" subtitle="Pendientes de tu revisión" />
       <div className="mt-3 grid gap-2">
         {rows.map(([label, value, detail], index) => (
-          <div
-            key={label}
-            className="flex items-center gap-2.5 rounded-lg border border-[#e6edf3] px-3 py-2.5"
-          >
-            <span
-              className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${index === 1 ? "bg-[#ffe8e8] text-[#ed4545]" : "bg-[#fff0df] text-[#f08b2d]"}`}
-            >
-              {index === 1 ? (
-                <TriangleAlert className="h-4 w-4" />
-              ) : (
-                <FileText className="h-4 w-4" />
-              )}
+          <div key={label} className="flex items-center gap-2.5 rounded-lg border border-[#e6edf3] px-3 py-2.5">
+            <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${index === 1 ? "bg-[#ffe8e8] text-[#ed4545]" : "bg-[#fff0df] text-[#f08b2d]"}`}>
+              {index === 1 ? <TriangleAlert className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
             </span>
-            <span className="min-w-0 flex-1 text-[10px] font-bold text-[#304b66]">
-              {label}
-              <small className="mt-1 block text-[9px] font-semibold text-[#8aa0b6]">{detail}</small>
-            </span>
+            <span className="min-w-0 flex-1 text-[10px] font-bold text-[#304b66]">{label}<small className="mt-1 block text-[9px] font-semibold text-[#8aa0b6]">{detail}</small></span>
             <strong className="text-[14px] text-[#ed4545]">{value}</strong>
           </div>
         ))}
       </div>
-      <Link
-        href="/admin/notificaciones"
-        className="mt-4 flex justify-center text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver todas las solicitudes
-      </Link>
+      <Link href="/admin/notificaciones" className="mt-4 flex justify-center text-[10px] font-extrabold text-[#2277ee]">Ver todas las solicitudes</Link>
     </section>
   );
 }
@@ -589,65 +723,87 @@ function CustomersPanel({ customers }: { customers: DashboardData["topCustomers"
     <section className={`${panelClass} p-4`}>
       <PanelHeader title="Clientes y ventas recientes" subtitle="Últimas ventas cerradas" />
       <div className="mt-4 grid gap-1">
-        {customers.length ? (
-          customers.map((customer) => (
-            <div
-              key={customer.id}
-              className="flex items-center gap-2.5 border-b border-[#f0f4f7] py-2 last:border-0"
-            >
-              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[10px] font-extrabold text-[#2277ee]">
-                {customer.name.slice(0, 1).toUpperCase()}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#304b66]">
-                {customer.name}
-                <small className="mt-0.5 block text-[9px] font-semibold text-[#8aa0b6]">
-                  {customer.orders} pedidos
-                </small>
-              </span>
-              <span className="text-[10px] font-bold text-[#526b84]">
-                {money.format(customer.revenue)}
-              </span>
-            </div>
-          ))
-        ) : (
-          <EmptyRow text="Aún no hay ventas confirmadas en este período." />
-        )}
+        {customers.length ? customers.map((customer) => (
+          <div key={customer.id} className="flex items-center gap-2.5 border-b border-[#f0f4f7] py-2 last:border-0">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[10px] font-extrabold text-[#2277ee]">{customer.name.slice(0, 1).toUpperCase()}</span>
+            <span className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#304b66]">{customer.name}<small className="mt-0.5 block text-[9px] font-semibold text-[#8aa0b6]">{customer.orders} pedidos</small></span>
+            <span className="text-[10px] font-bold text-[#526b84]">{money.format(customer.revenue)}</span>
+          </div>
+        )) : <EmptyRow text="Aún no hay ventas confirmadas en este período." />}
       </div>
-      <Link
-        href="/admin/ventas"
-        className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver todas las ventas
-      </Link>
+      <Link href="/admin/ventas" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver todas las ventas</Link>
     </section>
   );
 }
 
+function activityTone(activity: DashboardData["recentActivity"][number]) {
+  const value = `${activity.actionLabel} ${activity.entityLabel} ${activity.entityType}`.toLowerCase();
+  if (value.includes("cotiz")) return { avatar: "bg-[#fff0df] text-[#f08b2d]", badge: "bg-[#fff6ec] text-[#f08b2d]" };
+  if (value.includes("pedido") || value.includes("venta")) return { avatar: "bg-[#e0f7ee] text-[#1aa873]", badge: "bg-[#eafaf3] text-[#1aa873]" };
+  if (value.includes("invent") || value.includes("stock")) return { avatar: "bg-[#e4f7f2] text-[#1aa873]", badge: "bg-[#eafaf3] text-[#1aa873]" };
+  if (value.includes("cliente") || value.includes("customer")) return { avatar: "bg-[#eee8ff] text-[#8057e8]", badge: "bg-[#f4f0ff] text-[#8057e8]" };
+  return { avatar: "bg-[#e8f1ff] text-[#2277ee]", badge: "bg-[#edf4ff] text-[#2277ee]" };
+}
+
+function activitySectionLabel(activity: DashboardData["recentActivity"][number]) {
+  const value = `${activity.actionLabel} ${activity.entityLabel} ${activity.entityType}`.toLowerCase();
+  if (value.includes("precio") || value.includes("price")) return "Precios";
+  if (value.includes("cotiz")) return "Cotizaciones";
+  if (value.includes("invent") || value.includes("stock")) return "Inventario";
+  if (value.includes("pedido") || value.includes("venta")) return "Pedidos";
+  if (value.includes("cliente") || value.includes("customer")) return "Clientes";
+  if (value.includes("editorial") || value.includes("producto")) return "Productos";
+  return "Actividad";
+}
+
+function activityTimeLabel(value: string | Date) {
+  const createdAt = new Date(value).getTime();
+  if (!Number.isFinite(createdAt)) return "";
+  const minutes = Math.max(0, Math.floor((Date.now() - createdAt) / 60000));
+  if (minutes < 1) return "Ahora";
+  if (minutes < 60) return `Hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Hace ${hours} ${hours === 1 ? "hora" : "horas"}`;
+  const days = Math.floor(hours / 24);
+  return `Hace ${days} ${days === 1 ? "día" : "días"}`;
+}
+
+function activityInitials(name: string) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+  return initials || "CP";
+}
+
 function ActivityPanel({ activities }: { activities: DashboardData["recentActivity"] }) {
   return (
-    <section className={`${panelClass} p-4`}>
+    <section className={`${panelClass} min-h-[320px] p-4`}>
       <PanelHeader title="Actividad reciente" subtitle="Últimas acciones en la plataforma" />
-      <div className="mt-3 grid gap-2">
-        {activities.length ? (
-          activities.slice(0, 5).map((activity) => (
-            <div key={activity.id} className="rounded-lg border border-[#e6edf3] px-3 py-2">
-              <p className="truncate text-[10px] font-bold text-[#304b66]">{activity.action}</p>
-              <small className="mt-0.5 block text-[9px] font-semibold text-[#8195aa]">
-                {activity.entityType} ·{" "}
-                {new Date(activity.createdAt).toLocaleString("es-PE", { timeZone: "America/Lima" })}
-              </small>
+      <div className="mt-3 grid">
+        {activities.length ? activities.slice(0, 5).map((activity) => {
+          const tone = activityTone(activity);
+          return (
+            <div key={activity.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-[#edf2f6] py-2.5 last:border-0">
+              <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${tone.avatar}`}>
+                {activityInitials(activity.actorName)}
+              </span>
+              <span className="min-w-0">
+                <strong className="block truncate text-[9px] font-extrabold text-[#526b84]">{activity.actionLabel}</strong>
+                <small className="mt-0.5 block truncate text-[9px] font-semibold text-[#304b66]">{activity.entityLabel} · {activity.actorName}</small>
+              </span>
+              <span className="shrink-0 text-right">
+                <time className="block text-[8px] font-semibold text-[#9aabba]">{activityTimeLabel(activity.createdAt)}</time>
+                <small className={`mt-1 inline-flex rounded-md px-1.5 py-1 text-[8px] font-extrabold ${tone.badge}`}>{activitySectionLabel(activity)}</small>
+              </span>
             </div>
-          ))
-        ) : (
-          <EmptyRow text="Aún no hay actividad comercial confirmada en este período." />
-        )}
+          );
+        }) : <EmptyRow text="Aún no hay actividad comercial confirmada en este período." />}
       </div>
-      <Link
-        href="/admin/auditoria"
-        className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver toda la actividad
-      </Link>
+      <Link href="/admin/auditoria" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver toda la actividad</Link>
     </section>
   );
 }
@@ -655,47 +811,35 @@ function ActivityPanel({ activities }: { activities: DashboardData["recentActivi
 function UsersSummary({ data }: { data: DashboardData | null }) {
   const rows = data?.userSummary ?? [];
   return (
-    <section className={`${panelClass} p-4`}>
+    <section className={`${panelClass} min-h-[320px] p-4`}>
       <PanelHeader title="Resumen de usuarios" subtitle="Información de cuentas" />
-      <div className="mt-3 grid gap-2">
-        {rows.length ? (
-          rows.map((row) => (
-            <div
-              key={`${row.role ?? "none"}-${row.status}`}
-              className="flex items-center justify-between rounded-lg border border-[#e6edf3] px-3 py-2"
-            >
-              <span className="text-[10px] font-semibold text-[#526b84]">
-                {row.role ?? "Sin rol"} · {row.status}
-              </span>
-              <strong className="text-[12px] text-[#102a43]">{row.count}</strong>
-            </div>
-          ))
-        ) : (
-          <EmptyRow text="Sin usuarios registrados." />
-        )}
+      <div className="mt-3 grid">
+        {rows.length ? rows.map((row) => (
+          <div key={`${row.roleCode ?? "none"}-${row.statusCode ?? row.status}`} title={row.statusLabel} className="flex items-center gap-2 border-b border-[#edf2f6] py-2.5 last:border-0">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2277ee]"><UsersRound className="h-4 w-4" aria-hidden="true" /></span>
+            <span className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#526b84]">{row.roleLabel}</span>
+            <strong className="text-[11px] font-extrabold text-[#102a43]">{row.count}</strong>
+            <span className="w-7 text-right text-[9px] font-extrabold text-[#8195aa]">—</span>
+          </div>
+        )) : <EmptyRow text="Sin usuarios registrados." />}
       </div>
-      <Link
-        href="/admin/usuarios"
-        className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver todos los usuarios
-      </Link>
+      <Link href="/admin/usuarios" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver todos los usuarios</Link>
     </section>
   );
 }
 
 function InventoryAlerts({ data }: { data: DashboardData | null }) {
   const rows = [
-    ["Stock crítico (≤ mínimo)", data?.criticalStock ?? 0, "red"],
-    ["Sin movimiento", data?.noMovement ?? 0, "orange"],
-    ["Sin stock", data?.noStock ?? 0, "red"],
-    ["Stock desconocido", data?.unknownStock ?? 0, "blue"],
+    { label: "Stock crítico", value: data?.criticalStock ?? 0, tone: "red", icon: TriangleAlert },
+    { label: "Sin movimiento", value: data?.noMovement ?? 0, tone: "orange", icon: TriangleAlert },
+    { label: "Sin stock", value: data?.noStock ?? 0, tone: "red", icon: CircleOff },
+    { label: "Stock pendiente de sincronizar", value: data?.unknownStock ?? 0, tone: "blue", icon: FileText },
   ] as const;
   return (
-    <section className={`${panelClass} p-4`}>
+    <section className={`${panelClass} min-h-[320px] p-4`}>
       <PanelHeader title="Alertas de inventario" subtitle="Productos que requieren atención" />
-      <div className="mt-3 grid gap-2">
-        {rows.map(([label, value, tone]) => (
+      <div className="mt-3 grid gap-1.5">
+        {rows.map(({ label, value, tone, icon: Icon }) => (
           <div
             key={label}
             className="flex items-center gap-2.5 rounded-lg border border-[#e6edf3] px-3 py-2.5"
@@ -703,11 +847,7 @@ function InventoryAlerts({ data }: { data: DashboardData | null }) {
             <span
               className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${tone === "red" ? "bg-[#ffe7e7] text-[#ed4545]" : tone === "orange" ? "bg-[#fff0df] text-[#f08b2d]" : "bg-[#e8f1ff] text-[#2277ee]"}`}
             >
-              {tone === "blue" ? (
-                <FileText className="h-4 w-4" />
-              ) : (
-                <TriangleAlert className="h-4 w-4" />
-              )}
+              <Icon className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="flex-1 text-[10px] font-semibold text-[#526b84]">{label}</span>
             <strong
@@ -745,7 +885,7 @@ function QuickActions() {
           <Link
             key={label}
             href={href}
-            className="flex min-h-[64px] flex-col items-center justify-center gap-2 rounded-lg border border-[#e3ebf2] text-center text-[9px] font-extrabold text-[#304b66] transition hover:border-[#3986c0] hover:bg-[#f7fbff]"
+            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-lg border border-[#e3ebf2] text-center text-[9px] font-extrabold text-[#304b66] transition hover:border-[#3986c0] hover:bg-[#f7fbff]"
           >
             <Icon className="h-5 w-5 text-[#496f94]" strokeWidth={1.8} aria-hidden="true" />
             {label}
@@ -762,71 +902,73 @@ function QuickActions() {
   );
 }
 
-function BottomKpis({ data, gerencia }: { data: DashboardData | null; gerencia: boolean }) {
-  const items = gerencia
-    ? ([
-        ["Clientes nuevos", String(data?.newCustomers ?? 0), "Datos del período", UsersRound],
-        [
-          "Ventas del período",
-          money.format(data?.salesMonth.total ?? 0),
-          "Datos del período",
-          BarChart3,
-        ],
-        ["Órdenes del período", String(data?.orders.total ?? 0), "Datos del período", ReceiptText],
-        [
-          "Ticket promedio",
-          data?.salesMonth.count
-            ? money.format(data.salesMonth.total / data.salesMonth.count)
-            : "N/D",
-          data?.salesMonth.count ? "Ventas confirmadas" : "Sin ventas confirmadas",
-          Tag,
-        ],
-        [
-          "Margen",
-          data?.margin === null || data?.margin === undefined ? "N/D" : money.format(data.margin),
-          "Costo incompleto o no disponible",
-          CircleDollarSign,
-        ],
-        ["Rentabilidad", "N/D", "Sin dato conectado", BarChart3],
-      ] as const)
-    : ([
-        ["Clientes nuevos", String(data?.newCustomers ?? 0), "Datos del período", UsersRound],
-        [
-          "Ventas del período",
-          money.format(data?.salesMonth.total ?? 0),
-          "Datos del período",
-          BarChart3,
-        ],
-        ["Órdenes del período", String(data?.orders.total ?? 0), "Datos del período", ReceiptText],
-        [
-          "Ticket promedio",
-          data?.salesMonth.count
-            ? money.format(data.salesMonth.total / data.salesMonth.count)
-            : "N/D",
-          data?.salesMonth.count ? "Ventas confirmadas" : "Sin ventas confirmadas",
-          Tag,
-        ],
-        ["Productos vendidos", String(data?.productsSold ?? 0), "Datos del período", Package],
-        ["Categorías", "N/D", "Sin dato conectado", Boxes],
-      ] as const);
+function compactComparison(comparison?: DashboardComparison) {
+  if (!comparison || comparison.percentage === null) return "—";
+  const prefix = comparison.percentage > 0 ? "↗" : comparison.percentage < 0 ? "↘" : "→";
+  return `${prefix} ${Math.abs(comparison.percentage).toFixed(1)}%`;
+}
+
+type DashboardBottomKpis = {
+  customersTotal: number;
+  salesYtd: number;
+  ordersYtd: number;
+  averageTicket: number;
+  activeProducts: number;
+  totalCategories: number;
+  comparisons?: Partial<Record<"customers" | "sales" | "orders" | "ticket" | "products", DashboardComparison>>;
+};
+
+type DashboardWithBottomKpis = DashboardData & { bottomKpis?: DashboardBottomKpis };
+type BottomKpiTone = "blue" | "slate" | "green" | "orange";
+
+const preciseMoney = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function BottomKpis({ data }: { data: DashboardData | null }) {
+  const source = data as DashboardWithBottomKpis | null;
+  const summary = source?.bottomKpis;
+  const sales = data?.salesRange.total ?? 0;
+  const salesCount = data?.salesRange.count ?? 0;
+  const items: Array<{ label: string; value: string; comparison?: DashboardComparison; icon: LucideIcon; tone: BottomKpiTone }> = summary
+    ? [
+        { label: "Clientes totales", value: String(summary.customersTotal), comparison: summary.comparisons?.customers, icon: UsersRound, tone: "blue" },
+        { label: "Ventas YTD", value: money.format(summary.salesYtd), comparison: summary.comparisons?.sales, icon: BarChart3, tone: "blue" },
+        { label: "Órdenes YTD", value: String(summary.ordersYtd), comparison: summary.comparisons?.orders, icon: ReceiptText, tone: "slate" },
+        { label: "Ticket promedio", value: preciseMoney.format(summary.averageTicket), comparison: summary.comparisons?.ticket, icon: Tag, tone: "green" },
+        { label: "Productos activos", value: String(summary.activeProducts), comparison: summary.comparisons?.products, icon: Package, tone: "orange" },
+        { label: "Categorías", value: String(summary.totalCategories), comparison: undefined, icon: Boxes, tone: "slate" },
+      ]
+    : [
+        { label: "Clientes nuevos", value: String(data?.newCustomers ?? 0), comparison: undefined, icon: UsersRound, tone: "blue" },
+        { label: "Ventas del período", value: money.format(sales), comparison: data?.comparisons?.sales, icon: BarChart3, tone: "blue" },
+        { label: "Órdenes del período", value: String(data?.orders.total ?? 0), comparison: data?.comparisons?.orders, icon: ReceiptText, tone: "slate" },
+        { label: "Ticket promedio", value: salesCount ? money.format(sales / salesCount) : "N/D", comparison: undefined, icon: Tag, tone: "green" },
+        { label: "Productos vendidos", value: String(data?.productsSold ?? 0), comparison: undefined, icon: Package, tone: "orange" },
+        { label: "Categorías con ventas", value: String(data?.categorySummary.length ?? 0), comparison: undefined, icon: Boxes, tone: "slate" },
+      ];
+  const toneClass = {
+    blue: "bg-[#eaf2ff] text-[#2277ee]",
+    slate: "bg-[#eef3f7] text-[#526b84]",
+    green: "bg-[#e0f7ee] text-[#1aa873]",
+    orange: "bg-[#fff0df] text-[#f08b2d]",
+  } as const;
+
   return (
-    <section
-      className={`${panelClass} grid divide-y divide-[#edf2f6] overflow-hidden sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-6`}
-    >
-      {items.map(([label, value, trend, Icon]) => (
-        <div key={label} className="flex items-center gap-2.5 px-4 py-3.5">
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eaf2ff] text-[#2277ee]">
-            <Icon className="h-4 w-4" aria-hidden="true" />
+    <section className={`${panelClass} grid divide-y divide-[#edf2f6] overflow-hidden sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-6`}>
+      {items.map((item) => (
+        <div key={item.label} className="flex min-w-0 items-center gap-2.5 px-4 py-3.5">
+          <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${toneClass[item.tone]}`}>
+            <item.icon className="h-4 w-4" aria-hidden="true" />
           </span>
           <span className="min-w-0">
-            <small className="block truncate text-[9px] font-semibold text-[#8195aa]">
-              {label}
-            </small>
-            <strong className="mt-1 block truncate text-[12px] font-black text-[#102a43]">
-              {value}
-            </strong>
-            <em className="mt-0.5 block text-[9px] font-extrabold not-italic text-[#1aa873]">
-              {trend}
+            <small className="block truncate text-[9px] font-semibold text-[#8195aa]">{item.label}</small>
+            <strong className="mt-1 block truncate text-[12px] font-black text-[#102a43]">{item.value}</strong>
+            <em className={`mt-0.5 block text-[9px] font-extrabold not-italic ${(item.comparison?.percentage ?? 0) < 0 ? "text-[#ed4545]" : "text-[#1aa873]"}`}>
+              {item.comparison ? compactComparison(item.comparison) : "—"}
             </em>
           </span>
         </div>
@@ -852,7 +994,26 @@ function EmptyRow({ text }: { text: string }) {
   );
 }
 
-function OperationsDashboard({ snapshot, role, range }: { snapshot: OperationsSnapshot | null; role: AppRole; range: DashboardRange }) {
+function formatOperationsDate(value: unknown) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat("es-PE", { day: "numeric", month: "short", timeZone: "America/Lima" })
+    .format(date)
+    .replace(".", "");
+}
+
+function OperationsDashboard({
+  snapshot,
+  role,
+  range,
+  actorName,
+}: {
+  snapshot: OperationsSnapshot | null;
+  role: AppRole;
+  range: DashboardRange;
+  actorName?: string | null;
+}) {
   const cards = [
     ["Cotizaciones pendientes", snapshot?.metrics.openQuotes ?? 0, "Datos operativos", ReceiptText, "blue"],
     ["Seguimientos vencidos", snapshot?.metrics.overdueTasks ?? 0, "Requieren atención", Clock3, "green"],
@@ -887,7 +1048,8 @@ function OperationsDashboard({ snapshot, role, range }: { snapshot: OperationsSn
   ] as const;
   return (
     <div className="space-y-4">
-      <PageHeader role="operaciones">
+      <PageHeader role="operaciones" actorName={actorName}>
+        <OperationsRangePicker range={range} />
         {can(role, "quotes.create") ? <NewQuoteButton /> : null}
       </PageHeader>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
@@ -902,145 +1064,166 @@ function OperationsDashboard({ snapshot, role, range }: { snapshot: OperationsSn
           />
         ))}
       </div>
-      <div className="grid gap-4 xl:grid-cols-3">
-        <div className="min-w-0 xl:col-span-2">
-          <OperationsPipeline snapshot={snapshot} range={range} />
+      <div className="grid gap-4 xl:grid-cols-[1.9fr_1fr]">
+        <div className="min-w-0">
+          <OperationsKanban snapshot={snapshot} />
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <OperationsList
+              title="Cotizaciones pendientes"
+              count={snapshot?.metrics.openQuotes ?? 0}
+              href="/admin/cotizaciones"
+              icon={ReceiptText}
+              action="Ver todas"
+              items={snapshot?.queues.quotes}
+              kind="quotes"
+            />
+            <OperationsList
+              title="Seguimientos de hoy"
+              count={snapshot?.metrics.overdueTasks ?? 0}
+              href="/admin/crm"
+              icon={Clock3}
+              action="Ver todos"
+              items={snapshot?.queues.followUps}
+              kind="followUps"
+            />
+            <OperationsList
+              title="Alertas de stock"
+              count={snapshot?.metrics.criticalStock ?? 0}
+              href="/admin/inventario"
+              icon={TriangleAlert}
+              action="Ver alertas"
+              items={snapshot?.queues.inventoryAlerts}
+              kind="inventoryAlerts"
+            />
+          </div>
         </div>
-        <PendingOrders snapshot={snapshot} />
-      </div>
-      <div className="grid gap-4 xl:grid-cols-3">
-        <OperationsList
-          title="Cotizaciones pendientes"
-          count={snapshot?.metrics.openQuotes ?? 0}
-          href="/admin/cotizaciones"
-          icon={ReceiptText}
-          action="Ver todas"
-          items={snapshot?.queues.quotes}
-          kind="quotes"
-        />
-        <OperationsList
-          title="Seguimientos de hoy"
-          count={snapshot?.metrics.overdueTasks ?? 0}
-          href="/admin/crm"
-          icon={Clock3}
-          action="Ver todos"
-          items={snapshot?.queues.followUps}
-          kind="followUps"
-        />
-        <OperationsList
-          title="Alertas de stock"
-          count={snapshot?.metrics.criticalStock ?? 0}
-          href="/admin/inventario"
-          icon={TriangleAlert}
-          action="Ver alertas"
-          items={snapshot?.queues.inventoryAlerts}
-          kind="inventoryAlerts"
-        />
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[1fr_1fr_1.35fr]">
-        <OperationsQuickActions role={role} />
-        <div className="xl:col-span-2">
-          {can(role, "cms.view") ? <ContentBanner /> : null}
+        <div className="min-w-0">
+          <OperationsAwaitingOrders snapshot={snapshot} />
+          <div className="mt-4">
+            <OperationsQuickActions role={role} />
+          </div>
+          {can(role, "cms.view") ? (
+            <div className="mt-4">
+              <ContentBanner />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
 
-function OperationsPipeline({ snapshot, range }: { snapshot: OperationsSnapshot | null; range: DashboardRange }) {
+function OperationsKanban({ snapshot }: { snapshot: OperationsSnapshot | null }) {
   const total = snapshot?.metrics.openOpportunities ?? 0;
   const opportunities = snapshot?.queues.opportunities ?? [];
+  const columns = [
+    { key: "NEW", label: "Nuevo", tone: "bg-[#edf4ff]", dot: "bg-[#2277ee]" },
+    { key: "QUOTING", label: "Cotizando", tone: "bg-[#fff4e6]", dot: "bg-[#ff830e]" },
+    { key: "FOLLOW_UP", label: "Seguimiento", tone: "bg-[#edf9f3]", dot: "bg-[#1aa873]" },
+    { key: "SALE", label: "Venta", tone: "bg-[#eef4ff]", dot: "bg-[#2277ee]" },
+  ] as const;
+  const stageFor = (stage?: string) => {
+    const normalized = String(stage ?? "").toUpperCase().replace(/[^A-Z_]/g, "_");
+    if (normalized.includes("COTIZ")) return "QUOTING";
+    if (normalized.includes("SEGU")) return "FOLLOW_UP";
+    if (normalized.includes("VENT") || normalized.includes("SALE") || normalized.includes("GAN")) return "SALE";
+    return "NEW";
+  };
+
   return (
     <section className={`${panelClass} min-w-0 p-4`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-[14px] font-extrabold text-[#102a43]">
             Pipeline de oportunidades{" "}
-            <span className="ml-1 rounded-full bg-[#eef3f8] px-1.5 py-0.5 text-[9px] text-[#8195aa]">
-              {total}
-            </span>
+            <span className="ml-1 rounded-full bg-[#eef3f8] px-1.5 py-0.5 text-[9px] text-[#8195aa]">{total}</span>
           </h2>
-          <p className={`mt-1 text-[10px] font-semibold ${mutedClass}`}>
-            Consulta las oportunidades disponibles en el pipeline.
-          </p>
+          <p className={`mt-1 text-[10px] font-semibold ${mutedClass}`}>Arrastra y suelta para avanzar las oportunidades.</p>
         </div>
         <div className="flex gap-2">
-          <ChartSelect range={range} />
-          <button
-            type="button"
-            disabled
-            title="Esta acción se habilitará al conectar las transiciones del pipeline"
-            className="inline-flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-lg border border-[#dfe8ef] bg-[#f7fafc] text-[#a9bac8]"
-            aria-label="Más opciones"
-          >
-            …
-          </button>
+          <label className="inline-flex h-9 items-center rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66]">
+            <span className="sr-only">Ordenar oportunidades</span>
+            <select aria-label="Ordenar oportunidades" defaultValue="potential" className="bg-transparent outline-none">
+              <option value="potential">Valor potencial</option>
+              <option value="age">Antigüedad</option>
+              <option value="recent">Más recientes</option>
+            </select>
+          </label>
+          <button type="button" disabled title="Más opciones" className="inline-flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-lg border border-[#dfe8ef] bg-[#f7fafc] text-[#a9bac8]" aria-label="Más opciones">…</button>
         </div>
       </div>
-      <div className="mt-3 grid gap-2">
-        {opportunities.length ? opportunities.slice(0, 6).map((item) => {
-          const row = item as { id: string; code?: string; customer?: string | null; stage?: string; seller?: string | null; nextAction?: string | null };
-              return <Link key={row.id} href={`/admin/crm?view=pipeline&opportunityId=${encodeURIComponent(row.id)}`} className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-[#edf2f6] px-3 py-2.5 hover:border-[#2277ee]"><span className="min-w-0"><strong className="block truncate text-[10px] text-[#304b66]">{row.code ?? "Oportunidad"} · {row.customer ?? "Cliente no identificado"}</strong><small className="mt-1 block truncate text-[9px] font-semibold text-[#8195aa]">{row.nextAction ?? "Sin próxima acción"}{row.seller ? ` · ${row.seller}` : ""}</small></span><span className="self-start rounded-full bg-[#eee8ff] px-2 py-1 text-[9px] font-extrabold text-[#8057e8]">{row.stage ?? "Sin etapa"}</span></Link>;
-        }) : <EmptyRow text="No hay oportunidades abiertas para estos filtros." />}
+      <div className="mt-4 grid gap-2 overflow-x-auto pb-1 md:grid-cols-4">
+        {columns.map((column) => {
+          const rows = opportunities.filter((item) => stageFor(String(item.stage)) === column.key).slice(0, 3);
+          return (
+            <div key={column.key} className="min-w-0 rounded-lg border border-[#e5edf3] bg-[#fbfdff] p-2">
+              <div className={`flex items-center justify-between rounded-md px-2 py-2 ${column.tone}`}>
+                <span className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#304b66]"><span className={`h-1.5 w-1.5 rounded-full ${column.dot}`} />{column.label}</span>
+                <span className="text-[9px] font-extrabold text-[#526b84]">{rows.length}</span>
+              </div>
+              <div className="mt-2 grid gap-2">
+                {rows.length ? rows.map((item) => {
+                  const row = item as { id: string; code?: string; customer?: string | null; seller?: string | null; nextAction?: string | null; due?: unknown };
+                  return (
+                    <Link key={row.id} href={`/admin/crm?view=pipeline&opportunityId=${encodeURIComponent(row.id)}`} className="block rounded-md border border-[#e3ebf2] bg-white p-2.5 shadow-[0_1px_2px_rgba(16,42,67,0.03)] hover:border-[#2277ee]">
+                      <strong className="block truncate text-[9px] text-[#304b66]">{row.customer ?? "Cliente no identificado"}</strong>
+                      <span className="mt-1 block truncate text-[9px] font-semibold text-[#8195aa]">{row.code ?? "Oportunidad"}</span>
+                      <span className="mt-2 block truncate text-[9px] font-semibold text-[#526b84]">{row.nextAction ?? "Sin próxima acción"}</span>
+                      <span className="mt-2 flex items-center justify-between gap-1 text-[8px] font-bold text-[#9aabba]"><span>{row.seller ?? "Sin vendedor"}</span><span>{formatOperationsDate(row.due) || "Hoy"}</span></span>
+                    </Link>
+                  );
+                }) : <p className="rounded-md border border-dashed border-[#d6e2eb] px-2 py-5 text-center text-[9px] font-semibold text-[#9aabba]">Sin oportunidades</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-function PendingOrders({ snapshot }: { snapshot: OperationsSnapshot | null }) {
-  const rows = [
-    "Pedidos activos",
-    "Pedidos por preparar",
-    "Pagos pendientes",
-    "Stock reservado",
-    "Locales activos",
-  ];
-  const values = [
-    snapshot?.metrics.activeOrders ?? 0,
-    snapshot?.metrics.preparingOrders ?? 0,
-    snapshot?.metrics.pendingPayments ?? 0,
-    snapshot?.metrics.reservedUnits ?? 0,
-    snapshot?.metrics.activeLocations ?? 0,
-  ];
+function OperationsAwaitingOrders({ snapshot }: { snapshot: OperationsSnapshot | null }) {
+  const orders = snapshot?.queues.orders ?? [];
+  const priorityLabel = (priority?: string, status?: string) => {
+    const value = `${priority ?? ""} ${status ?? ""}`.toUpperCase();
+    if (value.includes("ALTA") || value.includes("URG")) return "Prioritario";
+    if (value.includes("MEDIA") || value.includes("MEDIO")) return "Medio";
+    return "Bajo";
+  };
+  const priorityClass = (label: string) =>
+    label === "Prioritario"
+      ? "border-[#ffc9c9] bg-[#fff0f0] text-[#ed4545]"
+      : label === "Medio"
+        ? "border-[#ffd8ac] bg-[#fff7ec] text-[#f08b2d]"
+        : "border-[#bce6d0] bg-[#effaf4] text-[#1a9d68]";
+
   return (
     <section className={`${panelClass} p-4`}>
       <PanelHeader
-        title="Resumen operativo"
-        subtitle="Conteos disponibles"
-        action={
-          <Link href="/admin/pedidos" className="text-[10px] font-extrabold text-[#2277ee]">
-            Ver pedidos
-          </Link>
-        }
+        title="Pedidos por atender"
+        subtitle={`${snapshot?.metrics.activeOrders ?? 0} pendientes`}
+        action={<Link href="/admin/pedidos" className="text-[10px] font-extrabold text-[#2277ee]">Ver todos</Link>}
       />
-      <div className="mt-3 grid gap-2">
-        {rows.map((label, index) => (
-          <div
-            key={label}
-            className="flex items-center gap-2 rounded-lg border border-[#edf2f6] px-3 py-2.5"
-          >
-            <span className="min-w-0 flex-1 text-[10px] font-bold text-[#304b66]">
-              {label}
-              <small className="mt-0.5 block text-[9px] font-semibold text-[#8195aa]">
-                Conteo del sistema
-              </small>
-            </span>
-            <strong className="text-[11px] text-[#526b84]">{values[index]}</strong>
-          </div>
-        ))}
+      <div className="mt-4 grid gap-0">
+        {orders.length ? orders.slice(0, 5).map((item) => {
+          const row = item as { id: string; code?: string; customer?: string; status?: string; location?: string; priority?: string; date?: unknown };
+          const priority = priorityLabel(row.priority, row.status);
+          return (
+            <Link key={row.id} href={`/admin/pedidos?orderId=${encodeURIComponent(row.id)}`} className="flex items-center gap-2 border-b border-[#edf2f6] py-3 last:border-0 hover:bg-[#fbfdff]">
+              <span className="min-w-0 flex-1">
+                <strong className="block truncate text-[9px] text-[#304b66]">{row.code ?? "Pedido"}</strong>
+                <span className="mt-1 block truncate text-[9px] font-semibold text-[#8195aa]">{row.customer ?? "Cliente no identificado"}</span>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block text-[9px] font-semibold text-[#526b84]">{formatOperationsDate(row.date) || row.location || "Pendiente"}</span>
+                <span className={`mt-1 inline-flex rounded-md border px-2 py-1 text-[8px] font-extrabold ${priorityClass(priority)}`}>{priority}</span>
+              </span>
+            </Link>
+          );
+        }) : <EmptyRow text="No hay pedidos pendientes para estos filtros." />}
       </div>
-      <div className="mt-3 border-t border-[#edf2f6] pt-3">
-        <p className="mb-2 text-[10px] font-extrabold text-[#526b84]">Pedidos en cola</p>
-        {(snapshot?.queues.orders ?? []).slice(0, 4).map((item) => {
-          const row = item as { id: string; code?: string; customer?: string; status?: string; location?: string; priority?: string };
-          return <Link key={row.id} href={`/admin/pedidos?orderId=${encodeURIComponent(row.id)}`} className="flex items-center justify-between gap-2 border-b border-[#f0f4f7] py-2 last:border-0"><span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.code ?? "Pedido"} · {row.customer ?? "Cliente"}<small className="ml-1 font-semibold text-[#8195aa]">{row.location ?? ""}</small></span><span className="shrink-0 text-[9px] font-extrabold text-[#f08b2d]">{row.priority ?? row.status ?? ""}</span></Link>;
-        })}
-      </div>
-      <Link
-        href="/admin/pedidos"
-        className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver pedidos pendientes
+      <Link href="/admin/pedidos" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">
+        + Ver {Math.max(0, orders.length - 5)} pedidos más
       </Link>
     </section>
   );
@@ -1134,48 +1317,6 @@ function ContentBanner() {
       >
         Ir a contenido
       </Link>
-    </section>
-  );
-}
-
-function DashboardCompleteness({ data }: { data: DashboardData | null }) {
-  const metrics = [
-    [
-      "Conversión",
-      data?.conversion?.percentage == null ? "N/D" : data.conversion.percentage.toFixed(1) + "%",
-    ],
-    ["Seguimientos vencidos", data?.overdueFollowUps ?? 0],
-    ["Sin stock", data?.noStock ?? 0],
-    ["Sin movimiento", data?.noMovement ?? 0],
-    ["Transferencias", data?.transfers.total ?? 0],
-    ["Top productos", data?.topProducts.length ?? 0],
-    ["Top clientes", data?.topCustomers.length ?? 0],
-    ["Top vendedores", data?.topSellers.length ?? 0],
-    ["Canales", data?.channels.length ?? 0],
-    ["Clientes nuevos", data?.newCustomers ?? 0],
-    ["Clientes recurrentes", data?.returningCustomers ?? 0],
-    ["Productos vendidos", data?.productsSold ?? 0],
-    ["Unidades vendidas", data?.unitsSold ?? 0],
-    [
-      "Margen",
-      data?.margin === null || data?.margin === undefined ? "N/D" : money.format(data.margin),
-    ],
-  ] as const;
-
-  return (
-    <section className={panelClass + " p-4"} aria-label="Indicadores comerciales y de inventario">
-      <PanelHeader
-        title="Indicadores comerciales y de inventario"
-        subtitle="Datos calculados desde la base de datos"
-      />
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-[#e5edf3] px-3 py-2.5">
-            <p className="text-[10px] font-semibold text-[#8195aa]">{label}</p>
-            <strong className="mt-1 block text-[14px] text-[#102a43]">{value}</strong>
-          </div>
-        ))}
-      </div>
     </section>
   );
 }

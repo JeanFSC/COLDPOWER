@@ -1,5 +1,5 @@
 import { alias } from "drizzle-orm/pg-core";
-import { and, count, desc, eq, exists, gte, inArray, isNull, lt, notInArray, or, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, exists, gte, inArray, isNull, lt, ne, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, brands, categories, families, inventoryBalances, inventoryReservations, locations, productPrices, products, quotes, transfers, users } from "@/db/schema";
 import { crmTasks, customers, opportunityItems, opportunities } from "@/db/crm-schema";
@@ -7,7 +7,7 @@ import { orderItems, orders, payments, saleItems, sales } from "@/db/sales-schem
 import type { DashboardFilters } from "@/lib/dashboard-contract";
 export type { DashboardFilters, DashboardRange } from "@/lib/dashboard-contract";
 import type { AppRole } from "@/lib/roles";
-import { can, roleLabel } from "@/lib/roles";
+import { can } from "@/lib/roles";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 
 type Window = { from: Date; to: Date };
@@ -36,6 +36,27 @@ function limaDayKey(date: Date) {
   return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
 export type SalesSeriesPoint = { date: string; total: number; count: number; orders?: number; units?: number };
+
+export type DashboardComparisonInput = {
+  sales: { current: number; previous: number };
+  quotes: { current: number; previous: number };
+  orders: { current: number; previous: number };
+  criticalStock: { current: number; previous: number };
+};
+
+export function dashboardComparisons(input: DashboardComparisonInput) {
+  const compare = (metric: { current: number; previous: number }) => ({
+    ...metric,
+    percentage: metric.previous === 0 ? null : ((metric.current - metric.previous) / metric.previous) * 100,
+  });
+  return {
+    sales: compare(input.sales),
+    quotes: compare(input.quotes),
+    orders: compare(input.orders),
+    criticalStock: compare(input.criticalStock),
+  };
+}
+
 export function fillSalesSeries(window: Window, rows: SalesSeriesPoint[]): SalesSeriesPoint[] {
   const byDate = new Map(rows.map((row) => [row.date, row]));
   const series: SalesSeriesPoint[] = [];
@@ -71,8 +92,26 @@ function resolveWindow(filters: DashboardFilters, now = new Date()): Window {
 function conditionList(...conditions: Array<SQL | undefined>) { return conditions.filter(Boolean) as SQL[]; }
 const pipelineLabels: Record<string, string> = { NEW: "Nueva", CONTACTED: "Contactada", QUOTING: "Cotizando", QUOTE_SENT: "Cotización enviada", FOLLOW_UP: "Seguimiento", NEGOTIATION: "Negociación", ACCEPTED: "Aceptada", SALE: "Venta", PAYMENT_PENDING: "Pago pendiente", PAID: "Pagada", PREPARING: "Preparando", DELIVERED: "Entregada", CLOSED: "Cerrada", LOST: "Perdida", CANCELLED: "Cancelada", NO_RESPONSE: "Sin respuesta" };
 const statusLabels: Record<string, string> = { ACTIVE: "Activo", INACTIVE: "Inactivo", SUSPENDED: "Suspendido" };
+const developmentFixtureAuditExclusions = ["cp-mock-v1", "cp-dashboard-v2", "cp-dashboard-v3", "cp-dashboard-v4"];
 const entityLabels: Record<string, string> = { product: "Producto", products: "Productos", sale: "Venta", order: "Pedido", quote: "Cotización", opportunity: "Oportunidad", user: "Usuario", payment: "Pago", inventory: "Inventario", company_settings: "Configuración empresarial" };
 const actionLabels: Record<string, string> = { "catalog.publication_status_changed": "Cambió el estado de publicación", "catalog.duplicate_decision_changed": "Revisó un posible duplicado", "catalog.product_editorial_updated": "Actualizó datos editoriales", "catalog.product_created": "Creó un producto", "catalog.media_associated": "Asoció una imagen", "catalog.media_removed": "Quitó una imagen", "user.role_changed": "Cambió el rol de un usuario", "inventory.adjustment": "Ajustó inventario", PRODUCT_CREATED: "Creó un producto", PRODUCT_PUBLICATION_CHANGED: "Cambió el estado de publicación", PRODUCT_DUPLICATE_REVIEWED: "Revisó un posible duplicado", PRODUCT_MEDIA_ASSOCIATED: "Asoció una imagen", PRODUCT_MEDIA_REMOVED: "Quitó una imagen" };
+Object.assign(entityLabels, { customer: "Cliente" });
+Object.assign(actionLabels, {
+  "pricing.price_updated": "Actualizó un precio",
+  "quotes.created": "Creó una cotización",
+  "orders.created": "Creó un pedido",
+  "customers.created": "Registró un cliente",
+  "sales.created": "Registró una venta",
+});
+function dashboardRoleLabel(role: AppRole | null) {
+  if (!role) return "Invitados";
+  if (["SUPERADMIN", "GERENCIA", "JEFATURA", "ADMIN"].includes(role)) return "Administradores";
+  if (["OPERACIONES_VENTAS", "VENTAS"].includes(role)) return "Vendedores";
+  if (role === "ALMACEN") return "Almacén";
+  if (role === "COMPRAS") return "Compras";
+  if (role === "REPORTES") return "Soporte";
+  return "Usuarios internos";
+}
 function productConditions(filters: DashboardFilters) {
   const conditions: SQL[] = [];
   if (filters.productId) conditions.push(eq(products.id, filters.productId));
@@ -149,6 +188,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const categoryScope = selectedProduct ? and(or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!, selectedProduct) : undefined;
   const categorySummaryPromise = db.select({ categoryId: categories.id, categoryName: categories.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).innerJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range), categoryScope)).groupBy(categories.id, categories.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
   const historicalSales = alias(sales, "historical_sales");
+  const previous = previousWindow(range);
   const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels] = await Promise.all([
     salesMetric(db, filters, today),
     salesMetric(db, filters, month),
@@ -175,17 +215,22 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
     db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
   ]);
-  const previous = previousWindow(range);
   const [currentSalesSeries, previousSalesSeries, pipelineStages, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows] = await Promise.all([
     salesSeries(db, filters, range),
     salesSeries(db, filters, previous),
     db.select({ stage: opportunities.stage, count: count(), amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.stage).orderBy(opportunities.stage),
     db.select({ count: sql<string>`count(*)` }).from(products).where(and(...productScope, unknownBalanceCondition)),
     db.select({ role: users.roleCode, status: users.status, count: count() }).from(users).groupBy(users.roleCode, users.status),
-    db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to))).orderBy(desc(auditLogs.createdAt)).limit(8),
+    db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(8),
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
   ]);
   const categorySummaryRows = await categorySummaryPromise;
+  const [previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
+    salesMetric(db, filters, previous),
+    db.select({ total: count() }).from(quotes).where(and(gte(quotes.createdAt, previous.from), lt(quotes.createdAt, previous.to))),
+    db.select({ count: count() }).from(orders).where(and(...orderConditions(db, filters, previous), ne(orders.status, "CANCELLED"))),
+    db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
+  ]);
   const orderCounts = new Map(ordersByStatus.map((row) => [row.status, Number(row.count)]));
   const transferMap = new Map(transferCounts.map((row) => [row.status, Number(row.count)]));
   const totalQuotes = Number(quoteTotals[0]?.total ?? 0);
@@ -207,6 +252,12 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const activityProductLabels = new Map(activityProducts.map((row) => [row.id, row.name]));
   const recentActivityView = recentActivity.map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? "Actualización registrada", entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? "Registro"), actorName: row.actorName || "Sistema" }));
   const activeOrderCount = [...orderCounts.entries()].filter(([status]) => status !== "CANCELLED").reduce((sum, [, value]) => sum + value, 0);
+  const comparisons = dashboardComparisons({
+    sales: { current: Number(salesRange.total), previous: previousSalesRange.total },
+    quotes: { current: totalQuotes, previous: Number(previousQuoteTotals[0]?.total ?? 0) },
+    orders: { current: activeOrderCount, previous: Number(previousOrderTotals[0]?.count ?? 0) },
+    criticalStock: { current: Number(criticalStock[0]?.count ?? 0), previous: Number(previousCriticalStock[0]?.count ?? 0) },
+  });
   return {
     range, filters, salesToday, salesMonth, salesRange,
     orders: { total: activeOrderCount, pendingPayment: orderCounts.get("PAYMENT_PENDING") ?? 0, preparing: orderCounts.get("PREPARING") ?? 0 },
@@ -236,8 +287,9 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     salesSeries: currentSalesSeries,
     previousSalesSeries,
     pipelineSummary,
+    comparisons,
     categorySummary,
-    userSummary: userSummaryRows.map((row) => ({ role: row.role, roleCode: row.role, roleLabel: row.role ? roleLabel(row.role as AppRole) : "Sin rol", status: row.status, statusCode: row.status, statusLabel: statusLabels[row.status] ?? "Estado", count: Number(row.count) })),
+    userSummary: userSummaryRows.map((row) => ({ role: row.role, roleCode: row.role, roleLabel: dashboardRoleLabel(row.role as AppRole | null), status: row.status, statusCode: row.status, statusLabel: statusLabels[row.status] ?? "Estado", count: Number(row.count) })),
     recentActivity: recentActivityView,
   };
 }

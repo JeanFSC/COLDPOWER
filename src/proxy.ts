@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { authConfig, isAuthConfigured } from "@/lib/env";
+import { getDevAuthUserId } from "@/lib/dev-auth-bypass";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { isStaffRole } from "@/lib/roles";
@@ -39,6 +40,7 @@ function getReturnBackUrl(req: Request) {
 
 const middleware = isAuthConfigured
   ? clerkMiddleware(async (authFn, req) => {
+      if (isAdminRoute(req) && getDevAuthUserId(req.headers.get("host"))) return NextResponse.next();
       if (isAdminRoute(req)) {
         const { userId, redirectToSignIn } = await authFn();
         if (!userId) return redirectToSignIn({ returnBackUrl: getReturnBackUrl(req) });

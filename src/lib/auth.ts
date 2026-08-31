@@ -1,8 +1,10 @@
 ﻿import { eq } from "drizzle-orm";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
+import { getDevAuthUserId } from "@/lib/dev-auth-bypass";
 import { isAuthConfigured } from "@/lib/env";
 import { can, isAppRole, isStaffRole, type AppRole, type Permission } from "@/lib/roles";
 
@@ -43,6 +45,11 @@ export async function getCurrentUserRole(): Promise<AppRole | null> {
   return access.role;
 }
 
+async function getDevAdminUserId() {
+  const requestHeaders = await headers();
+  return getDevAuthUserId(requestHeaders.get("host"));
+}
+
 export async function requireUser() {
   if (!isAuthConfigured) redirect("/");
   const { userId } = await auth();
@@ -62,6 +69,12 @@ export async function requireApiUser() {
 }
 
 export async function requireAdmin() {
+  const devUserId = await getDevAdminUserId();
+  if (devUserId) {
+    const access = await resolveAccess(devUserId);
+    if (!access.role || !isStaffRole(access.role) || access.status !== "ACTIVE") redirect("/");
+    return { userId: devUserId, role: access.role };
+  }
   if (!isAuthConfigured) redirect("/");
   const { userId, redirectToSignIn } = await auth();
   if (!userId) return redirectToSignIn({ returnBackUrl: "/admin" });
@@ -77,6 +90,12 @@ export async function requirePermission(permission: Permission) {
 }
 
 export async function requireApiPermission(permission: Permission) {
+  const devUserId = await getDevAdminUserId();
+  if (devUserId) {
+    const access = await resolveAccess(devUserId);
+    if (!access.role || access.status !== "ACTIVE" || !can(access.role, permission)) throw new ApiAuthorizationError();
+    return { userId: devUserId, role: access.role };
+  }
   if (!isAuthConfigured) throw new ApiAuthorizationError();
   const { userId } = await auth();
   if (!userId) throw new ApiAuthorizationError();

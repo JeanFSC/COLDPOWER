@@ -42,7 +42,7 @@
     "qa:inventory-db": "dotenv -e .env.local -- tsx scripts/qa-inventory-full.ts",
     "qa:inventory-data": "dotenv -e .env.local -- tsx scripts/qa-inventory-data.ts",
     "qa:cp025": "dotenv -e .env.local -- tsx scripts/qa-cp025.ts",
-    "test:cp031": "node --test scripts/cp031-dashboard-route.test.mjs scripts/cp031-dashboard-export.test.mjs scripts/cp031-catalog-list.test.mjs scripts/cp031-migration.test.mjs scripts/cp031-contract-integrity.test.mjs && tsx --test scripts/cp031-contracts.test.ts scripts/cp031-dashboard-data.test.ts scripts/cp031-product-service.test.ts scripts/cp031-product-mutations.test.ts scripts/cp031-rbac.test.ts",
+    "test:cp031": "node --test scripts/cp031-dashboard-route.test.mjs scripts/cp031-dashboard-export.test.mjs scripts/cp031-catalog-list.test.mjs scripts/cp031-migration.test.mjs scripts/cp031-contract-integrity.test.mjs && tsx --test scripts/cp031-contracts.test.ts scripts/cp031-dashboard-data.test.ts scripts/cp031-product-service.test.ts scripts/cp031-product-mutations.test.ts scripts/cp031-rbac.test.ts scripts/dev-mock-seed.test.ts",
     "test:cp031:runtime": "dotenv -e .env.local -- tsx --test scripts/cp031-runtime-data.test.ts",
     "test:cp030": "node --test scripts/cp030-runtime-data-contract.test.mjs scripts/cp030-schema-contract.test.mjs scripts/cp030-backup-compat.test.mjs scripts/cp030-customer-portal.test.mjs scripts/cp030-inventory-unknown.test.mjs scripts/cp030-error-contract.test.mjs && tsx --test scripts/cp030-consistency.test.ts scripts/cp030-company-settings.test.ts scripts/cp030-audit-sanitization.test.ts scripts/cp030-order-workflow.test.ts scripts/cp030-transfer-workflow.test.ts scripts/cp030-quote-workflow.test.ts scripts/inventory-domain.test.ts scripts/pricing-validation.test.ts",
     "test:cp029-ui": "node --test scripts/cp029-catalog-metrics-ui.test.mjs && tsx --test scripts/cp029-catalog-metrics-render.test.tsx",
@@ -84,7 +84,8 @@
     "test:cp049:runtime": "dotenv -e .env.local -- tsx --test scripts/cp049-runtime-data.test.ts",
     "test:cp050": "node --test scripts/cp050-auth-routes.test.mjs && tsx --test scripts/cp050-publication.test.ts",
     "test:cp050:runtime": "dotenv -e .env.local -- tsx --test scripts/cp050-db-transactions.test.ts scripts/cp050-transactional-smoke.test.ts scripts/cp050-webhook-runtime.test.ts",
-    "db:studio": "dotenv -e .env.local -- drizzle-kit studio"
+    "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
+    "seed:dev": "dotenv -e .env.local -- tsx scripts/seed-dev-mock.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.1",
