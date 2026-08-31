@@ -122,8 +122,9 @@ function productConditions(filters: DashboardFilters) {
   if (filters.brandId) conditions.push(or(eq(products.brandId, filters.brandId), eq(products.editorialBrandId, filters.brandId))!);
   return conditions.length ? and(...conditions) : undefined;
 }
-function salesConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window) {
+function salesConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
   const conditions = conditionList(eq(sales.status, "CONFIRMED"), gte(sales.createdAt, window.from), lt(sales.createdAt, window.to));
+  if (currency) conditions.push(eq(sales.currency, currency));
   if (filters.sellerId) conditions.push(eq(sales.sellerId, filters.sellerId));
   if (filters.customerId) conditions.push(eq(sales.customerId, filters.customerId));
   if (filters.channel) conditions.push(exists(db.select({ id: opportunities.id }).from(opportunities).where(and(eq(opportunities.id, sales.opportunityId), eq(opportunities.origin, filters.channel as never)))));
@@ -132,8 +133,9 @@ function salesConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters
   if (filters.locationId || filters.orderStatus) conditions.push(exists(db.select({ id: orders.id }).from(orders).where(and(eq(orders.saleId, sales.id), filters.locationId ? eq(orders.locationId, filters.locationId) : undefined, filters.orderStatus ? eq(orders.status, filters.orderStatus as never) : undefined))));
   return conditions;
 }
-function orderConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window) {
+function orderConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
   const conditions = conditionList(gte(orders.createdAt, window.from), lt(orders.createdAt, window.to));
+  if (currency) conditions.push(eq(orders.currency, currency));
   if (filters.locationId) conditions.push(eq(orders.locationId, filters.locationId));
   if (filters.sellerId) conditions.push(eq(orders.sellerId, filters.sellerId));
   if (filters.customerId) conditions.push(eq(orders.customerId, filters.customerId));
@@ -143,8 +145,11 @@ function orderConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters
   if (selected) conditions.push(exists(db.select({ id: orderItems.id }).from(orderItems).innerJoin(products, eq(orderItems.productId, products.id)).where(and(eq(orderItems.orderId, orders.id), selected))));
   return conditions;
 }
-function opportunityConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window) {
+function opportunityConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
   const conditions = conditionList(gte(opportunities.createdAt, window.from), lt(opportunities.createdAt, window.to));
+  // opportunities.currency is nullable — only push the condition when a currency actually resolved,
+  // never eq(opportunities.currency, undefined).
+  if (currency) conditions.push(eq(opportunities.currency, currency));
   if (filters.sellerId) conditions.push(eq(opportunities.assignedSellerId, filters.sellerId));
   if (filters.customerId) conditions.push(eq(opportunities.customerId, filters.customerId));
   if (filters.channel) conditions.push(eq(opportunities.origin, filters.channel as never));
@@ -152,8 +157,8 @@ function opportunityConditions(db: ReturnType<typeof getDb>, filters: DashboardF
   if (selected) conditions.push(exists(db.select({ id: opportunityItems.id }).from(opportunityItems).innerJoin(products, eq(opportunityItems.productId, products.id)).where(and(eq(opportunityItems.opportunityId, opportunities.id), selected))));
   return conditions;
 }
-async function salesMetric(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window) {
-  const [row] = await db.select({ total: sql<string>`coalesce(sum(${sales.total}), 0)`, count: count() }).from(sales).where(and(...salesConditions(db, filters, window)));
+async function salesMetric(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
+  const [row] = await db.select({ total: sql<string>`coalesce(sum(${sales.total}), 0)`, count: count() }).from(sales).where(and(...salesConditions(db, filters, window, currency)));
   return { total: Number(row?.total ?? 0), count: Number(row?.count ?? 0) };
 }
 
@@ -162,10 +167,10 @@ function previousWindow(window: Window): Window {
   return { from: new Date(window.from.getTime() - duration), to: window.from };
 }
 
-async function salesSeries(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window) {
+async function salesSeries(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
   // Group/order by the selected day expression. Using the positional alias also
   // avoids PostgreSQL treating each parametrized timezone fragment as distinct.
-  const rows = await db.select({ date: sql<string>`to_char(date_trunc('day', ${sales.createdAt} at time zone ${LIMA_TIMEZONE}), 'YYYY-MM-DD')`, total: sql<string>`coalesce(sum(${sales.total}), 0)`, count: count(), orders: sql<string>`coalesce(sum((select count(*) from orders order_row where order_row.sale_id = ${sales.id})), 0)`, units: sql<string>`coalesce(sum((select coalesce(sum(sale_item_row.quantity), 0) from sale_items sale_item_row where sale_item_row.sale_id = ${sales.id})), 0)` }).from(sales).where(and(...salesConditions(db, filters, window))).groupBy(sql`1`).orderBy(sql`1`);
+  const rows = await db.select({ date: sql<string>`to_char(date_trunc('day', ${sales.createdAt} at time zone ${LIMA_TIMEZONE}), 'YYYY-MM-DD')`, total: sql<string>`coalesce(sum(${sales.total}), 0)`, count: count(), orders: sql<string>`coalesce(sum((select count(*) from orders order_row where order_row.sale_id = ${sales.id})), 0)`, units: sql<string>`coalesce(sum((select coalesce(sum(sale_item_row.quantity), 0) from sale_items sale_item_row where sale_item_row.sale_id = ${sales.id})), 0)` }).from(sales).where(and(...salesConditions(db, filters, window, currency))).groupBy(sql`1`).orderBy(sql`1`);
   return fillSalesSeries(window, rows.map((row) => ({ date: String(row.date), total: Number(row.total ?? 0), count: Number(row.count ?? 0), orders: Number(row.orders ?? 0), units: Number(row.units ?? 0) })));
 }
 
@@ -174,6 +179,10 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const db = getDb();
   const now = new Date();
   const range = resolveWindow(filters, now);
+  const currencyRows = await db.selectDistinct({ currency: sales.currency }).from(sales).where(and(eq(sales.status, "CONFIRMED"), gte(sales.createdAt, range.from), lt(sales.createdAt, range.to)));
+  const availableCurrencies = currencyRows.map((row) => row.currency).filter((value): value is string => Boolean(value)).sort();
+  const currencyAmbiguous = !filters.currency && availableCurrencies.length > 1;
+  const resolvedCurrency = filters.currency ?? (availableCurrencies.includes("PEN") ? "PEN" : availableCurrencies[0]) ?? undefined;
   const todayStart = startOfDay(now);
   const today = { from: todayStart, to: new Date(todayStart.getTime() + DAY_MS) };
   const todayParts = limaParts(now);
@@ -188,7 +197,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     ? sql`not exists (select 1 from inventory_balances ib where ib.product_id = products.id and ib.location_id = ${filters.locationId})`
     : sql`not exists (select 1 from inventory_balances ib where ib.product_id = products.id)`;
   const categoryScope = selectedProduct ? and(or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!, selectedProduct) : undefined;
-  const categorySummaryPromise = db.select({ categoryId: categories.id, categoryName: categories.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).innerJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range), categoryScope)).groupBy(categories.id, categories.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
+  const categorySummaryPromise = db.select({ categoryId: categories.id, categoryName: categories.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).innerJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range, resolvedCurrency), categoryScope)).groupBy(categories.id, categories.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
   const historicalSales = alias(sales, "historical_sales");
   const previous = previousWindow(range);
   // All 35 queries below (24 + 7 + 4 in the old code) are independent of each
@@ -199,15 +208,15 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   // dominant cost behind the ~2.1s dashboard load. See src/db/index.ts for
   // the pool-size half of this fix.
   const [salesToday, salesMonth, salesRange, ordersByStatus, quoteTotals, openQuotes, openOpportunities, pipeline, pendingPayments, criticalStock, noStock, noMovement, reservedUnits, locationsCount, overdueFollowUps, transferCounts, newCustomers, returningCustomers, commercialSummary, commercialMargin, topProducts, topCustomers, topSellers, channels, currentSalesSeries, previousSalesSeries, pipelineStages, unknownStock, userSummaryRows, recentActivity, pendingApprovalsRows, previousSalesRange, previousQuoteTotals, previousOrderTotals, previousCriticalStock] = await Promise.all([
-    salesMetric(db, filters, today),
-    salesMetric(db, filters, month),
-    salesMetric(db, filters, range),
-    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, range))).groupBy(orders.status),
+    salesMetric(db, filters, today, resolvedCurrency),
+    salesMetric(db, filters, month, resolvedCurrency),
+    salesMetric(db, filters, range, resolvedCurrency),
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, range, resolvedCurrency))).groupBy(orders.status),
     db.select({ total: count(), converted: sql.raw("count(*) filter (where quotes.workflow_status = 'CONVERTED' or quotes.status = 'convertida')") }).from(quotes).where(and(gte(quotes.createdAt, range.from), lt(quotes.createdAt, range.to))),
     db.select({ count: count() }).from(quotes).where(and(gte(quotes.createdAt, range.from), lt(quotes.createdAt, range.to), notInArray(quotes.workflowStatus, ["REJECTED", "EXPIRED", "CONVERTED", "CANCELLED"]))),
-    db.select({ count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
-    db.select({ total: sql.raw("coalesce(sum(opportunities.total_amount), 0)") }).from(opportunities).where(and(...opportunityConditions(db, filters, range), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
-    db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(eq(payments.status, "PENDING"), eq(payments.status, "UNDER_REVIEW")), ...orderConditions(db, filters, range))),
+    db.select({ count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
+    db.select({ total: sql.raw("coalesce(sum(opportunities.total_amount), 0)") }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency), notInArray(opportunities.stage, ["CLOSED", "LOST", "CANCELLED"]))),
+    db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(eq(payments.status, "PENDING"), eq(payments.status, "UNDER_REVIEW")), ...orderConditions(db, filters, range, resolvedCurrency))),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
     db.select({ count: sql.raw("count(distinct inventory_balances.product_id)") }).from(inventoryBalances).where(and(...stockScope, sql.raw("(inventory_balances.on_hand - inventory_balances.reserved) <= 0"))),
     db.select({ count: count() }).from(products).where(and(...productScope, sql.raw("not exists (select 1 from inventory_movements im where im.product_id = products.id and im.created_at >= '" + movementCutoff.toISOString() + "'::timestamptz)"))),
@@ -215,24 +224,24 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ count: count() }).from(locations).where(eq(locations.active, true)),
     db.select({ count: count() }).from(crmTasks).where(and(eq(crmTasks.status, "PENDING"), lt(crmTasks.dueAt, now), gte(crmTasks.createdAt, range.from), lt(crmTasks.createdAt, range.to), filters.sellerId ? eq(crmTasks.assignedTo, filters.sellerId) : undefined)),
     db.select({ status: transfers.status, count: count() }).from(transfers).where(and(gte(transfers.createdAt, range.from), lt(transfers.createdAt, range.to))).groupBy(transfers.status),
-    db.select({ id: customers.id }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range), gte(customers.createdAt, range.from), lt(customers.createdAt, range.to))).groupBy(customers.id),
-    db.select({ id: sales.customerId }).from(sales).where(and(...salesConditions(db, filters, range), exists(db.select({ id: historicalSales.id }).from(historicalSales).where(and(eq(historicalSales.customerId, sales.customerId), lt(historicalSales.createdAt, range.from)))))).groupBy(sales.customerId),
-    db.select({ productsSold: sql<string>`count(distinct ${saleItems.productId})`, unitsSold: sql<string>`coalesce(sum(${saleItems.quantity}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range), selectedProduct)),
-    db.select({ lineCount: count(saleItems.id), costedLineCount: count(productPrices.id), revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)`, cost: sql<string>`coalesce(sum(${saleItems.quantity} * ${productPrices.amount}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).leftJoin(productPrices, and(eq(productPrices.productId, saleItems.productId), eq(productPrices.priceType, "COST"), eq(productPrices.active, true))).where(and(...salesConditions(db, filters, range), selectedProduct)),
-    db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.originalName})`, sku: products.sku, units: sql.raw("coalesce(sum(sale_items.quantity), 0)"), revenue: sql.raw("coalesce(sum(sale_items.line_total), 0)") }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range))).groupBy(products.id, products.commercialName, products.originalName, products.sku).orderBy(desc(sql.raw("sum(sale_items.line_total)"))).limit(5),
-    db.select({ id: customers.id, name: customers.name, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range))).groupBy(customers.id, customers.name).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
-    db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
-    db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
-    salesSeries(db, filters, range),
-    salesSeries(db, filters, previous),
-    db.select({ stage: opportunities.stage, count: count(), amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range))).groupBy(opportunities.stage).orderBy(opportunities.stage),
+    db.select({ id: customers.id }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency), gte(customers.createdAt, range.from), lt(customers.createdAt, range.to))).groupBy(customers.id),
+    db.select({ id: sales.customerId }).from(sales).where(and(...salesConditions(db, filters, range, resolvedCurrency), exists(db.select({ id: historicalSales.id }).from(historicalSales).where(and(eq(historicalSales.customerId, sales.customerId), lt(historicalSales.createdAt, range.from)))))).groupBy(sales.customerId),
+    db.select({ productsSold: sql<string>`count(distinct ${saleItems.productId})`, unitsSold: sql<string>`coalesce(sum(${saleItems.quantity}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct)),
+    db.select({ lineCount: count(saleItems.id), costedLineCount: count(productPrices.id), revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)`, cost: sql<string>`coalesce(sum(${saleItems.quantity} * ${productPrices.amount}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).leftJoin(productPrices, and(eq(productPrices.productId, saleItems.productId), eq(productPrices.priceType, "COST"), eq(productPrices.active, true))).where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct)),
+    db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.originalName})`, sku: products.sku, units: sql.raw("coalesce(sum(sale_items.quantity), 0)"), revenue: sql.raw("coalesce(sum(sale_items.line_total), 0)") }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(products.id, products.commercialName, products.originalName, products.sku).orderBy(desc(sql.raw("sum(sale_items.line_total)"))).limit(5),
+    db.select({ id: customers.id, name: customers.name, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(customers.id, customers.name).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
+    db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
+    db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
+    salesSeries(db, filters, range, resolvedCurrency),
+    salesSeries(db, filters, previous, resolvedCurrency),
+    db.select({ stage: opportunities.stage, count: count(), amount: sql<string>`coalesce(sum(${opportunities.totalAmount}), 0)` }).from(opportunities).where(and(...opportunityConditions(db, filters, range, resolvedCurrency))).groupBy(opportunities.stage).orderBy(opportunities.stage),
     db.select({ count: sql<string>`count(*)` }).from(products).where(and(...productScope, unknownBalanceCondition)),
     db.select({ role: users.roleCode, status: users.status, count: count() }).from(users).groupBy(users.roleCode, users.status),
     db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(8),
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
-    salesMetric(db, filters, previous),
+    salesMetric(db, filters, previous, resolvedCurrency),
     db.select({ total: count() }).from(quotes).where(and(gte(quotes.createdAt, previous.from), lt(quotes.createdAt, previous.to))),
-    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous))).groupBy(orders.status),
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous, resolvedCurrency))).groupBy(orders.status),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
   ]);
   const categorySummaryRows = await categorySummaryPromise;
@@ -290,6 +299,9 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   });
   return {
     range, filters, salesToday, salesMonth, salesRange,
+    currency: resolvedCurrency ?? null,
+    availableCurrencies,
+    currencyAmbiguous,
     orders: { total: activeOrderCount, pendingPayment: orderCounts.get("PAYMENT_PENDING") ?? 0, preparing: orderCounts.get("PREPARING") ?? 0 },
     quotes: Number(openQuotes[0]?.count ?? 0), opportunities: Number(openOpportunities[0]?.count ?? 0), pipelineValue: Number(pipeline[0]?.total ?? 0), pendingPayments: Number(pendingPayments[0]?.count ?? 0),
     criticalStock: Number(criticalStock[0]?.count ?? 0), noStock: Number(noStock[0]?.count ?? 0), unknownStock: Number(unknownStock[0]?.count ?? 0), noMovement: Number(noMovement[0]?.count ?? 0), reservedUnits: Number(reservedUnits[0]?.units ?? 0), activeLocations: Number(locationsCount[0]?.count ?? 0),

@@ -14,6 +14,7 @@ export type DashboardFilters = {
   brandId?: string;
   channel?: string;
   orderStatus?: string;
+  currency?: string;
 };
 
 export class DashboardInvalidFilterError extends Error {
@@ -55,6 +56,7 @@ export function parseDashboardFilters(params: URLSearchParams): DashboardFilters
     brandId: readOptional(params, "brandId"),
     channel: readOptional(params, "channel"),
     orderStatus: readOptional(params, "orderStatus"),
+    currency: readOptional(params, "currency"),
   };
 }
 
