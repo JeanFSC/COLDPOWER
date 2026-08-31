@@ -1,0 +1,51 @@
+-- CP-030 rollback strategy for drizzle/0017_funny_mysterio.sql.
+-- Run only after taking a fresh backup and confirming no CP-030 rows depend on these tables.
+BEGIN;
+DROP TABLE IF EXISTS "payment_evidence";
+DROP TABLE IF EXISTS "payment_attempts";
+DROP TABLE IF EXISTS "opportunity_followups";
+DROP TABLE IF EXISTS "opportunity_activities";
+DROP TABLE IF EXISTS "customer_notes";
+DROP TABLE IF EXISTS "customer_addresses";
+DROP TABLE IF EXISTS "customer_contacts";
+DROP TABLE IF EXISTS "cms_revisions";
+DROP TABLE IF EXISTS "cms_entries";
+DROP TABLE IF EXISTS "cms_sections";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "external_invoice_reference";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "invoice_status";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "cancelled_at";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "cancelled_by";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "cancellation_reason";
+ALTER TABLE "sales" DROP COLUMN IF EXISTS "idempotency_key";
+ALTER TABLE "payments" DROP COLUMN IF EXISTS "cancelled_at";
+ALTER TABLE "payments" DROP COLUMN IF EXISTS "cancelled_by";
+ALTER TABLE "payments" DROP COLUMN IF EXISTS "cancellation_reason";
+ALTER TABLE "orders" DROP COLUMN IF EXISTS "cancelled_at";
+ALTER TABLE "orders" DROP COLUMN IF EXISTS "cancelled_by";
+ALTER TABLE "orders" DROP COLUMN IF EXISTS "cancellation_reason";
+ALTER TABLE "quotes" DROP COLUMN IF EXISTS "cancelled_at";
+ALTER TABLE "quotes" DROP COLUMN IF EXISTS "cancelled_by";
+ALTER TABLE "quotes" DROP COLUMN IF EXISTS "cancellation_reason";
+ALTER TABLE "quotes" DROP COLUMN IF EXISTS "workflow_status";
+ALTER TABLE "product_prices" DROP COLUMN IF EXISTS "status";
+ALTER TABLE "product_prices" DROP COLUMN IF EXISTS "minimum_allowed";
+ALTER TABLE "product_prices" DROP COLUMN IF EXISTS "wholesale_min_qty";
+ALTER TABLE "media_assets" DROP COLUMN IF EXISTS "public_url";
+ALTER TABLE "media_assets" DROP COLUMN IF EXISTS "content_hash";
+ALTER TABLE "inventory_reservations" DROP COLUMN IF EXISTS "expires_at";
+ALTER TABLE "inventory_reservations" DROP COLUMN IF EXISTS "idempotency_key";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "website";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "tiktok";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "instagram";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "facebook";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "business_hours";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "sales_email";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "phone";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "district";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "province";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "department";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "country";
+ALTER TABLE "company_settings" DROP COLUMN IF EXISTS "trade_name";
+-- PostgreSQL enum values are intentionally not removed automatically. If a full enum rollback is required,
+-- create a replacement enum, migrate dependent columns, and drop the old type only after a data audit.
+COMMIT;

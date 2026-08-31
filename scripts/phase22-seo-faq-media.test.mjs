@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const read = (file) => readFileSync(join(root, file), "utf8");
+assert.equal(existsSync(join(root, "src/app/faq/page.tsx")), true);
+const faq = read("src/app/faq/page.tsx");
+assert.ok(faq.indexOf("Confianza") < faq.indexOf("Preguntas frecuentes"));
+assert.match(faq, /garant[iÃí]a|env[iÃí]os|compatibilidad/i);
+const home = read("src/app/page.tsx");
+assert.doesNotMatch(home, /<FAQ\b|<Testimonials\b/);
+const sitemap = read("src/app/sitemap.ts");
+assert.match(sitemap, /getAllCatalogProductsForSitemap/);
+assert.match(sitemap, /\/faq/);
+const sitemapRepository = read("src/lib/catalog-sitemap.ts");
+const catalogRepository = read("src/lib/catalog-repository.ts");
+assert.match(sitemapRepository, /getCatalogProducts/);
+assert.match(catalogRepository, /publicOnly|publicationStatus|published/);
+const search = read("src/app/buscar/page.tsx");
+assert.doesNotMatch(search, /data mock|productos mock/i);
+console.log("Phase 22 SEO, FAQ and media contract: PASS");

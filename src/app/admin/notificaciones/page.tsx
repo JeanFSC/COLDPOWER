@@ -1,0 +1,9 @@
+import type { Metadata } from "next";
+import { requirePermission } from "@/lib/auth";
+import { getNotificationsPage, parseNotificationFilters } from "@/lib/notifications-service";
+import { NotificationsList } from "@/components/admin/NotificationsList";
+
+export const metadata: Metadata = { title: "Notificaciones | Panel admin ColdPower", description: "Centro interno de notificaciones." };
+type Params = Record<string, string | string[] | undefined>;
+function toQuery(params: Params) { const query = new URLSearchParams(); for (const [key, value] of Object.entries(params)) { if (typeof value === "string") query.set(key, value); else if (Array.isArray(value) && value[0]) query.set(key, value[0]); } return query; }
+export default async function AdminNotificacionesPage({ searchParams }: { searchParams?: Promise<Params> }) { const actor = await requirePermission("notifications.view"); const query = toQuery((await searchParams) ?? {}); let page = { items: [], page: 1, pageSize: 25, totalItems: 0, totalPages: 1, unreadCount: 0, metrics: { unread: 0, read: 0, dismissed: 0 } } as Awaited<ReturnType<typeof getNotificationsPage>>; let loadError: string | null = null; try { page = await getNotificationsPage(actor.userId, parseNotificationFilters(query)); } catch (error) { console.error("ColdPower: no se pudieron cargar notificaciones", error); loadError = "No pudimos cargar las notificaciones."; } return <div><h1 className="font-display text-3xl font-black text-dark">Notificaciones internas</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-gray-text">Alertas de cotizaciones, leads, pagos, seguimientos, stock y pedidos en un solo lugar.</p><NotificationsList notifications={page.items} metrics={page.metrics} unreadCount={page.unreadCount} pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }} queryString={query.toString()} loadError={loadError} /></div>; }

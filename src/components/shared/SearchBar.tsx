@@ -1,0 +1,30 @@
+import { Search } from "lucide-react";
+
+type SearchBarProps = {
+  action?: string;
+  id: string;
+  placeholder?: string;
+  className?: string;
+  compact?: boolean;
+  submitLabel?: string;
+};
+
+export function SearchBar({
+  action = "/buscar",
+  id,
+  placeholder = "Busca por codigo, modelo, marca o especificacion",
+  className = "",
+  compact = false,
+  submitLabel = "Buscar",
+}: SearchBarProps) {
+  return (
+    <form action={action} className={`flex min-w-0 items-center gap-2 ${className}`}>
+      <label className="sr-only" htmlFor={id}>Buscar por codigo, modelo, marca o especificacion</label>
+      <div className={`flex min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-white px-4 text-text-secondary transition focus-within:border-brand-secondary-600 focus-within:ring-2 focus-within:ring-brand-secondary-600/15 ${compact ? "h-11" : "min-h-14"}`}>
+        <Search className="h-5 w-5 shrink-0 text-brand-secondary-600" aria-hidden="true" />
+        <input id={id} name="q" type="search" placeholder={placeholder} className="min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outline-none placeholder:text-text-secondary" />
+      </div>
+      {!compact ? <button type="submit" className="inline-flex h-14 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-hover">{submitLabel}</button> : null}
+    </form>
+  );
+}

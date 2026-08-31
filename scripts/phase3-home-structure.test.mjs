@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const read = (file) => readFileSync(join(root, file), "utf8");
+const requiredFiles = ["src/components/home/Hero.tsx", "src/components/home/BenefitsBar.tsx", "src/components/home/CategoriesGrid.tsx", "src/components/home/ProductSection.tsx", "src/components/home/FAQ.tsx", "src/components/catalog/ProductCard.tsx"];
+for (const file of requiredFiles) assert.equal(existsSync(join(root, file)), true, `${file} should exist`);
+const page = read("src/app/page.tsx");
+for (const component of ["Hero", "CategoriesGrid", "ProductSection", "TechnicalSearchGuide", "ApplicationSolutions", "AssistanceSection"]) assert.match(page, new RegExp(`<${component}\\b`), `page.tsx should render ${component}`);
+assert.match(page, /getCatalogProducts|loadCatalogHomeData/);
+assert.doesNotMatch(page, /products\.map|@\/data\/products/);
+const faq = read("src/components/home/FAQ.tsx");
+assert.match(faq, /aria-expanded/);
+assert.match(faq, /aria-controls/);
+const productCard = read("src/components/catalog/ProductCard.tsx");
+assert.match(productCard, /AddToCartButton/);
+assert.match(productCard, /formatProductPrice/);
+const cart = read("src/components/cart/CartQuotePanel.tsx");
+assert.match(cart, /WhatsAppLeadButton/);
+assert.match(read("src/components/shared/WhatsAppLeadButton.tsx"), /api\/whatsapp\/lead/);
+console.log("Phase 3 current catalog-first homepage contract: PASS");

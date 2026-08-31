@@ -1,0 +1,6 @@
+import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { apiError, apiSuccess } from "@/lib/api-errors";
+import { bulkUpdateNotificationState } from "@/lib/notifications-service";
+import { notificationStates } from "@/lib/operations-validation";
+
+export async function POST(request: Request) { try { const actor = await requireApiPermission("notifications.view"); const value = await request.json() as Record<string, unknown>; const ids = Array.isArray(value.ids) ? value.ids.filter((id): id is string => typeof id === "string") : []; const state = typeof value.state === "string" ? value.state : ""; if (!ids.length || !(notificationStates as readonly string[]).includes(state)) return apiError("NOTIFICATIONS_INVALID", "IDs o estado no válidos.", 400); return apiSuccess({ notifications: await bulkUpdateNotificationState(ids, state as typeof notificationStates[number], actor) }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATIONS_FORBIDDEN", "No tienes permiso para modificar notificaciones.", 403); return apiError("NOTIFICATIONS_BULK_FAILED", error instanceof Error ? error.message : "No se pudieron actualizar las notificaciones.", 400); } }

@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { MAX_MEDIA_BYTES, validateMediaUpload } from "@/lib/media-validation";
+const pngHeader = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const jpegHeader = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+const webpHeader = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+test("acepta PNG, JPEG y WebP solo cuando la firma coincide con el MIME", () => { assert.equal(validateMediaUpload({ mimeType: "image/png", size: pngHeader.byteLength, bytes: pngHeader }).ok, true); assert.equal(validateMediaUpload({ mimeType: "image/jpeg", size: jpegHeader.byteLength, bytes: jpegHeader }).ok, true); assert.equal(validateMediaUpload({ mimeType: "image/webp", size: webpHeader.byteLength, bytes: webpHeader }).ok, true); assert.equal(validateMediaUpload({ mimeType: "image/png", size: jpegHeader.byteLength, bytes: jpegHeader }).ok, false); });
+test("rechaza tipos no visuales y archivos que exceden el límite", () => { assert.equal(validateMediaUpload({ mimeType: "application/pdf", size: 10, bytes: new Uint8Array(10) }).ok, false); assert.equal(validateMediaUpload({ mimeType: "image/png", size: MAX_MEDIA_BYTES + 1, bytes: pngHeader }).ok, false); });
+test("sanitiza SVG y rechaza scripts, handlers y javascript URLs", () => { const safe = validateMediaUpload({ mimeType: "image/svg+xml", size: 100, bytes: new TextEncoder().encode('<svg viewBox="0 0 10 10"><path fill="red" /></svg>') }); assert.equal(safe.ok, true); assert.equal(typeof safe.content, "string"); assert.doesNotMatch(safe.content ?? "", /<script|onload|javascript:/i); const unsafe = validateMediaUpload({ mimeType: "image/svg+xml", size: 100, bytes: new TextEncoder().encode('<svg onload="alert(1)"><script>alert(1)</script><a href="javascript:alert(1)">x</a></svg>') }); assert.equal(unsafe.ok, false); });
+test("rechaza tamaños negativos y MIME ausente", () => { assert.equal(validateMediaUpload({ mimeType: "", size: 1, bytes: pngHeader }).ok, false); assert.equal(validateMediaUpload({ mimeType: "image/png", size: -1, bytes: pngHeader }).ok, false); });

@@ -1,0 +1,7 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import test from "node:test";
+const root=process.cwd();const read=(file)=>readFileSync(join(root,file),"utf8");
+test("CP-039 compras y proveedores tienen filtros, métricas, detalle y exportación",()=>{const contract=read("src/lib/purchases-contract.ts"),repo=read("src/lib/purchases-repository.ts"),route=read("src/app/api/admin/compras/route.ts"),supplier=read("src/app/api/admin/proveedores/[id]/route.ts"),exportRoute=read("src/app/api/admin/compras/export/route.ts");for(const field of ["query","status","supplierId","locationId","currency","createdFrom","createdTo","page","pageSize"])assert.match(contract,new RegExp(field));for(const field of ["pending","partialReceived","received","totalAmount"])assert.match(repo,new RegExp(field));assert.match(route,/getPurchasesPage/);assert.match(supplier,/updateSupplier/);assert.match(exportRoute,/purchases\.exported/);assert.match(exportRoute,/text\/csv/)})
+test("CP-039 recepción parcial actualiza Kardex y es idempotente",()=>{const service=read("src/lib/purchases-service.ts"),schema=read("src/db/purchases-schema.ts"),receipt=read("src/app/api/admin/compras/recepciones/route.ts");assert.match(service,/PARTIAL_RECEIVED/);assert.match(service,/adjustInventoryInTransaction/);assert.match(service,/idempotencyKey/);assert.match(schema,/purchases_idempotency_unique/);assert.match(schema,/purchase_receipts_idempotency_unique/);assert.match(receipt,/Idempotency-Key/)})
