@@ -7,6 +7,7 @@ const schema = fs.readFileSync(path.join(root, "src/db/schema.ts"), "utf8");
 const route = fs.readFileSync(path.join(root, "src/app/api/admin/catalogo/[id]/route.ts"), "utf8");
 const form = fs.readFileSync(path.join(root, "src/components/admin/ProductEditorialForm.tsx"), "utf8");
 const adminPage = fs.readFileSync(path.join(root, "src/app/admin/catalogo/page.tsx"), "utf8");
+const catalog = fs.readFileSync(path.join(root, "src/components/admin/AdminProductCatalog.tsx"), "utf8");
 const migration = fs.readFileSync(path.join(root, "drizzle/0015_harsh_angel.sql"), "utf8");
 
 assert.match(schema, /editorialCategoryId/);
@@ -23,8 +24,8 @@ assert.match(route, /auditLogs/);
 assert.match(form, /Categor[ií]a editorial/);
 assert.match(form, /Familia editorial/);
 assert.match(form, /Marca editorial/);
-assert.match(adminPage, /editorialCategoryId/);
-assert.match(adminPage, /editorialFamilyId/);
-assert.match(adminPage, /editorialBrandId/);
+assert.match(adminPage + catalog, /editorialCategoryId/);
+assert.match(adminPage + catalog, /editorialFamilyId/);
+assert.match(adminPage + catalog, /editorialBrandId/);
 
 console.log("Editorial taxonomy contract: PASS");

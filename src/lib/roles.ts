@@ -17,10 +17,10 @@ export const permissions = [
   "quotes.view", "quotes.create", "quotes.edit", "quotes.send", "quotes.convert", "quotes.export",
   "sales.view", "sales.create", "sales.edit", "sales.cancel",
   "orders.view", "orders.create", "orders.edit",
-  "payments.view", "payments.review", "payments.manual.confirm", "payments.refund", "payments.webhook.manage", "payments.export", "purchases.view", "purchases.receive", "purchases.cost.view", "purchases.cost.manage",
+  "payments.view", "payments.review", "payments.manual.confirm", "payments.refund", "payments.webhook.manage", "payments.export", "purchases.view", "purchases.receive", "purchases.approve", "purchases.cost.view", "purchases.cost.manage",
   "reports.view", "reports.export", "audit.view", "audit.export", "audit.sensitive.view",
   "users.view", "users.invite", "users.manage", "users.export", "roles.view", "roles.manage",
-  "settings.business.edit", "settings.technical.edit", "integrations.manage", "operations.view", "notifications.manage", "notifications.preferences", "promotions.export",
+  "settings.business.edit", "settings.technical.edit", "integrations.manage", "operations.view", "operations.assign", "notifications.manage", "notifications.preferences", "promotions.export",
   "catalog.product.edit", "catalog.product.publish", "catalog.media.upload", "cms.edit", "inventory.adjust", "inventory.transfer", "inventory.reserve", "pricing.edit", "pricing.cost.view", "pricing.discount.approve", "crm.manage", "sales.manage", "orders.manage", "payments.manage", "purchases.manage", "notifications.view", "promotions.manage", "company.settings.manage", "catalog:publish", "catalog:review", "quote:manage", "inventory:read", "inventory:adjust", "inventory:transfer", "inventory:reserve", "reports:read", "roles:manage",
 ] as const;
 export type Permission = (typeof permissions)[number];
@@ -36,7 +36,7 @@ const businessCore = [
   "catalog.product.edit", "catalog.product.publish", "catalog.media.upload", "cms.edit", "inventory:read", "inventory:adjust", "inventory:transfer", "inventory:reserve", "quote:manage", "crm.manage", "sales.manage", "orders.manage", "pricing.edit", "notifications.view", "promotions.manage",
 ] as const satisfies readonly Permission[];
 const businessManagement = [
-  ...businessCore, "dashboard.view", "reports.view", "reports.export", "audit.view", "audit.export", "audit.sensitive.view", "pricing.cost.view", "pricing.cost.edit", "pricing.margin.view", "pricing.discount.approve", "pricing.discount.manage", "payments.manage", "payments.review", "payments.manual.confirm", "payments.refund", "payments.webhook.manage", "company.settings.manage", "settings.business.edit", "users.view", "users.invite", "users.export", "notifications.manage", "notifications.preferences", "promotions.export", "reports:read",
+  ...businessCore, "dashboard.view", "reports.view", "reports.export", "audit.view", "audit.export", "audit.sensitive.view", "pricing.cost.view", "pricing.cost.edit", "pricing.margin.view", "pricing.discount.approve", "pricing.discount.manage", "payments.manage", "payments.review", "payments.manual.confirm", "payments.refund", "payments.webhook.manage", "purchases.approve", "operations.assign", "company.settings.manage", "settings.business.edit", "users.view", "users.invite", "users.export", "notifications.manage", "notifications.preferences", "promotions.export", "reports:read",
 ] as const satisfies readonly Permission[];
 const businessOperations = businessCore;
 

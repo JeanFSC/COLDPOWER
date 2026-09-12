@@ -8,6 +8,8 @@ import {
   getPipelineMacroStage,
   PIPELINE_MACRO_STAGE_ORDER,
   stockState,
+  buildKpiView,
+  resolveGranularity,
 } from "../src/lib/dashboard-definitions";
 
 test("isOpenQuoteStatus excludes terminal states only", () => {
@@ -54,4 +56,30 @@ test("stockState: critical / no-stock / unknown / ok", () => {
   assert.equal(stockState({ onHand: 5, reserved: 0, minimumStock: 5 }), "CRITICAL");
   assert.equal(stockState({ onHand: 6, reserved: 0, minimumStock: 5 }), "OK");
   assert.equal(stockState({ onHand: 10, reserved: 0, minimumStock: null }), "OK");
+});
+
+test("buildKpiView marks sales as period metric with comparison, quotes/orders/stock as snapshot", () => {
+  const view = buildKpiView({
+    sales: { current: 206426, previous: 105000 },
+    openQuotes: 52,
+    activeOrders: 80,
+    criticalStock: 4,
+  });
+  assert.equal(view.sales.isSnapshot, false);
+  assert.equal(view.sales.comparison?.comparisonAvailable, true);
+  assert.equal(view.openQuotes.isSnapshot, true);
+  assert.equal(view.openQuotes.comparison, null);
+  assert.equal(view.activeOrders.isSnapshot, true);
+  assert.equal(view.criticalStock.isSnapshot, true);
+});
+
+test("resolveGranularity keeps daily charts readable and uses hours for one-day windows", () => {
+  const start = new Date("2026-08-01T05:00:00.000Z");
+  const day = 86_400_000;
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + day) }), "hour");
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + 31 * day) }), "day");
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + 61 * day) }), "week");
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + 366 * day) }), "month");
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + 31 * day) }, "week"), "week");
+  assert.equal(resolveGranularity({ from: start, to: new Date(start.getTime() + day) }, "month"), "hour");
 });

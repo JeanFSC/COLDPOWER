@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import { requirePermission } from "@/lib/auth";
 import { getCustomersPage } from "@/lib/customer-repository";
 import { parseCustomerFilters } from "@/lib/customer-contract";
-import { getPipelinePage } from "@/lib/pipeline-repository";
+import { getPipelineBoard } from "@/lib/pipeline-repository";
 import { parsePipelineFilters } from "@/lib/pipeline-contract";
-import { opportunityStages } from "@/lib/crm-validation";
+import { can } from "@/lib/roles";
 import { CrmOperations } from "@/components/admin/CrmOperations";
 import { CrmCreateForms } from "@/components/admin/CrmCreateForms";
-import { CrmPipeline } from "@/components/admin/CrmPipeline";
-import { CustomersWorkspace, PipelineWorkspace } from "@/components/admin/AdminCategoryViews";
+import { CustomersWorkspace } from "@/components/admin/AdminCategoryViews";
+import { PipelineWorkspace } from "@/components/admin/PipelineWorkspace";
 
 export const metadata: Metadata = { title: "CRM y pipeline | Panel admin ColdPower", description: "Clientes, oportunidades, seguimientos y tareas comerciales persistentes." };
 
 export default async function AdminCrmPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const params = (await searchParams) ?? {};
   const selectedView = Array.isArray(params.view) ? params.view[0] : params.view;
-  await requirePermission(selectedView === "clientes" ? "customers.view" : "crm.view");
+  const actor = await requirePermission(selectedView === "clientes" ? "customers.view" : "crm.view");
   if (selectedView === "clientes") {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -39,12 +39,6 @@ export default async function AdminCrmPage({ searchParams }: { searchParams?: Pr
     if (typeof value === "string") pipelineParams.set(key, value);
     else if (Array.isArray(value) && value[0]) pipelineParams.set(key, value[0]);
   }
-  const pipelinePage = await getPipelinePage(parsePipelineFilters(pipelineParams));
-  const customerPage = await getCustomersPage({ page: 1, pageSize: 100 });
-  const customers = customerPage.items.map((customer) => ({ id: customer.id, name: customer.name, email: customer.email, phone: customer.phone, customerType: customer.customerType, status: customer.status, location: customer.location }));
-  const pipelineOpportunities = pipelinePage.items.map((opportunity) => ({ id: opportunity.id, code: opportunity.code, customerName: opportunity.customerName, customerPhone: opportunity.customerPhone, title: opportunity.title, stage: opportunity.stage, totalAmount: opportunity.totalAmount, currency: opportunity.currency, nextAction: opportunity.nextAction, followUpAt: opportunity.followUpAt, items: opportunity.items }));
-  const controls = <div className="space-y-4"><CrmCreateForms customers={customers} opportunities={pipelineOpportunities} /><CrmOperations customers={customers} tasks={[]} /></div>;
-  const stageLabels: Record<string, string> = { NEW: "Nuevo", CONTACTED: "Contactado", QUOTING: "Cotizando", QUOTE_SENT: "Cotización enviada", FOLLOW_UP: "Seguimiento", NEGOTIATION: "Negociación", ACCEPTED: "Aceptado", SALE: "Venta", PAYMENT_PENDING: "Pago pendiente", PAID: "Pagado", PREPARING: "Preparando", DELIVERED: "Entregado", CLOSED: "Cerrado", LOST: "Perdido", CANCELLED: "Cancelado", NO_RESPONSE: "Sin respuesta" };
-  const tones: Record<string, "blue" | "orange" | "green" | "red" | "purple"> = { NEW: "blue", CONTACTED: "blue", QUOTE_SENT: "purple", QUOTING: "purple", FOLLOW_UP: "orange", NEGOTIATION: "orange", ACCEPTED: "green", SALE: "green", PAYMENT_PENDING: "orange", PAID: "green", PREPARING: "purple", DELIVERED: "green", CLOSED: "green", LOST: "red", CANCELLED: "red", NO_RESPONSE: "red" };
-  return <PipelineWorkspace metrics={pipelinePage.metrics} pagination={{ page: pipelinePage.page, totalPages: pipelinePage.totalPages, totalItems: pipelinePage.totalItems }} facets={pipelinePage.facets} query={pipelineParams.get("query") ?? undefined} queryString={pipelineParams.toString()} exportHref={`/api/admin/oportunidades/export?${pipelineParams.toString()}`} columns={opportunityStages.map((stage) => ({ stage, label: stageLabels[stage], count: pipelinePage.metrics.byStage.find((metric) => metric.stage === stage)?.count ?? 0, tone: tones[stage] ?? "blue", items: pipelinePage.items.filter((opportunity) => opportunity.stage === stage).map((opportunity) => ({ title: opportunity.customerName, detail: opportunity.title, amount: opportunity.totalAmount ? `${opportunity.currency ?? "S/"} ${opportunity.totalAmount}` : undefined })) }))} controls={<div className="space-y-4"><CrmPipeline opportunities={pipelineOpportunities} />{controls}</div>} />;
+  const board = await getPipelineBoard(parsePipelineFilters(pipelineParams), { canManage: can(actor.role, "crm.manage"), canExport: can(actor.role, "crm.export") });
+  return <PipelineWorkspace board={board} queryString={pipelineParams.toString()} />;
 }

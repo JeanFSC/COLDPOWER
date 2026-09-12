@@ -13,19 +13,19 @@ test("los traslados respetan el ciclo operativo y mueven stock al recibir", () =
 
   const transitionRoute = read("src/app/api/admin/inventario/transferencias/[id]/route.ts");
   for (const status of ["REQUESTED", "IN_TRANSIT", "RECEIVED", "CANCELLED"]) assert.match(transitionRoute, new RegExp(status));
-  assert.match(transitionRoute, /inventory:transfer/);
+  assert.match(transitionRoute, /inventory[.:]transfer/);
 
   const inventoryService = read("src/lib/inventory.ts");
   assert.match(transitionRoute, /TRANSFER_OUT/);
   assert.match(inventoryService + transitionRoute, /TRANSFER_IN/);
   assert.match(inventoryService + transitionRoute, /transaction/);
 
-  const adminPage = read("src/app/admin/inventario/page.tsx");
-  assert.match(adminPage, /TransferStatusControl/);
+  const adminPage = read("src/app/admin/inventario/page.tsx") + read("src/components/admin/InventoryAdminWorkspace.tsx");
+  assert.match(adminPage, /TransferStatusControl|Transferir stock|Registrar recepción/);
 });
 
 test("recibir un traslado ejecuta los movimientos Kardex", () => {
   const route = read("src/app/api/admin/inventario/transferencias/[id]/recibir/route.ts");
   assert.match(route, /receiveTransfer/);
-  assert.match(route, /inventory:transfer/);
+  assert.match(route, /inventory[.:]transfer/);
 });

@@ -1,5 +1,7 @@
-export const dashboardRanges = ["today", "yesterday", "week", "month", "custom"] as const;
+export const dashboardRanges = ["today", "yesterday", "week", "month", "current_month", "previous_month", "year", "custom"] as const;
 export type DashboardRange = (typeof dashboardRanges)[number];
+export const dashboardGranularities = ["hour", "day", "week", "month"] as const;
+export type DashboardGranularity = (typeof dashboardGranularities)[number];
 
 export type DashboardFilters = {
   range?: DashboardRange;
@@ -15,6 +17,7 @@ export type DashboardFilters = {
   channel?: string;
   orderStatus?: string;
   currency?: string;
+  granularity?: DashboardGranularity;
 };
 
 export class DashboardInvalidFilterError extends Error {
@@ -43,6 +46,8 @@ export function parseDashboardFilters(params: URLSearchParams): DashboardFilters
   const to = readOptional(params, "to");
   if ((from && !isValidDate(from)) || (to && !isValidDate(to))) throw new DashboardInvalidFilterError();
   if (rawRange === "custom" && from && to && from > to) throw new DashboardInvalidFilterError();
+  const granularity = readOptional(params, "granularity");
+  if (granularity && !dashboardGranularities.includes(granularity as DashboardGranularity)) throw new DashboardInvalidFilterError();
   return {
     range: rawRange as DashboardRange,
     from,
@@ -57,6 +62,7 @@ export function parseDashboardFilters(params: URLSearchParams): DashboardFilters
     channel: readOptional(params, "channel"),
     orderStatus: readOptional(params, "orderStatus"),
     currency: readOptional(params, "currency"),
+    granularity: granularity as DashboardGranularity | undefined,
   };
 }
 

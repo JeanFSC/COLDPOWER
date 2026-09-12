@@ -13,7 +13,7 @@ function decimal(value: unknown, label: string, { allowZero = false } = {}) {
 
 export function normalizePriceInput(input: { amount?: unknown; currency?: unknown; priceType?: unknown }) {
   const currency = typeof input.currency === "string" ? input.currency.trim().toUpperCase() : "";
-  if (!/^[A-Z]{3}$/.test(currency)) throw new Error("La moneda debe ser un código ISO de tres letras.");
+  if (currency !== "PEN" && currency !== "USD") throw new Error("La moneda debe ser PEN o USD.");
   if (typeof input.priceType !== "string" || !(priceTypes as readonly string[]).includes(input.priceType)) throw new Error("Tipo de precio inválido.");
   return { amount: decimal(input.amount, "El importe"), currency, priceType: input.priceType as PriceType };
 }
@@ -22,6 +22,7 @@ export function normalizePriceDetails(input: { amount?: unknown; currency?: unkn
   const base = normalizePriceInput(input);
   const wholesaleMinQty = input.wholesaleMinQty === undefined || input.wholesaleMinQty === null || input.wholesaleMinQty === "" ? null : Number(input.wholesaleMinQty);
   if (wholesaleMinQty !== null && (!Number.isInteger(wholesaleMinQty) || wholesaleMinQty <= 0)) throw new Error("La cantidad mayorista debe ser un entero positivo.");
+  if (base.priceType === "WHOLESALE" && wholesaleMinQty === null) throw new Error("La cantidad mínima mayorista es obligatoria.");
   const minimumAllowed = input.minimumAllowed === undefined || input.minimumAllowed === null || input.minimumAllowed === "" ? null : decimal(input.minimumAllowed, "El mínimo permitido");
   if (minimumAllowed !== null && Number(minimumAllowed) > Number(base.amount)) throw new Error("El mínimo permitido no puede superar el precio.");
   const status = input.status === undefined || input.status === null || input.status === "" ? "ACTIVE" : input.status;
@@ -35,7 +36,7 @@ export function validateDiscountInput(input: { name?: unknown; maxPercentage?: u
   const maxPercentage = decimal(input.maxPercentage, "El porcentaje máximo", { allowZero: true });
   const approvalAbovePercentage = decimal(input.approvalAbovePercentage, "El porcentaje de aprobación", { allowZero: true });
   if (Number(maxPercentage) > 100 || Number(approvalAbovePercentage) > 100) throw new Error("El porcentaje debe estar entre 0 y 100.");
-  if (Number(approvalAbovePercentage) < Number(maxPercentage)) throw new Error("La aprobación debe ser igual o superior al máximo permitido.");
+  if (Number(approvalAbovePercentage) > Number(maxPercentage)) throw new Error("La aprobación debe ser igual o inferior al máximo permitido.");
   return { name, maxPercentage, approvalAbovePercentage };
 }
 

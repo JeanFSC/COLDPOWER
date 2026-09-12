@@ -37,10 +37,18 @@ export const stockStateLabels = {
   UNKNOWN: "Stock desconocido",
 } as const;
 
+export const catalogQualityLevels = ["good", "acceptable", "poor"] as const;
+export type CatalogQualityLevel = (typeof catalogQualityLevels)[number];
+export const catalogSortFields = ["name", "sku", "category", "brand", "status", "updatedAt"] as const;
+export type CatalogSortField = (typeof catalogSortFields)[number];
+
 export type CatalogApiFilters = {
   query?: string; sku?: string; name?: string; category?: string; categoryId?: string;
   family?: string; familyId?: string; brand?: string; brandId?: string; publicationStatus?: PublicationStatus;
-  requiresReview?: boolean; possibleDuplicate?: boolean; confidence?: string; sourceStatus?: string; page?: number; pageSize?: number;
+  requiresReview?: boolean; possibleDuplicate?: boolean; duplicateDecision?: "pending" | "different" | "confirmed" | "keep_both";
+  confidence?: string; sourceStatus?: string; quality?: CatalogQualityLevel; page?: number; pageSize?: number;
+  hasBrand?: boolean; hasMedia?: boolean; hasPrice?: boolean;
+  sort?: CatalogSortField; direction?: "asc" | "desc";
 };
 
 export function stockState(input: { onHand: number | null; reserved: number | null; minimum: number | null }) {
@@ -67,13 +75,24 @@ export function parseCatalogFilters(params: URLSearchParams): CatalogApiFilters 
     if (!Number.isInteger(parsed) || parsed < 1) throw new Error("CATALOG_INVALID_FILTER");
     return parsed;
   };
+  const quality = params.get("quality") || undefined;
+  if (quality && !catalogQualityLevels.includes(quality as CatalogQualityLevel)) throw new Error("CATALOG_INVALID_FILTER");
+  const duplicateDecision = params.get("duplicateDecision") || undefined;
+  if (duplicateDecision && !["pending", "different", "confirmed", "keep_both"].includes(duplicateDecision)) throw new Error("CATALOG_INVALID_FILTER");
+  const sort = params.get("sort") || undefined;
+  if (sort && !catalogSortFields.includes(sort as CatalogSortField)) throw new Error("CATALOG_INVALID_FILTER");
+  const direction = params.get("direction") || undefined;
+  if (direction && direction !== "asc" && direction !== "desc") throw new Error("CATALOG_INVALID_FILTER");
   return {
     query: params.get("query") || undefined, sku: params.get("sku") || undefined, name: params.get("name") || undefined,
     category: params.get("category") || undefined, categoryId: params.get("categoryId") || undefined,
     family: params.get("family") || undefined, familyId: params.get("familyId") || undefined,
     brand: params.get("brand") || undefined, brandId: params.get("brandId") || undefined,
     publicationStatus: publicationStatus as CatalogApiFilters["publicationStatus"], requiresReview: booleanValue("requiresReview"),
-    possibleDuplicate: booleanValue("possibleDuplicate"), confidence: params.get("confidence") || undefined,
-    sourceStatus: params.get("sourceStatus") || undefined, page: positiveInteger("page"), pageSize: positiveInteger("pageSize"),
+    possibleDuplicate: booleanValue("possibleDuplicate"), duplicateDecision: duplicateDecision as CatalogApiFilters["duplicateDecision"],
+    confidence: params.get("confidence") || undefined, sourceStatus: params.get("sourceStatus") || undefined,
+    quality: quality as CatalogQualityLevel | undefined, sort: sort as CatalogSortField | undefined,
+    hasBrand: booleanValue("hasBrand"), hasMedia: booleanValue("hasMedia"), hasPrice: booleanValue("hasPrice"),
+    direction: direction as CatalogApiFilters["direction"], page: positiveInteger("page"), pageSize: positiveInteger("pageSize"),
   };
 }

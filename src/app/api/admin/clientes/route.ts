@@ -23,7 +23,27 @@ export async function POST(request: Request) {
     try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
     const input = validateCustomerInput(body && typeof body === "object" ? body as Record<string, unknown> : {});
     if (!input.name) return apiError("CUSTOMER_NAME_REQUIRED", "El nombre del cliente es obligatorio.", 400);
-    const customer = await createCustomer({ ...input, name: input.name }, actor);
+    const raw = body as Record<string, unknown>;
+    const duplicateOverrideReason = typeof raw.duplicateOverrideReason === "string" ? raw.duplicateOverrideReason.trim().slice(0, 500) : null;
+    const primaryContactRaw = raw.primaryContact && typeof raw.primaryContact === "object" ? raw.primaryContact as Record<string, unknown> : null;
+    const primaryAddressRaw = raw.primaryAddress && typeof raw.primaryAddress === "object" ? raw.primaryAddress as Record<string, unknown> : null;
+    const text = (source: Record<string, unknown> | null, key: string, max: number) => typeof source?.[key] === "string" ? source[key]!.trim().slice(0, max) || null : null;
+    const customer = await createCustomer({
+      ...input,
+      name: input.name,
+      duplicateOverrideReason,
+      primaryContact: primaryContactRaw ? {
+        name: text(primaryContactRaw, "name", 160),
+        role: text(primaryContactRaw, "role", 120),
+        email: text(primaryContactRaw, "email", 180),
+        phone: text(primaryContactRaw, "phone", 40),
+        whatsapp: text(primaryContactRaw, "whatsapp", 40),
+      } : null,
+      primaryAddress: primaryAddressRaw ? {
+        label: text(primaryAddressRaw, "label", 80),
+        address: text(primaryAddressRaw, "address", 300),
+      } : null,
+    }, actor);
     return apiSuccess({ customer }, 201);
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CUSTOMERS_FORBIDDEN", "No tienes permiso para crear clientes.", 403);

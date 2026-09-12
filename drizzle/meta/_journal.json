@@ -232,6 +232,104 @@
       "when": 1786751600000,
       "tag": "0032_cp048_promotion_approval",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1788217000000,
+      "tag": "0033_cp033_inventory_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1788217100000,
+      "tag": "0034_cp033_inventory_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1788217200000,
+      "tag": "0035_cp033_reservation_trace",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1788217300000,
+      "tag": "0036_cp033_transfer_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1788220000000,
+      "tag": "0037_cp036_quote_versioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1788685200000,
+      "tag": "0038_cp037_cp040_control_centers",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1788690000000,
+      "tag": "0039_cp037_activity_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1788721200000,
+      "tag": "0040_tanda2_workflows",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1788721300000,
+      "tag": "0041_cp039_order_status_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1788721400000,
+      "tag": "0042_cp044_report_schedules",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1788721500000,
+      "tag": "0043_repair_inventory_reservation_reason",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1788800387598,
+      "tag": "0044_cp051_company_settings_series_integrations",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1788806928349,
+      "tag": "0045_cp052_locations_city",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1789200000000,
+      "tag": "0046_catalog_metric_snapshots",
+      "breakpoints": true
     }
   ]
 }

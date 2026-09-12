@@ -9,7 +9,7 @@ import { notifyStaffOnce } from "@/lib/notifications-service";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
-  try { actor = await requireApiPermission("inventory:transfer"); } catch (error) { if (error instanceof ApiAuthorizationError) return NextResponse.json({ error: "No tienes permiso para gestionar transferencias." }, { status: 403 }); return NextResponse.json({ error: "No se pudo validar el acceso al inventario." }, { status: 503 }); }
+  try { actor = await requireApiPermission("inventory.transfer"); } catch (error) { if (error instanceof ApiAuthorizationError) return NextResponse.json({ error: "No tienes permiso para gestionar transferencias." }, { status: 403 }); return NextResponse.json({ error: "No se pudo validar el acceso al inventario." }, { status: 503 }); }
   const { id } = await params;
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "JSON inválido." }, { status: 400 }); }
@@ -23,10 +23,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const items = await tx.select().from(transferItems).where(eq(transferItems.transferId, id));
       if (!items.length) throw new Error("El traslado no tiene productos.");
       if (nextStatus === "IN_TRANSIT") for (const item of items) await adjustInventoryInTransaction(tx, { productId: item.productId, locationId: before.sourceLocationId, quantity: item.quantity, type: "TRANSFER_OUT", reason: "Transferencia enviada a tránsito", notes: `Transferencia ${id} enviada desde el local de origen`, performedBy: actor.userId, performedByRole: actor.role, referenceType: "transfer", referenceId: id });
-      if (nextStatus === "RECEIVED") for (const item of items) await adjustInventoryInTransaction(tx, { productId: item.productId, locationId: before.destinationLocationId, quantity: item.quantity, type: "TRANSFER_IN", reason: "Recepción de transferencia", notes: `Transferencia ${id} recibida en el local de destino`, performedBy: actor.userId, performedByRole: actor.role, referenceType: "transfer", referenceId: id });
+      if (nextStatus === "RECEIVED") throw new Error("La recepción debe registrarse mediante el endpoint de recepción para evitar duplicar la entrada.");
       if (nextStatus === "CANCELLED" && before.status === "IN_TRANSIT") for (const item of items) await adjustInventoryInTransaction(tx, { productId: item.productId, locationId: before.sourceLocationId, quantity: item.quantity, type: "TRANSFER_IN", reason: "Transferencia cancelada", notes: `Contramovimiento de la transferencia ${id}`, performedBy: actor.userId, performedByRole: actor.role, referenceType: "transfer_cancel", referenceId: id });
       const now = new Date();
-      const [after] = await tx.update(transfers).set({ status: nextStatus as typeof before.status, requestedBy: nextStatus === "REQUESTED" ? actor.userId : before.requestedBy, receivedBy: nextStatus === "RECEIVED" ? actor.userId : before.receivedBy, receivedAt: nextStatus === "RECEIVED" ? now : before.receivedAt, updatedAt: now }).where(eq(transfers.id, id)).returning();
+      const [after] = await tx.update(transfers).set({ status: nextStatus as typeof before.status, requestedBy: nextStatus === "REQUESTED" ? actor.userId : before.requestedBy, receivedBy: before.receivedBy, receivedAt: before.receivedAt, updatedAt: now }).where(eq(transfers.id, id)).returning();
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "inventory.transfer_status_changed", entityType: "transfer", entityId: id, before: { status: before.status }, after: { status: after.status }, metadata: null });
       return after;
     });

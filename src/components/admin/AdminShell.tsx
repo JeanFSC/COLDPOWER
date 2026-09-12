@@ -8,6 +8,7 @@ import {
   CircleHelp,
   CreditCard,
   FileText,
+  Home,
   Image,
   LayoutDashboard,
   Menu,
@@ -26,13 +27,15 @@ import {
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { roleLabel, type AppRole } from "@/lib/roles";
 
 export type AdminNavIcon =
+  | "home"
   | "dashboard"
   | "operations"
+  | "notifications"
   | "products"
   | "inventory"
   | "pricing"
@@ -60,11 +63,20 @@ type AdminShellProps = {
   links: AdminNavItem[];
   showUserButton?: boolean;
   activeHref?: string;
+  unreadNotificationsCount?: number;
+};
+
+type AdminSearchGroup = {
+  key: string;
+  label: string;
+  items: Array<{ id: string; label: string; detail: string; href: string }>;
 };
 
 const iconMap: Record<AdminNavIcon, typeof LayoutDashboard> = {
+  home: Home,
   dashboard: LayoutDashboard,
   operations: BriefcaseBusiness,
+  notifications: Bell,
   products: Package,
   inventory: Warehouse,
   pricing: Tag,
@@ -100,11 +112,17 @@ export function AdminShell({
   links,
   showUserButton = true,
   activeHref,
+  unreadNotificationsCount = 0,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [commandQuery, setCommandQuery] = useState("");
+  const [searchGroups, setSearchGroups] = useState<AdminSearchGroup[]>([]);
+  const [searchResultQuery, setSearchResultQuery] = useState("");
+  const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [isNavigating, startNavigation] = useTransition();
   const profile = profileByRole[role] ?? {
     name: roleLabel(role),
@@ -118,26 +136,69 @@ export function AdminShell({
     role === "ALMACEN" ||
     role === "COMPRAS";
   const sidebarWidth = compactSidebar ? "w-[190px]" : "w-[198px]";
-  const contentOffset = compactSidebar ? "lg:pl-[190px]" : "lg:pl-[198px]";
+  const contentOffset = compactSidebar ? "xl:pl-[190px]" : "xl:pl-[198px]";
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setIsCommandOpen(true);
+      }
+      if (event.key === "Escape") setIsCommandOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+  useEffect(() => {
+    const query = commandQuery.trim();
+    if (!isCommandOpen || query.length < 2) {
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/admin/busqueda?q=${encodeURIComponent(query)}`, { signal: controller.signal, cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("search_unavailable");
+        const payload = await response.json() as { groups?: AdminSearchGroup[] };
+        setSearchGroups(Array.isArray(payload.groups) ? payload.groups : []);
+        setSearchResultQuery(query);
+        setSearchState("ready");
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setSearchGroups([]);
+        setSearchResultQuery(query);
+        setSearchState("unavailable");
+      });
+    return () => controller.abort();
+  }, [commandQuery, isCommandOpen]);
+  const normalizedCommandQuery = commandQuery.trim();
+  const isSearchPending = isCommandOpen && normalizedCommandQuery.length >= 2 && searchResultQuery !== normalizedCommandQuery;
+  const visibleSearchGroups = searchResultQuery === normalizedCommandQuery ? searchGroups : [];
+  const commandLinks = links.filter((link) => {
+    const query = commandQuery.trim().toLowerCase();
+    return !query || `${link.label} ${link.href}`.toLowerCase().includes(query);
+  }).slice(0, 8);
+  function recordRecent(label: string, href: string) {
+    void fetch("/api/admin/inicio/recientes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entityType: "module", entityId: href, label, href }), keepalive: true }).catch(() => undefined);
+  }
 
   return (
-    <div className="min-h-screen min-w-0 overflow-x-clip bg-[#f8fafc] text-[#102a43]">
+    <div className="admin-shell min-h-screen min-w-0 overflow-x-clip bg-[#f8fafc] text-[#102a43]">
       {isMenuOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-[#102a43]/25 lg:hidden"
+          className="fixed inset-0 z-40 bg-[#102a43]/25 xl:hidden"
           aria-label="Cerrar menu administrativo"
           onClick={() => setIsMenuOpen(false)}
         />
       ) : null}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex ${sidebarWidth} flex-col border-r border-[#e6edf3] bg-white transition-transform duration-200 lg:translate-x-0 ${isMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed inset-y-0 left-0 z-50 flex ${sidebarWidth} flex-col border-r border-[#e6edf3] bg-white transition-transform duration-200 xl:translate-x-0 ${isMenuOpen ? "translate-x-0" : "-translate-x-full xl:translate-x-0"}`}
       >
         <div className="flex h-[76px] shrink-0 items-center border-b border-[#eef2f6] px-5">
           <BrandLogo compact size="sm" href="/" />
           <button
             type="button"
-            className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#718096] hover:bg-[#f4f7fa] lg:hidden"
+            className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#718096] hover:bg-[#f4f7fa] xl:hidden"
             aria-label="Cerrar menu administrativo"
             onClick={() => setIsMenuOpen(false)}
           >
@@ -163,7 +224,7 @@ export function AdminShell({
                 <Link
                   key={`${link.href}-${link.label}`}
                   href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); recordRecent(link.label, link.href); }}
                   className={`flex min-h-9 items-center gap-3 rounded-lg px-2.5 text-[12px] font-semibold transition ${active ? "bg-[#102f51] text-white shadow-[0_4px_10px_rgba(16,47,81,0.16)]" : "text-[#49627d] hover:bg-[#f5f8fb] hover:text-[#102f51]"}`}
                 >
                   <Icon
@@ -219,7 +280,7 @@ export function AdminShell({
         <header className="sticky top-0 z-30 flex h-[76px] items-center gap-3 border-b border-[#e8eef4] bg-white/95 px-4 backdrop-blur sm:px-6 xl:px-5">
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#dce6ee] text-[#173654] lg:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#dce6ee] text-[#173654] xl:hidden"
             aria-label="Abrir menu administrativo"
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen(true)}
@@ -232,10 +293,17 @@ export function AdminShell({
               aria-hidden="true"
             />
             <input
+              value={commandQuery}
+              onChange={(event) => setCommandQuery(event.currentTarget.value)}
               className="h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#8aa0b6] focus:border-[#3986c0] focus:ring-2 focus:ring-[#3986c0]/10"
               placeholder="Buscar productos, clientes, pedidos, cotizaciones..."
               aria-label="Buscar en el panel administrativo"
               onKeyDown={(event) => {
+                if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+                  event.preventDefault();
+                  setIsCommandOpen(true);
+                  return;
+                }
                 const query = event.currentTarget.value.trim();
                 if (event.key === "Enter" && query) {
                   // startTransition keeps the input responsive (marks the
@@ -267,6 +335,11 @@ export function AdminShell({
               aria-label="Ver notificaciones"
             >
               <Bell className="h-[19px] w-[19px]" strokeWidth={1.8} aria-hidden="true" />
+              {unreadNotificationsCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f97316] px-1 text-[10px] font-semibold text-white">
+                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                </span>
+              ) : null}
             </Link>
             <div className="hidden h-8 w-px bg-[#e8eef4] sm:block" />
             {showUserButton ? (
@@ -287,6 +360,20 @@ export function AdminShell({
             <ChevronDown className="hidden h-4 w-4 text-[#6c8298] sm:block" aria-hidden="true" />
           </div>
         </header>
+        {isCommandOpen ? (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-[#102a43]/25 px-4 pt-[12vh]" role="presentation" onMouseDown={() => setIsCommandOpen(false)}>
+            <section className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce6ee] bg-white shadow-[0_22px_60px_rgba(16,42,67,0.22)]" role="dialog" aria-modal="true" aria-label="Paleta de comandos" onMouseDown={(event) => event.stopPropagation()}>
+              <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setIsCommandOpen(false); }} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#8aa0b6]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#8aa0b6]">Esc</kbd></div>
+              <nav className="max-h-[55vh] overflow-y-auto p-2" aria-label="Resultados y módulos disponibles">
+                {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-semibold text-[#91a3b3]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
+                {isSearchPending ? <p className="px-3 py-3 text-[11px] font-semibold text-[#8195aa]">Buscando entidades…</p> : null}
+                {searchState === "unavailable" ? <p className="px-3 py-3 text-[11px] font-semibold text-[#b45309]">Búsqueda de entidades no disponible.</p> : null}
+                {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[10px] font-semibold text-[#91a3b3]">{link.href}</span></Link>; })}</div> : null}
+                {!visibleSearchGroups.length && !isSearchPending && searchState === "ready" && !commandLinks.length ? <p className="px-3 py-5 text-center text-[11px] font-semibold text-[#8195aa]">No hay coincidencias con permisos disponibles.</p> : null}
+              </nav>
+            </section>
+          </div>
+        ) : null}
         <main className="mx-auto min-w-0 w-full max-w-none px-4 py-6 sm:px-6 xl:px-5 xl:py-5">
           {children}
         </main>

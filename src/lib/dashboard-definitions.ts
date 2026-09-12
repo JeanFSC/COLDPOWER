@@ -1,3 +1,5 @@
+import type { DashboardGranularity } from "@/lib/dashboard-contract";
+
 export const OPEN_QUOTE_EXCLUDED_STATUSES = ["REJECTED", "EXPIRED", "CONVERTED", "CANCELLED"] as const;
 
 export function isOpenQuoteStatus(workflowStatus: string | null | undefined): boolean {
@@ -47,4 +49,44 @@ export function stockState(balance: { onHand: number; reserved: number; minimumS
   if (available <= 0) return "NO_STOCK";
   if (balance.minimumStock !== null && available <= balance.minimumStock) return "CRITICAL";
   return "OK";
+}
+
+export function resolveGranularity(window: { from: Date; to: Date }, requested?: DashboardGranularity): DashboardGranularity {
+  const durationDays = Math.max(1, Math.ceil((window.to.getTime() - window.from.getTime()) / 86_400_000));
+  const automatic: DashboardGranularity = durationDays <= 1 ? "hour" : durationDays <= 60 ? "day" : durationDays <= 365 ? "week" : "month";
+  if (!requested) return automatic;
+  if (durationDays <= 1) return requested === "hour" || requested === "day" ? requested : automatic;
+  if (durationDays <= 60) return requested === "day" || requested === "week" ? requested : automatic;
+  if (durationDays <= 365) return requested === "week" || requested === "month" ? requested : automatic;
+  return requested === "month" ? requested : automatic;
+}
+
+export type KpiComparison = { previous: number; absoluteDelta: number; relativeDelta: number | null; comparisonAvailable: boolean };
+export type KpiView = { value: number; isSnapshot: boolean; comparison: KpiComparison | null };
+
+function periodKpi(current: number, previous: number): KpiView {
+  const comparisonAvailable = previous > 0 || current > 0;
+  return {
+    value: current,
+    isSnapshot: false,
+    comparison: {
+      previous,
+      absoluteDelta: current - previous,
+      relativeDelta: previous === 0 ? null : ((current - previous) / previous) * 100,
+      comparisonAvailable,
+    },
+  };
+}
+
+function snapshotKpi(value: number): KpiView {
+  return { value, isSnapshot: true, comparison: null };
+}
+
+export function buildKpiView(input: { sales: { current: number; previous: number }; openQuotes: number; activeOrders: number; criticalStock: number }) {
+  return {
+    sales: periodKpi(input.sales.current, input.sales.previous),
+    openQuotes: snapshotKpi(input.openQuotes),
+    activeOrders: snapshotKpi(input.activeOrders),
+    criticalStock: snapshotKpi(input.criticalStock),
+  };
 }

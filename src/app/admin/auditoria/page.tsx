@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuditWorkspace } from "@/components/admin/AdminCategoryViews";
+import { Tanda2Audit } from "@/components/admin/AdminTanda2Workspaces";
 import { requirePermission } from "@/lib/auth";
 import { parseAuditFilters, type AuditPageResponse } from "@/lib/audit-contract";
 import { getAuditPage } from "@/lib/audit-repository";
@@ -68,10 +68,18 @@ export default async function AdminAuditoriaPage({
   }
 
   const rows = page.items.map((entry) => ({
+    id: entry.id,
     date: entry.createdAt.toLocaleString("es-PE"),
     user: entry.actorId || "SYSTEM",
     action: entry.action,
     entity: `${entry.entityType} / ${entry.entityId}`,
+    module: entry.module,
+    severity: entry.severity,
+    result: "SUCCESS",
+    actorRole: entry.actorRole,
+    requestId: entry.requestId,
+    correlationId: entry.correlationId,
+    metadata: JSON.stringify(entry.metadata ?? {}, null, 2),
     before: summarizeSnapshot(entry.before),
     after: summarizeSnapshot(entry.after),
     origin: entry.origin ?? undefined,
@@ -79,16 +87,25 @@ export default async function AdminAuditoriaPage({
   }));
 
   const exportHref = `/api/admin/auditoria/export${query.toString() ? `?${query.toString()}` : ""}`;
+  const controls = (
+    <form id="audit-filters" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">Buscar<input name="query" defaultValue={query.get("query") ?? ""} placeholder="ID, acción, actor..." className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]" /></label>
+      <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">Módulo<select name="module" defaultValue={query.get("module") ?? ""} className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"><option value="">Todos</option>{page.facets.modules.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+      <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">Severidad<select name="severity" defaultValue={query.get("severity") ?? ""} className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"><option value="">Todas</option>{page.facets.severities.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+      <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">Desde<input type="date" name="dateFrom" defaultValue={query.get("dateFrom") ?? ""} className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]" /></label>
+      <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">Hasta<input type="date" name="dateTo" defaultValue={query.get("dateTo") ?? ""} className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]" /></label>
+      <div className="flex items-end sm:col-span-2 lg:col-span-4"><button type="submit" className="h-9 rounded-lg bg-[#102f51] px-4 text-[10px] font-extrabold text-white">Aplicar filtros</button></div>
+    </form>
+  );
   return (
-    <AuditWorkspace
+    <Tanda2Audit
       rows={rows}
       metrics={page.metrics}
       pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }}
-      facets={page.facets}
-      query={query.get("query") ?? undefined}
-      queryString={query.toString()}
       exportHref={exportHref}
-      controls={loadError ? <p className="rounded-lg border border-[#e3ebf2] p-3 text-[11px] text-[#7d91a5]">No se pudo conectar a la base de datos. Mostrando un estado vacío.</p> : null}
+      selectedId={query.get("eventId") ?? undefined}
+      baseQuery={query.toString()}
+      controls={loadError ? <p className="rounded-lg border border-[#e3ebf2] p-3 text-[11px] text-[#7d91a5]">No se pudo conectar a la base de datos. Mostrando un estado vacío.</p> : controls}
     />
   );
 }

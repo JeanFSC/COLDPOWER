@@ -1,0 +1,6 @@
+import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { apiError, apiSuccess } from "@/lib/api-errors";
+import { listNotificationTemplates, saveNotificationTemplate, validateNotificationTemplateInput } from "@/lib/notification-rules-service";
+
+export async function GET() { try { await requireApiPermission("notifications.view"); return apiSuccess({ templates: await listNotificationTemplates() }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATION_TEMPLATES_FORBIDDEN", "No tienes permiso para ver plantillas.", 403); return apiError("NOTIFICATION_TEMPLATES_UNAVAILABLE", "No se pudieron cargar las plantillas.", 503); } }
+export async function POST(request: Request) { try { const actor = await requireApiPermission("notifications.manage"); const body = await request.json() as Record<string, unknown>; const input = validateNotificationTemplateInput(body); return apiSuccess({ template: await saveNotificationTemplate(input, actor, typeof body.id === "string" ? body.id : undefined) }, 201); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATION_TEMPLATES_FORBIDDEN", "No tienes permiso para administrar plantillas.", 403); return apiError("NOTIFICATION_TEMPLATE_INVALID", error instanceof Error ? error.message : "No se pudo guardar la plantilla.", 400); } }

@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { ReportsWorkspace } from "@/components/admin/AdminCategoryViews";
+import { Tanda2Reports } from "@/components/admin/AdminTanda2Workspaces";
 import { requirePermission } from "@/lib/auth";
-import {
-  getOperationsDashboard,
-  listReportOptions,
-  type DashboardFilters,
-  type DashboardRange,
-} from "@/lib/operations-dashboard";
+import { type DashboardFilters, type DashboardRange } from "@/lib/operations-dashboard";
+import { getReportSnapshot, listReportOptions, listReportSchedules } from "@/lib/reporting-service";
 import { dashboardFiltersToQuery } from "@/lib/dashboard-contract";
 
 export const metadata: Metadata = {
@@ -20,7 +16,13 @@ function value(params: Params, key: string) {
   return Array.isArray(raw) ? raw[0] : raw;
 }
 function range(raw: string | undefined): DashboardRange {
-  return raw === "today" || raw === "yesterday" || raw === "week" || raw === "custom"
+  return raw === "today" ||
+    raw === "yesterday" ||
+    raw === "week" ||
+    raw === "current_month" ||
+    raw === "previous_month" ||
+    raw === "year" ||
+    raw === "custom"
     ? raw
     : "month";
 }
@@ -75,8 +77,9 @@ export default async function AdminReportesPage({
     brandId: value(params, "brandId"),
     channel: value(params, "channel"),
     orderStatus: value(params, "orderStatus"),
+    currency: value(params, "currency"),
   };
-  type ReportSnapshot = Awaited<ReturnType<typeof getOperationsDashboard>>;
+  type ReportSnapshot = Awaited<ReturnType<typeof getReportSnapshot>>;
   type ReportOptions = Awaited<ReturnType<typeof listReportOptions>>;
   let data: ReportSnapshot | null = null;
   let options: ReportOptions = {
@@ -89,8 +92,13 @@ export default async function AdminReportesPage({
     brands: [],
   };
   let reportError = false;
+  let schedules: Awaited<ReturnType<typeof listReportSchedules>> = [];
   try {
-    [data, options] = await Promise.all([getOperationsDashboard(filters, actor), listReportOptions()]);
+    [data, options, schedules] = await Promise.all([
+      getReportSnapshot(filters, actor),
+      listReportOptions(),
+      listReportSchedules(actor),
+    ]);
   } catch (error) {
     reportError = true;
     console.error("ColdPower: no se pudo cargar el reporte", error);
@@ -98,29 +106,40 @@ export default async function AdminReportesPage({
   const metrics = [
     {
       label: "Ventas hoy",
-      value: data ? `S/ ${data.salesToday.total.toFixed(2)}` : "N/D",
+      value: data ? formatMoney(data.salesToday.total, data.currency) : "N/D",
       note: data ? "Período actual" : "Datos no disponibles",
       tone: "blue" as const,
     },
     {
       label: "Ventas del mes",
-      value: data ? `S/ ${data.salesMonth.total.toFixed(2)}` : "N/D",
+      value: data ? formatMoney(data.salesMonth.total, data.currency) : "N/D",
       note: data ? "Acumulado" : "Datos no disponibles",
       tone: "orange" as const,
     },
     {
-      label: "Ticket promedio",
-      value: data
-        ? data.salesRange.count ? `S/ ${(data.salesRange.total / data.salesRange.count).toFixed(2)}` : "N/D"
-        : "N/D",
-      note: data ? "Por venta" : "Datos no disponibles",
+      label: "Margen bruto",
+      value: data ? formatMoney(data.grossProfit, data.currency) : "N/D",
+      note:
+        data?.grossMargin === null || data?.grossMargin === undefined
+          ? "Costo histórico incompleto"
+          : `${(data.grossMargin * 100).toFixed(1)}% sobre ventas`,
       tone: "green" as const,
     },
     {
-      label: "Pedidos",
+      label: "Ticket promedio",
+      value: data
+        ? data.salesRange.count
+          ? formatMoney(data.salesRange.total / data.salesRange.count, data.currency)
+          : "N/D"
+        : "N/D",
+      note: data ? "Por venta" : "Datos no disponibles",
+      tone: "purple" as const,
+    },
+    {
+      label: "Pedidos activos",
       value: data?.orders.total ?? "N/D",
       note: data ? "En el rango" : "Datos no disponibles",
-      tone: "purple" as const,
+      tone: "blue" as const,
     },
     {
       label: "Stock crítico",
@@ -139,7 +158,10 @@ export default async function AdminReportesPage({
           { value: "today", label: "Hoy" },
           { value: "yesterday", label: "Ayer" },
           { value: "week", label: "Semana" },
-          { value: "month", label: "Mes" },
+          { value: "month", label: "Últimos 30 días" },
+          { value: "current_month", label: "Mes actual" },
+          { value: "previous_month", label: "Mes anterior" },
+          { value: "year", label: "Año actual" },
           { value: "custom", label: "Rango personalizado" },
         ]}
       />
@@ -222,12 +244,26 @@ export default async function AdminReportesPage({
         label="Estado del pedido"
         value={filters.orderStatus}
         options={[
-          { value: "PENDING", label: "Pendiente" },
-          { value: "CONFIRMED", label: "Confirmado" },
-          { value: "PROCESSING", label: "En proceso" },
+          { value: "NEW", label: "Nuevo" },
+          { value: "RECEIVED", label: "Recibido" },
+          { value: "PAYMENT_PENDING", label: "Pago pendiente" },
+          { value: "PAID", label: "Pagado" },
+          { value: "PREPARING", label: "Preparando" },
+          { value: "READY", label: "Listo" },
+          { value: "READY_FOR_PICKUP", label: "Listo para recoger" },
+          { value: "IN_TRANSIT", label: "En tránsito" },
           { value: "SHIPPED", label: "Enviado" },
           { value: "DELIVERED", label: "Entregado" },
           { value: "CANCELLED", label: "Cancelado" },
+        ]}
+      />
+      <SelectField
+        name="currency"
+        label="Moneda"
+        value={filters.currency}
+        options={[
+          { value: "PEN", label: "PEN" },
+          { value: "USD", label: "USD" },
         ]}
       />
       <div className="flex items-end sm:col-span-2 lg:col-span-4">
@@ -242,7 +278,7 @@ export default async function AdminReportesPage({
   );
 
   return (
-    <ReportsWorkspace
+    <Tanda2Reports
       exportHref={`/api/admin/reportes/export?${dashboardFiltersToQuery(filters).toString()}`}
       error={
         reportError
@@ -251,27 +287,19 @@ export default async function AdminReportesPage({
       }
       metrics={metrics}
       controls={controls}
-      data={
-        data
-          ? {
-              sales: data.salesSeries.map((row) => row.total),
-              previous: data.previousSalesSeries.map((row) => row.total),
-              products: data.topProducts.map((row) => ({
-                label: `${row.name} · ${row.sku}`,
-                value: row.units,
-              })),
-              customers: data.topCustomers.map((row) => ({ label: row.name, value: row.orders })),
-              categories: data.categorySummary.map((row) => ({ label: row.categoryName, value: row.revenue })),
-              sellers: data.topSellers.map((row) => ({ label: row.name, value: row.orders })),
-              summary: [
-                { label: "Ventas confirmadas", value: `S/ ${data.salesRange.total.toFixed(2)}` },
-                { label: "Conversión", value: data.conversion.percentage === null ? "N/D" : `${data.conversion.percentage.toFixed(1)}%` },
-                { label: "Pedidos activos", value: data.orders.total },
-                { label: "Pagos pendientes", value: data.pendingPayments },
-              ],
-            }
-          : undefined
-      }
+      data={data}
+      schedules={schedules}
+      reportFilters={filters}
+      currentUserId={actor.userId}
     />
   );
+}
+
+function formatMoney(value: number | null | undefined, currency: string | null | undefined) {
+  if (value === null || value === undefined || !currency || !Number.isFinite(value)) return "N/D";
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value);
 }

@@ -395,7 +395,7 @@ export function FilterSelect({ name, children, options, value }: { name: string;
       <select
         name={name}
         defaultValue={value ?? ""}
-        className="h-10 min-w-[118px] appearance-none rounded-lg border border-[#dce6ee] bg-white px-3 pr-7 text-[10px] font-bold text-[#526b84]"
+        className="has-custom-chevron h-10 min-w-[118px] appearance-none rounded-lg border border-[#dce6ee] bg-white px-3 pr-7 text-[10px] font-bold text-[#526b84]"
       >
         <option value="">{children}</option>
         {choices.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -2008,7 +2008,7 @@ export function ReportsWorkspace({
             <Panel title="Evolución de ventas e ingresos">
               <div className="p-4">
                 {hasSales ? (
-                  <AdminLineChart comparison data={data?.sales} previous={data?.previous} />
+                  <AdminLineChart comparison data={data?.sales} previous={data?.previous} ariaLabel="Evolución de ventas e ingresos" />
                 ) : (
                   <EmptyState
                     title="Aún no hay datos suficientes para este reporte"
@@ -2021,7 +2021,7 @@ export function ReportsWorkspace({
             <Panel title="Composición del margen bruto">
               <div className="p-4">
                 {data?.margin?.length ? (
-                  <AdminLineChart accent="orange" data={data.margin} />
+                  <AdminLineChart accent="orange" data={data.margin} ariaLabel="Composición del margen bruto" />
                 ) : (
                   <EmptyState
                     title="Aún no hay datos suficientes para este reporte"

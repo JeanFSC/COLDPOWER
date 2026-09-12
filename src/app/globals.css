@@ -86,6 +86,38 @@
   outline-offset: 3px;
 }
 
+/* Dropdowns keep the brand's calm blue focus ring instead of the amber
+   accent used for buttons/links/inputs — the amber halo reads as an error
+   state on a select control. Applies to every <select> in the app. */
+select:focus-visible {
+  outline: 2px solid #2277ee;
+  outline-offset: 2px;
+}
+
+/* Consistent dropdown look across the admin area: replace the native OS
+   chrome/arrow with one flat chevron so every select in admin (sales,
+   orders, inventory, pricing, etc.) reads the same, without touching each
+   component. Scoped to .admin-shell (AdminShell's root) so the public
+   storefront/checkout selects are untouched. */
+/* :not(.has-custom-chevron) skips the handful of selects that already draw
+   their own chevron next to a leading icon inside a compound pill — adding
+   a second background chevron there would double up. */
+.admin-shell select:not(.has-custom-chevron) {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23526b84' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 13px;
+  padding-right: 2rem;
+}
+
+.admin-shell select:not(.has-custom-chevron):disabled {
+  cursor: not-allowed;
+  background-image: none;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -143,6 +175,24 @@ textarea {
   outline-color: var(--brand-secondary-600);
   outline-offset: 3px;
 }
+
+.field {
+  width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid #dbe5ed;
+  border-radius: 0.5rem;
+  background: #fbfdff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #304b66;
+}
+
+.field:focus { border-color: #2277ee; outline: none; }
+.option-list { position: absolute; z-index: 30; left: 0; right: 0; margin-top: 0.25rem; max-height: 13rem; overflow-y: auto; border: 1px solid #dbe5ed; border-radius: 0.625rem; background: #fff; box-shadow: 0 8px 24px rgba(16, 42, 67, 0.14); }
+.option-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.625rem 0.75rem; text-align: left; font-size: 0.7rem; font-weight: 700; color: #304b66; }
+.option-row:hover { background: #f4f8fb; }
+.option-row small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #8195a7; }
 
 ::selection {
   background: rgba(15, 111, 174, 0.2);

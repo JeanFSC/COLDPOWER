@@ -19,13 +19,12 @@ export async function POST(request: Request) {
       const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, productId)).limit(1);
       const [location] = await tx.select({ id: locations.id }).from(locations).where(and(eq(locations.id, locationId), eq(locations.active, true))).limit(1);
       if (!product || !location) throw new Error("Producto o local no encontrado.");
-      await tx.insert(inventoryBalances).values({ id: `balance-${productId}-${locationId}`, productId, locationId, onHand: 0, reserved: 0, minimumStock }).onConflictDoNothing({ target: [inventoryBalances.productId, inventoryBalances.locationId] });
       const [before] = await tx.select().from(inventoryBalances).where(and(eq(inventoryBalances.productId, productId), eq(inventoryBalances.locationId, locationId))).limit(1);
-      if (!before) throw new Error("No se pudo abrir el saldo.");
+      if (!before) throw new Error("INVENTORY_BALANCE_NOT_REGISTERED");
       const [after] = await tx.update(inventoryBalances).set({ minimumStock, updatedAt: new Date() }).where(eq(inventoryBalances.id, before.id)).returning();
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "inventory.minimum_stock_updated", entityType: "inventory_balance", entityId: after.id, before: { minimumStock: before.minimumStock, onHand: before.onHand, reserved: before.reserved }, after: { minimumStock: after.minimumStock, onHand: after.onHand, reserved: after.reserved }, metadata: { productId, locationId } });
       return after;
     });
     return NextResponse.json({ balance: result });
-  } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudo guardar el mínimo." }, { status: 409 }); }
+  } catch (error) { return NextResponse.json({ error: error instanceof Error && error.message === "INVENTORY_BALANCE_NOT_REGISTERED" ? "Este producto no tiene saldo registrado en el local. Registra primero un saldo inicial." : error instanceof Error ? error.message : "No se pudo guardar el mínimo." }, { status: 409 }); }
 }

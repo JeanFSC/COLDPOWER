@@ -16,13 +16,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const input = body && typeof body === "object" ? body as Record<string, unknown> : {};
   const invoiceStatus = typeof input.invoiceStatus === "string" && (invoiceStatuses as readonly string[]).includes(input.invoiceStatus) ? input.invoiceStatus as (typeof invoiceStatuses)[number] : null;
   const externalReference = typeof input.externalInvoiceReference === "string" ? input.externalInvoiceReference.trim().slice(0, 160) : "";
+  const invoiceNote = typeof input.invoiceNote === "string" ? input.invoiceNote.trim().slice(0, 500) : null;
+  const rawIssuedAt = typeof input.invoiceIssuedAt === "string" ? input.invoiceIssuedAt.trim() : "";
+  const issuedAt = rawIssuedAt ? new Date(rawIssuedAt) : null;
   if (!invoiceStatus) return apiError("INVALID_INVOICE_STATUS", "Estado de facturación inválido.", 400);
   if (invoiceStatus === "ISSUED" && !externalReference) return apiError("INVOICE_REFERENCE_REQUIRED", "Una factura emitida requiere la referencia externa del proveedor.", 400);
+  if (issuedAt && Number.isNaN(issuedAt.getTime())) return apiError("INVALID_INVOICE_DATE", "La fecha de emisión no es válida.", 400);
   try {
     const result = await getDb().transaction(async (tx) => {
       const [before] = await tx.select().from(sales).where(eq(sales.id, id)).for("update").limit(1);
       if (!before) throw new Error("Venta no encontrada.");
-      const [after] = await tx.update(sales).set({ invoiceStatus, externalInvoiceReference: externalReference || null, updatedAt: new Date() }).where(eq(sales.id, id)).returning();
+      const [after] = await tx.update(sales).set({ invoiceStatus, externalInvoiceReference: externalReference || null, invoiceIssuedAt: invoiceStatus === "ISSUED" ? issuedAt ?? before.invoiceIssuedAt ?? new Date() : before.invoiceIssuedAt, invoiceNote, version: before.version + 1, updatedAt: new Date() }).where(eq(sales.id, id)).returning();
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "sales.invoice_status_updated", entityType: "sale", entityId: id, before: { invoiceStatus: before.invoiceStatus, externalInvoiceReference: before.externalInvoiceReference }, after: { invoiceStatus: after.invoiceStatus, externalInvoiceReference: after.externalInvoiceReference }, metadata: { providerReferenceOnly: true } });
       return after;
     });

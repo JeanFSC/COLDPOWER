@@ -4,6 +4,7 @@ import { notifications, notificationPreferences } from "@/db/operations-schema";
 import { users } from "@/db/schema";
 import { notificationStates, type NotificationState } from "@/lib/operations-validation";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
+import { dispatchNotificationEvent } from "@/lib/notification-rules-service";
 
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
 export class NotificationInvalidFilterError extends Error { constructor() { super("NOTIFICATION_INVALID_FILTER"); this.name = "NotificationInvalidFilterError"; } }
@@ -24,14 +25,36 @@ function filterWhere(recipientId: string, filters: NotificationFilters) { const 
 function mapNotification(row: typeof notifications.$inferSelect) { return { id: row.id, type: row.type, title: row.title, body: row.body, link: row.link, state: row.state, createdAt: row.createdAt, readAt: row.readAt, dismissedAt: row.dismissedAt, metadata: safeMetadata(row.metadata), dedupeKey: row.dedupeKey }; }
 
 export async function getNotificationsPage(recipientId: string, filters: NotificationFilters = {}) { const pageSize = Math.min(100, Math.max(1, Math.floor(filters.pageSize ?? 25))); const page = Math.max(1, Math.floor(filters.page ?? 1)); const where = filterWhere(recipientId, filters); const db = getDb(); const globalUnread = db.select({ value: count() }).from(notifications).where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD"))); const [rows, total, unreadCount, unread, read, dismissed] = await Promise.all([db.select().from(notifications).where(where).orderBy(desc(notifications.createdAt)).limit(pageSize).offset((page - 1) * pageSize), db.select({ value: count() }).from(notifications).where(where), globalUnread, db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "UNREAD"))), db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "READ"))), db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "DISMISSED")))]); const totalItems = Number(total[0]?.value ?? 0); return { items: rows.map(mapNotification), page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), unreadCount: Number(unreadCount[0]?.value ?? 0), metrics: { unread: Number(unread[0]?.value ?? 0), read: Number(read[0]?.value ?? 0), dismissed: Number(dismissed[0]?.value ?? 0) } }; }
+export async function getUnreadNotificationCount(recipientId: string) {
+  const [row] = await getDb()
+    .select({ value: count() })
+    .from(notifications)
+    .where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD")));
+  return Number(row?.value ?? 0);
+}
 export async function listNotifications(recipientId: string) { return (await getNotificationsPage(recipientId, { page: 1, pageSize: 100 })).items; }
 
 export async function updateNotificationState(id: string, state: NotificationState, actor: Actor) { if (!actor.userId || !(notificationStates as readonly string[]).includes(state)) throw new Error("Notificación o estado no válido."); const patch = state === "READ" ? { state, readAt: new Date(), dismissedAt: null } : state === "DISMISSED" ? { state, dismissedAt: new Date(), readAt: null } : { state, readAt: null, dismissedAt: null }; const [updated] = await getDb().update(notifications).set(patch).where(and(eq(notifications.id, id), eq(notifications.recipientId, actor.userId))).returning(); if (!updated) throw new Error("Notificación no encontrada."); return mapNotification(updated); }
 export async function bulkUpdateNotificationState(ids: string[], state: NotificationState, actor: Actor) { if (!actor.userId || !ids.length || ids.length > 200 || !(notificationStates as readonly string[]).includes(state)) throw new Error("Notificaciones o estado no válidos."); const patch = state === "READ" ? { state, readAt: new Date(), dismissedAt: null } : state === "DISMISSED" ? { state, dismissedAt: new Date(), readAt: null } : { state, readAt: null, dismissedAt: null }; const updated = await getDb().update(notifications).set(patch).where(and(eq(notifications.recipientId, actor.userId), inArray(notifications.id, ids))).returning(); return updated.map(mapNotification); }
 
 async function staffIds(type: string) { const roles = targetRoles[type] ?? ["SUPERADMIN", "GERENCIA", "OPERACIONES_VENTAS"]; return getDb().select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), isNotNull(users.roleCode), inArray(users.roleCode, roles as never[]))); }
-export async function notifyStaff(input: NotificationInput) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); return createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized })));
+async function dispatchConfiguredRule(input: NotificationInput, normalized: ReturnType<typeof normalizeInput>) {
+  try {
+    const metadata = safeMetadata(input.metadata);
+    await dispatchNotificationEvent({
+      eventType: normalized.type,
+      entity: metadata,
+      assigneeId: typeof metadata?.assigneeId === "string" ? metadata.assigneeId : null,
+      link: normalized.link,
+      fallbackTitle: normalized.title,
+      fallbackBody: normalized.body,
+    });
+  } catch (error) {
+    console.error("ColdPower: no se pudo evaluar una regla de notificación", error);
+  }
 }
-export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: string }) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); if (!staff.length) return []; return createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized }))); }
+export async function notifyStaff(input: NotificationInput) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); const rows = await createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized }))); await dispatchConfiguredRule(input, normalized); return rows; }
+export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: string }) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); if (!staff.length) { await dispatchConfiguredRule(input, normalized); return []; } const rows = await createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized }))); await dispatchConfiguredRule(input, normalized); return rows; }
 export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>) { if (!rows.length) return []; const values = rows.map((row) => { const normalized = normalizeInput(row); return { id: `notification-${crypto.randomUUID()}`, recipientId: row.recipientId, type: normalized.type, title: normalized.title, body: normalized.body, link: normalized.link, metadata: normalized.metadata, dedupeKey: normalized.dedupeKey }; }); return getDb().insert(notifications).values(values).onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] }).returning(); }
 export async function getNotificationPreferences(userId: string) { const [row] = await getDb().select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); return row?.preferences ?? {}; }
+export async function saveNotificationPreferences(userId: string, input: unknown) { const value = input && typeof input === "object" ? input as Record<string, unknown> : {}; const preferences = Object.fromEntries(Object.entries(value).filter(([key, setting]) => /^[A-Za-z0-9_.:-]{1,80}$/.test(key) && typeof setting === "boolean")) as Record<string, boolean>; const [existing] = await getDb().select({ userId: notificationPreferences.userId }).from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); const [row] = existing ? await getDb().update(notificationPreferences).set({ preferences, updatedAt: new Date() }).where(eq(notificationPreferences.userId, userId)).returning() : await getDb().insert(notificationPreferences).values({ userId, preferences }).returning(); return row.preferences; }

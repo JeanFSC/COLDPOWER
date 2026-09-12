@@ -2,6 +2,10 @@ export const pricingPriceTypes = ["COST", "RETAIL", "WHOLESALE", "MINIMUM", "SPE
 export type PricingPriceType = (typeof pricingPriceTypes)[number];
 export const pricingStatuses = ["ACTIVE", "INACTIVE", "ARCHIVED"] as const;
 export type PricingStatus = (typeof pricingStatuses)[number];
+export const pricingEffectiveStatuses = ["CURRENT", "SCHEDULED", "EXPIRED", "INACTIVE", "ARCHIVED", "MISSING"] as const;
+export type PricingEffectiveStatus = (typeof pricingEffectiveStatuses)[number];
+export const pricingCoverages = ["PRICED", "MISSING"] as const;
+export type PricingCoverage = (typeof pricingCoverages)[number];
 
 export class PricingInvalidFilterError extends Error {
   constructor() {
@@ -20,6 +24,18 @@ export type PricingFilters = {
   priceType?: PricingPriceType;
   status?: PricingStatus;
   active?: boolean;
+  effectiveStatus?: PricingEffectiveStatus;
+  pricingCoverage?: PricingCoverage;
+  currency?: "PEN" | "USD";
+  hasWholesale?: boolean;
+  hasPromotion?: boolean;
+  hasMinimum?: boolean;
+  validFrom?: string;
+  validUntil?: string;
+  updatedFrom?: string;
+  updatedUntil?: string;
+  sort?: "sku" | "updatedAt" | "retail";
+  order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 };
@@ -57,10 +73,32 @@ function optionalDate(params: URLSearchParams, key: string) {
 export function parsePricingFilters(params: URLSearchParams): PricingFilters {
   const priceType = optionalText(params, "priceType");
   const status = optionalText(params, "status");
+  const effectiveStatus = optionalText(params, "effectiveStatus");
+  const pricingCoverage = optionalText(params, "pricingCoverage");
   const activeRaw = optionalText(params, "active");
+  const hasWholesaleRaw = optionalText(params, "hasWholesale");
+  const hasPromotionRaw = optionalText(params, "hasPromotion");
+  const hasMinimumRaw = optionalText(params, "hasMinimum");
+  const currency = optionalText(params, "currency");
+  const validFrom = optionalDate(params, "validFrom");
+  const validUntil = optionalDate(params, "validUntil");
+  const updatedFrom = optionalDate(params, "updatedFrom");
+  const updatedUntil = optionalDate(params, "updatedUntil");
+  const sort = optionalText(params, "sort");
+  const order = optionalText(params, "order");
   if (priceType && !pricingPriceTypes.includes(priceType as PricingPriceType)) throw new PricingInvalidFilterError();
   if (status && !pricingStatuses.includes(status as PricingStatus)) throw new PricingInvalidFilterError();
+  if (effectiveStatus && !pricingEffectiveStatuses.includes(effectiveStatus as PricingEffectiveStatus)) throw new PricingInvalidFilterError();
+  if (pricingCoverage && !pricingCoverages.includes(pricingCoverage as PricingCoverage)) throw new PricingInvalidFilterError();
   if (activeRaw && activeRaw !== "true" && activeRaw !== "false") throw new PricingInvalidFilterError();
+  if (hasWholesaleRaw && hasWholesaleRaw !== "true" && hasWholesaleRaw !== "false") throw new PricingInvalidFilterError();
+  if (hasPromotionRaw && hasPromotionRaw !== "true" && hasPromotionRaw !== "false") throw new PricingInvalidFilterError();
+  if (hasMinimumRaw && hasMinimumRaw !== "true" && hasMinimumRaw !== "false") throw new PricingInvalidFilterError();
+  if (currency && currency !== "PEN" && currency !== "USD") throw new PricingInvalidFilterError();
+  if (validFrom && validUntil && validFrom > validUntil) throw new PricingInvalidFilterError();
+  if (updatedFrom && updatedUntil && updatedFrom > updatedUntil) throw new PricingInvalidFilterError();
+  if (sort && !["sku", "updatedAt", "retail"].includes(sort)) throw new PricingInvalidFilterError();
+  if (order && order !== "asc" && order !== "desc") throw new PricingInvalidFilterError();
   return {
     query: optionalText(params, "query"),
     sku: optionalText(params, "sku"),
@@ -71,6 +109,18 @@ export function parsePricingFilters(params: URLSearchParams): PricingFilters {
     priceType: priceType as PricingPriceType | undefined,
     status: status as PricingStatus | undefined,
     active: activeRaw === undefined ? undefined : activeRaw === "true",
+    ...(effectiveStatus ? { effectiveStatus: effectiveStatus as PricingEffectiveStatus } : {}),
+    ...(pricingCoverage ? { pricingCoverage: pricingCoverage as PricingCoverage } : {}),
+    ...(currency ? { currency: currency as "PEN" | "USD" } : {}),
+    ...(hasWholesaleRaw === undefined ? {} : { hasWholesale: hasWholesaleRaw === "true" }),
+    ...(hasPromotionRaw === undefined ? {} : { hasPromotion: hasPromotionRaw === "true" }),
+    ...(hasMinimumRaw === undefined ? {} : { hasMinimum: hasMinimumRaw === "true" }),
+    ...(validFrom ? { validFrom } : {}),
+    ...(validUntil ? { validUntil } : {}),
+    ...(updatedFrom ? { updatedFrom } : {}),
+    ...(updatedUntil ? { updatedUntil } : {}),
+    ...(sort ? { sort: sort as PricingFilters["sort"] } : {}),
+    ...(order ? { order: order as PricingFilters["order"] } : {}),
     page: positiveInteger(params, "page"),
     pageSize: positiveInteger(params, "pageSize"),
   };
@@ -111,6 +161,7 @@ export type PricingPriceRecord = {
   active: boolean;
   validFrom: Date;
   validUntil: Date | null;
+  updatedAt?: Date | string | null;
 };
 
 export type PricingItem = {
@@ -130,6 +181,17 @@ export type PricingItem = {
   amount?: string;
   currency?: string;
   status?: string;
+  pricing?: {
+    retail: PricingPriceRecord | null;
+    wholesale: PricingPriceRecord | null;
+    minimum: PricingPriceRecord | null;
+    special: PricingPriceRecord | null;
+    cost?: PricingPriceRecord | null;
+  };
+  effectiveStatus?: PricingEffectiveStatus;
+  hasRetail?: boolean;
+  updatedAt?: Date | string | null;
+  media?: { primaryUrl: string; altText: string | null; assetId: string } | null;
 };
 
 export type PricingListResponse = {
@@ -138,6 +200,25 @@ export type PricingListResponse = {
   pageSize: number;
   totalItems: number;
   totalPages: number;
-  metrics: { totalWithPrice: number; totalWithoutPrice: number; activePrices: number; promotions: number; expiredPrices: number };
-  facets: { categories: Array<{ id: string; name: string }>; families: Array<{ id: string; name: string }>; brands: Array<{ id: string; name: string }>; statuses: string[] };
+  metrics: {
+    totalWithPrice: number;
+    totalWithoutPrice: number;
+    activePrices: number;
+    promotions: number;
+    expiredPrices: number;
+    totalProducts?: number;
+    retailPricedProducts?: number;
+    retailMissingProducts?: number;
+    wholesaleConfiguredProducts?: number;
+    activeSpecialPrices?: number;
+    scheduledPriceChanges?: number;
+    expiringSoon?: number;
+  };
+  facets: {
+    categories: Array<{ id: string; name: string }>;
+    families: Array<{ id: string; name: string }>;
+    brands: Array<{ id: string; name: string }>;
+    statuses: string[];
+    currencies?: string[];
+  };
 };

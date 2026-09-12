@@ -31,6 +31,7 @@ test("el centro operativo tiene colas paginadas y estados excluidos", () => {
   assert.match(workspace, /COMPLETED/);
   assert.match(workspace, /getOperationsExport/);
   assert.match(workspace, /totalPages/);
+  assert.match(workspace, /queueTotals/);
   assert.match(route, /operations\.view/);
   assert.match(route, /OPERATIONS_INVALID_FILTER/);
 });
@@ -49,4 +50,23 @@ test("RBAC permite visualizar operaciones al equipo autorizado y bloquea cliente
   assert.equal(can("OPERACIONES_VENTAS", "operations.view"), true);
   assert.equal(can("ALMACEN", "operations.view"), true);
   assert.equal(can("VENTAS", "operations.view"), true);
+});
+
+test("las tareas operativas se asignan, resuelven en el dominio de origen y reportan carga", () => {
+  const workspace = read("src/lib/operations-workspace.ts");
+  const service = read("src/lib/operations-work-items-service.ts");
+  const route = read("src/app/api/admin/operaciones/[id]/route.ts");
+  const action = read("src/components/admin/OperationsWorkItemAction.tsx");
+  const ui = read("src/components/admin/AdminTanda2Workspaces.tsx");
+  assert.match(workspace, /loadTeamLoad/);
+  assert.match(workspace, /operationalSignals/);
+  assert.match(service, /resolveOperationsWorkItem/);
+  assert.match(service, /operations\.work_item_resolved/);
+  assert.match(service, /sourceType !== "FOLLOW_UP"/);
+  assert.match(route, /action === "resolve"/);
+  assert.match(route, /crm\.edit/);
+  assert.match(action, /Resolver/);
+  assert.match(action, /Reasignar/);
+  assert.match(ui, /operations-filters/);
+  assert.match(ui, /workItemTeam/);
 });

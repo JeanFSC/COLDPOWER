@@ -1,0 +1,6 @@
+import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { apiError, apiSuccess } from "@/lib/api-errors";
+import { listNotificationRules, saveNotificationRule, validateNotificationRuleInput } from "@/lib/notification-rules-service";
+
+export async function GET() { try { await requireApiPermission("notifications.view"); return apiSuccess({ rules: await listNotificationRules() }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATION_RULES_FORBIDDEN", "No tienes permiso para ver reglas.", 403); return apiError("NOTIFICATION_RULES_UNAVAILABLE", "No se pudieron cargar las reglas.", 503); } }
+export async function POST(request: Request) { try { const actor = await requireApiPermission("notifications.manage"); const body = await request.json() as Record<string, unknown>; const input = validateNotificationRuleInput(body); return apiSuccess({ rule: await saveNotificationRule(input, actor, typeof body.id === "string" ? body.id : undefined) }, 201); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATION_RULES_FORBIDDEN", "No tienes permiso para administrar reglas.", 403); return apiError("NOTIFICATION_RULE_INVALID", error instanceof Error ? error.message : "No se pudo guardar la regla.", 400); } }

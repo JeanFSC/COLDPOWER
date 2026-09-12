@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { can } from "@/lib/roles";
 import { requirePermission } from "@/lib/auth";
-import { getUserPage, getPendingInvitationsCount, listStaffInvitations, parseUserFilters } from "@/lib/user-administration";
+import { getUserPage, getManagedUserDetail, getPendingInvitationsCount, listStaffInvitations, parseUserFilters } from "@/lib/user-administration";
 import { UserRoleControl } from "@/components/admin/UserRoleControl";
 import { StaffInvitationForm } from "@/components/admin/StaffInvitationForm";
 import { StaffInvitationActions } from "@/components/admin/StaffInvitationActions";
-import { UsersWorkspace } from "@/components/admin/AdminCategoryViews";
+import { Tanda2Users } from "@/components/admin/AdminTanda2Workspaces";
 
 export const metadata: Metadata = { title: "Usuarios | Panel admin ColdPower", description: "Gestión de usuarios, roles y estados de ColdPower." };
 type Params = Record<string, string | string[] | undefined>;
@@ -19,6 +19,13 @@ export default async function AdminUsuariosPage({ searchParams }: { searchParams
   let invitations: Awaited<ReturnType<typeof listStaffInvitations>> = { items: [], totalItems: 0 };
   let loadError = false;
   try { pendingInvitations = await getPendingInvitationsCount(); invitations = await listStaffInvitations(query.get("query") ?? undefined); } catch (error) { console.error("ColdPower: Clerk no respondió para usuarios e invitaciones", error); loadError = true; }
+  const selectedUserId = query.get("userId");
+  let userDetail: Awaited<ReturnType<typeof getManagedUserDetail>> | null = null;
+  let userDetailError: string | null = null;
+  if (selectedUserId) {
+    try { userDetail = await getManagedUserDetail(selectedUserId); }
+    catch (error) { userDetailError = error instanceof Error ? error.message : "No se pudo cargar el detalle del usuario."; }
+  }
   const page = await getUserPage(filters, pendingInvitations);
   const rows = page.items.map((user) => ({ id: user.id, name: user.name || "Sin nombre", email: user.email, role: user.role, roleLabel: userRoleLabel(user.role), status: user.status, lastAccess: user.lastSignInAt?.toLocaleString("es-PE") ?? "Nunca registrado", createdAt: user.createdAt.toLocaleDateString("es-PE"), sync: user.clerkSyncStatus }));
   const controls = (
@@ -30,7 +37,7 @@ export default async function AdminUsuariosPage({ searchParams }: { searchParams
     </div>
   );
   const exportHref = `/api/admin/usuarios/export${query.toString() ? `?${query.toString()}` : ""}`;
-  return <UsersWorkspace rows={rows} canInvite={can(actor.role, "users.invite")} metrics={page.metrics} pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }} facets={{ roles: ["SUPERADMIN", "GERENCIA", "OPERACIONES_VENTAS", "JEFATURA", "ADMIN", "VENTAS", "ALMACEN", "COMPRAS", "REPORTES", "customer"], statuses: ["ACTIVE", "INACTIVE", "SUSPENDED"] }} query={query.get("query") ?? undefined} queryString={query.toString()} exportHref={exportHref} controls={controls} />;
+  return <Tanda2Users rows={rows} canInvite={can(actor.role, "users.invite")} metrics={page.metrics} pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }} exportHref={exportHref} controls={controls} selectedId={selectedUserId ?? undefined} detail={userDetail ? { user: userDetail.user, history: userDetail.history, lastAccess: userDetail.lastAccess, invitation: userDetail.invitation } : undefined} detailError={userDetailError} />;
 }
 
 function userRoleLabel(role: string) {

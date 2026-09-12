@@ -28,6 +28,7 @@ test("CP-034 runtime mantiene relaciones independientes en el 360", async () => 
   assert.equal(detail.customer.id, page.items[0].id);
   assert.equal(detail.quotes.pageSize, 1);
   assert.equal(detail.opportunities.pageSize, 1);
+  assert.ok(detail.orders);
   assert.equal(detail.orders.pageSize, 1);
   assert.equal(detail.activities.pageSize, 1);
   assert.equal(detail.tasks.pageSize, 1);

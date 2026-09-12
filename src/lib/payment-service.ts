@@ -1,9 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sum } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory } from "@/db/sales-schema";
 import { getPaymentProvider, type PaymentCreateResult, type PaymentRefundResult } from "@/lib/payments";
-import { canTransitionPayment, normalizeProviderStatus } from "@/lib/payments-contract";
+import { canTransitionPayment, normalizeProviderStatus, summarizePaymentLedger } from "@/lib/payments-contract";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 
@@ -75,7 +75,13 @@ export async function refreshPaymentStatus(paymentId: string, actor: Actor | nul
 async function markOrderPaid(tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0], orderId: string, changedBy: string | null, note: string) {
   const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
   if (order?.status !== "PAYMENT_PENDING") return;
-  await tx.update(orders).set({ status: "PAID", updatedAt: new Date() }).where(eq(orders.id, order.id));
+  const [grossRows, refundedRows] = await Promise.all([
+    tx.select({ total: sum(payments.amount) }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), inArray(payments.status, ["CONFIRMED", "APPROVED"]))),
+    tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
+  ]);
+  const netReceived = summarizePaymentLedger(order.total, [{ amount: grossRows[0]?.total ?? 0, status: "CONFIRMED" }], [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
+  if (netReceived + 0.005 < amount(order.total)) return;
+  await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id));
   await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy, note });
 }
 
@@ -90,8 +96,10 @@ export async function refundPayment(paymentId: string, input: { amount?: string;
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado.", 404);
     if (!(payment.status === "CONFIRMED" || payment.status === "APPROVED")) throw new PaymentDomainError("PAYMENT_REFUND_NOT_ALLOWED", "Solo se puede reembolsar un pago confirmado.", 409);
     if (!payment.provider || !payment.providerReference) throw new PaymentDomainError("PAYMENT_PROVIDER_NOT_CONFIGURED", "El pago no tiene una referencia de proveedor reembolsable.", 503);
-    const refundAmount = input.amount ? amount(input.amount) : amount(payment.amount);
-    if (!Number.isFinite(refundAmount) || refundAmount <= 0 || refundAmount > amount(payment.amount)) throw new PaymentDomainError("PAYMENT_REFUND_AMOUNT_INVALID", "El monto del reembolso no es válido.", 400);
+    const [reservedRefunds] = await tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, paymentId), inArray(paymentRefunds.status, ["PENDING", "SUCCEEDED"])));
+    const available = amount(payment.amount) - amount(reservedRefunds?.total ?? 0);
+    const refundAmount = input.amount ? amount(input.amount) : available;
+    if (!Number.isFinite(refundAmount) || refundAmount <= 0 || refundAmount > available + 0.005) throw new PaymentDomainError("PAYMENT_REFUND_AMOUNT_INVALID", "El monto supera el saldo disponible para reembolso.", 400);
     const [refund] = await tx.insert(paymentRefunds).values({ id: id("refund"), paymentId, provider: payment.provider, providerReference: null, idempotencyKey: key, amount: refundAmount.toFixed(2), currency: payment.currency, status: "PENDING", reason: input.reason.trim().slice(0, 500), requestedBy: actor.userId }).returning();
     await tx.insert(auditLogs).values(audit(actor, "payments.refund_requested", paymentId, payment, refund, { refundId: refund.id, reason: input.reason.trim().slice(0, 500) }));
     return { refund, payment, idempotent: false };
@@ -108,10 +116,17 @@ export async function refundPayment(paymentId: string, input: { amount?: string;
     const [currentPayment] = await tx.select().from(payments).where(eq(payments.id, prepared.payment!.id)).for("update").limit(1);
     const [refund] = await tx.update(paymentRefunds).set({ status: finalStatus, providerReference: result.providerReference ?? null, externalReference: result.providerReference ?? null, metadata: result.metadata ?? null, confirmedAt: finalStatus === "SUCCEEDED" ? new Date() : null, updatedAt: new Date() }).where(eq(paymentRefunds.id, prepared.refund.id)).returning();
     if (finalStatus === "SUCCEEDED") {
-      if (!currentPayment || !canTransitionPayment(currentPayment.status, "REFUNDED")) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El estado del pago cambió y no permite completar el reembolso.", 409);
-      const [updatedPayment] = await tx.update(payments).set({ status: "REFUNDED", updatedAt: new Date(), metadata: result.metadata ?? currentPayment.metadata }).where(eq(payments.id, currentPayment.id)).returning();
-      await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: currentPayment.id, fromStatus: currentPayment.status, toStatus: "REFUNDED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: currentPayment.provider, reason: prepared.refund.reason });
-      await tx.insert(auditLogs).values(audit(actor, "payments.refund_succeeded", currentPayment.id, currentPayment, updatedPayment, { refundId: refund.id, providerReference: result.providerReference ?? null }));
+      if (!currentPayment) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El pago cambió mientras se procesaba el reembolso.", 409);
+      const [totalRefunds] = await tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, currentPayment.id), eq(paymentRefunds.status, "SUCCEEDED")));
+      const refundedTotal = amount(totalRefunds?.total ?? 0);
+      const isFullRefund = refundedTotal + 0.005 >= amount(currentPayment.amount);
+      let updatedPayment = currentPayment;
+      if (isFullRefund) {
+        if (!canTransitionPayment(currentPayment.status, "REFUNDED")) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El estado del pago cambió y no permite completar el reembolso.", 409);
+        [updatedPayment] = await tx.update(payments).set({ status: "REFUNDED", updatedAt: new Date(), metadata: result.metadata ?? currentPayment.metadata }).where(eq(payments.id, currentPayment.id)).returning();
+        await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: currentPayment.id, fromStatus: currentPayment.status, toStatus: "REFUNDED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: currentPayment.provider, reason: prepared.refund.reason });
+      }
+      await tx.insert(auditLogs).values(audit(actor, "payments.refund_confirmed", currentPayment.id, currentPayment, updatedPayment, { refundId: refund.id, providerReference: result.providerReference ?? null, refundedTotal: refundedTotal.toFixed(2), fullRefund: isFullRefund }));
       return { refund, payment: updatedPayment, idempotent: false };
     }
     await tx.insert(auditLogs).values(audit(actor, finalStatus === "FAILED" ? "payments.refund_failed" : "payments.refund_pending", prepared.payment!.id, currentPayment, refund, { refundId: refund.id }));

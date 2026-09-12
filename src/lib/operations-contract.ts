@@ -1,7 +1,13 @@
 export const operationsRanges = ["all", "today", "yesterday", "week", "month", "custom"] as const;
 export type OperationsRange = (typeof operationsRanges)[number];
 
-export const operationsQueues = ["quotes", "opportunities", "orders", "followUps", "inventoryAlerts"] as const;
+export const operationsQueues = [
+  "quotes",
+  "opportunities",
+  "orders",
+  "followUps",
+  "inventoryAlerts",
+] as const;
 export type OperationsQueue = (typeof operationsQueues)[number];
 
 export type OperationsFilters = {
@@ -11,6 +17,10 @@ export type OperationsFilters = {
   locationId?: string;
   sellerId?: string;
   status?: string;
+  team?: "VENTAS" | "OPERACIONES" | "ALMACEN";
+  assigneeId?: string;
+  urgency?: "LOW" | "NORMAL" | "MEDIUM" | "HIGH" | "CRITICAL";
+  sla?: "NO_POLICY" | "ON_TRACK" | "DUE_SOON" | "OVERDUE";
   queue?: OperationsQueue;
   page: number;
   pageSize: number;
@@ -63,6 +73,30 @@ export function getLimaTodayBounds() {
   return { from, to };
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Produces adjacent, equally sized windows for KPI comparisons. */
+export function getOperationsComparisonPeriods(filters: OperationsFilters) {
+  const today = getLimaTodayBounds();
+  const usesRollingWindow = !filters.fromAt || !filters.toAt;
+  const currentFrom = usesRollingWindow
+    ? new Date(today.from.getTime() - 29 * DAY_MS)
+    : filters.fromAt!;
+  const currentTo = usesRollingWindow ? today.from : filters.toAt!;
+  const durationDays = Math.max(
+    1,
+    Math.round((currentTo.getTime() - currentFrom.getTime()) / DAY_MS) + 1,
+  );
+  const previousTo = new Date(currentFrom.getTime() - DAY_MS);
+  const previousFrom = new Date(previousTo.getTime() - (durationDays - 1) * DAY_MS);
+  const base = { ...filters, range: "custom" as const, page: 1 };
+  return {
+    current: { ...base, fromAt: currentFrom, toAt: currentTo },
+    previous: { ...base, fromAt: previousFrom, toAt: previousTo },
+    label: usesRollingWindow ? "vs. 30 días anteriores" : "vs. periodo anterior",
+  };
+}
+
 function rangeDates(range: OperationsRange) {
   if (range === "today") return { from: limaDate(0), to: limaDate(0) };
   if (range === "yesterday") return { from: limaDate(-1), to: limaDate(-1) };
@@ -90,7 +124,17 @@ export function parseOperationsFilters(params: URLSearchParams): OperationsFilte
     throw new OperationsInvalidFilterError("La cola operativa no es válida.");
   }
   const status = params.get("status")?.trim() || undefined;
-  if (status && status.length > 64) throw new OperationsInvalidFilterError("El estado operativo no es válido.");
+  if (status && status.length > 64)
+    throw new OperationsInvalidFilterError("El estado operativo no es válido.");
+  const team = params.get("team")?.trim() || undefined;
+  if (team && !["VENTAS", "OPERACIONES", "ALMACEN"].includes(team))
+    throw new OperationsInvalidFilterError("El equipo operativo no es válido.");
+  const urgency = params.get("urgency")?.trim() || undefined;
+  if (urgency && !["LOW", "NORMAL", "MEDIUM", "HIGH", "CRITICAL"].includes(urgency))
+    throw new OperationsInvalidFilterError("La urgencia operativa no es válida.");
+  const sla = params.get("sla")?.trim() || undefined;
+  if (sla && !["NO_POLICY", "ON_TRACK", "DUE_SOON", "OVERDUE"].includes(sla))
+    throw new OperationsInvalidFilterError("El estado SLA no es válido.");
   return {
     range,
     from,
@@ -100,6 +144,10 @@ export function parseOperationsFilters(params: URLSearchParams): OperationsFilte
     locationId: params.get("locationId")?.trim() || undefined,
     sellerId: params.get("sellerId")?.trim() || undefined,
     status,
+    team: team as OperationsFilters["team"],
+    assigneeId: params.get("assigneeId")?.trim() || undefined,
+    urgency: urgency as OperationsFilters["urgency"],
+    sla: sla as OperationsFilters["sla"],
     queue: rawQueue as OperationsQueue | undefined,
     page: positiveInteger(params.get("page"), 1, 100000),
     pageSize: positiveInteger(params.get("pageSize"), 25, 1000),

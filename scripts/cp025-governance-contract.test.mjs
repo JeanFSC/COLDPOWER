@@ -11,12 +11,13 @@ test("CP-025 expone decisiones de duplicado reversibles y canónico acotado al g
   const service = read("src/lib/duplicate-service.ts");
   const route = read("src/app/api/admin/catalogo/[id]/duplicate/route.ts");
   const page = read("src/app/admin/catalogo/page.tsx");
+  const component = read("src/components/admin/AdminProductCatalog.tsx");
   for (const decision of ["pending", "different", "confirmed", "keep_both"]) assert.match(schema + service + page, new RegExp(decision));
   assert.match(service, /same group|mismo grupo/i);
   assert.match(service, /massOperation: false/);
   assert.doesNotMatch(service, /delete\(|DELETE|merge/i);
   assert.match(route, /require(?:Api)?Permission\("(?:catalog:review|catalog\.product\.review)"\)/);
-  assert.match(page, /Duplicados pendientes|Duplicados agrupados/i);
+  assert.match(page + component, /Duplicados editoriales pendientes|duplicateGroups|Grupo pendiente/i);
 });
 
 test("CP-025 inventario expone locales, ajustes, traslados, reservas y acciones protegidas", () => {

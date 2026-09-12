@@ -25,6 +25,10 @@ export type CompanySettingsInput = {
   guaranteeTerms: string | null;
   coverage: string | null;
   legalLinks: Record<string, string> | null;
+  logoMediaId: string | null;
+  faviconMediaId: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
 };
 
 const MAX_TEXT = 2_000;
@@ -58,6 +62,20 @@ function textMap(value: unknown, field: string): Record<string, string> | null {
     return [key, clean];
   }).filter(([, item]) => Boolean(item))) as Record<string, string>;
   return Object.keys(result).length ? result : null;
+}
+
+function hexColor(value: unknown, field: string): string | null {
+  const clean = optionalText(value, field, 7);
+  if (!clean) return null;
+  if (!/^#[0-9a-fA-F]{6}$/.test(clean)) throw new Error(`${field} debe ser un color hexadecimal (#RRGGBB).`);
+  return clean.toLowerCase();
+}
+
+function mediaId(value: unknown, field: string): string | null {
+  const clean = optionalText(value, field, 200);
+  if (!clean) return null;
+  if (!/^[a-zA-Z0-9_-]{1,200}$/.test(clean)) throw new Error(`${field} no es un identificador de media válido.`);
+  return clean;
 }
 
 function safeUrl(value: string, field: string) {
@@ -100,5 +118,6 @@ export function validateCompanySettingsInput(body: unknown): CompanySettingsInpu
     whatsapp: optionalText(value.whatsapp, "whatsapp", 40), email, salesEmail, hours: optionalText(value.hours, "hours"), businessHours: optionalText(value.businessHours, "businessHours"), facebook: optionalText(value.facebook, "facebook", 500), instagram: optionalText(value.instagram, "instagram", 500), tiktok: optionalText(value.tiktok, "tiktok", 500), website: optionalText(value.website, "website", 500),
     socials: textMap(value.socials, "socials"), locations: locationsList(value.locations), paymentMethods: textList(value.paymentMethods, "paymentMethods"),
     guaranteeTerms: optionalText(value.guaranteeTerms, "guaranteeTerms"), coverage: optionalText(value.coverage, "coverage"), legalLinks: textMap(value.legalLinks, "legalLinks"),
+    logoMediaId: mediaId(value.logoMediaId, "logoMediaId"), faviconMediaId: mediaId(value.faviconMediaId, "faviconMediaId"), primaryColor: hexColor(value.primaryColor, "primaryColor"), secondaryColor: hexColor(value.secondaryColor, "secondaryColor"),
   };
 }

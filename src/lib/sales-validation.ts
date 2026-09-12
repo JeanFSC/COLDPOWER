@@ -14,7 +14,7 @@ const orderTransitions: Record<OrderStatus, readonly OrderStatus[]> = {
   PAYMENT_PENDING: ["PAID", "CANCELLED"],
   PAID: ["PREPARING", "CANCELLED"],
   PREPARING: ["READY", "READY_FOR_PICKUP", "CANCELLED"],
-  READY: ["IN_TRANSIT", "DELIVERED", "CANCELLED"],
+  READY: ["IN_TRANSIT", "SHIPPED", "DELIVERED", "CANCELLED"],
   READY_FOR_PICKUP: ["DELIVERED", "CANCELLED"],
   IN_TRANSIT: ["DELIVERED"],
   SHIPPED: ["DELIVERED"],
@@ -22,6 +22,18 @@ const orderTransitions: Record<OrderStatus, readonly OrderStatus[]> = {
   CANCELLED: [],
 };
 export function canTransitionOrder(from: OrderStatus, to: OrderStatus) { return from === to || orderTransitions[from].includes(to); }
+export function canTransitionOrderForDelivery(from: OrderStatus, to: OrderStatus, deliveryMethod: DeliveryMethod) {
+  if (!canTransitionOrder(from, to)) return false;
+  if (from === "PREPARING" && to === "READY_FOR_PICKUP") return deliveryMethod === "PICKUP";
+  if (from === "PREPARING" && to === "READY") return deliveryMethod !== "PICKUP";
+  if (from === "READY" && to === "IN_TRANSIT") return deliveryMethod === "DELIVERY";
+  if (from === "READY" && to === "SHIPPED") return deliveryMethod === "SHIPPING";
+  if (from === "READY" && to === "DELIVERED") return false;
+  return true;
+}
+export function isValidPickedQuantity(pickedQuantity: number, requestedQuantity: number) {
+  return Number.isInteger(requestedQuantity) && requestedQuantity > 0 && Number.isInteger(pickedQuantity) && pickedQuantity >= 0 && pickedQuantity <= requestedQuantity;
+}
 function text(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 export function validateCheckoutInput(input: unknown): CheckoutInput {
   if (!input || typeof input !== "object") throw new Error("El checkout debe enviarse como objeto.");
@@ -53,6 +65,7 @@ export function validateManualPaymentInput(input: unknown) {
   if (!(manualPaymentMethods as readonly string[]).includes(method)) throw new Error("Método de pago manual no confirmado.");
   if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) throw new Error("El monto debe ser mayor que cero y tener como máximo dos decimales.");
   if (!/^[A-Z]{3}$/.test(currency)) throw new Error("La moneda debe ser ISO de tres letras.");
+  if ((method === "TRANSFER" || method === "DEPOSIT") && !reference) throw new Error("La referencia es obligatoria para transferencias y depósitos.");
   if (!reason) throw new Error("El motivo de confirmación manual es obligatorio.");
   return { orderId, method: method as ManualPaymentMethod, amount: amount.toFixed(2), currency, reference, reason };
 }

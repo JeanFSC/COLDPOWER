@@ -1,13 +1,12 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const nextStatuses: Record<string, string[]> = {
-  DRAFT: ["REQUESTED"],
-  REQUESTED: ["APPROVED", "CANCELLED"],
-  APPROVED: ["PREPARED", "CANCELLED"],
-  PREPARED: ["IN_TRANSIT", "CANCELLED"],
-  IN_TRANSIT: ["RECEIVED"],
+  DRAFT: ["REQUESTED", "CANCELLED"],
+  REQUESTED: ["IN_TRANSIT", "CANCELLED"],
+  IN_TRANSIT: ["RECEIVED", "CANCELLED"],
 };
 
 export function TransferStatusControl({
@@ -19,6 +18,7 @@ export function TransferStatusControl({
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const router = useRouter();
   const options = nextStatuses[status] ?? [];
   async function move(nextStatus: string) {
     setBusy(true);
@@ -29,13 +29,13 @@ export function TransferStatusControl({
           ? `/api/admin/inventario/transferencias/${transferId}/recibir`
           : `/api/admin/inventario/transferencias/${transferId}`;
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: nextStatus === "RECEIVED" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
         body: nextStatus === "RECEIVED" ? undefined : JSON.stringify({ status: nextStatus }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "No se pudo actualizar el traslado.");
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo actualizar el traslado.");
     } finally {

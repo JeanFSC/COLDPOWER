@@ -11,7 +11,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const actor = await requireApiPermission("customers.view");
     const { id } = await params;
     if (!id.trim()) return apiError("CUSTOMER_ID_REQUIRED", "El id del cliente es obligatorio.", 400);
-    const detail = await getCustomer360(id, parseCustomerRelationFilters(new URL(request.url).searchParams), { includeFinancial: can(actor.role, "sales.view") || can(actor.role, "payments.view") });
+    const detail = await getCustomer360(id, parseCustomerRelationFilters(new URL(request.url).searchParams), {
+      includeFinancial: can(actor.role, "sales.view") || can(actor.role, "payments.view"),
+      includeSales: can(actor.role, "sales.view"),
+      includePayments: can(actor.role, "payments.view"),
+      includeOrders: can(actor.role, "orders.view"),
+    });
     if (!detail) return apiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
     return apiSuccess(detail);
   } catch (error) {

@@ -14,7 +14,7 @@ test("las reglas de descuento son configurables y sus porcentajes quedan acotado
   assert.deepEqual(validateDiscountInput({ name: "Ventas", maxPercentage: "5", approvalAbovePercentage: "5" }), { name: "Ventas", maxPercentage: "5.00", approvalAbovePercentage: "5.00" });
   assert.throws(() => validateDiscountInput({ name: "", maxPercentage: "5", approvalAbovePercentage: "5" }), /nombre/);
   assert.throws(() => validateDiscountInput({ name: "Ventas", maxPercentage: "110", approvalAbovePercentage: "5" }), /porcentaje/);
-  assert.throws(() => validateDiscountInput({ name: "Ventas", maxPercentage: "5", approvalAbovePercentage: "4" }), /aprobación/);
+  assert.throws(() => validateDiscountInput({ name: "Ventas", maxPercentage: "4", approvalAbovePercentage: "5" }), /aprobación/);
 });
 
 test("CP-030 persiste precio especial, mínimos, cantidad mayorista y estado", () => {

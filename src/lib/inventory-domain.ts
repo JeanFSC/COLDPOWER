@@ -2,6 +2,24 @@ import type { InventoryMovementType } from "@/lib/inventory-types";
 
 export type InventoryBalance = { onHand: number; reserved: number };
 export type InventoryOperation = { type: InventoryMovementType; quantity: number; consumeReserved?: boolean };
+export const inventoryStatuses = ["SIN_SALDO", "SIN_MINIMO", "AGOTADO", "CRITICO", "BAJO", "OPTIMO"] as const;
+export type InventoryStatus = (typeof inventoryStatuses)[number];
+
+/**
+ * BAJO remains part of the public status vocabulary for a future explicit
+ * reorder threshold. The current schema only has minimumStock, so the
+ * deterministic status derivation intentionally never invents a second
+ * threshold and returns OPTIMO above the configured minimum.
+ */
+export function deriveInventoryStatus(input: { onHand: number | null; reserved: number | null; minimumStock: number | null; hasBalance?: boolean }): InventoryStatus {
+  if (input.hasBalance === false || input.onHand === null || input.reserved === null) return "SIN_SALDO";
+  assertValidBalance({ onHand: input.onHand, reserved: input.reserved });
+  if (input.minimumStock === null) return "SIN_MINIMO";
+  const available = availableQuantity({ onHand: input.onHand, reserved: input.reserved });
+  if (available === 0) return "AGOTADO";
+  if (available <= input.minimumStock) return "CRITICO";
+  return "OPTIMO";
+}
 
 export function reservationShouldExpire(status: string, expiresAt: Date | null | undefined, now = new Date()) {
   return status === "ACTIVE" && Boolean(expiresAt) && (expiresAt as Date).getTime() <= now.getTime();

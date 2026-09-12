@@ -1,7 +1,8 @@
 import { and, asc, count, desc, eq, exists, gte, gt, ilike, inArray, isNull, lt, lte, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
-import { brands, categories, discountRules, families, priceHistory, productPrices, products, users } from "@/db/schema";
+import { brands, categories, discountRules, families, mediaAssetUsages, mediaAssets, priceHistory, productPrices, products, users } from "@/db/schema";
 import type { PricingFilters, PricingHistoryFilters, PricingItem, PricingListResponse, PricingPriceRecord } from "@/lib/pricing-contract";
+import { getPriceEffectiveStatus, isPriceEffectiveAt, resolvePricingStates } from "@/lib/pricing-domain";
 
 export type PriceView = {
   id: string;
@@ -20,8 +21,8 @@ export type PriceView = {
   createdBy: string | null;
 };
 
-function activeWindow(now = new Date()) {
-  return and(eq(productPrices.active, true), lte(productPrices.validFrom, now), or(isNull(productPrices.validUntil), gt(productPrices.validUntil, now)));
+function activeWindow(now = new Date()): SQL {
+  return and(eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"), lte(productPrices.validFrom, now), or(isNull(productPrices.validUntil), gt(productPrices.validUntil, now)))!;
 }
 
 export async function getActiveRetailPrices(productIds: string[], now = new Date()) {
@@ -54,7 +55,7 @@ function pageValues(page?: number, pageSize?: number) {
   return { page: Math.max(1, Math.floor(page ?? 1)), pageSize: Math.min(maxPageSize, Math.max(1, Math.floor(pageSize ?? defaultPageSize))) };
 }
 
-function productConditions(filters: PricingFilters) {
+function baseMetricConditions(filters: PricingFilters) {
   const conditions: SQL[] = [];
   if (filters.query) {
     const pattern = `%${filters.query.trim()}%`;
@@ -68,24 +69,51 @@ function productConditions(filters: PricingFilters) {
   return conditions;
 }
 
+function productConditions(filters: PricingFilters) {
+  const conditions = baseMetricConditions(filters);
+  const retailCurrent = and(eq(productPrices.priceType, "RETAIL"), activeWindow());
+  if (filters.pricingCoverage === "PRICED") conditions.push(exists(getDb().select({ id: productPrices.id }).from(productPrices).where(and(eq(productPrices.productId, products.id), retailCurrent))));
+  if (filters.pricingCoverage === "MISSING" || filters.effectiveStatus === "MISSING") conditions.push(sql`not exists (select 1 from ${productPrices} where ${productPrices.productId} = ${products.id} and ${productPrices.priceType} = 'RETAIL' and ${productPrices.active} = true and ${productPrices.status} = 'ACTIVE' and ${productPrices.validFrom} <= now() and (${productPrices.validUntil} is null or ${productPrices.validUntil} > now()))`);
+  if (filters.hasWholesale !== undefined) {
+    const wholesaleConfigured = exists(getDb().select({ id: productPrices.id }).from(productPrices).where(and(eq(productPrices.productId, products.id), eq(productPrices.priceType, "WHOLESALE"), gt(productPrices.wholesaleMinQty, 0), eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"))));
+    conditions.push(filters.hasWholesale ? wholesaleConfigured : sql`not exists (select 1 from ${productPrices} where ${productPrices.productId} = ${products.id} and ${productPrices.priceType} = 'WHOLESALE' and ${productPrices.wholesaleMinQty} > 0 and ${productPrices.active} = true and ${productPrices.status} = 'ACTIVE')`);
+  }
+  for (const [filter, type] of [[filters.hasPromotion, "SPECIAL"], [filters.hasMinimum, "MINIMUM"]] as const) {
+    if (filter === undefined) continue;
+    const matching = exists(getDb().select({ id: productPrices.id }).from(productPrices).where(and(eq(productPrices.productId, products.id), eq(productPrices.priceType, type), eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"))));
+    conditions.push(filter ? matching : sql`not exists (select 1 from ${productPrices} where ${productPrices.productId} = ${products.id} and ${productPrices.priceType} = ${type} and ${productPrices.active} = true and ${productPrices.status} = 'ACTIVE')`);
+  }
+  return conditions;
+}
+
 function priceConditions(filters: PricingFilters, includeCost: boolean) {
   const conditions: SQL[] = [];
   if (filters.priceType) conditions.push(eq(productPrices.priceType, filters.priceType));
   if (filters.status) conditions.push(eq(productPrices.status, filters.status));
   if (filters.active !== undefined) conditions.push(eq(productPrices.active, filters.active));
+  if (filters.effectiveStatus === "CURRENT") conditions.push(activeWindow());
+  if (filters.effectiveStatus === "SCHEDULED") conditions.push(and(eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"), gt(productPrices.validFrom, new Date()))!);
+  if (filters.effectiveStatus === "EXPIRED") conditions.push(and(eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"), lte(productPrices.validUntil, new Date()))!);
+  if (filters.effectiveStatus === "INACTIVE") conditions.push(eq(productPrices.status, "INACTIVE"));
+  if (filters.effectiveStatus === "ARCHIVED") conditions.push(eq(productPrices.status, "ARCHIVED"));
+  if (filters.currency) conditions.push(eq(productPrices.currency, filters.currency));
+  if (filters.validFrom) conditions.push(gte(productPrices.validFrom, new Date(`${filters.validFrom}T00:00:00-05:00`)));
+  if (filters.validUntil) conditions.push(lt(productPrices.validUntil, new Date(`${filters.validUntil}T23:59:59.999-05:00`)));
+  if (filters.updatedFrom) conditions.push(gte(productPrices.updatedAt, new Date(`${filters.updatedFrom}T00:00:00-05:00`)));
+  if (filters.updatedUntil) conditions.push(lt(productPrices.updatedAt, new Date(`${filters.updatedUntil}T23:59:59.999-05:00`)));
   if (!includeCost) conditions.push(inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]));
   return conditions;
 }
 
-function choosePrice(prices: PricingPriceRecord[]) {
-  const preferredTypes = ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL", "COST"] as const;
-  return prices.find((price) => price.active && price.validFrom <= new Date() && (!price.validUntil || price.validUntil > new Date()))
-    ?? preferredTypes.map((type) => prices.find((price) => price.priceType === type)).find(Boolean)
-    ?? prices[0]
+function choosePrice(prices: PricingPriceRecord[], at = new Date()) {
+  const states = resolvePricingStates(prices, true, at);
+  const preferredTypes = ["retail", "wholesale", "minimum", "special", "cost"] as const;
+  return preferredTypes.map((type) => states[type]).find((price) => price && isPriceEffectiveAt(price, at))
+    ?? preferredTypes.map((type) => states[type]).find(Boolean)
     ?? null;
 }
 
-function mapPrice(row: { id: string; priceType: PricingPriceRecord["priceType"]; amount: string; currency: string; wholesaleMinQty: number | null; minimumAllowed: string | null; status: string; active: boolean; validFrom: Date; validUntil: Date | null }): PricingPriceRecord {
+function mapPrice(row: { id: string; priceType: PricingPriceRecord["priceType"]; amount: string; currency: string; wholesaleMinQty: number | null; minimumAllowed: string | null; status: string; active: boolean; validFrom: Date; validUntil: Date | null; updatedAt?: Date | string | null }): PricingPriceRecord {
   return { ...row, amount: String(row.amount), minimumAllowed: row.minimumAllowed === null ? null : String(row.minimumAllowed) };
 }
 
@@ -94,13 +122,13 @@ export async function getPricingPage(filters: PricingFilters = {}, options: { in
   const { page, pageSize } = pageValues(filters.page, filters.pageSize);
   const db = getDb();
   const conditions = productConditions(filters);
-  const hasPriceFilter = filters.priceType !== undefined || filters.status !== undefined || filters.active !== undefined;
+  const hasPriceFilter = filters.priceType !== undefined || filters.status !== undefined || filters.active !== undefined || (filters.effectiveStatus !== undefined && filters.effectiveStatus !== "MISSING") || filters.currency !== undefined || filters.validFrom !== undefined || filters.validUntil !== undefined || filters.updatedFrom !== undefined || filters.updatedUntil !== undefined;
   if (hasPriceFilter) {
     conditions.push(exists(db.select({ id: productPrices.id }).from(productPrices).where(and(eq(productPrices.productId, products.id), ...priceConditions(filters, includeCost)))));
   }
   const where = conditions.length ? and(...conditions) : undefined;
   const [productRows, totalRows, facetRows] = await Promise.all([
-    db.select({ id: products.id, sku: products.sku, productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`, categoryId: categories.id, categoryName: categories.name, familyId: families.id, familyName: families.name, brandId: brands.id, brandName: brands.name }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(products.sku)).limit(pageSize).offset((page - 1) * pageSize),
+    db.select({ id: products.id, sku: products.sku, productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`, categoryId: categories.id, categoryName: categories.name, familyId: families.id, familyName: families.name, brandId: brands.id, brandName: brands.name, updatedAt: products.updatedAt }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(products.sku)).limit(pageSize).offset((page - 1) * pageSize),
     db.select({ total: count(products.id) }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where),
     Promise.all([
       db.selectDistinct({ id: categories.id, name: categories.name }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(categories.name)),
@@ -110,23 +138,36 @@ export async function getPricingPage(filters: PricingFilters = {}, options: { in
     ]),
   ]);
   const productIds = productRows.map((row) => row.id);
-  const allPriceConditions = priceConditions(filters, includeCost);
-  const globalPriceRows = await db.select({ productId: productPrices.productId, priceType: productPrices.priceType, status: productPrices.status, active: productPrices.active, validUntil: productPrices.validUntil }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(where, ...allPriceConditions));
-  const priceRows = productIds.length ? await db.select({ productId: productPrices.productId, id: productPrices.id, priceType: productPrices.priceType, amount: productPrices.amount, currency: productPrices.currency, wholesaleMinQty: productPrices.wholesaleMinQty, minimumAllowed: productPrices.minimumAllowed, status: productPrices.status, active: productPrices.active, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil }).from(productPrices).where(and(inArray(productPrices.productId, productIds), ...allPriceConditions)).orderBy(desc(productPrices.active), desc(productPrices.validFrom), desc(productPrices.createdAt)) : [];
+  const priceRows = productIds.length ? await db.select({ productId: productPrices.productId, id: productPrices.id, priceType: productPrices.priceType, amount: productPrices.amount, currency: productPrices.currency, wholesaleMinQty: productPrices.wholesaleMinQty, minimumAllowed: productPrices.minimumAllowed, status: productPrices.status, active: productPrices.active, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil, updatedAt: productPrices.updatedAt }).from(productPrices).where(and(inArray(productPrices.productId, productIds), ...(includeCost ? [] : [inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"])]))).orderBy(desc(productPrices.active), desc(productPrices.validFrom), desc(productPrices.createdAt)) : [];
+  const mediaRows = productIds.length ? await db.select({ productId: mediaAssetUsages.entityId, assetId: mediaAssets.id, publicUrl: mediaAssets.publicUrl, altText: mediaAssets.altText }).from(mediaAssetUsages).innerJoin(mediaAssets, eq(mediaAssetUsages.assetId, mediaAssets.id)).where(and(eq(mediaAssetUsages.entityType, "product"), eq(mediaAssetUsages.slot, "primary"), eq(mediaAssets.status, "ACTIVE"), isNull(mediaAssets.deletedAt), inArray(mediaAssetUsages.entityId, productIds))).orderBy(asc(mediaAssetUsages.sortOrder), asc(mediaAssets.createdAt)) : [];
   const pricesByProduct = new Map<string, PricingPriceRecord[]>();
   for (const row of priceRows) {
     const prices = pricesByProduct.get(row.productId) ?? [];
     prices.push(mapPrice(row));
     pricesByProduct.set(row.productId, prices);
   }
+  const mediaByProduct = new Map<string, { assetId: string; publicUrl: string | null; altText: string | null }>();
+  for (const row of mediaRows) if (!mediaByProduct.has(row.productId)) mediaByProduct.set(row.productId, row);
   const items = productRows.map((row): PricingItem => {
     const prices = pricesByProduct.get(row.id) ?? [];
     const price = choosePrice(prices);
-    return { ...row, id: row.id, productId: row.id, price, prices, priceType: price?.priceType, amount: price?.amount, currency: price?.currency, status: price?.status };
+    const pricing = resolvePricingStates(prices, includeCost);
+    const retail = pricing.retail;
+    const effectiveStatus = getPriceEffectiveStatus(retail);
+    const media = mediaByProduct.get(row.id);
+    const latestPriceUpdate = prices.map((candidate) => candidate.updatedAt).filter(Boolean).sort((a, b) => new Date(b as Date | string).getTime() - new Date(a as Date | string).getTime())[0] ?? row.updatedAt;
+    return { ...row, id: row.id, productId: row.id, price, prices, pricing, effectiveStatus, hasRetail: Boolean(retail && isPriceEffectiveAt(retail)), priceType: price?.priceType, amount: price?.amount, currency: price?.currency, status: price?.status, updatedAt: latestPriceUpdate, media: media ? { primaryUrl: media.publicUrl ?? `/api/media/${media.assetId}`, altText: media.altText, assetId: media.assetId } : null };
   });
   const totalItems = Number(totalRows[0]?.total ?? 0);
-  const pricedProducts = new Set(globalPriceRows.map((row) => row.productId));
   const now = new Date();
+  const [metricTotalRows, metricRows] = await Promise.all([
+    db.select({ total: count(products.id) }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(...baseMetricConditions(filters))),
+    db.select({ productId: productPrices.productId, priceType: productPrices.priceType, status: productPrices.status, active: productPrices.active, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil, wholesaleMinQty: productPrices.wholesaleMinQty }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(...baseMetricConditions(filters), inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]))),
+  ]);
+  const metricTotal = Number(metricTotalRows[0]?.total ?? 0);
+  const retailProducts = new Set(metricRows.filter((row) => row.priceType === "RETAIL" && isPriceEffectiveAt(row, now)).map((row) => row.productId));
+  const wholesaleProducts = new Set(metricRows.filter((row) => row.priceType === "WHOLESALE" && row.wholesaleMinQty && row.wholesaleMinQty > 0 && row.status !== "ARCHIVED").map((row) => row.productId));
+  const currentSpecials = metricRows.filter((row) => row.priceType === "SPECIAL" && isPriceEffectiveAt(row, now));
   return {
     items,
     page,
@@ -134,14 +175,32 @@ export async function getPricingPage(filters: PricingFilters = {}, options: { in
     totalItems,
     totalPages: Math.max(1, Math.ceil(totalItems / pageSize)),
     metrics: {
-      totalWithPrice: pricedProducts.size,
-      totalWithoutPrice: Math.max(0, totalItems - pricedProducts.size),
-      activePrices: globalPriceRows.filter((row) => row.active && row.status === "ACTIVE" && (!row.validUntil || row.validUntil > now)).length,
-      promotions: globalPriceRows.filter((row) => row.priceType === "SPECIAL").length,
-      expiredPrices: globalPriceRows.filter((row) => row.validUntil !== null && row.validUntil <= now).length,
+      totalWithPrice: retailProducts.size,
+      totalWithoutPrice: Math.max(0, metricTotal - retailProducts.size),
+      activePrices: metricRows.filter((row) => isPriceEffectiveAt(row, now)).length,
+      promotions: currentSpecials.length,
+      expiredPrices: metricRows.filter((row) => row.validUntil !== null && row.validUntil <= now && row.status === "ACTIVE").length,
+      totalProducts: metricTotal,
+      retailPricedProducts: retailProducts.size,
+      retailMissingProducts: Math.max(0, metricTotal - retailProducts.size),
+      wholesaleConfiguredProducts: wholesaleProducts.size,
+      activeSpecialPrices: currentSpecials.length,
+      scheduledPriceChanges: metricRows.filter((row) => row.status === "ACTIVE" && row.active && row.validFrom > now).length,
+      expiringSoon: metricRows.filter((row) => isPriceEffectiveAt(row, now) && row.validUntil && row.validUntil.getTime() <= now.getTime() + 7 * 86400000).length,
     },
     facets: { categories: facetRows[0].filter((row): row is { id: string; name: string } => Boolean(row.id && row.name)), families: facetRows[1].filter((row): row is { id: string; name: string } => Boolean(row.id && row.name)), brands: facetRows[2].filter((row): row is { id: string; name: string } => Boolean(row.id && row.name)), statuses: facetRows[3].map((row) => row.status).filter((status): status is string => Boolean(status)) },
   };
+}
+
+export async function getPricingExportData(filters: PricingFilters = {}, options: { includeCost?: boolean } = {}) {
+  const pageSize = 100;
+  const first = await getPricingPage({ ...filters, page: 1, pageSize }, options);
+  const items = [...first.items];
+  for (let page = 2; page <= first.totalPages; page += 1) {
+    const next = await getPricingPage({ ...filters, page, pageSize }, options);
+    items.push(...next.items);
+  }
+  return { ...first, items, page: 1, pageSize: items.length || pageSize, totalPages: 1 };
 }
 
 export async function getPricingHistoryPage(filters: PricingHistoryFilters = {}, options: { includeCost?: boolean } = {}) {

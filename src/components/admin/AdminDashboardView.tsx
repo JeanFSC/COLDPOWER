@@ -8,11 +8,11 @@ import {
   CalendarDays,
   ChevronDown,
   CircleDollarSign,
-  CircleOff,
   Clock3,
   Download,
   FileText,
   Image as ImageIcon,
+  Info,
   Minus,
   Package,
   PackageCheck,
@@ -22,35 +22,44 @@ import {
   Tag,
   Target,
   TriangleAlert,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { can, type AppRole } from "@/lib/roles";
-import type { DashboardRange } from "@/lib/dashboard-contract";
+import { dashboardFiltersToQuery, type DashboardFilters, type DashboardRange } from "@/lib/dashboard-contract";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
+import type { OperationsFilters } from "@/lib/operations-contract";
 import { AdminLineChart, AdminSparkline } from "@/components/admin/AdminChartsLazy";
+import { AdminDashboardControls, DashboardGranularitySelect, type DashboardFilterOptions } from "@/components/admin/AdminDashboardControls";
+import { AdminDashboardFooter } from "@/components/admin/AdminDashboardFooter";
+import { AdminPendingActions } from "@/components/admin/AdminPendingActions";
+import { AdminTooltip } from "@/components/admin/AdminTooltip";
+import { Tanda2Dashboard, Tanda2Operations } from "@/components/admin/AdminTanda2Workspaces";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type OperationsSnapshot = Awaited<ReturnType<typeof getOperationsWorkspace>>;
+type OperationsFilterOptions = {
+  locations: Array<{ id: string; label: string }>;
+  sellers: Array<{ id: string; label: string }>;
+};
 
 type AdminDashboardViewProps = {
   role: AppRole;
   data: DashboardData | null;
   snapshot: OperationsSnapshot | null;
   view?: "dashboard" | "operations";
-  range?: DashboardRange;
+  range?: DashboardRange | "all";
+  selectedQueue?: keyof OperationsSnapshot["queues"];
   actorName?: string | null;
+  operationsFilters?: OperationsFilters;
+  operationsFilterOptions?: OperationsFilterOptions | null;
+  filterOptions?: DashboardFilterOptions | null;
+  loadedAt?: string;
 };
 
 const panelClass =
   "min-w-0 rounded-xl border border-[#e3ebf2] bg-white shadow-[0_1px_2px_rgba(16,42,67,0.03)]";
 const mutedClass = "text-[#8195aa]";
-const money = new Intl.NumberFormat("es-PE", {
-  style: "currency",
-  currency: "PEN",
-  maximumFractionDigits: 0,
-});
 
 const toneClasses = {
   blue: { bubble: "bg-[#e8f1ff] text-[#2277ee]", line: "text-[#2277ee]" },
@@ -60,13 +69,28 @@ const toneClasses = {
   purple: { bubble: "bg-[#eee8ff] text-[#8057e8]", line: "text-[#8057e8]" },
 };
 
+const emptyFilterOptions: DashboardFilterOptions = {
+  locations: [],
+  sellers: [],
+  customers: [],
+  products: [],
+  categories: [],
+  families: [],
+  brands: [],
+};
+
 export function AdminDashboardView({
   role,
   data,
   snapshot,
   view = "dashboard",
   range = "month",
+  selectedQueue,
   actorName,
+  operationsFilters,
+  operationsFilterOptions,
+  filterOptions,
+  loadedAt,
 }: AdminDashboardViewProps) {
   if (
     view === "operations" ||
@@ -76,16 +100,9 @@ export function AdminDashboardView({
     role === "ALMACEN" ||
     role === "COMPRAS"
   ) {
-    return <OperationsDashboard snapshot={snapshot} role={role} range={range} actorName={actorName} />;
+    return <Tanda2Operations snapshot={snapshot} role={role} range={range} selectedQueue={selectedQueue} actorName={actorName} filters={operationsFilters} filterOptions={operationsFilterOptions} />;
   }
-  return (
-    <ManagementDashboard
-      variant={role === "GERENCIA" ? "gerencia" : "superadmin"}
-      data={data}
-      range={range}
-      actorName={actorName}
-    />
-  );
+  return <Tanda2Dashboard data={data} role={role} filterOptions={filterOptions} loadedAt={loadedAt} />;
 }
 function PageHeader({
   role,
@@ -124,10 +141,11 @@ function PageHeader({
   );
 }
 
-function ExportButton({ range }: { range: DashboardRange }) {
+function ExportButton({ filters }: { filters: DashboardFilters }) {
+  const query = dashboardFiltersToQuery(filters);
   return (
     <a
-      href={`/api/admin/dashboard/export?range=${encodeURIComponent(range)}`}
+      href={`/api/admin/dashboard/export?${query.toString()}`}
       download="coldpower-dashboard.csv"
       className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3.5 text-[11px] font-extrabold text-[#304b66] transition hover:border-[#2277ee] hover:text-[#2277ee]"
     >
@@ -135,47 +153,6 @@ function ExportButton({ range }: { range: DashboardRange }) {
       Exportar reporte
     </a>
   );
-}
-
-type DashboardComparison = {
-  current: number;
-  previous: number;
-  percentage: number | null;
-};
-
-function ComparisonIndicator({ comparison }: { comparison?: DashboardComparison }) {
-  if (!comparison || comparison.percentage === null) {
-    return <span className="mt-2 block text-[10px] font-bold text-[#8195aa]">— Sin comparación disponible</span>;
-  }
-  const isPositive = comparison.percentage > 0;
-  const isNeutral = comparison.percentage === 0;
-  const Icon = isNeutral ? Minus : isPositive ? ArrowUpRight : ArrowDownRight;
-  return (
-    <span
-      className={`mt-2 inline-flex items-center gap-1 text-[10px] font-bold ${
-        isNeutral ? "text-[#8195aa]" : isPositive ? "text-[#1aa873]" : "text-[#ed4545]"
-      }`}
-    >
-      <Icon className="h-3 w-3" aria-hidden="true" />
-      {Math.abs(comparison.percentage).toFixed(1)}% vs. período anterior
-    </span>
-  );
-}
-
-const sparklinePattern = [0, -0.62, 0.22, -0.34, 0.68, -0.12, 0.5, -0.55, 0.18, -0.28, 0.58, 0];
-
-function comparisonSparkline(comparison?: DashboardComparison, phase = 0) {
-  if (!comparison) return undefined;
-  if (comparison.previous === 0 && comparison.current === 0) return [0, 0];
-  const amplitude = Math.max(Math.max(comparison.previous, comparison.current) * 0.08, Math.abs(comparison.current - comparison.previous) * 0.035);
-  return sparklinePattern.map((value, index) => {
-    if (index === 0) return comparison.previous;
-    if (index === sparklinePattern.length - 1) return comparison.current;
-    const progress = index / (sparklinePattern.length - 1);
-    const trend = comparison.previous + (comparison.current - comparison.previous) * progress;
-    const wave = sparklinePattern[(index + phase) % sparklinePattern.length] ?? value;
-    return Math.max(0, trend + wave * amplitude);
-  });
 }
 
 function NewQuoteButton() {
@@ -197,7 +174,6 @@ function MetricCard({
   icon: Icon,
   tone = "blue",
   sparkline,
-  comparison,
 }: {
   label: string;
   value: string | number;
@@ -205,7 +181,6 @@ function MetricCard({
   icon: LucideIcon;
   tone?: keyof typeof toneClasses;
   sparkline?: number[];
-  comparison?: DashboardComparison;
 }) {
   const colors = toneClasses[tone];
   return (
@@ -221,12 +196,62 @@ function MetricCard({
           <p className="mt-1 font-display text-[20px] font-black tracking-[-0.025em] text-[#102a43] sm:text-[21px]">
             {value}
           </p>
-          {comparison ? <ComparisonIndicator comparison={comparison} /> : detail ? <p className={`mt-2 text-[10px] font-bold ${colors.line}`}>{detail}</p> : null}
+          {detail ? <p className={`mt-2 text-[10px] font-bold ${colors.line}`}>{detail}</p> : null}
         </div>
       </div>
       <AdminSparkline tone={tone} data={sparkline} />
     </article>
   );
+}
+
+function formatDashboardMoney(value: number, currency: string | null | undefined) {
+  if (!currency) return "N/D";
+  return new Intl.NumberFormat("es-PE", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+}
+
+function KpiComparisonIndicator({ comparison }: { comparison: DashboardData["kpiView"]["sales"]["comparison"] }) {
+  if (!comparison?.comparisonAvailable || comparison.relativeDelta === null) {
+    return <span className="mt-2 block text-[10px] font-bold text-[#8195aa]">Sin base comparable</span>;
+  }
+  const isPositive = comparison.relativeDelta > 0;
+  const Icon = isPositive ? ArrowUpRight : comparison.relativeDelta < 0 ? ArrowDownRight : Minus;
+  return <span className={`mt-2 inline-flex items-center gap-1 text-[10px] font-bold ${isPositive ? "text-[#1aa873]" : comparison.relativeDelta < 0 ? "text-[#ed4545]" : "text-[#8195aa]"}`}><Icon className="h-3 w-3" aria-hidden="true" />{Math.abs(comparison.relativeDelta).toFixed(1)}% vs. período anterior</span>;
+}
+
+function ExecutiveKpiCard({
+  label,
+  value,
+  tone,
+  icon: Icon,
+  definition,
+  detail,
+  href,
+  comparison,
+  sparkline,
+}: {
+  label: string;
+  value: string | number;
+  tone: keyof typeof toneClasses;
+  icon: LucideIcon;
+  definition: string;
+  detail: string;
+  href?: string;
+  comparison?: DashboardData["kpiView"]["sales"]["comparison"];
+  sparkline?: number[];
+}) {
+  const colors = toneClasses[tone];
+  const card = <article className={`${panelClass} min-h-[173px] p-4 transition ${href ? "hover:-translate-y-0.5 hover:border-[#b9d2eb] hover:shadow-[0_8px_20px_rgba(16,42,67,0.08)]" : ""}`}>
+    <div className="flex items-start gap-3">
+      <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${colors.bubble}`}><Icon className="h-[21px] w-[21px]" strokeWidth={1.8} aria-hidden="true" /></span>
+      <div className="min-w-0 pt-0.5">
+        <div className="flex items-center gap-1.5"><p className={`text-[11px] font-semibold ${mutedClass}`}>{label}</p><AdminTooltip label={definition}><Info className="h-3.5 w-3.5 text-[#9aabba]" aria-hidden="true" /></AdminTooltip></div>
+        <p className="mt-1 font-display text-[23px] font-black tracking-[-0.025em] text-[#102a43]">{value}</p>
+        {comparison ? <KpiComparisonIndicator comparison={comparison} /> : <p className={`mt-2 text-[10px] font-bold ${colors.line}`}>{detail}</p>}
+      </div>
+    </div>
+    <AdminSparkline tone={tone} data={sparkline} ariaLabel={sparkline?.some((item) => item > 0) ? `Tendencia real de ${label.toLowerCase()}` : `${detail}; sin serie histórica comparable`} />
+  </article>;
+  return href ? <Link href={href} aria-label={`${label}: ${value}`}>{card}</Link> : card;
 }
 
 function PanelHeader({
@@ -251,15 +276,17 @@ function PanelHeader({
   );
 }
 
-function formatSalesDateLabel(value: string) {
-  const date = new Date(`${value}T12:00:00`);
+function formatSalesDateLabel(value: string, granularity: DashboardData["granularity"]) {
+  const isHour = value.includes("T");
+  const date = new Date(isHour ? `${value}:00-05:00` : `${value}T12:00:00-05:00`);
+  if (granularity === "hour") {
+    return new Intl.DateTimeFormat("es-PE", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Lima" }).format(date);
+  }
   return new Intl.DateTimeFormat("es-PE", {
     day: "numeric",
     month: "short",
     timeZone: "America/Lima",
-  })
-    .format(date)
-    .replace(".", "");
+  }).format(date).replace(".", "");
 }
 
 function ManagementDashboard({
@@ -267,13 +294,16 @@ function ManagementDashboard({
   data,
   range,
   actorName,
+  filterOptions,
+  loadedAt,
 }: {
   variant: "superadmin" | "gerencia";
   data: DashboardData | null;
   range: DashboardRange;
   actorName?: string | null;
+  filterOptions?: DashboardFilterOptions | null;
+  loadedAt?: string;
 }) {
-  const isGerencia = variant === "gerencia";
   if (!data) {
     return (
       <div className="space-y-4">
@@ -287,91 +317,62 @@ function ManagementDashboard({
       </div>
     );
   }
-  const sales = money.format(data?.salesRange.total ?? 0);
+  const sales = formatDashboardMoney(data.salesRange.total, data.currency);
   const salesLabel = range === "month" ? "Ventas del mes" : "Ventas del período";
-  const openQuotes = data?.quotes ?? 0;
-  const orders = data?.orders.total ?? 0;
-  const criticalStock = data?.criticalStock ?? 0;
-  const customers = data?.topCustomers ?? [];
-  const salesSeries = data?.salesSeries.map((row) => row.total);
-  const salesLabels = data?.salesSeries.map((row) => formatSalesDateLabel(row.date));
-  const comparisons = data.comparisons;
-  const hasConfirmedSales = Boolean(data?.salesRange.count);
+  const salesSeries = data.salesSeries.map((row) => row.total);
+  const salesLabels = data.salesSeries.map((row) => formatSalesDateLabel(row.date, data.granularity));
+  const salesPointDetails = data.salesSeries.map((row, index) => {
+    const date = row.date.slice(0, 10);
+    return {
+      ...row,
+      previousTotal: data.previousSalesSeries[index]?.total ?? 0,
+      href: `/admin/ventas?createdFrom=${encodeURIComponent(date)}&createdTo=${encodeURIComponent(date)}${data.currency ? `&currency=${encodeURIComponent(data.currency)}` : ""}`,
+    };
+  });
+  const kpiView = data.kpiView;
 
   return (
     <div className="space-y-4">
       <PageHeader role={variant} actorName={actorName}>
-        <DashboardRangePicker range={range} filters={data.filters} />
-        <ExportButton range={range} />
+        <AdminDashboardControls
+          filters={data.filters}
+          availableCurrencies={data.availableCurrencies}
+          options={filterOptions ?? emptyFilterOptions}
+        />
+        <ExportButton filters={data.filters} />
       </PageHeader>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label={salesLabel}
-          value={sales}
-          comparison={comparisons?.sales}
-          detail={hasConfirmedSales ? "Ventas confirmadas" : "Sin ventas confirmadas en el período"}
-          icon={CircleDollarSign}
-          tone="blue"
-          sparkline={salesSeries?.some((value) => value > 0) ? salesSeries : undefined}
-        />
-        <MetricCard
-          label={isGerencia ? "Ingresos" : "Cotizaciones abiertas"}
-          value={isGerencia ? sales : openQuotes}
-          detail={isGerencia ? (hasConfirmedSales ? "Ingresos confirmados" : "Sin ingresos confirmados") : openQuotes ? "Requieren seguimiento" : "Sin cotizaciones abiertas"}
-          icon={isGerencia ? ReceiptText : FileText}
-          comparison={isGerencia ? comparisons?.sales : comparisons?.quotes}
-          tone="orange"
-          sparkline={comparisonSparkline(isGerencia ? comparisons?.sales : comparisons?.quotes, 1)}
-        />
-        <MetricCard
-          label={isGerencia ? "Cotizaciones abiertas" : "Pedidos activos"}
-          value={isGerencia ? openQuotes : orders}
-          detail={isGerencia ? (openQuotes ? "Requieren seguimiento" : "Sin cotizaciones abiertas") : orders ? "Requieren atención" : "Sin pedidos activos"}
-          icon={isGerencia ? Tag : ShoppingCart}
-          comparison={isGerencia ? comparisons?.quotes : comparisons?.orders}
-          tone="green"
-          sparkline={comparisonSparkline(isGerencia ? comparisons?.quotes : comparisons?.orders, 2)}
-        />
-        <MetricCard
-          label="Stock crítico"
-          value={criticalStock}
-          detail={criticalStock ? "Requiere revisión de inventario" : "Sin alertas críticas"}
-          icon={TriangleAlert}
-          comparison={comparisons?.criticalStock}
-          tone="red"
-          sparkline={comparisonSparkline(comparisons?.criticalStock, 3)}
-        />
+        <ExecutiveKpiCard label={salesLabel} value={sales} tone="blue" icon={CircleDollarSign} definition="Ventas confirmadas en el período seleccionado, respetando todos los filtros activos y una sola moneda." detail={data.salesRange.count ? "Ventas confirmadas" : "Sin ventas confirmadas en el período"} comparison={kpiView.sales.comparison} sparkline={salesSeries} />
+        <ExecutiveKpiCard label="Cotizaciones abiertas" value={kpiView.openQuotes.value} tone="orange" icon={FileText} definition="Cotizaciones que no están rechazadas, vencidas, convertidas ni canceladas en el alcance actual." detail="Estado actual" href="/admin/cotizaciones?status=open" />
+        <ExecutiveKpiCard label="Pedidos activos" value={kpiView.activeOrders.value} tone="green" icon={ShoppingCart} definition="Pedidos cuyo estado aún requiere operación; entregados y cancelados quedan fuera." detail="Estado actual" href="/admin/pedidos?status=active" />
+        <ExecutiveKpiCard label="Stock crítico" value={kpiView.criticalStock.value} tone="red" icon={TriangleAlert} definition="Productos cuyo stock disponible está en cero o por debajo del mínimo configurado." detail="Estado actual" href="/admin/inventario?critical=true" />
       </div>
-      <div className="grid items-start gap-4 xl:grid-cols-[1.45fr_1fr_1.12fr]">
-        <section className={`${panelClass} min-h-[320px] p-4`}>
-          <PanelHeader
-            title={isGerencia ? "Evolución de ventas e ingresos" : "Ventas"}
-            subtitle={
-              isGerencia
-                ? "Comparativo de los últimos 30 días"
-                : "Últimos 30 días vs. período anterior"
-            }
-            action={<SalesGranularitySelect />}
-          />
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
+        <div className="grid min-w-0 gap-4">
+          <section className={`${panelClass} min-h-[330px] p-4 sm:p-5`}>
+          <PanelHeader title="Evolución de ventas" subtitle="Ventas confirmadas vs. período anterior" action={<DashboardGranularitySelect filters={data.filters} value={data.granularity} />} />
           <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold text-[#71869c]">
             <span className="inline-flex items-center gap-1.5">
               <span className="h-0.5 w-5 bg-[#2277ee]" />
-              {isGerencia ? "Ventas" : "Actual"}
+              Actual
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="h-0.5 w-5 border-t border-dashed border-[#8fbaf6]" />
-              {isGerencia ? "Ingresos" : "Anterior"}
+              Anterior
             </span>
           </div>
-          {data?.salesSeries.some((row) => row.total > 0) ? (
+          {data.salesSeries.some((row) => row.total > 0) ? (
             <div className="mt-1">
               <AdminLineChart
                 comparison
-                accent={isGerencia ? "orange" : "blue"}
-                data={data.salesSeries.map((row) => row.total)}
+                accent="blue"
+                data={salesSeries}
                 previous={data.previousSalesSeries.map((row) => row.total)}
                 labels={salesLabels}
                 currencyAxis
+                currency={data.currency}
+                pointDetails={salesPointDetails}
+                ariaLabel="Evolución de ventas confirmadas y comparación con el período anterior"
               />
             </div>
           ) : (
@@ -391,40 +392,16 @@ function ManagementDashboard({
               </Link>
             </div>
           )}
-          {isGerencia ? (
-            <div className="grid grid-cols-1 gap-2 rounded-lg border border-[#e5edf3] px-3 py-3 text-[10px] sm:grid-cols-3">
-              <MiniStat
-                label="Margen bruto"
-                value={
-                  data?.margin === null || data?.margin === undefined
-                    ? "N/D"
-                    : money.format(data.margin)
-                }
-              />
-              <MiniStat label="Costo de ventas" value="N/D" />
-              <MiniStat label="Utilidad operativa" value="N/D" />
-            </div>
-          ) : null}
-        </section>
-        {isGerencia ? <GerenciaPipelineRows data={data} /> : <PipelinePanel data={data} />}
-        {isGerencia ? <GerenciaProductsPanel data={data} /> : <TopProductsPanel data={data} gerencia={false} />}
+          </section>
+          <PipelinePanel data={data} />
+          <TopProductsPanel data={data} />
+        </div>
+        <aside className="grid min-w-0 content-start gap-4">
+          <AdminPendingActions actions={data.pendingActions} />
+          <ActivityPanel activities={data.recentActivity} />
+        </aside>
       </div>
-
-      {isGerencia ? (
-        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.25fr_1fr]">
-          <ApprovalsPanel data={data} />
-          <CustomersPanel customers={customers} />
-          <ActivityPanel activities={data?.recentActivity ?? []} />
-        </div>
-      ) : (
-        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.25fr_1fr_1.15fr]">
-          <InventoryAlerts data={data} />
-          <ActivityPanel activities={data?.recentActivity ?? []} />
-          <UsersSummary data={data} />
-          <QuickActions />
-        </div>
-      )}
-      <BottomKpis data={data} />
+      <AdminDashboardFooter loadedAt={loadedAt} />
     </div>
   );
 }
@@ -452,281 +429,92 @@ function OperationsRangePicker({ range }: { range: DashboardRange }) {
   );
 }
 
-function SalesGranularitySelect() {
-  return (
-    <label className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66]">
-      <span className="sr-only">Agrupar ventas</span>
-      <select
-        aria-label="Agrupar ventas"
-        defaultValue="daily"
-        className="bg-transparent outline-none"
-      >
-        <option value="daily">Diario</option>
-        <option value="weekly">Semanal</option>
-        <option value="monthly">Mensual</option>
-      </select>
-    </label>
-  );
-}
-
-function DashboardRangePicker({
-  range,
-  filters,
-}: {
-  range: DashboardRange;
-  filters: DashboardData["filters"];
-}) {
-  const labels: Record<DashboardRange, string> = {
-    today: "Hoy",
-    yesterday: "Ayer",
-    week: "Últimos 7 días",
-    month: "Últimos 30 días",
-    custom: filters.from && filters.to ? `${filters.from} – ${filters.to}` : "Personalizado",
-  };
-  return (
-    <form action="/admin/dashboard" method="get" className="flex items-center gap-2">
-      <label htmlFor="dashboard-range" className="sr-only">Período del dashboard</label>
-      <span className="hidden items-center gap-1.5 text-[10px] font-bold text-[#526b84] sm:inline-flex">
-        <CalendarDays className="h-4 w-4 text-[#526b84]" aria-hidden="true" />
-        {labels[range]}
-      </span>
-      <select
-        id="dashboard-range"
-        name="range"
-        defaultValue={range}
-        className="h-9 rounded-lg border border-[#dfe8ef] bg-white px-2.5 text-[10px] font-bold text-[#304b66] outline-none focus:border-[#2277ee]"
-      >
-        <option value="today">Hoy</option>
-        <option value="yesterday">Ayer</option>
-        <option value="week">Últimos 7 días</option>
-        <option value="month">Últimos 30 días</option>
-        <option value="custom">Personalizado</option>
-      </select>
-      <button
-        type="submit"
-        className="inline-flex h-9 items-center gap-1 rounded-lg bg-[#102a43] px-2.5 text-[10px] font-extrabold text-white transition hover:bg-[#1e4668]"
-      >
-        Aplicar <ChevronDown className="h-3 w-3 rotate-[-90deg]" aria-hidden="true" />
-      </button>
-    </form>
-  );
-}
-
-const superadminStageGroups: ReadonlyArray<{ label: string; codes: readonly string[] }> = [
-  { label: "Proyección", codes: ["NEW", "CONTACTED", "NO_RESPONSE"] },
-  { label: "Calificación", codes: ["QUOTING"] },
-  { label: "Propuesta", codes: ["QUOTE_SENT", "FOLLOW_UP"] },
-  { label: "Negociación", codes: ["NEGOTIATION"] },
-  { label: "Cierre ganado", codes: ["ACCEPTED", "SALE", "PAYMENT_PENDING", "PAID", "PREPARING", "DELIVERED"] },
-] as const;
-
-function superadminStageLabel(stageCode: string, fallback: string) {
-  const normalized = stageCode.toUpperCase();
-  return superadminStageGroups.find((group) => group.codes.includes(normalized))?.label ?? fallback;
-}
-
-function getSuperadminPipelineRows(stages: DashboardData["pipelineSummary"]) {
-  return superadminStageGroups.map((group) => {
-    const matchingStages = stages.filter((stage) => group.codes.includes(stage.stageCode.toUpperCase()));
-    return {
-      stageLabel: superadminStageLabel(group.codes[0], group.label),
-      count: matchingStages.reduce((total, stage) => total + stage.count, 0),
-      amount: matchingStages.reduce((total, stage) => total + stage.amount, 0),
-    };
-  });
-}
-
 function PipelinePanel({ data }: { data: DashboardData | null }) {
-  const total = data?.opportunities ?? 0;
-  const stages = data?.pipelineSummary ?? [];
-  const rows = getSuperadminPipelineRows(stages);
+  const rows = data?.pipelineMacroSummary ?? [];
+  const total = data?.pipelineActiveTotal ?? { count: 0, amount: 0 };
+  const currency = data?.currency;
+  const hasActivePipeline = rows.some((row) => row.count > 0);
   const stageTones = ["bg-[#eaf2ff]", "bg-[#e8f7fb]", "bg-[#e8f7ee]", "bg-[#fff4e6]", "bg-[#fff0e4]"];
   return (
     <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title="Pipeline de ventas" subtitle="Resumen por etapa" />
-      {stages.length ? (
+      <PanelHeader title="Pipeline de ventas" subtitle="Oportunidades activas por macroetapa" action={<AdminTooltip label="Incluye oportunidades activas. Perdidas y canceladas no forman parte del total activo."><Info className="h-3.5 w-3.5 text-[#9aabba]" aria-label="Definición del pipeline" /></AdminTooltip>} />
+      {hasActivePipeline ? (
         <div className="mt-4 grid gap-2">
-          {rows.map((stage, index) => (
-            <div
-              key={stage.stageLabel}
-              className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg px-3 py-2.5 ${stageTones[index % stageTones.length]}`}
-            >
-              <span className="min-w-0 truncate text-[10px] font-bold text-[#304b66]">{stage.stageLabel}</span>
-              <strong className="text-[10px] font-extrabold text-[#102a43]">{stage.count}</strong>
-              <span className="min-w-[76px] text-right text-[9px] font-semibold text-[#526b84]">{money.format(stage.amount)}</span>
-            </div>
-          ))}
+          {rows.map((stage, index) => {
+            const stageQuery = stage.stages.join(",");
+            return (
+              <Link key={stage.macroStage} href={`/admin/crm?view=pipeline&stage=${encodeURIComponent(stageQuery)}`} className={`group rounded-lg px-3 py-2.5 ${stageTones[index % stageTones.length]} transition hover:ring-1 hover:ring-[#2277ee]/40`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-[10px] font-bold text-[#304b66]">{stage.macroStageLabel}</span>
+                  <span className="shrink-0 text-[9px] font-extrabold text-[#526b84]">{stage.count} · {stage.share.toFixed(0)}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/70">
+                  <span className="block h-full rounded-full bg-[#2277ee] transition group-hover:bg-[#102a43]" style={{ width: `${Math.min(100, Math.max(0, stage.share * 100))}%` }} />
+                </div>
+                <div className="mt-1.5 flex items-center justify-between gap-2 text-[9px] font-semibold text-[#526b84]">
+                  <span>{stage.stages.length} {stage.stages.length === 1 ? "etapa" : "etapas"}</span>
+                  <span>{formatDashboardMoney(stage.amount, currency)}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="mt-4">
-          <EmptyRow text="Aún no hay oportunidades registradas en este período. Puedes iniciar una desde Cotizaciones." />
+          <EmptyRow text="No hay oportunidades activas con este alcance." />
+          <Link href="/admin/crm?view=pipeline" className="mt-3 flex justify-center text-[10px] font-extrabold text-[#2277ee]">Abrir pipeline</Link>
         </div>
       )}
       <div className="mt-4 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[11px] font-extrabold text-[#102a43]">
         <span>Total pipeline</span>
         <span>
-          {total}{" "}
-          <span className="ml-3 font-semibold text-[#526b84]">
-            {data?.pipelineValue === undefined ? "N/D" : money.format(data.pipelineValue)}
-          </span>
+          {total.count}{" "}
+          <span className="ml-3 font-semibold text-[#526b84]">{formatDashboardMoney(total.amount, currency)}</span>
         </span>
       </div>
+      {data?.pipelineLostTotal.count ? <p className="mt-2 text-right text-[9px] font-semibold text-[#9aabba]">{data.pipelineLostTotal.count} perdidas/canceladas excluidas</p> : null}
     </section>
   );
 }
 
-function GerenciaPipelineRows({ data }: { data: DashboardData | null }) {
-  const stages = data?.pipelineSummary ?? [];
-  const stageTones = ["bg-[#eaf2ff]", "bg-[#e8f7fb]", "bg-[#e8f7ee]", "bg-[#fff4e6]", "bg-[#fff0e4]"];
-
-  return (
-    <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title="Pipeline por etapa" subtitle="Resumen de oportunidades" />
-      {stages.length ? (
-        <div className="mt-4 grid gap-2">
-          {stages.slice(0, 5).map((stage, index) => (
-            <div key={stage.stageCode ?? stage.stageLabel} className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg px-3 py-2.5 ${stageTones[index % stageTones.length]}`}>
-              <span className="min-w-0 truncate text-[10px] font-bold text-[#304b66]">{stage.stageLabel}</span>
-              <strong className="text-[10px] font-extrabold text-[#102a43]">{stage.count}</strong>
-              <span className="min-w-[76px] text-right text-[9px] font-semibold text-[#526b84]">{money.format(stage.amount)}</span>
-            </div>
-          ))}
-        </div>
-      ) : <div className="mt-4"><EmptyRow text="Aún no hay oportunidades registradas para estos filtros." /></div>}
-      <div className="mt-4 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[11px] font-extrabold text-[#102a43]">
-        <span>Total pipeline</span>
-        <span>
-          {data?.opportunities ?? 0}
-          <span className="ml-3 font-semibold text-[#526b84]">{data?.pipelineValue === undefined ? "N/D" : money.format(data.pipelineValue)}</span>
-        </span>
-      </div>
-    </section>
-  );
-}
-
-function GerenciaProductsPanel({ data }: { data: DashboardData | null }) {
-  const products = data?.topProducts ?? [];
-  const categories = data?.categorySummary ?? [];
-  return (
-    <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title="Productos y categorías más vendidos" subtitle="Este mes" />
-      <div className="mt-4 flex items-center gap-5 border-b border-[#edf2f6] text-[10px] font-extrabold">
-        <span className="border-b-2 border-[#2277ee] pb-2 text-[#2277ee]">Productos</span>
-        <span className="pb-2 text-[#8195aa]">Categorías</span>
-      </div>
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[9px] font-bold text-[#8195aa]">
-        <span>Producto</span><span>Unidades</span><span>Ventas</span><span>Margen</span>
-      </div>
-      {products.length ? (
-        <div className="grid gap-0.5">
-          {products.slice(0, 5).map((row) => (
-            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-b border-[#f0f4f7] py-2 last:border-0">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#f5f8fa]">
-                  <Image src={row.primaryImageUrl ?? "/images/product-placeholder-repuesto.svg"} alt="" width={26} height={26} className="h-6 w-6 object-contain" />
-                </div>
-                <span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.name}</span>
-              </div>
-              <span className="text-[9px] font-semibold text-[#526b84]">{row.units}</span>
-              <span className="text-[9px] font-semibold text-[#526b84]">{money.format(row.revenue)}</span>
-              <span className="text-[9px] font-semibold text-[#8195aa]">—</span>
-            </div>
-          ))}
-        </div>
-      ) : <div className="mt-3"><EmptyRow text="Aún no hay productos vendidos para estos filtros." /></div>}
-      {categories.length ? (
-        <div className="mt-3 border-t border-[#edf2f6] pt-3">
-          <p className="text-[9px] font-extrabold text-[#526b84]">Categorías</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {categories.slice(0, 4).map((category) => (
-              <span key={category.categoryId} className="rounded-full bg-[#f3f7fb] px-2 py-1 text-[8px] font-bold text-[#526b84]">{category.categoryName} · {category.units} uds</span>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      <Link href="/admin/catalogo" className="mt-3 flex items-center justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">
-        Ver todos los productos <ArrowUpRight className="ml-1 h-3 w-3" aria-hidden="true" />
-      </Link>
-    </section>
-  );
-}
-
-function TopProductsPanel({ data, gerencia }: { data: DashboardData | null; gerencia: boolean }) {
+function TopProductsPanel({ data }: { data: DashboardData | null }) {
   const rows = data?.topProducts ?? [];
   return (
     <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title={gerencia ? "Productos y categorías más vendidos" : "Productos más vendidos"} subtitle="Este mes" />
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[9px] font-bold text-[#8195aa]">
+      <PanelHeader title="Productos más vendidos" subtitle="Ventas confirmadas del período" />
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_auto_96px] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[9px] font-bold text-[#8195aa]">
         <span>Producto</span>
-        <span>Ventas</span>
+        <span title="Unidades vendidas">Ventas</span>
         <span>Ingresos</span>
+        <span>Tendencia</span>
       </div>
       {rows.length ? (
         <div className="grid gap-0.5">
-          {rows.slice(0, 5).map((row) => (
-            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-[#f0f4f7] py-2 last:border-0">
+          {rows.slice(0, 5).map((row, index) => (
+            <Link key={row.id} href={`/admin/catalogo?query=${encodeURIComponent(row.sku)}`} className="grid grid-cols-[minmax(0,1fr)_auto_auto_96px] items-center gap-2 border-b border-[#f0f4f7] py-2 last:border-0 hover:bg-[#fbfdff]">
               <div className="flex min-w-0 items-center gap-2">
+                <span className="inline-flex h-6 w-5 shrink-0 items-center justify-center text-[10px] font-black text-[#8195aa]">{index + 1}</span>
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#f5f8fa]">
                   <Image src={row.primaryImageUrl ?? "/images/product-placeholder-repuesto.svg"} alt="" width={26} height={26} className="h-6 w-6 object-contain" />
                 </div>
-                <span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.name}</span>
+                <span className="min-w-0 truncate text-[9px] font-bold text-[#304b66]">{row.name}<small className="mt-0.5 block truncate text-[8px] font-semibold text-[#9aabba]">{row.sku}{row.categoryName ? ` · ${row.categoryName}` : ""}</small></span>
               </div>
               <span className="text-[9px] font-semibold text-[#526b84]">{row.units}</span>
-              <span className="text-[9px] font-semibold text-[#526b84]">{money.format(row.revenue)}</span>
-            </div>
+              <span className="text-[9px] font-semibold text-[#526b84]">{formatDashboardMoney(row.revenue, data?.currency)}</span>
+              <span className="flex w-24 items-center" title={row.trend?.length ? "Tendencia de ingresos confirmados del período" : "Sin datos históricos suficientes para representar una tendencia"}>
+                <AdminSparkline tone="blue" data={row.trend} ariaLabel={row.trend?.length ? `Tendencia de ingresos de ${row.name}` : `Sin tendencia histórica suficiente para ${row.name}`} />
+              </span>
+            </Link>
           ))}
         </div>
       ) : (
         <div className="mt-3">
-          <EmptyRow text="Aún no hay productos vendidos en este período. El catálogo sigue disponible para revisión." />
+          <EmptyRow text="Todavía no existen ventas confirmadas en este período." />
         </div>
       )}
       <Link href="/admin/catalogo" className="mt-3 flex items-center justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">
         Ver todos los productos <ArrowUpRight className="ml-1 h-3 w-3" aria-hidden="true" />
       </Link>
-    </section>
-  );
-}
-
-function ApprovalsPanel({ data }: { data: DashboardData | null }) {
-  const rows = [
-    ["Pagos pendientes", data?.pendingPayments ?? 0, "Pendientes de verificación"],
-    ["Alertas de stock crítico", data?.criticalStock ?? 0, "Productos"],
-    ["Seguimientos vencidos", data?.overdueFollowUps ?? 0, "Requieren atención"],
-  ] as const;
-  return (
-    <section className={`${panelClass} p-4`}>
-      <PanelHeader title="Solicitudes y aprobaciones" subtitle="Pendientes de tu revisión" />
-      <div className="mt-3 grid gap-2">
-        {rows.map(([label, value, detail], index) => (
-          <div key={label} className="flex items-center gap-2.5 rounded-lg border border-[#e6edf3] px-3 py-2.5">
-            <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${index === 1 ? "bg-[#ffe8e8] text-[#ed4545]" : "bg-[#fff0df] text-[#f08b2d]"}`}>
-              {index === 1 ? <TriangleAlert className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-            </span>
-            <span className="min-w-0 flex-1 text-[10px] font-bold text-[#304b66]">{label}<small className="mt-1 block text-[9px] font-semibold text-[#8aa0b6]">{detail}</small></span>
-            <strong className="text-[14px] text-[#ed4545]">{value}</strong>
-          </div>
-        ))}
-      </div>
-      <Link href="/admin/notificaciones" className="mt-4 flex justify-center text-[10px] font-extrabold text-[#2277ee]">Ver todas las solicitudes</Link>
-    </section>
-  );
-}
-
-function CustomersPanel({ customers }: { customers: DashboardData["topCustomers"] }) {
-  return (
-    <section className={`${panelClass} p-4`}>
-      <PanelHeader title="Clientes y ventas recientes" subtitle="Últimas ventas cerradas" />
-      <div className="mt-4 grid gap-1">
-        {customers.length ? customers.map((customer) => (
-          <div key={customer.id} className="flex items-center gap-2.5 border-b border-[#f0f4f7] py-2 last:border-0">
-            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[10px] font-extrabold text-[#2277ee]">{customer.name.slice(0, 1).toUpperCase()}</span>
-            <span className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#304b66]">{customer.name}<small className="mt-0.5 block text-[9px] font-semibold text-[#8aa0b6]">{customer.orders} pedidos</small></span>
-            <span className="text-[10px] font-bold text-[#526b84]">{money.format(customer.revenue)}</span>
-          </div>
-        )) : <EmptyRow text="Aún no hay ventas confirmadas en este período." />}
-      </div>
-      <Link href="/admin/ventas" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver todas las ventas</Link>
     </section>
   );
 }
@@ -774,6 +562,19 @@ function activityInitials(name: string) {
   return initials || "CP";
 }
 
+function activityHref(activity: DashboardData["recentActivity"][number]) {
+  const entityId = encodeURIComponent(activity.entityId);
+  if (activity.entityType === "product") return `/admin/catalogo/${entityId}`;
+  if (activity.entityType === "opportunity") return `/admin/crm?view=pipeline&query=${encodeURIComponent(activity.entityLabel)}`;
+  if (activity.entityType === "payment") return `/admin/pagos?orderId=${entityId}`;
+  if (activity.entityType === "customer") return `/admin/clientes?query=${encodeURIComponent(activity.entityLabel)}`;
+  if (activity.entityType === "user") return `/admin/usuarios?query=${encodeURIComponent(activity.entityLabel)}`;
+  if (activity.entityType === "quote") return "/admin/cotizaciones";
+  if (activity.entityType === "order") return "/admin/pedidos";
+  if (activity.entityType === "sale") return "/admin/ventas";
+  return "/admin/auditoria";
+}
+
 function ActivityPanel({ activities }: { activities: DashboardData["recentActivity"] }) {
   return (
     <section className={`${panelClass} min-h-[320px] p-4`}>
@@ -782,7 +583,7 @@ function ActivityPanel({ activities }: { activities: DashboardData["recentActivi
         {activities.length ? activities.slice(0, 5).map((activity) => {
           const tone = activityTone(activity);
           return (
-            <div key={activity.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-[#edf2f6] py-2.5 last:border-0">
+            <Link href={activityHref(activity)} key={activity.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-[#edf2f6] py-2.5 last:border-0 hover:bg-[#fbfdff]">
               <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${tone.avatar}`}>
                 {activityInitials(activity.actorName)}
               </span>
@@ -794,190 +595,12 @@ function ActivityPanel({ activities }: { activities: DashboardData["recentActivi
                 <time className="block text-[8px] font-semibold text-[#9aabba]">{activityTimeLabel(activity.createdAt)}</time>
                 <small className={`mt-1 inline-flex rounded-md px-1.5 py-1 text-[8px] font-extrabold ${tone.badge}`}>{activitySectionLabel(activity)}</small>
               </span>
-            </div>
+            </Link>
           );
         }) : <EmptyRow text="Aún no hay actividad comercial confirmada en este período." />}
       </div>
       <Link href="/admin/auditoria" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver toda la actividad</Link>
     </section>
-  );
-}
-
-function UsersSummary({ data }: { data: DashboardData | null }) {
-  const rows = data?.userSummary ?? [];
-  return (
-    <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title="Resumen de usuarios" subtitle="Información de cuentas" />
-      <div className="mt-3 grid">
-        {rows.length ? rows.map((row) => (
-          <div key={`${row.roleCode ?? "none"}-${row.statusCode ?? row.status}`} title={row.statusLabel} className="flex items-center gap-2 border-b border-[#edf2f6] py-2.5 last:border-0">
-            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2277ee]"><UsersRound className="h-4 w-4" aria-hidden="true" /></span>
-            <span className="min-w-0 flex-1 truncate text-[10px] font-bold text-[#526b84]">{row.roleLabel}</span>
-            <strong className="text-[11px] font-extrabold text-[#102a43]">{row.count}</strong>
-            <span className="w-7 text-right text-[9px] font-extrabold text-[#8195aa]">—</span>
-          </div>
-        )) : <EmptyRow text="Sin usuarios registrados." />}
-      </div>
-      <Link href="/admin/usuarios" className="mt-3 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]">Ver todos los usuarios</Link>
-    </section>
-  );
-}
-
-function InventoryAlerts({ data }: { data: DashboardData | null }) {
-  const rows = [
-    { label: "Stock crítico", value: data?.criticalStock ?? 0, tone: "red", icon: TriangleAlert },
-    { label: "Sin movimiento", value: data?.noMovement ?? 0, tone: "orange", icon: TriangleAlert },
-    { label: "Sin stock", value: data?.noStock ?? 0, tone: "red", icon: CircleOff },
-    { label: "Stock pendiente de sincronizar", value: data?.unknownStock ?? 0, tone: "blue", icon: FileText },
-  ] as const;
-  return (
-    <section className={`${panelClass} min-h-[320px] p-4`}>
-      <PanelHeader title="Alertas de inventario" subtitle="Productos que requieren atención" />
-      <div className="mt-3 grid gap-1.5">
-        {rows.map(({ label, value, tone, icon: Icon }) => (
-          <div
-            key={label}
-            className="flex items-center gap-2.5 rounded-lg border border-[#e6edf3] px-3 py-2.5"
-          >
-            <span
-              className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${tone === "red" ? "bg-[#ffe7e7] text-[#ed4545]" : tone === "orange" ? "bg-[#fff0df] text-[#f08b2d]" : "bg-[#e8f1ff] text-[#2277ee]"}`}
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </span>
-            <span className="flex-1 text-[10px] font-semibold text-[#526b84]">{label}</span>
-            <strong
-              className={`text-[14px] ${tone === "red" ? "text-[#ed4545]" : tone === "orange" ? "text-[#f08b2d]" : "text-[#2277ee]"}`}
-            >
-              {value}
-            </strong>
-          </div>
-        ))}
-      </div>
-      <Link
-        href="/admin/inventario"
-        className="mt-4 flex justify-center border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver todas las alertas
-      </Link>
-    </section>
-  );
-}
-
-function QuickActions() {
-  const actions = [
-    ["Nuevo producto", "/admin/catalogo", Package],
-    ["Nueva cotización", "/admin/cotizaciones", FileText],
-    ["Nuevo cliente", "/admin/crm?view=clientes", UsersRound],
-    ["Crear pedido", "/admin/pedidos", ReceiptText],
-    ["Ajustar inventario", "/admin/inventario", Boxes],
-    ["Reporte de ventas", "/admin/reportes", BarChart3],
-  ] as const;
-  return (
-    <section className={`${panelClass} p-4`}>
-      <PanelHeader title="Acciones rápidas" subtitle="Accesos directos a funciones frecuentes" />
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {actions.map(([label, href, Icon]) => (
-          <Link
-            key={label}
-            href={href}
-            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-lg border border-[#e3ebf2] text-center text-[9px] font-extrabold text-[#304b66] transition hover:border-[#3986c0] hover:bg-[#f7fbff]"
-          >
-            <Icon className="h-5 w-5 text-[#496f94]" strokeWidth={1.8} aria-hidden="true" />
-            {label}
-          </Link>
-        ))}
-      </div>
-      <Link
-        href="/admin"
-        className="mt-3 flex items-center justify-center gap-1 border-t border-[#edf2f6] pt-3 text-[10px] font-extrabold text-[#2277ee]"
-      >
-        Ver todas las acciones <ArrowUpRight className="h-3 w-3" />
-      </Link>
-    </section>
-  );
-}
-
-function compactComparison(comparison?: DashboardComparison) {
-  if (!comparison || comparison.percentage === null) return "—";
-  const prefix = comparison.percentage > 0 ? "↗" : comparison.percentage < 0 ? "↘" : "→";
-  return `${prefix} ${Math.abs(comparison.percentage).toFixed(1)}%`;
-}
-
-type DashboardBottomKpis = {
-  customersTotal: number;
-  salesYtd: number;
-  ordersYtd: number;
-  averageTicket: number;
-  activeProducts: number;
-  totalCategories: number;
-  comparisons?: Partial<Record<"customers" | "sales" | "orders" | "ticket" | "products", DashboardComparison>>;
-};
-
-type DashboardWithBottomKpis = DashboardData & { bottomKpis?: DashboardBottomKpis };
-type BottomKpiTone = "blue" | "slate" | "green" | "orange";
-
-const preciseMoney = new Intl.NumberFormat("es-PE", {
-  style: "currency",
-  currency: "PEN",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-function BottomKpis({ data }: { data: DashboardData | null }) {
-  const source = data as DashboardWithBottomKpis | null;
-  const summary = source?.bottomKpis;
-  const sales = data?.salesRange.total ?? 0;
-  const salesCount = data?.salesRange.count ?? 0;
-  const items: Array<{ label: string; value: string; comparison?: DashboardComparison; icon: LucideIcon; tone: BottomKpiTone }> = summary
-    ? [
-        { label: "Clientes totales", value: String(summary.customersTotal), comparison: summary.comparisons?.customers, icon: UsersRound, tone: "blue" },
-        { label: "Ventas YTD", value: money.format(summary.salesYtd), comparison: summary.comparisons?.sales, icon: BarChart3, tone: "blue" },
-        { label: "Órdenes YTD", value: String(summary.ordersYtd), comparison: summary.comparisons?.orders, icon: ReceiptText, tone: "slate" },
-        { label: "Ticket promedio", value: preciseMoney.format(summary.averageTicket), comparison: summary.comparisons?.ticket, icon: Tag, tone: "green" },
-        { label: "Productos activos", value: String(summary.activeProducts), comparison: summary.comparisons?.products, icon: Package, tone: "orange" },
-        { label: "Categorías", value: String(summary.totalCategories), comparison: undefined, icon: Boxes, tone: "slate" },
-      ]
-    : [
-        { label: "Clientes nuevos", value: String(data?.newCustomers ?? 0), comparison: undefined, icon: UsersRound, tone: "blue" },
-        { label: "Ventas del período", value: money.format(sales), comparison: data?.comparisons?.sales, icon: BarChart3, tone: "blue" },
-        { label: "Órdenes del período", value: String(data?.orders.total ?? 0), comparison: data?.comparisons?.orders, icon: ReceiptText, tone: "slate" },
-        { label: "Ticket promedio", value: salesCount ? money.format(sales / salesCount) : "N/D", comparison: undefined, icon: Tag, tone: "green" },
-        { label: "Productos vendidos", value: String(data?.productsSold ?? 0), comparison: undefined, icon: Package, tone: "orange" },
-        { label: "Categorías con ventas", value: String(data?.categorySummary.length ?? 0), comparison: undefined, icon: Boxes, tone: "slate" },
-      ];
-  const toneClass = {
-    blue: "bg-[#eaf2ff] text-[#2277ee]",
-    slate: "bg-[#eef3f7] text-[#526b84]",
-    green: "bg-[#e0f7ee] text-[#1aa873]",
-    orange: "bg-[#fff0df] text-[#f08b2d]",
-  } as const;
-
-  return (
-    <section className={`${panelClass} grid divide-y divide-[#edf2f6] overflow-hidden sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-6`}>
-      {items.map((item) => (
-        <div key={item.label} className="flex min-w-0 items-center gap-2.5 px-4 py-3.5">
-          <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${toneClass[item.tone]}`}>
-            <item.icon className="h-4 w-4" aria-hidden="true" />
-          </span>
-          <span className="min-w-0">
-            <small className="block truncate text-[9px] font-semibold text-[#8195aa]">{item.label}</small>
-            <strong className="mt-1 block truncate text-[12px] font-black text-[#102a43]">{item.value}</strong>
-            <em className={`mt-0.5 block text-[9px] font-extrabold not-italic ${(item.comparison?.percentage ?? 0) < 0 ? "text-[#ed4545]" : "text-[#1aa873]"}`}>
-              {item.comparison ? compactComparison(item.comparison) : "—"}
-            </em>
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0 border-r border-[#e5edf3] pr-2 last:border-0 last:pr-0">
-      <p className="truncate text-[9px] font-semibold text-[#8195aa]">{label}</p>
-      <strong className="mt-1 block truncate text-[10px] text-[#304b66]">{value}</strong>
-    </div>
   );
 }
 

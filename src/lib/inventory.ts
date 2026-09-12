@@ -4,19 +4,31 @@ import { lt } from "drizzle-orm";
 import { auditLogs, inventoryBalances, inventoryMovements, inventoryReservations, products, transfers, transferItems } from "@/db/schema";
 import { applyInventoryOperation, availableQuantity, validateInventoryMovementMetadata, type InventoryOperation } from "@/lib/inventory-domain";
 import { notifyStaffOnce } from "@/lib/notifications-service";
+import { canTransitionTransfer } from "@/lib/inventory-workflow";
 
 type InventoryInput = { productId: string; locationId: string; quantity: number; reason?: string; notes?: string; performedBy?: string; performedByRole?: string; referenceType?: string; referenceId?: string; expiresAt?: Date | null; idempotencyKey?: string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
 
 async function updateBalance(tx: Transaction, input: InventoryInput, operation: InventoryOperation) {
   const trace = validateInventoryMovementMetadata({ type: operation.type, reason: input.reason, notes: input.notes, performedBy: input.performedBy });
+  if (input.idempotencyKey) {
+    const [existing] = await tx.select({ productId: inventoryMovements.productId, locationId: inventoryMovements.locationId, type: inventoryMovements.type, quantity: inventoryMovements.quantity, onHand: inventoryMovements.resultingOnHand, reserved: inventoryMovements.resultingReserved }).from(inventoryMovements).where(eq(inventoryMovements.idempotencyKey, input.idempotencyKey)).limit(1);
+    if (existing) {
+      if (existing.productId !== input.productId || existing.locationId !== input.locationId || existing.type !== operation.type || existing.quantity !== input.quantity) throw new Error("La clave de idempotencia ya fue usada para otra operación.");
+      return { onHand: existing.onHand, reserved: existing.reserved, available: availableQuantity(existing) };
+    }
+  }
   await tx.insert(inventoryBalances).values({ id: `balance-${input.productId}-${input.locationId}`, productId: input.productId, locationId: input.locationId, onHand: 0, reserved: 0 }).onConflictDoNothing({ target: [inventoryBalances.productId, inventoryBalances.locationId] });
   const [current] = await tx.select({ id: inventoryBalances.id, onHand: inventoryBalances.onHand, reserved: inventoryBalances.reserved }).from(inventoryBalances).where(and(eq(inventoryBalances.productId, input.productId), eq(inventoryBalances.locationId, input.locationId))).for("update").limit(1);
   if (!current) throw new Error("No se pudo abrir el saldo de inventario.");
+  if (operation.type === "OPENING_BALANCE") {
+    const [opening] = await tx.select({ id: inventoryMovements.id }).from(inventoryMovements).where(and(eq(inventoryMovements.productId, input.productId), eq(inventoryMovements.locationId, input.locationId), eq(inventoryMovements.type, "OPENING_BALANCE"))).limit(1);
+    if (opening) throw new Error("Ya existe un saldo inicial para este producto y local.");
+  }
   const next = applyInventoryOperation(current, operation);
   await tx.update(inventoryBalances).set({ onHand: next.onHand, reserved: next.reserved, updatedAt: new Date() }).where(eq(inventoryBalances.id, current.id));
   const movementId = `movement-${crypto.randomUUID()}`;
-  await tx.insert(inventoryMovements).values({ id: movementId, productId: input.productId, locationId: input.locationId, type: operation.type, quantity: input.quantity, previousOnHand: current.onHand, resultingOnHand: next.onHand, previousReserved: current.reserved, resultingReserved: next.reserved, referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null, reason: trace.reason, notes: trace.notes, performedBy: trace.performedBy });
+  await tx.insert(inventoryMovements).values({ id: movementId, productId: input.productId, locationId: input.locationId, type: operation.type, quantity: input.quantity, previousOnHand: current.onHand, resultingOnHand: next.onHand, previousReserved: current.reserved, resultingReserved: next.reserved, referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null, reason: trace.reason, notes: trace.notes, performedBy: trace.performedBy, idempotencyKey: input.idempotencyKey ?? null });
   await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: input.performedBy ?? null, actorRole: input.performedByRole ?? null, action: "inventory.movement_created", entityType: "inventory_movement", entityId: movementId, before: { onHand: current.onHand, reserved: current.reserved }, after: { onHand: next.onHand, reserved: next.reserved, available: availableQuantity(next) }, metadata: { productId: input.productId, locationId: input.locationId, type: operation.type, quantity: input.quantity, referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null } });
   return { ...next, available: availableQuantity(next) };
 }
@@ -68,10 +80,14 @@ export async function reserveInventoryBatchInTransaction(tx: Transaction, inputs
       const [existing] = await tx.select({ id: inventoryReservations.id, productId: inventoryReservations.productId, locationId: inventoryReservations.locationId, quantity: inventoryReservations.quantity }).from(inventoryReservations).where(eq(inventoryReservations.idempotencyKey, input.idempotencyKey)).limit(1);
       if (existing) { reservations.push({ reservationId: existing.id, productId: existing.productId, locationId: existing.locationId, quantity: existing.quantity }); continue; }
     }
+    const [registeredBalance] = await tx.select({ id: inventoryBalances.id }).from(inventoryBalances).where(and(eq(inventoryBalances.productId, input.productId), eq(inventoryBalances.locationId, input.locationId))).for("update").limit(1);
+    if (!registeredBalance) throw new Error("El producto no tiene saldo registrado en el local. Registra primero un saldo inicial.");
+    const reason = typeof input.reason === "string" ? input.reason.trim().slice(0, 240) : null;
+    if (input.referenceType === "manual" && !reason) throw new Error("El motivo es obligatorio para una reserva manual.");
     await updateBalance(tx, input, { type: "RESERVATION", quantity: input.quantity });
     const reservationId = `reservation-${crypto.randomUUID()}`;
-    await tx.insert(inventoryReservations).values({ id: reservationId, productId: input.productId, locationId: input.locationId, quantity: input.quantity, status: "ACTIVE", referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null, idempotencyKey: input.idempotencyKey ?? null, expiresAt: input.expiresAt ?? null, createdBy: input.performedBy ?? null });
-    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: input.performedBy ?? null, actorRole: input.performedByRole ?? null, action: "inventory.reservation_created", entityType: "inventory_reservation", entityId: reservationId, before: null, after: { productId: input.productId, locationId: input.locationId, quantity: input.quantity, status: "ACTIVE" }, metadata: { referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null } });
+    await tx.insert(inventoryReservations).values({ id: reservationId, productId: input.productId, locationId: input.locationId, quantity: input.quantity, status: "ACTIVE", referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null, reason, idempotencyKey: input.idempotencyKey ?? null, expiresAt: input.expiresAt ?? null, createdBy: input.performedBy ?? null });
+    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: input.performedBy ?? null, actorRole: input.performedByRole ?? null, action: "inventory.reservation_created", entityType: "inventory_reservation", entityId: reservationId, before: null, after: { productId: input.productId, locationId: input.locationId, quantity: input.quantity, status: "ACTIVE" }, metadata: { referenceType: input.referenceType ?? null, referenceId: input.referenceId ?? null, reason } });
     reservations.push({ reservationId, productId: input.productId, locationId: input.locationId, quantity: input.quantity });
   }
   return reservations;
@@ -126,7 +142,7 @@ export async function consumeInventoryReservation(reservationId: string, perform
 export async function receiveTransfer(transferId: string, performedBy: string, performedByRole?: string) {
   const result = await getDb().transaction(async (tx) => {
     const [transfer] = await tx.select().from(transfers).where(eq(transfers.id, transferId)).for("update").limit(1);
-    if (!transfer || transfer.status !== "IN_TRANSIT") throw new Error("El traslado no está en tránsito.");
+    if (!transfer || !canTransitionTransfer(transfer.status, "RECEIVED")) throw new Error("El traslado no está en tránsito o ya fue recibido.");
     const items = await tx.select().from(transferItems).where(eq(transferItems.transferId, transferId));
     if (!items.length) throw new Error("El traslado no tiene productos.");
     for (const item of items) {

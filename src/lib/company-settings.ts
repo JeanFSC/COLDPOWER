@@ -25,10 +25,14 @@ export type CompanySettings = {
   guaranteeTerms?: string | null;
   coverage?: string | null;
   legalLinks?: Record<string, string> | null;
+  logoMediaId?: string | null;
+  faviconMediaId?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
 };
 
 export const companySettingsFields = [
-  "legalName", "tradeName", "commercialName", "ruc", "country", "department", "province", "district", "address", "phone", "phones", "whatsapp", "email", "salesEmail", "hours", "businessHours", "facebook", "instagram", "tiktok", "website", "socials", "locations", "paymentMethods", "guaranteeTerms", "coverage", "legalLinks",
+  "legalName", "tradeName", "commercialName", "ruc", "country", "department", "province", "district", "address", "phone", "phones", "whatsapp", "email", "salesEmail", "hours", "businessHours", "facebook", "instagram", "tiktok", "website", "socials", "locations", "paymentMethods", "guaranteeTerms", "coverage", "legalLinks", "logoMediaId", "faviconMediaId", "primaryColor", "secondaryColor",
 ] as const;
 export type CompanySettingsField = (typeof companySettingsFields)[number];
 export type CompanySettingsAdminResponse = { public: CompanySettings; administrative: Pick<CompanySettings, "legalName" | "ruc" | "country" | "department" | "province" | "district" | "address" | "salesEmail" | "paymentMethods" | "guaranteeTerms" | "coverage" | "legalLinks">; version: number; updatedAt: Date | null; updatedBy: string | null; validationStatus: string };
@@ -63,5 +67,6 @@ export function publicCompanySettings(settings: CompanySettings): CompanySetting
   const legalLinks = settings.legalLinks ? Object.fromEntries(Object.entries(settings.legalLinks).filter(([, url]) => Boolean(clean(url)))) : undefined;
   return {
     legalName: clean(settings.legalName), tradeName: clean(settings.tradeName), commercialName: clean(settings.commercialName), ruc: clean(settings.ruc), country: clean(settings.country), department: clean(settings.department), province: clean(settings.province), district: clean(settings.district), address: clean(settings.address), phone, phones: normalizedPhones, whatsapp: clean(settings.whatsapp), email: clean(settings.email), salesEmail: clean(settings.salesEmail), hours: clean(settings.hours), businessHours: clean(settings.businessHours), facebook: explicitSocials.facebook, instagram: explicitSocials.instagram, tiktok: explicitSocials.tiktok, website: clean(settings.website), socials: Object.keys(socials).length ? socials : undefined, locations: locations?.length ? locations : undefined, paymentMethods: paymentMethods?.length ? paymentMethods : undefined, guaranteeTerms: clean(settings.guaranteeTerms), coverage: clean(settings.coverage), legalLinks: legalLinks && Object.keys(legalLinks).length ? legalLinks : undefined,
+    logoMediaId: clean(settings.logoMediaId), faviconMediaId: clean(settings.faviconMediaId), primaryColor: clean(settings.primaryColor), secondaryColor: clean(settings.secondaryColor),
   };
 }

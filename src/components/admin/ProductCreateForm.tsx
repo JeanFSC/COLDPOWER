@@ -3,12 +3,14 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 
-type Option = { id: string; name: string };
+type Option = { id: string; name: string; categoryId?: string };
 
 type ProductCreateFormProps = {
   categories: Option[];
   families: Option[];
   brands: Option[];
+  canCreate?: boolean;
+  onCreated?: (productId: string, sku: string) => void;
 };
 
 type CreateResponse = {
@@ -16,7 +18,7 @@ type CreateResponse = {
   error?: { message?: string };
 };
 
-export function ProductCreateForm({ categories, families, brands }: ProductCreateFormProps) {
+export function ProductCreateForm({ categories, families, brands, canCreate = true, onCreated }: ProductCreateFormProps) {
   const [open, setOpen] = useState(false);
   const [sku, setSku] = useState("");
   const [commercialName, setCommercialName] = useState("");
@@ -46,10 +48,12 @@ export function ProductCreateForm({ categories, families, brands }: ProductCreat
       });
       const result = (await response.json()) as CreateResponse;
       if (!response.ok) throw new Error(result.error?.message ?? "No se pudo crear el producto.");
-      setMessage(`Producto ${result.product?.sku ?? sku.trim()} creado. Actualizando catálogo…`);
-      window.location.assign("/admin/catalogo");
+      setMessage(`Producto ${result.product?.sku ?? sku.trim()} creado.`);
+      setOpen(false);
+      onCreated?.(result.product?.id ?? "", result.product?.sku ?? sku.trim());
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo crear el producto.");
+      const errorMessage = error instanceof Error ? error.message : "No se pudo crear el producto.";
+      setMessage(/SKU|existe|duplic/i.test(errorMessage) ? "Ya existe un producto con este SKU. Usa un identificador único." : errorMessage);
     } finally {
       setBusy(false);
     }
@@ -57,9 +61,10 @@ export function ProductCreateForm({ categories, families, brands }: ProductCreat
 
   return (
     <>
+      {!canCreate ? null : (
       <button type="button" onClick={() => { setMessage(""); setOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ff830e] px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(255,131,14,0.16)] transition hover:bg-[#e97305]">
         Nuevo producto
-      </button>
+      </button>)}
       {open ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#102a43]/35 px-4 py-10" role="presentation">
           <section className="w-full max-w-2xl rounded-xl border border-[#dce6ee] bg-white p-5 shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-labelledby="new-product-title">
@@ -82,10 +87,10 @@ export function ProductCreateForm({ categories, families, brands }: ProductCreat
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-[11px] font-extrabold text-[#304b66]">Categoría
-                  <select required value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-sm font-semibold outline-none focus:border-[#2277ee]"><option value="">Selecciona una categoría</option>{categories.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
+                  <select required value={categoryId} onChange={(event) => { const nextCategoryId = event.target.value; setCategoryId(nextCategoryId); if (familyId && !families.some((family) => family.id === familyId && (!family.categoryId || family.categoryId === nextCategoryId))) setFamilyId(""); }} className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-sm font-semibold outline-none focus:border-[#2277ee]"><option value="">Selecciona una categoría</option>{categories.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
                 </label>
                 <label className="grid gap-1.5 text-[11px] font-extrabold text-[#304b66]">Familia
-                  <select required value={familyId} onChange={(event) => setFamilyId(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-sm font-semibold outline-none focus:border-[#2277ee]"><option value="">Selecciona una familia</option>{families.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
+                  <select required value={familyId} onChange={(event) => setFamilyId(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-sm font-semibold outline-none focus:border-[#2277ee]" disabled={!categoryId}><option value="">{categoryId ? "Selecciona una familia" : "Primero selecciona una categoría"}</option>{families.filter((option) => !option.categoryId || option.categoryId === categoryId).map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
                 </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { users } from "@/db/schema";
-import { AdminDashboardView } from "@/components/admin/AdminDashboardView";
+import { locations, users } from "@/db/schema";
+import { OperationsCenter } from "@/components/admin/OperationsCenter";
+import { getOperationsDaySummary } from "@/lib/operations-day-summary";
 import { requirePermission } from "@/lib/auth";
-import { parseOperationsFilters } from "@/lib/operations-contract";
+import { getOperationsComparisonPeriods, parseOperationsFilters } from "@/lib/operations-contract";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import { permissionsForRole } from "@/lib/roles";
 
@@ -24,40 +25,89 @@ function toQuery(params: Params) {
   return query;
 }
 
-export default async function OperationsWorkspacePage({ searchParams }: { searchParams?: Promise<Params> }) {
+export default async function OperationsWorkspacePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Params>;
+}) {
   const actor = await requirePermission("operations.view");
   const query = toQuery((await searchParams) ?? {});
+  if (!query.has("pageSize")) query.set("pageSize", "10");
+  if (!query.has("queue")) query.set("queue", "quotes");
+  if (!query.has("range")) query.set("range", "all");
   const filters = parseOperationsFilters(query);
-  let actorName: string | null = null;
+  let operationsFilterOptions: {
+    locations: Array<{ id: string; label: string }>;
+    sellers: Array<{ id: string; label: string }>;
+  } = { locations: [], sellers: [] };
   try {
-    const [profile] = await getDb()
-      .select({ name: users.name, email: users.email })
-      .from(users)
-      .where(eq(users.id, actor.userId))
-      .limit(1);
-    actorName = profile?.name ?? profile?.email ?? null;
+    const db = getDb();
+    const [locationRows, sellerRows] = await Promise.all([
+      db
+        .select({ id: locations.id, name: locations.name })
+        .from(locations)
+        .where(eq(locations.active, true))
+        .orderBy(locations.name),
+      db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(eq(users.status, "ACTIVE"))
+        .orderBy(users.name),
+    ]);
+    operationsFilterOptions = {
+      locations: locationRows.map((row) => ({ id: row.id, label: row.name })),
+      sellers: sellerRows.map((row) => ({ id: row.id, label: row.name ?? row.email ?? row.id })),
+    };
   } catch (error) {
     console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error);
   }
   let snapshot: Awaited<ReturnType<typeof getOperationsWorkspace>> | null = null;
   try {
-    snapshot = await getOperationsWorkspace(filters, { allowedPermissions: permissionsForRole(actor.role) });
+    snapshot = await getOperationsWorkspace(filters, {
+      allowedPermissions: permissionsForRole(actor.role),
+      summaryScope: "header",
+    });
   } catch (error) {
     console.error("ColdPower: no se pudo cargar el centro operativo", error);
   }
+  if (!snapshot) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+        No se pudo consultar el centro operativo. No se muestran datos inventados.
+      </div>
+    );
+  }
 
-  return snapshot ? (
-    <AdminDashboardView
+  const comparisonPeriods = getOperationsComparisonPeriods(filters);
+  const currentKpis =
+    filters.fromAt && filters.toAt
+      ? snapshot
+      : await getOperationsWorkspace(comparisonPeriods.current, {
+          allowedPermissions: permissionsForRole(actor.role),
+          summaryScope: "header",
+        });
+  const [previousKpis, currentDay, previousDay] = await Promise.all([
+    getOperationsWorkspace(comparisonPeriods.previous, {
+      allowedPermissions: permissionsForRole(actor.role),
+      summaryScope: "header",
+    }),
+    getOperationsDaySummary({ ...filters, assigneeId: undefined }),
+    getOperationsDaySummary({ ...filters, assigneeId: undefined }, -1),
+  ]);
+
+  return (
+    <OperationsCenter
       role={actor.role}
-      data={null}
       snapshot={snapshot}
-      view="operations"
-      range={filters.range === "all" ? "month" : filters.range}
-      actorName={actorName}
+      filters={filters}
+      filterOptions={operationsFilterOptions}
+      day={currentDay}
+      comparison={{
+        current: currentKpis,
+        previous: previousKpis,
+        previousDay,
+        label: comparisonPeriods.label,
+      }}
     />
-  ) : (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-      No se pudo consultar el centro operativo. No se muestran datos inventados.
-    </div>
   );
 }

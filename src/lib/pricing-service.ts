@@ -33,10 +33,45 @@ export type PriceMutationInput = {
 };
 
 function parseWindow(input: Omit<PriceMutationInput, "productId">) {
-  const validFrom = input.validFrom === undefined || input.validFrom === "" ? new Date() : new Date(String(input.validFrom));
-  const validUntil = input.validUntil === undefined || input.validUntil === "" || input.validUntil === null ? null : new Date(String(input.validUntil));
+  const parseDate = (value: unknown) => {
+    if (value === undefined || value === "" || value === null) return null;
+    const raw = String(value);
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw) ? new Date(`${raw}:00-05:00`) : new Date(raw);
+  };
+  const validFrom = parseDate(input.validFrom) ?? new Date();
+  const validUntil = parseDate(input.validUntil);
   if (Number.isNaN(validFrom.getTime()) || (validUntil && Number.isNaN(validUntil.getTime())) || (validUntil && validUntil <= validFrom)) throw new Error("PRICE_INVALID_WINDOW");
   return { validFrom, validUntil };
+}
+
+export async function schedulePriceReplacement(id: string, input: Omit<PriceMutationInput, "productId">, actor: PricingActor) {
+  const normalized = normalizePriceDetails(input);
+  const window = parseWindow(input);
+  const reason = mutationReason(input);
+  const requestKey = idempotencyKey(input);
+  assertPricePermission(actor, normalized.priceType);
+  if (window.validFrom <= new Date()) throw new Error("PRICE_REPLACEMENT_MUST_BE_FUTURE");
+  const db = getDb();
+  return db.transaction(async (tx) => {
+    const [current] = await tx.select().from(productPrices).where(and(eq(productPrices.id, id), eq(productPrices.active, true))).limit(1);
+    if (!current) throw new Error("PRICE_NOT_FOUND");
+    if (requestKey) {
+      const [previousRequest] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, requestKey)).limit(1);
+      if (previousRequest) {
+        if (samePriceRequest(previousRequest, { productId: current.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status })) return { price: previousRequest, closed: null, idempotent: true };
+        throw new Error("PRICE_IDEMPOTENCY_CONFLICT");
+      }
+    }
+    if (current.priceType === "COST" && !can(actor.role, "pricing.cost.edit")) throw new Error("PRICING_COST_FORBIDDEN");
+    if (current.priceType !== normalized.priceType) throw new Error("PRICE_REPLACEMENT_TYPE_MISMATCH");
+    await assertNoOverlap(tx, current.productId, normalized.priceType, window, id);
+    const [closed] = await tx.update(productPrices).set({ validUntil: window.validFrom, updatedAt: new Date() }).where(eq(productPrices.id, id)).returning();
+    const [created] = await tx.insert(productPrices).values({ id: `price-${crypto.randomUUID()}`, productId: current.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed, status: normalized.status, active: normalized.status === "ACTIVE", validFrom: window.validFrom, validUntil: window.validUntil, idempotencyKey: requestKey, createdBy: actor.userId }).returning();
+    await tx.insert(priceHistory).values({ id: `price-history-${crypto.randomUUID()}`, productId: current.productId, priceId: id, priceType: current.priceType, previousAmount: current.amount, newAmount: current.amount, currency: current.currency, reason: `${reason} · cierre por reemplazo`, changedBy: actor.userId });
+    await tx.insert(priceHistory).values({ id: `price-history-${crypto.randomUUID()}`, productId: current.productId, priceId: created.id, priceType: normalized.priceType, previousAmount: current.amount, newAmount: normalized.amount, currency: normalized.currency, reason, changedBy: actor.userId });
+    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "pricing.price_replacement_scheduled", entityType: "product_price", entityId: created.id, before: { current, closed }, after: created, metadata: { reason, replacementOf: id } });
+    return { price: created, closed, idempotent: false };
+  });
 }
 
 function mutationReason(input: Omit<PriceMutationInput, "productId">) {

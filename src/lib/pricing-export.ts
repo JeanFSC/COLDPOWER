@@ -22,8 +22,8 @@ export function toPricingCsv(data: PricingListResponse, canViewCost: boolean) {
         price?.amount ?? item.amount ?? "",
         price?.currency ?? item.currency ?? "",
         price?.status ?? item.status ?? (price ? "ACTIVE" : "SIN_PRECIO"),
-        price?.validFrom?.toISOString() ?? "",
-        price?.validUntil?.toISOString() ?? "",
+        price?.validFrom ? new Date(price.validFrom).toISOString() : "",
+        price?.validUntil ? new Date(price.validUntil).toISOString() : "",
       ]);
     }
   }

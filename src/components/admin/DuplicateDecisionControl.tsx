@@ -5,7 +5,7 @@ import { useState } from "react";
 type Candidate = { id: string; sku: string; name: string };
 type Decision = "pending" | "different" | "confirmed" | "keep_both";
 
-export function DuplicateDecisionControl({ productId, currentDecision, currentCanonicalProductId, candidates }: { productId: string; currentDecision: string; currentCanonicalProductId: string | null; candidates: Candidate[] }) {
+export function DuplicateDecisionControl({ productId, currentDecision, currentCanonicalProductId, candidates, onSaved }: { productId: string; currentDecision: string; currentCanonicalProductId: string | null; candidates: Candidate[]; onSaved?: () => void }) {
   const [decision, setDecision] = useState<Decision>((["pending", "different", "confirmed", "keep_both"] as string[]).includes(currentDecision) ? currentDecision as Decision : "pending");
   const [canonicalProductId, setCanonicalProductId] = useState(currentCanonicalProductId ?? "");
   const [note, setNote] = useState("");
@@ -17,7 +17,7 @@ export function DuplicateDecisionControl({ productId, currentDecision, currentCa
       const response = await fetch(`/api/admin/catalogo/${productId}/duplicate`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, canonicalProductId: decision === "confirmed" ? canonicalProductId : null, note }) });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "No se pudo guardar.");
-      setMessage("Guardado");
+      setMessage("Guardado"); onSaved?.();
     } catch (error) { setMessage(error instanceof Error ? error.message : "Error"); }
     finally { setBusy(false); }
   }

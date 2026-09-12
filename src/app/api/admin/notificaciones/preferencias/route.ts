@@ -1,5 +1,6 @@
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError, apiSuccess } from "@/lib/api-errors";
-import { getNotificationPreferences } from "@/lib/notifications-service";
+import { getNotificationPreferences, saveNotificationPreferences } from "@/lib/notifications-service";
 
 export async function GET() { try { const actor = await requireApiPermission("notifications.preferences"); return apiSuccess({ preferences: await getNotificationPreferences(actor.userId) }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATIONS_PREFERENCES_FORBIDDEN", "No tienes permiso para ver preferencias.", 403); return apiError("NOTIFICATIONS_PREFERENCES_UNAVAILABLE", "No se pudieron cargar las preferencias.", 503); } }
+export async function PATCH(request: Request) { try { const actor = await requireApiPermission("notifications.preferences"); return apiSuccess({ preferences: await saveNotificationPreferences(actor.userId, await request.json()) }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("NOTIFICATIONS_PREFERENCES_FORBIDDEN", "No tienes permiso para modificar preferencias.", 403); return apiError("NOTIFICATIONS_PREFERENCES_FAILED", error instanceof Error ? error.message : "No se pudieron guardar las preferencias.", 400); } }

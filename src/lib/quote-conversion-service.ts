@@ -1,53 +1,125 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditLogs, inventoryBalances, locations, products, quotes, quoteItems, quoteStatusHistory } from "@/db/schema";
+import { auditLogs, inventoryBalances, locations, quoteStatusHistory, quoteVersionItems, quoteVersions, quotes } from "@/db/schema";
 import { customerQuoteLinks, customers, opportunities, opportunityStageHistory } from "@/db/crm-schema";
 import { orderItems, orderStatusHistory, orders, payments, saleItems, sales } from "@/db/sales-schema";
 import { reserveInventoryBatchInTransaction, type InventoryReservationInput } from "@/lib/inventory";
 import { type DeliveryMethod } from "@/lib/sales-validation";
-import { applyPromotionsInTransaction } from "@/lib/promotion-service";
+import { assertOpportunityTransition } from "@/lib/crm-validation";
+import { assertCurrency, validateQuoteLine } from "@/lib/quote-pricing";
 
 type Actor = { userId: string | null; role?: string | null };
-type Input = { quoteId: string; locationId: string; deliveryMethod: DeliveryMethod; address: string | null; items: Array<{ productId: string; unitPrice: string; currency: string }> };
+type Input = { quoteId: string; locationId: string; deliveryMethod: DeliveryMethod; address: string | null };
+type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
 
 function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
-function money(value: string | number) { return Number(Number(value).toFixed(2)); }
+function money(value: string | number | null | undefined) { const amount = Number(value ?? 0); if (!Number.isFinite(amount)) throw new Error("El monto de la cotización no es válido."); return amount.toFixed(2); }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role ?? null, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 
-export async function convertQuoteToSale(input: Input, actor: Actor) {
-  if (!input.quoteId || !input.locationId || !input.items.length) throw new Error("La conversión necesita cotización, local y precios confirmados.");
-  return getDb().transaction(async (tx) => {
-    // Lock the canonical quote before checking/creating the sale so two
-    // concurrent conversion requests resolve to one idempotent result.
-    const [quote] = await tx.select().from(quotes).where(eq(quotes.id, input.quoteId)).for("update").limit(1);
-  if (!quote) throw new Error("Cotización no encontrada.");
-    const [existingSale] = await tx.select().from(sales).where(eq(sales.quoteId, input.quoteId)).limit(1);
-    if (existingSale) { const [existingOrder] = await tx.select().from(orders).where(eq(orders.saleId, existingSale.id)).limit(1); return { sale: existingSale, order: existingOrder ?? null, idempotent: true }; }
-  if (!["aprobada", "cotizada"].includes(quote.status)) throw new Error("La cotización debe estar aprobada o cotizada antes de convertirse en venta.");
-    const quoteLines = await tx.select().from(quoteItems).where(eq(quoteItems.quoteId, input.quoteId)).orderBy(desc(quoteItems.createdAt));
-  if (!quoteLines.length) throw new Error("La cotización no tiene líneas de producto persistidas.");
-    const requested = new Map(input.items.map((item) => [item.productId, item]));
-  if (requested.size !== quoteLines.length || quoteLines.some((line) => !requested.has(line.productId))) throw new Error("Los precios confirmados no coinciden con las líneas de la cotización.");
-    const productsRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName }).from(products).where(inArray(products.id, quoteLines.map((line) => line.productId)));
-    const productById = new Map(productsRows.map((product) => [product.id, product]));
-  const baseLines = quoteLines.map((quoteLine) => { const product = productById.get(quoteLine.productId); const confirmed = requested.get(quoteLine.productId); if (!product || !confirmed) throw new Error("Una línea de la cotización ya no está disponible."); const amount = Number(confirmed.unitPrice); const currency = confirmed.currency.trim().toUpperCase(); if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100 || !/^[A-Z]{3}$/.test(currency)) throw new Error(`Precio confirmado inválido para ${quoteLine.skuSnapshot}.`); return { productId: product.id, sku: product.sku, name: product.name || product.normalizedName, quantity: quoteLine.quantity, unitPrice: amount.toFixed(2), currency, lineTotal: (amount * quoteLine.quantity).toFixed(2) }; });
-    const lines = await Promise.all(baseLines.map(async (line) => { const applied = await applyPromotionsInTransaction(tx, { productId: line.productId, baseUnitPrice: line.unitPrice, contextType: "quote_conversion", contextId: quote.id, idempotencyKey: "quote-convert-" + quote.id + ":" + line.productId }); return { ...line, baseLineTotal: line.lineTotal, unitPrice: applied.finalUnitPrice, discountAmount: applied.discountAmount, lineTotal: (Number(applied.finalUnitPrice) * line.quantity).toFixed(2) }; }));
-    const currencies = new Set(lines.map((line) => line.currency)); if (currencies.size !== 1) throw new Error("La venta no puede mezclar monedas.");
-  const [location] = await tx.select().from(locations).where(and(eq(locations.id, input.locationId), eq(locations.active, true))).limit(1); if (!location) throw new Error("El local no está activo o no existe.");
-    const balances = await tx.select({ productId: inventoryBalances.productId, onHand: inventoryBalances.onHand, reserved: inventoryBalances.reserved }).from(inventoryBalances).where(and(eq(inventoryBalances.locationId, input.locationId), inArray(inventoryBalances.productId, lines.map((line) => line.productId)))).for("update");
-    const balanceByProduct = new Map(balances.map((balance) => [balance.productId, balance])); for (const line of lines) { const balance = balanceByProduct.get(line.productId); if (!balance) throw new Error(`INVENTORY_UNKNOWN: No hay saldo cuantitativo confirmado para ${line.sku} en ${location.name}.`); if (balance.onHand - balance.reserved < line.quantity) throw new Error(`Stock insuficiente para ${line.sku} en ${location.name}.`); }
-    const [link] = await tx.select().from(customerQuoteLinks).where(eq(customerQuoteLinks.quoteId, quote.id)).limit(1);
-    const customer = link ? (await tx.select().from(customers).where(eq(customers.id, link.customerId)).limit(1))[0] : (await tx.insert(customers).values({ id: id("customer"), userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone, whatsapp: quote.phone, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "ACTIVE" }).returning())[0];
+async function findOrCreateCustomer(tx: Transaction, quote: typeof quotes.$inferSelect, actor: Actor) {
+  const [link] = await tx.select().from(customerQuoteLinks).where(eq(customerQuoteLinks.quoteId, quote.id)).limit(1);
+  if (link) {
+    const [linked] = await tx.select().from(customers).where(eq(customers.id, link.customerId)).limit(1);
+    if (!linked) throw new Error("El cliente vinculado a la cotización ya no existe.");
+    return { customer: linked, link };
+  }
+  const duplicateConditions = [
+    quote.documentNumber ? eq(customers.documentNumber, quote.documentNumber) : null,
+    quote.email ? eq(customers.email, quote.email) : null,
+    quote.phone ? or(eq(customers.phone, quote.phone), eq(customers.whatsapp, quote.phone)) : null,
+  ].filter((condition): condition is NonNullable<typeof condition> => Boolean(condition));
+  const existing = duplicateConditions.length ? (await tx.select().from(customers).where(or(...duplicateConditions)).limit(1))[0] : undefined;
+  const customer = existing ?? (await tx.insert(customers).values({ id: id("customer"), userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone || null, whatsapp: quote.phone || null, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "ACTIVE", assignedSellerId: quote.assignedSellerId ?? actor.userId }).returning())[0];
   if (!customer) throw new Error("No se pudo asociar la cotización a un cliente.");
-  let opportunityId = link?.opportunityId ?? null; if (!opportunityId) { const opportunity = (await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${quote.trackingCode}`, customerId: customer.id, quoteId: quote.id, title: quote.productName ? `Cotización: ${quote.productName}` : "Venta desde cotización", origin: "WEB", stage: "SALE", createdBy: actor.userId }).returning())[0]; opportunityId = opportunity.id; await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId, fromStage: "ACCEPTED", toStage: "SALE", changedBy: actor.userId ?? "anonymous", note: "Cotización convertida en venta" }); if (!link) await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId: quote.id, opportunityId }); }
-    const now = new Date(); const saleId = id("sale"); const orderId = id("order"); const orderCode = `ORD-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`; const subtotal = lines.reduce((sum, line) => sum + money(line.baseLineTotal), 0).toFixed(2); const discountAmount = lines.reduce((sum, line) => sum + money(line.discountAmount) * line.quantity, 0).toFixed(2); const total = Math.max(0, money(subtotal) - money(discountAmount)).toFixed(2); const currency = lines[0].currency;
-    const [sale] = await tx.insert(sales).values({ id: saleId, code: `VTA-${crypto.randomUUID().slice(0, 10).toUpperCase()}`, customerId: customer.id, opportunityId, quoteId: quote.id, status: "CONFIRMED", sellerId: null, subtotal, discountAmount, total, currency, createdAt: now, updatedAt: now }).returning();
-    await tx.insert(saleItems).values(lines.map((line) => ({ id: id("sale-item"), saleId, productId: line.productId, skuSnapshot: line.sku, productNameSnapshot: line.name, quantity: line.quantity, unitPrice: line.unitPrice, currency, discountAmount: (money(line.discountAmount) * line.quantity).toFixed(2), lineTotal: line.lineTotal })));
-    const [order] = await tx.insert(orders).values({ id: orderId, code: orderCode, saleId, customerId: customer.id, opportunityId, status: "PAYMENT_PENDING", deliveryMethod: input.deliveryMethod, locationId: input.locationId, deliveryAddress: input.address, customerNameSnapshot: quote.name, customerPhoneSnapshot: quote.phone, customerEmailSnapshot: quote.email, sellerId: null, subtotal, discountAmount, total, currency, idempotencyKey: `quote-convert-${quote.id}`, createdAt: now, updatedAt: now }).returning();
-    const reservationInputs: InventoryReservationInput[] = lines.map((line) => ({ productId: line.productId, locationId: input.locationId, quantity: line.quantity, referenceType: "order", referenceId: orderId, performedBy: actor.userId ?? undefined, performedByRole: actor.role ?? undefined })); const reservations = await reserveInventoryBatchInTransaction(tx, reservationInputs);
-    await tx.insert(orderItems).values(lines.map((line) => ({ id: id("order-item"), orderId, productId: line.productId, skuSnapshot: line.sku, productNameSnapshot: line.name, quantity: line.quantity, unitPrice: line.unitPrice, currency, lineTotal: line.lineTotal, reservationId: reservations.find((reservation) => reservation.productId === line.productId)?.reservationId ?? null })));
-    await tx.insert(payments).values({ id: id("payment"), orderId, methodType: "PROVIDER", method: "UNCONFIGURED", provider: null, providerReference: null, amount: total, currency, status: "PENDING", metadata: { reason: "provider_not_configured", source: "quote_conversion" }, createdBy: actor.userId });
-    await tx.update(quotes).set({ status: "convertida", workflowStatus: "CONVERTED", updatedAt: now }).where(eq(quotes.id, quote.id)); await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId: quote.id, fromStatus: quote.status, toStatus: "convertida", changedBy: actor.userId ?? "anonymous", note: `Convertida en venta ${sale.code}` }); await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId, fromStatus: null, toStatus: "PAYMENT_PENDING", changedBy: actor.userId, note: "Pedido creado desde cotización aprobada" }); await tx.insert(auditLogs).values(audit(actor, "sales.quote_converted", "quote", quote.id, { status: quote.status, workflowStatus: quote.workflowStatus }, { status: "convertida", workflowStatus: "CONVERTED", saleId, orderId }, { reservationCount: reservations.length }));
+  const createdLink = (await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId: quote.id, opportunityId: null }).returning())[0];
+  return { customer, link: createdLink };
+}
+
+async function resolveOpportunity(tx: Transaction, quote: typeof quotes.$inferSelect, customerId: string, link: typeof customerQuoteLinks.$inferSelect | null, actor: Actor, currency: string, total: string) {
+  if (link?.opportunityId) {
+    const [opportunity] = await tx.select().from(opportunities).where(eq(opportunities.id, link.opportunityId)).for("update").limit(1);
+    if (!opportunity || opportunity.customerId !== customerId) throw new Error("La oportunidad no pertenece al cliente de la cotización.");
+    if (opportunity.stage !== "SALE") {
+      assertOpportunityTransition(opportunity.stage, "SALE");
+      await tx.update(opportunities).set({ stage: "SALE", totalAmount: total, currency, assignedSellerId: opportunity.assignedSellerId ?? quote.assignedSellerId ?? actor.userId, updatedAt: new Date() }).where(eq(opportunities.id, opportunity.id));
+      await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: opportunity.id, fromStage: opportunity.stage, toStage: "SALE", changedBy: actor.userId ?? "system", note: "Cotización aceptada convertida en venta" });
+      await tx.insert(auditLogs).values(audit(actor, "crm.opportunity_stage_changed", "opportunity", opportunity.id, { stage: opportunity.stage }, { stage: "SALE" }, { source: "quote_conversion" }));
+    }
+    return { ...opportunity, stage: "SALE" as const, assignedSellerId: opportunity.assignedSellerId ?? quote.assignedSellerId ?? actor.userId };
+  }
+  const created = (await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${quote.trackingCode}`, customerId, quoteId: quote.id, title: quote.productName ? `Cotización: ${quote.productName}` : "Venta desde cotización", origin: quote.origin === "WEB" ? "WEB" : "LOCAL", stage: "SALE", assignedSellerId: quote.assignedSellerId ?? actor.userId, totalAmount: total, currency, createdBy: actor.userId }).returning())[0];
+  if (!created) throw new Error("No se pudo crear la oportunidad comercial.");
+  await tx.update(customerQuoteLinks).set({ opportunityId: created.id }).where(eq(customerQuoteLinks.quoteId, quote.id));
+  await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: created.id, toStage: "SALE", changedBy: actor.userId ?? "system", note: "Oportunidad creada por conversión de cotización aceptada" });
+  await tx.insert(auditLogs).values(audit(actor, "crm.opportunity_created", "opportunity", created.id, null, created, { source: "quote_conversion" }));
+  return created;
+}
+
+export async function getQuoteConversionPreview(quoteId: string) {
+  const db = getDb();
+  const [quote] = await db.select().from(quotes).where(eq(quotes.id, quoteId)).limit(1);
+  if (!quote) throw new Error("Cotización no encontrada.");
+  if (quote.workflowStatus !== "ACCEPTED" || !quote.acceptedVersionId) throw new Error("Solo una cotización aceptada con versión aprobada puede convertirse.");
+  const [version, activeLocations, existingSale] = await Promise.all([
+    db.select().from(quoteVersions).where(and(eq(quoteVersions.id, quote.acceptedVersionId), eq(quoteVersions.quoteId, quote.id))).limit(1),
+    db.select({ id: locations.id, name: locations.name, address: locations.address }).from(locations).where(eq(locations.active, true)).orderBy(locations.name),
+    db.select({ id: sales.id, code: sales.code }).from(sales).where(eq(sales.quoteId, quote.id)).limit(1),
+  ]);
+  if (!version[0] || version[0].status !== "ACCEPTED") throw new Error("La versión aceptada ya no está disponible.");
+  const items = await db.select().from(quoteVersionItems).where(eq(quoteVersionItems.versionId, version[0].id));
+  return { quote, version: version[0], items, locations: activeLocations, existingSale: existingSale[0] ?? null };
+}
+
+export async function convertQuoteToSale(input: Input, actor: Actor) {
+  if (!input.quoteId || !input.locationId) throw new Error("La conversión necesita cotización y local.");
+  if (input.deliveryMethod !== "PICKUP" && !input.address?.trim()) throw new Error("La dirección es obligatoria para la entrega.");
+  return getDb().transaction(async (tx) => {
+    const [quote] = await tx.select().from(quotes).where(eq(quotes.id, input.quoteId)).for("update").limit(1);
+    if (!quote) throw new Error("Cotización no encontrada.");
+    const [existingSale] = await tx.select().from(sales).where(eq(sales.quoteId, input.quoteId)).limit(1);
+    if (existingSale) {
+      const [existingOrder] = await tx.select().from(orders).where(eq(orders.saleId, existingSale.id)).limit(1);
+      return { sale: existingSale, order: existingOrder ?? null, reservations: [], idempotent: true };
+    }
+    if (quote.workflowStatus !== "ACCEPTED" || !quote.acceptedVersionId) throw new Error("La cotización debe estar aceptada antes de convertirse en venta.");
+    const [version] = await tx.select().from(quoteVersions).where(and(eq(quoteVersions.id, quote.acceptedVersionId), eq(quoteVersions.quoteId, quote.id))).for("update").limit(1);
+    if (!version || version.status !== "ACCEPTED") throw new Error("La versión aceptada no está disponible para conversión.");
+    const versionLines = await tx.select().from(quoteVersionItems).where(eq(quoteVersionItems.versionId, version.id));
+    if (!versionLines.length) throw new Error("La versión aceptada no tiene líneas persistidas.");
+    for (const line of versionLines) validateQuoteLine(line);
+    const currency = assertCurrency(version.currency);
+    if (versionLines.some((line) => line.currency !== currency)) throw new Error("La venta no puede mezclar monedas.");
+    const subtotal = money(version.subtotal);
+    const discountAmount = money(version.discountAmount);
+    const total = money(version.total);
+    const [location] = await tx.select().from(locations).where(and(eq(locations.id, input.locationId), eq(locations.active, true))).limit(1);
+    if (!location) throw new Error("El local no está activo o no existe.");
+    const balances = await tx.select({ productId: inventoryBalances.productId, onHand: inventoryBalances.onHand, reserved: inventoryBalances.reserved }).from(inventoryBalances).where(and(eq(inventoryBalances.locationId, input.locationId), inArray(inventoryBalances.productId, versionLines.map((line) => line.productId)))).for("update");
+    const balanceByProduct = new Map(balances.map((balance) => [balance.productId, balance]));
+    for (const line of versionLines) {
+      const balance = balanceByProduct.get(line.productId);
+      if (!balance) throw new Error(`INVENTORY_UNKNOWN: No hay saldo cuantitativo confirmado para ${line.skuSnapshot} en ${location.name}.`);
+      if (balance.onHand - balance.reserved < line.quantity) throw new Error(`Stock insuficiente para ${line.skuSnapshot} en ${location.name}.`);
+    }
+    const { customer, link } = await findOrCreateCustomer(tx, quote, actor);
+    const opportunity = await resolveOpportunity(tx, quote, customer.id, link, actor, currency, total);
+    const sellerId = opportunity.assignedSellerId ?? quote.assignedSellerId ?? actor.userId;
+    const now = new Date();
+    const saleId = id("sale");
+    const orderId = id("order");
+    const saleCode = `VTA-${crypto.randomUUID().slice(0, 10).toUpperCase()}`;
+    const orderCode = `ORD-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+    const [sale] = await tx.insert(sales).values({ id: saleId, code: saleCode, customerId: customer.id, opportunityId: opportunity.id, quoteId: quote.id, status: "CONFIRMED", sellerId, subtotal, discountAmount, total, currency, idempotencyKey: `quote-convert-${quote.id}`, createdAt: now, updatedAt: now }).returning();
+    await tx.insert(saleItems).values(versionLines.map((line) => ({ id: id("sale-item"), saleId, productId: line.productId, skuSnapshot: line.skuSnapshot, productNameSnapshot: line.productNameSnapshot, quantity: line.quantity, unitPrice: line.finalUnitPrice!, currency, discountAmount: (Number(line.discountAmount ?? 0) * line.quantity).toFixed(2), lineTotal: line.lineTotal! })));
+    const [order] = await tx.insert(orders).values({ id: orderId, code: orderCode, saleId, customerId: customer.id, opportunityId: opportunity.id, status: "PAYMENT_PENDING", deliveryMethod: input.deliveryMethod, locationId: input.locationId, deliveryAddress: input.address?.trim() || null, customerNameSnapshot: customer.name, customerPhoneSnapshot: customer.phone ?? customer.whatsapp ?? quote.phone, customerEmailSnapshot: customer.email ?? quote.email, sellerId, subtotal, discountAmount, total, currency, idempotencyKey: `quote-convert-${quote.id}`, createdAt: now, updatedAt: now }).returning();
+    const reservationInputs: InventoryReservationInput[] = versionLines.map((line) => ({ productId: line.productId, locationId: input.locationId, quantity: line.quantity, referenceType: "order", referenceId: orderId, performedBy: actor.userId ?? undefined, performedByRole: actor.role ?? undefined, idempotencyKey: `quote-convert-${quote.id}:${line.productId}` }));
+    const reservations = await reserveInventoryBatchInTransaction(tx, reservationInputs);
+    await tx.insert(orderItems).values(versionLines.map((line) => ({ id: id("order-item"), orderId, productId: line.productId, skuSnapshot: line.skuSnapshot, productNameSnapshot: line.productNameSnapshot, quantity: line.quantity, unitPrice: line.finalUnitPrice!, currency, lineTotal: line.lineTotal!, reservationId: reservations.find((reservation) => reservation.productId === line.productId)?.reservationId ?? null })));
+    await tx.insert(payments).values({ id: id("payment"), orderId, methodType: "PROVIDER", method: "UNCONFIGURED", provider: null, providerReference: null, amount: total, currency, status: "PENDING", metadata: { reason: "provider_not_configured", source: "quote_conversion", quoteVersionId: version.id }, createdBy: actor.userId });
+    await tx.update(quotes).set({ status: "convertida", workflowStatus: "CONVERTED", updatedAt: now, revision: quote.revision + 1 }).where(eq(quotes.id, quote.id));
+    await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId: quote.id, fromStatus: quote.status, toStatus: "convertida", changedBy: actor.userId ?? "system", note: `Convertida en venta ${sale.code}` });
+    await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId, fromStatus: null, toStatus: "PAYMENT_PENDING", changedBy: actor.userId ?? "system", note: "Pedido creado desde cotización aceptada" });
+    await tx.insert(auditLogs).values(audit(actor, "sales.quote_converted", "quote", quote.id, { workflowStatus: quote.workflowStatus, acceptedVersionId: quote.acceptedVersionId }, { workflowStatus: "CONVERTED", saleId, orderId, quoteVersionId: version.id }, { reservationCount: reservations.length, sellerId }));
     return { sale, order, reservations, idempotent: false };
   });
 }

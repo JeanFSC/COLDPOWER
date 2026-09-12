@@ -1,4 +1,9 @@
-import { customerStatuses, customerTypes, type CustomerStatus, type CustomerType } from "@/lib/crm-validation";
+import {
+  customerStatuses,
+  customerTypes,
+  type CustomerStatus,
+  type CustomerType,
+} from "@/lib/crm-validation";
 
 export class CustomerInvalidFilterError extends Error {
   constructor() {
@@ -7,14 +12,34 @@ export class CustomerInvalidFilterError extends Error {
   }
 }
 
+export const customerAttentionKeys = [
+  "overdueFollowUp",
+  "unassigned",
+  "stalledOpportunity",
+  "quoteResponse",
+] as const;
+export type CustomerAttentionKey = (typeof customerAttentionKeys)[number];
+
 export type CustomerFilters = {
   query?: string;
   customerType?: CustomerType;
   status?: CustomerStatus;
   assignedSellerId?: string;
   location?: string;
+  department?: string;
+  opportunity?: "OPEN" | "NONE";
+  attention?: CustomerAttentionKey;
+  needsAttention?: boolean;
+  overdueFollowUp?: boolean;
+  noActivity?: boolean;
+  hasQuotes?: boolean;
+  hasSales?: boolean;
   createdFrom?: string;
   createdTo?: string;
+  lastActivityFrom?: string;
+  lastActivityTo?: string;
+  sort?: "name" | "type" | "status" | "createdAt" | "lastActivityAt";
+  direction?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 };
@@ -49,22 +74,63 @@ function date(params: URLSearchParams, key: string) {
   return value;
 }
 
+function booleanValue(params: URLSearchParams, key: string) {
+  const value = text(params, key);
+  if (value === undefined) return undefined;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new CustomerInvalidFilterError();
+}
+
 export function parseCustomerFilters(params: URLSearchParams): CustomerFilters {
   const customerType = text(params, "customerType");
   const status = text(params, "status");
   const createdFrom = date(params, "createdFrom");
   const createdTo = date(params, "createdTo");
-  if (customerType && !customerTypes.includes(customerType as CustomerType)) throw new CustomerInvalidFilterError();
-  if (status && !customerStatuses.includes(status as CustomerStatus)) throw new CustomerInvalidFilterError();
+  const lastActivityFrom = date(params, "lastActivityFrom");
+  const lastActivityTo = date(params, "lastActivityTo");
+  const opportunity = text(params, "opportunity");
+  const attention = text(params, "attention");
+  if (opportunity && opportunity !== "OPEN" && opportunity !== "NONE")
+    throw new CustomerInvalidFilterError();
+  if (attention && !customerAttentionKeys.includes(attention as CustomerAttentionKey))
+    throw new CustomerInvalidFilterError();
+  if (customerType && !customerTypes.includes(customerType as CustomerType))
+    throw new CustomerInvalidFilterError();
+  if (status && !customerStatuses.includes(status as CustomerStatus))
+    throw new CustomerInvalidFilterError();
   if (createdFrom && createdTo && createdFrom > createdTo) throw new CustomerInvalidFilterError();
+  if (lastActivityFrom && lastActivityTo && lastActivityFrom > lastActivityTo)
+    throw new CustomerInvalidFilterError();
   return {
     query: text(params, "query") ?? text(params, "q"),
     customerType: customerType as CustomerType | undefined,
     status: status as CustomerStatus | undefined,
     assignedSellerId: text(params, "assignedSellerId"),
     location: text(params, "location"),
+    department: text(params, "department"),
+    opportunity: opportunity as CustomerFilters["opportunity"],
+    attention: attention as CustomerAttentionKey | undefined,
+    needsAttention: booleanValue(params, "needsAttention"),
+    overdueFollowUp: booleanValue(params, "overdueFollowUp"),
+    noActivity: booleanValue(params, "noActivity"),
+    hasQuotes: booleanValue(params, "hasQuotes"),
+    hasSales: booleanValue(params, "hasSales"),
     createdFrom,
     createdTo,
+    lastActivityFrom,
+    lastActivityTo,
+    sort: (["name", "type", "status", "createdAt", "lastActivityAt"] as const).includes(
+      text(params, "sort") as never,
+    )
+      ? (text(params, "sort") as CustomerFilters["sort"])
+      : undefined,
+    direction:
+      text(params, "direction") === "asc"
+        ? "asc"
+        : text(params, "direction") === "desc"
+          ? "desc"
+          : undefined,
     page: positive(params, "page"),
     pageSize: positive(params, "pageSize"),
   };
@@ -101,6 +167,13 @@ export type CustomerListItem = {
   quoteCount: number;
   openOpportunityCount: number;
   orderCount: number;
+  lastActivity: {
+    type: string;
+    subject: string;
+    createdAt: Date;
+    occurredAt?: Date | null;
+    performedBy: string | null;
+  } | null;
   lastActivityAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -112,6 +185,27 @@ export type CustomerListResponse = {
   pageSize: number;
   totalItems: number;
   totalPages: number;
-  metrics: { total: number; active: number; inactive: number; withOpenOpportunity: number; withoutActivity: number };
-  facets: { customerTypes: string[]; statuses: string[]; sellers: Array<{ id: string; name: string | null; email: string | null }>; locations: string[] };
+  metrics: {
+    total: number;
+    active: number;
+    inactive: number;
+    newThisMonth: number;
+    withOpenOpportunity: number;
+    withoutActivity: number;
+    requiringAttention: number;
+    attentionCategories: Array<{
+      key: CustomerAttentionKey;
+      label: string;
+      count: number;
+    }>;
+    distributionByType: Array<{ label: string; count: number }>;
+    distributionByLocation: Array<{ label: string; count: number }>;
+  };
+  facets: {
+    customerTypes: string[];
+    statuses: string[];
+    sellers: Array<{ id: string; name: string | null; email: string | null }>;
+    locations: string[];
+    departments: string[];
+  };
 };

@@ -15,8 +15,8 @@ export async function GET(request: Request) {
     const items = [...all.items];
     for (let page = 2; page <= all.totalPages; page += 1) items.push(...(await getPaymentsPage({ ...filters, page, pageSize: 100 })).items);
     const lines = [
-      ["Pago", "Pedido", "Venta", "Cliente", "Método", "Proveedor", "Referencia", "Monto", "Moneda", "Estado", "Intentos", "Conciliación", "Fecha"].map(csv).join(","),
-      ...items.map((item) => [item.id, item.orderCode, item.saleCode, item.customerName, item.method, item.provider, item.providerReference, item.amount, item.currency, item.status, item.attempts, item.reconciliation, item.createdAt.toISOString()].map(csv).join(",")),
+      ["Pago", "Pedido", "Venta", "Cliente", "Monto", "Moneda", "Método", "Proveedor", "Referencia", "Estado", "Esperado", "Neto recibido", "Diferencia", "Conciliación", "Intentos", "Fecha"].map(csv).join(","),
+      ...items.map((item) => [item.id, item.orderCode, item.saleCode, item.customerName, item.amount, item.currency, item.method, item.provider, item.providerReference, item.status, item.expectedAmount, item.netReceivedAmount, item.difference, item.reconciliation, item.attempts, item.createdAt.toISOString()].map(csv).join(",")),
     ];
     await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "payments.exported", entityType: "payment", entityId: "collection", before: null, after: null, metadata: { filters, count: items.length } });
     return new Response(`\ufeff${lines.join("\r\n")}`, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="coldpower-pagos.csv"` } });

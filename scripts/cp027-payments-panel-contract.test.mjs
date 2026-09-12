@@ -7,11 +7,11 @@ const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
 test("el panel admin permite confirmar pagos manuales y el cliente consulta sus pagos", () => {
-  const adminPage = read("src/app/admin/pedidos/page.tsx");
+  const adminPage = read("src/app/admin/pagos/page.tsx") + read("src/components/admin/PaymentsControlCenter.tsx");
   const adminPaymentControl = read("src/components/admin/ManualPaymentControl.tsx");
   assert.ok(adminPage.includes("ManualPaymentControl"));
   assert.ok(adminPaymentControl.includes("/api/admin/pagos/manual"));
-  assert.match(adminPage, /PAYMENT_PENDING/);
+  assert.match(adminPage, /PENDING|UNDER_REVIEW/);
   assert.match(adminPaymentControl, /method/);
   assert.match(adminPaymentControl, /reference/);
 
