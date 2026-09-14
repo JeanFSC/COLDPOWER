@@ -251,4 +251,3 @@ export async function createSavedAuditFilter(ownerId: string, name: string, filt
   const [row] = await getDb().insert(auditSavedFilters).values({ id: `audit-filter-${crypto.randomUUID()}`, ownerId, name, filters }).returning();
   return { id: row.id, name: row.name, filters: row.filters, createdAt: row.createdAt };
 }
-
