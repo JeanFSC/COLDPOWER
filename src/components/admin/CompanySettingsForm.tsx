@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Info, MessageCircle, Pencil, Upload } from "lucide-react";
+import { ChevronDown, Info, MessageCircle, Pencil, Upload } from "lucide-react";
 import { COMPANY_SETTINGS_DISCARD_EVENT } from "@/components/admin/DiscardSettingsButton";
 import { PERU_DEPARTMENTS, provincesForDepartment, districtsForProvince } from "@/lib/peru-ubigeo";
 
@@ -53,10 +53,13 @@ function toState(settings: CompanySettings, version = settings.version ?? 0): Fo
   };
 }
 function lines(value: string) { return value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean); }
-const inputClass = "h-10 rounded-md border border-border bg-white px-3 text-sm text-dark outline-primary";
-const textAreaClass = "min-h-24 rounded-md border border-border bg-white p-3 text-sm text-dark outline-primary";
+const inputClass = "h-10 w-full max-w-md rounded-md border border-border bg-white px-3 text-sm text-dark outline-primary";
+const textAreaClass = "min-h-24 w-full max-w-md rounded-md border border-border bg-white p-3 text-sm text-dark outline-primary";
+const colorInputClass = "h-10 w-full max-w-[140px] rounded-md border border-border bg-white px-3 text-sm text-dark outline-primary";
+const extendedInputClass = "h-10 w-full rounded-lg border border-border bg-white px-3 text-sm text-dark outline-primary transition focus:border-primary";
+const extendedTextAreaClass = "min-h-28 w-full rounded-lg border border-border bg-white p-3 text-sm text-dark outline-primary transition focus:border-primary";
 
-export function CompanySettingsForm() {
+export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGeneral?: ReactNode; belowBranding?: ReactNode } = {}) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(emptyState);
   const [initialForm, setInitialForm] = useState<FormState>(emptyState);
@@ -139,11 +142,13 @@ export function CompanySettingsForm() {
   const provinceOptions = form.department ? provincesForDepartment(form.department) : [];
   const districtOptions = form.department && form.province ? districtsForProvince(form.department, form.province) : [];
   return <form id="company-settings-form" onSubmit={save} className="grid gap-4">
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] items-start">
-      <section id="company-general" className="scroll-mt-24 rounded-xl border border-border bg-white p-5 shadow-card">
+    <div className="grid items-start gap-6 xl:grid-cols-12">
+      <div className="grid content-start gap-6 xl:col-span-8">
+      <section id="company-general" className="scroll-mt-24 rounded-xl border border-border bg-white p-6 shadow-card">
         <h2 className="flex items-center gap-1.5 text-[15px] font-extrabold text-dark">Información de la empresa<Info className="h-3.5 w-3.5 text-gray-text" aria-hidden="true" /></h2>
         <p className="mt-1 text-xs leading-5 text-gray-text">Datos generales de tu empresa que se mostrarán en documentos y comunicaciones. Los campos vacíos permanecen ocultos en la web.</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-6 xl:grid-cols-12">
+        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-8">
           <label className="grid gap-1 text-sm font-bold text-dark">Razón social <span className="text-red-500">*</span><input className={inputClass} value={form.legalName} onChange={(e) => update("legalName", e.target.value)} maxLength={200} /></label>
           <label className="grid gap-1 text-sm font-bold text-dark">Nombre comercial<input className={inputClass} value={form.commercialName} onChange={(e) => update("commercialName", e.target.value)} maxLength={200} /></label>
           <label className="grid gap-1 text-sm font-bold text-dark">RUC <span className="text-red-500">*</span><input className={inputClass} value={form.ruc} onChange={(e) => update("ruc", e.target.value)} maxLength={40} /></label>
@@ -197,77 +202,73 @@ export function CompanySettingsForm() {
           </label>
           <label className="grid gap-1 text-sm font-bold text-dark sm:col-span-2">Horario de atención<input className={inputClass} value={form.hours} onChange={(e) => update("hours", e.target.value)} maxLength={2000} placeholder="Lun - Vie: 8:00 a.m. - 6:00 p.m." /></label>
         </div>
-      </section>
-      <section id="company-branding" className="scroll-mt-24 rounded-xl border border-border bg-white p-5 shadow-card">
-        <h2 className="text-[15px] font-extrabold text-dark">Logo y branding</h2>
-        <p className="mt-1 text-xs leading-5 text-gray-text">Personaliza la identidad visual de tu empresa.</p>
-        <div className="mt-4 grid gap-1.5">
-          <span className="text-sm font-bold text-dark">Logo</span>
-          <div className="relative flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-[#fbfcfd] p-4">
-            {form.logoMediaId ? <Image src={`/api/media/${form.logoMediaId}`} alt="Logo" width={140} height={72} className="h-16 max-w-full object-contain" /> : <span className="flex h-16 items-center justify-center text-[9px] font-semibold text-gray-text">Sin logo</span>}
-            <label className="absolute bottom-2 right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-md hover:bg-[#1d63c9]" aria-label="Cambiar logo">
-              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-              <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadBrandingAsset("logoMediaId", file); e.target.value = ""; }} />
-            </label>
-            {uploading === "logoMediaId" ? <span className="text-[10px] text-primary">Subiendo…</span> : null}
-            <span className="text-[10px] text-gray-text">Formatos: PNG, JPG o SVG. Máx. 2MB.</span>
+        <div id="company-branding" className="scroll-mt-24 w-full xl:col-span-4">
+          <div className="rounded-xl border border-border bg-[#fbfcfd] p-4">
+            <h3 className="text-[15px] font-extrabold text-dark">Logo y branding</h3>
+            <p className="mt-1 text-xs leading-5 text-gray-text">Identidad visual de tu empresa.</p>
+            <div className="mt-4 grid gap-1.5">
+              <span className="text-sm font-bold text-dark">Logo</span>
+              <div className="relative flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-white p-4">
+                {form.logoMediaId ? <Image src={`/api/media/${form.logoMediaId}`} alt="Logo" width={140} height={72} className="h-16 max-w-full object-contain" /> : <span className="flex h-16 items-center justify-center text-[9px] font-semibold text-gray-text">Sin logo</span>}
+                <label className="absolute bottom-2 right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-md hover:bg-[#1d63c9]" aria-label="Cambiar logo">
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadBrandingAsset("logoMediaId", file); e.target.value = ""; }} />
+                </label>
+                {uploading === "logoMediaId" ? <span className="text-[10px] text-primary">Subiendo…</span> : null}
+                <span className="text-[10px] text-gray-text">Formatos: PNG, JPG o SVG. Máx. 2MB.</span>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-1.5">
+              <span className="text-sm font-bold text-dark">Favicon</span>
+              <div className="flex items-center gap-3">
+                {form.faviconMediaId ? <Image src={`/api/media/${form.faviconMediaId}`} alt="Favicon" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md border border-border bg-white object-contain p-1" /> : <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-[8px] font-semibold text-gray-text">N/D</span>}
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-bold text-primary hover:bg-[#f5f9ff]">
+                  <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+                  {uploading === "faviconMediaId" ? "Subiendo…" : "Cambiar favicon"}
+                  <input type="file" accept="image/png,image/x-icon,image/svg+xml" className="hidden" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadBrandingAsset("faviconMediaId", file); e.target.value = ""; }} />
+                </label>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3">
+              <label className="grid gap-1 text-sm font-bold text-dark">Color principal
+                <div className="flex items-center gap-1.5">
+                  <div className="relative shrink-0">
+                    <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(form.primaryColor) ? form.primaryColor : "#2277ee"} onChange={(e) => update("primaryColor", e.target.value)} className="h-10 w-10 cursor-pointer rounded-md border border-border bg-white p-1" aria-label="Selector de color principal" />
+                    <Pencil className="pointer-events-none absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border border-border bg-white p-0.5 text-gray-text" aria-hidden="true" />
+                  </div>
+                  <input className={colorInputClass} value={form.primaryColor} onChange={(e) => update("primaryColor", e.target.value)} placeholder="#2563EB" maxLength={7} />
+                </div>
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-dark">Color secundario
+                <div className="flex items-center gap-1.5">
+                  <div className="relative shrink-0">
+                    <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(form.secondaryColor) ? form.secondaryColor : "#0ea5e9"} onChange={(e) => update("secondaryColor", e.target.value)} className="h-10 w-10 cursor-pointer rounded-md border border-border bg-white p-1" aria-label="Selector de color secundario" />
+                    <Pencil className="pointer-events-none absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border border-border bg-white p-0.5 text-gray-text" aria-hidden="true" />
+                  </div>
+                  <input className={colorInputClass} value={form.secondaryColor} onChange={(e) => update("secondaryColor", e.target.value)} placeholder="#0EA5E9" maxLength={7} />
+                </div>
+              </label>
+            </div>
           </div>
         </div>
-        <div className="mt-4 grid gap-3">
-          <label className="grid gap-1 text-sm font-bold text-dark">Color principal
-            <div className="flex items-center gap-2">
-              <div className="relative shrink-0">
-                <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(form.primaryColor) ? form.primaryColor : "#2277ee"} onChange={(e) => update("primaryColor", e.target.value)} className="h-10 w-10 cursor-pointer rounded-md border border-border bg-white p-1" aria-label="Selector de color principal" />
-                <Pencil className="pointer-events-none absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border border-border bg-white p-0.5 text-gray-text" aria-hidden="true" />
-              </div>
-              <input className={inputClass} value={form.primaryColor} onChange={(e) => update("primaryColor", e.target.value)} placeholder="#2563EB" maxLength={7} />
-            </div>
-          </label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Color secundario
-            <div className="flex items-center gap-2">
-              <div className="relative shrink-0">
-                <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(form.secondaryColor) ? form.secondaryColor : "#0ea5e9"} onChange={(e) => update("secondaryColor", e.target.value)} className="h-10 w-10 cursor-pointer rounded-md border border-border bg-white p-1" aria-label="Selector de color secundario" />
-                <Pencil className="pointer-events-none absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border border-border bg-white p-0.5 text-gray-text" aria-hidden="true" />
-              </div>
-              <input className={inputClass} value={form.secondaryColor} onChange={(e) => update("secondaryColor", e.target.value)} placeholder="#0EA5E9" maxLength={7} />
-            </div>
-          </label>
-        </div>
-        <div className="mt-4 grid gap-1.5">
-          <span className="text-sm font-bold text-dark">Favicon</span>
-          <div className="flex items-center gap-3">
-            {form.faviconMediaId ? <Image src={`/api/media/${form.faviconMediaId}`} alt="Favicon" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md border border-border bg-white object-contain p-1" /> : <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-[8px] font-semibold text-gray-text">N/D</span>}
-            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-bold text-primary hover:bg-[#f5f9ff]">
-              <Upload className="h-3.5 w-3.5" aria-hidden="true" />
-              {uploading === "faviconMediaId" ? "Subiendo…" : "Cambiar favicon"}
-              <input type="file" accept="image/png,image/x-icon,image/svg+xml" className="hidden" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadBrandingAsset("faviconMediaId", file); e.target.value = ""; }} />
-            </label>
-          </div>
         </div>
       </section>
+      {belowGeneral}
+      </div>
+      <div className="grid content-start gap-6 xl:col-span-4">
+      {belowBranding}
+      </div>
     </div>
-    <details className="rounded-xl border border-border bg-white p-5 shadow-card">
-      <summary className="cursor-pointer text-sm font-extrabold text-primary">Más configuración: marca, contacto adicional, redes y enlaces</summary>
-      <div className="mt-4 grid gap-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-1 text-sm font-bold text-dark">Nombre de marca<input className={inputClass} value={form.tradeName} onChange={(e) => update("tradeName", e.target.value)} maxLength={200} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Correo de ventas<input className={inputClass} type="email" value={form.salesEmail} onChange={(e) => update("salesEmail", e.target.value)} maxLength={240} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Horario detallado<input className={inputClass} value={form.businessHours} onChange={(e) => update("businessHours", e.target.value)} maxLength={2000} /></label>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-1 text-sm font-bold text-dark">Teléfonos adicionales <span className="text-xs font-normal text-gray-text">Uno por línea</span><textarea className={textAreaClass} value={form.phones} onChange={(e) => update("phones", e.target.value)} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Formas de pago confirmadas <span className="text-xs font-normal text-gray-text">Una por línea</span><textarea className={textAreaClass} value={form.paymentMethods} onChange={(e) => update("paymentMethods", e.target.value)} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Cobertura<textarea className={textAreaClass} value={form.coverage} onChange={(e) => update("coverage", e.target.value)} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Garantía<textarea className={textAreaClass} value={form.guaranteeTerms} onChange={(e) => update("guaranteeTerms", e.target.value)} /></label>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-4">
-          <label className="grid gap-1 text-sm font-bold text-dark">Facebook<input className={inputClass} value={form.facebook} onChange={(e) => update("facebook", e.target.value)} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">Instagram<input className={inputClass} value={form.instagram} onChange={(e) => update("instagram", e.target.value)} /></label>
-          <label className="grid gap-1 text-sm font-bold text-dark">TikTok<input className={inputClass} value={form.tiktok} onChange={(e) => update("tiktok", e.target.value)} /></label>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <section className="rounded-md border border-border bg-[#fbfcfd] p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-dark">Redes sociales heredadas</p><p className="mt-1 text-xs font-normal text-gray-text">Canal y URL, una fila por red.</p></div><button type="button" onClick={() => addRow("socialRows")} className="rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-bold text-primary">Agregar</button></div><div className="mt-3 grid gap-2">{form.socialRows.map((row, index) => <div key={`social-${index}`} className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr_auto]"><input aria-label={`Nombre de red ${index + 1}`} className={inputClass} placeholder="Instagram" value={row.key} onChange={(e) => updateKeyValueRow("socialRows", index, "key", e.target.value)} /><input aria-label={`URL de red ${index + 1}`} className={inputClass} placeholder="https://…" value={row.value} onChange={(e) => updateKeyValueRow("socialRows", index, "value", e.target.value)} /><button type="button" aria-label={`Eliminar red ${index + 1}`} onClick={() => removeRow("socialRows", index)} className="h-10 rounded-md border border-red-200 px-2 text-xs font-bold text-red-600">Eliminar</button></div>)}{!form.socialRows.length ? <p className="rounded-md border border-dashed border-border p-3 text-xs text-gray-text">No hay redes heredadas registradas.</p> : null}</div></section>
-          <section className="rounded-md border border-border bg-[#fbfcfd] p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-dark">Enlaces legales</p><p className="mt-1 text-xs font-normal text-gray-text">Etiqueta y URL, una fila por enlace.</p></div><button type="button" onClick={() => addRow("legalLinkRows")} className="rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-bold text-primary">Agregar</button></div><div className="mt-3 grid gap-2">{form.legalLinkRows.map((row, index) => <div key={`legal-link-${index}`} className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr_auto]"><input aria-label={`Etiqueta legal ${index + 1}`} className={inputClass} placeholder="Términos" value={row.key} onChange={(e) => updateKeyValueRow("legalLinkRows", index, "key", e.target.value)} /><input aria-label={`URL legal ${index + 1}`} className={inputClass} placeholder="/terminos" value={row.value} onChange={(e) => updateKeyValueRow("legalLinkRows", index, "value", e.target.value)} /><button type="button" aria-label={`Eliminar enlace legal ${index + 1}`} onClick={() => removeRow("legalLinkRows", index)} className="h-10 rounded-md border border-red-200 px-2 text-xs font-bold text-red-600">Eliminar</button></div>)}{!form.legalLinkRows.length ? <p className="rounded-md border border-dashed border-border p-3 text-xs text-gray-text">No hay enlaces legales registrados.</p> : null}</div></section>
+    <details className="group overflow-hidden rounded-xl border border-border bg-white shadow-card">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
+        <div><p className="text-sm font-extrabold text-dark">Configuración complementaria</p><p className="mt-1 text-xs text-gray-text">Marca, operación comercial, canales y enlaces institucionales.</p></div>
+        <span className="inline-flex items-center gap-2 rounded-lg bg-[#f5f9ff] px-3 py-2 text-xs font-extrabold text-primary">Personalizar <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" /></span>
+      </summary>
+      <div className="border-t border-[#e8eef4] bg-[#fbfcfd] p-5 sm:p-6">
+        <div className="grid gap-5 xl:grid-cols-12">
+          <section className="rounded-xl border border-border bg-white p-5 xl:col-span-5"><h3 className="text-sm font-extrabold text-dark">Identidad y contacto</h3><p className="mt-1 text-xs text-gray-text">Datos comerciales que verán tus clientes.</p><div className="mt-4 grid gap-4"><label className="grid gap-1.5 text-sm font-bold text-dark">Nombre de marca<input className={extendedInputClass} value={form.tradeName} onChange={(e) => update("tradeName", e.target.value)} maxLength={200} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Correo de ventas<input className={extendedInputClass} type="email" value={form.salesEmail} onChange={(e) => update("salesEmail", e.target.value)} maxLength={240} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Horario detallado<input className={extendedInputClass} value={form.businessHours} onChange={(e) => update("businessHours", e.target.value)} maxLength={2000} /></label></div></section>
+          <section className="rounded-xl border border-border bg-white p-5 xl:col-span-7"><h3 className="text-sm font-extrabold text-dark">Operación comercial</h3><p className="mt-1 text-xs text-gray-text">Condiciones confirmadas para ventas, cobertura y postventa.</p><div className="mt-4 grid gap-4 md:grid-cols-2"><label className="grid gap-1.5 text-sm font-bold text-dark">Teléfonos adicionales <span className="text-xs font-normal text-gray-text">Uno por línea</span><textarea className={extendedTextAreaClass} value={form.phones} onChange={(e) => update("phones", e.target.value)} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Formas de pago confirmadas <span className="text-xs font-normal text-gray-text">Una por línea</span><textarea className={extendedTextAreaClass} value={form.paymentMethods} onChange={(e) => update("paymentMethods", e.target.value)} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Cobertura<textarea className={extendedTextAreaClass} value={form.coverage} onChange={(e) => update("coverage", e.target.value)} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Garantía<textarea className={extendedTextAreaClass} value={form.guaranteeTerms} onChange={(e) => update("guaranteeTerms", e.target.value)} /></label></div></section>
+          <section className="rounded-xl border border-border bg-white p-5 xl:col-span-12"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-sm font-extrabold text-dark">Canales y enlaces</h3><p className="mt-1 text-xs text-gray-text">Centraliza los puntos de contacto públicos e institucionales.</p></div></div><div className="mt-4 grid gap-4 lg:grid-cols-3"><label className="grid gap-1.5 text-sm font-bold text-dark">Facebook<input className={extendedInputClass} value={form.facebook} onChange={(e) => update("facebook", e.target.value)} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">Instagram<input className={extendedInputClass} value={form.instagram} onChange={(e) => update("instagram", e.target.value)} /></label><label className="grid gap-1.5 text-sm font-bold text-dark">TikTok<input className={extendedInputClass} value={form.tiktok} onChange={(e) => update("tiktok", e.target.value)} /></label></div><div className="mt-5 grid gap-4 lg:grid-cols-2"><section className="rounded-xl border border-[#e4ebf2] bg-[#fbfcfd] p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-dark">Redes sociales heredadas</p><p className="mt-1 text-xs text-gray-text">Canal y URL, una fila por red.</p></div><button type="button" onClick={() => addRow("socialRows")} className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-bold text-primary hover:bg-[#f5f9ff]">Agregar</button></div><div className="mt-3 grid gap-2">{form.socialRows.map((row, index) => <div key={`social-${index}`} className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr_auto]"><input aria-label={`Nombre de red ${index + 1}`} className={extendedInputClass} placeholder="Instagram" value={row.key} onChange={(e) => updateKeyValueRow("socialRows", index, "key", e.target.value)} /><input aria-label={`URL de red ${index + 1}`} className={extendedInputClass} placeholder="https://…" value={row.value} onChange={(e) => updateKeyValueRow("socialRows", index, "value", e.target.value)} /><button type="button" aria-label={`Eliminar red ${index + 1}`} onClick={() => removeRow("socialRows", index)} className="h-10 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-600">Eliminar</button></div>)}{!form.socialRows.length ? <p className="rounded-lg border border-dashed border-border p-3 text-xs text-gray-text">No hay redes heredadas registradas.</p> : null}</div></section><section className="rounded-xl border border-[#e4ebf2] bg-[#fbfcfd] p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-dark">Enlaces legales</p><p className="mt-1 text-xs text-gray-text">Etiqueta y URL, una fila por enlace.</p></div><button type="button" onClick={() => addRow("legalLinkRows")} className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-bold text-primary hover:bg-[#f5f9ff]">Agregar</button></div><div className="mt-3 grid gap-2">{form.legalLinkRows.map((row, index) => <div key={`legal-link-${index}`} className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr_auto]"><input aria-label={`Etiqueta legal ${index + 1}`} className={extendedInputClass} placeholder="Términos" value={row.key} onChange={(e) => updateKeyValueRow("legalLinkRows", index, "key", e.target.value)} /><input aria-label={`URL legal ${index + 1}`} className={extendedInputClass} placeholder="/terminos" value={row.value} onChange={(e) => updateKeyValueRow("legalLinkRows", index, "value", e.target.value)} /><button type="button" aria-label={`Eliminar enlace legal ${index + 1}`} onClick={() => removeRow("legalLinkRows", index)} className="h-10 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-600">Eliminar</button></div>)}{!form.legalLinkRows.length ? <p className="rounded-lg border border-dashed border-border p-3 text-xs text-gray-text">No hay enlaces legales registrados.</p> : null}</div></section></div></section>
         </div>
       </div>
     </details>

@@ -15,16 +15,30 @@ export async function seedCatalogKpiVisualHistory() {
   const catalog = await getAdminCatalogPage({ page: 1, pageSize: 1 });
   const { queues } = catalog;
   const db = getDb();
+  // Development-only visual fixture. The offsets preserve the catalog's real current
+  // KPI values while creating the same irregular cadence used by the dashboard cards;
+  // they are deliberately not operational history.
+  const totalOffsets = [-17, -15, -12, -13, -8, -3, -1];
+  const publishedOffsets = [-1, -1, -2, -1, -1, 0, 0];
+  const requiresReviewOffsets = [15, 12, 14, 9, 11, 4, 1];
+  const duplicateOffsets = [10, 8, 11, 7, 8, 4, 1];
   const snapshots = Array.from({ length: 7 }, (_, index) => {
     const daysAgo = 7 - index;
-    const progress = index + 1;
+    const totalProducts = Math.max(0, queues.totalProducts + totalOffsets[index]);
+    const publishedProducts = Math.min(
+      totalProducts,
+      Math.max(0, queues.publishedProducts + publishedOffsets[index]),
+    );
     return {
       snapshotDate: isoDate(daysAgo),
-      totalProducts: Math.max(0, queues.totalProducts - (8 - progress) * 8),
-      publishedProducts: Math.max(0, queues.publishedProducts - (8 - progress)),
-      reviewProducts: Math.max(0, queues.reviewProducts + (8 - progress) * 7),
-      productsRequiringReview: Math.max(0, queues.productsRequiringReview + (8 - progress) * 4),
-      duplicateProducts: Math.max(0, queues.duplicateProducts + (8 - progress) * 3),
+      totalProducts,
+      publishedProducts,
+      reviewProducts: Math.max(0, totalProducts - publishedProducts),
+      productsRequiringReview: Math.max(
+        0,
+        queues.productsRequiringReview + requiresReviewOffsets[index],
+      ),
+      duplicateProducts: Math.max(0, queues.duplicateProducts + duplicateOffsets[index]),
     };
   });
   for (const snapshot of snapshots) {

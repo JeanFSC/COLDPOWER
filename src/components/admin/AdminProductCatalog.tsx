@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   ArrowDownAZ,
+  ArrowDownRight,
   ArrowUpAZ,
+  ArrowUpRight,
   Boxes,
   ChevronDown,
   ChevronLeft,
@@ -39,6 +41,7 @@ import type { PublicationStatus } from "@/lib/catalog-admin-contract";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import { CatalogImportDialog } from "@/components/admin/CatalogImportDialog";
 import { DuplicateDecisionControl } from "@/components/admin/DuplicateDecisionControl";
+import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 
 const panel =
   "min-w-0 rounded-[14px] border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
@@ -258,57 +261,6 @@ export type AdminProductCatalogProps = {
     canArchive: boolean;
   };
 };
-
-function MetricSparkline({
-  label,
-  points,
-  color,
-}: {
-  label: string;
-  points: number[];
-  color: string;
-}) {
-  if (points.length < 2)
-    return (
-      <p className="h-8 pt-2 text-[9px] font-semibold text-[#9aabba]">Histórico iniciando hoy</p>
-    );
-  const minimum = Math.min(...points);
-  const maximum = Math.max(...points);
-  const range = Math.max(1, maximum - minimum);
-  const coordinates = points
-    .map(
-      (value, index) =>
-        `${(index / (points.length - 1)) * 100},${27 - ((value - minimum) / range) * 23}`,
-    )
-    .join(" ");
-  return (
-    <svg
-      viewBox="0 0 100 30"
-      preserveAspectRatio="none"
-      className="h-8 w-full overflow-visible"
-      role="img"
-      aria-label={`${label}: tendencia de los últimos ${points.length} días`}
-    >
-      <path d="M0 28H100" stroke="#e6eef4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      <polyline
-        points={coordinates}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      <circle
-        cx="100"
-        cy={27 - ((points.at(-1)! - minimum) / range) * 23}
-        r="2.5"
-        fill={color}
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
 
 const statusLabels: Record<string, string> = {
   published: "Publicado",
@@ -1300,6 +1252,17 @@ function BulkWorkspace({
   onOpen: (item: AdminCatalogItem) => void;
 }) {
   const [tab, setTab] = useState("Operaciones masivas");
+  const [operation, setOperation] = useState<
+    | "category"
+    | "brand"
+    | "pricing"
+    | "inventory"
+    | "attributes"
+    | "publish"
+    | "review"
+    | "hide"
+    | null
+  >(null);
   const tabs = [
     "Operaciones masivas",
     "Asignaciones",
@@ -1308,6 +1271,87 @@ function BulkWorkspace({
     "Duplicados",
   ];
   const duplicates = items.filter((item) => item.possibleDuplicate);
+  const selectedLabel =
+    selected.length === 1
+      ? "1 producto seleccionado"
+      : `${selected.length} productos seleccionados`;
+  const operationMeta = operation
+    ? {
+        category: {
+          title: "Asignar categoría",
+          description:
+            "La categoría y su familia se gestionan en la ficha editorial para preservar la jerarquía categoría → familia.",
+          cta: "Abrir primera ficha",
+          tone: "blue",
+        },
+        brand: {
+          title: "Asignar marca",
+          description:
+            "La marca se edita desde la ficha editorial; aún no existe un cambio masivo persistente para este campo.",
+          cta: "Abrir primera ficha",
+          tone: "blue",
+        },
+        pricing: {
+          title: "Gestionar precios",
+          description:
+            "Los precios requieren su propio flujo de vigencia, validación y auditoría. Continúa en el espacio de precios.",
+          cta: "Ir a precios",
+          tone: "purple",
+        },
+        inventory: {
+          title: "Gestionar inventario",
+          description:
+            "El stock se ajusta por local y deja Kardex. Nunca se altera desde el catálogo.",
+          cta: "Ir a inventario",
+          tone: "purple",
+        },
+        attributes: {
+          title: "Editar atributos",
+          description:
+            "Edita el contenido comercial y atributos técnicos desde la ficha. La acción masiva aún no está disponible.",
+          cta: "Abrir primera ficha",
+          tone: "blue",
+        },
+        publish: {
+          title: "Publicar seleccionados",
+          description:
+            "Se ejecutará un preflight de publicación real antes de permitir persistir cualquier cambio.",
+          cta: "Revisar publicación",
+          tone: "orange",
+        },
+        review: {
+          title: "Enviar a revisión",
+          description:
+            "Marca las referencias seleccionadas para revisión editorial y registra la acción en auditoría.",
+          cta: "Enviar a revisión",
+          tone: "orange",
+        },
+        hide: {
+          title: "Ocultar seleccionados",
+          description:
+            "Retira las referencias de la vista pública sin eliminarlas del catálogo ni del historial.",
+          cta: "Ocultar productos",
+          tone: "orange",
+        },
+      }[operation]
+    : null;
+  function continueOperation() {
+    if (!operation || !selected.length) return;
+    if (operation === "publish" || operation === "review" || operation === "hide") {
+      onBulk(operation);
+      return;
+    }
+    const first = selected[0];
+    if (operation === "pricing") {
+      window.location.assign(`/admin/precios?productId=${encodeURIComponent(first.id)}`);
+      return;
+    }
+    if (operation === "inventory") {
+      window.location.assign(`/admin/inventario?productId=${encodeURIComponent(first.id)}`);
+      return;
+    }
+    onOpen(first);
+  }
   return (
     <section className={`${panel} overflow-hidden`}>
       <div className="flex gap-5 overflow-x-auto border-b border-[#edf2f6] px-5 pt-1">
@@ -1323,9 +1367,14 @@ function BulkWorkspace({
         ))}
       </div>
       {tab === "Operaciones masivas" ? (
-        <div className="grid gap-3 p-4 md:grid-cols-4">
-          <div className="rounded-xl border border-[#edf2f6] p-3">
-            <p className="text-[10px] font-black text-[#102a43]">1. Selecciona productos</p>
+        <div className="grid gap-3 p-4 xl:grid-cols-12">
+          <div className="rounded-xl border border-[#edf2f6] bg-[#fbfcfd] p-4 xl:col-span-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black text-[#102a43]">1. Productos seleccionados</p>
+              <span className="rounded-full bg-[#e8f1ff] px-2 py-1 text-[8px] font-black text-[#2277ee]">
+                {selected.length}
+              </span>
+            </div>
             <p className="mt-2 text-[9px] leading-4 text-[#8296a9]">
               Elige los productos sobre los que deseas realizar acciones masivas.
             </p>
@@ -1338,70 +1387,160 @@ function BulkWorkspace({
                 {selected.length ? "Listos para revisar" : "Ninguno seleccionado"}
               </p>
             </div>
+            <div className="mt-4 overflow-hidden rounded-xl border border-[#e5edf3] bg-white">
+              {selected.length ? (
+                selected.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onOpen(item)}
+                    className="flex w-full items-center gap-2 border-b border-[#edf2f6] px-3 py-2.5 text-left last:border-b-0 hover:bg-[#f7fbff]"
+                  >
+                    <ProductThumbnail item={item} size={28} />
+                    <span className="min-w-0 flex-1">
+                      <b className="block truncate text-[9px] text-[#304b66]">{item.name}</b>
+                      <small className="block truncate font-mono text-[8px] text-[#8296a9]">
+                        {item.sku} · {item.category}
+                      </small>
+                    </span>
+                    <ChevronRight className="h-3.5 w-3.5 text-[#9aabba]" aria-hidden="true" />
+                  </button>
+                ))
+              ) : (
+                <p className="px-3 py-6 text-center text-[9px] text-[#8296a9]">
+                  Selecciona productos desde la tabla para comenzar.
+                </p>
+              )}
+            </div>
+            {selected.length > 5 ? (
+              <p className="mt-2 text-center text-[9px] font-semibold text-[#2277ee]">
+                Ver los {selected.length} productos seleccionados
+              </p>
+            ) : null}
           </div>
-          <div className="rounded-xl border border-[#edf2f6] p-3">
-            <p className="text-[10px] font-black text-[#102a43]">2. ¿Qué deseas hacer?</p>
+          <div className="rounded-xl border border-[#edf2f6] p-4 xl:col-span-3">
+            <p className="text-[10px] font-black text-[#102a43]">2. Elige la acción</p>
+            <p className="mt-1 text-[9px] leading-4 text-[#8296a9]">
+              Las acciones se habilitan según tu rol y la selección actual.
+            </p>
             <div className="mt-3 grid gap-2">
               <BulkAction
                 icon={Tag}
                 label="Asignar categoría"
                 description="Asignar o cambiar categoría"
                 disabled={!permissions.canEdit || !selected.length}
+                active={operation === "category"}
+                onClick={() => setOperation("category")}
               />
               <BulkAction
                 icon={UsersRound}
                 label="Asignar marca"
                 description="Asignar o cambiar marca"
                 disabled={!permissions.canEdit || !selected.length}
+                active={operation === "brand"}
+                onClick={() => setOperation("brand")}
               />
               <BulkAction
                 icon={CircleDollarSign}
                 label="Actualizar precios"
                 description="Gestionar precios en lote"
                 disabled={!permissions.canPricing || !selected.length}
+                active={operation === "pricing"}
+                onClick={() => setOperation("pricing")}
               />
               <BulkAction
                 icon={Boxes}
                 label="Actualizar stock"
                 description="Actualizar inventario en lote"
                 disabled={!permissions.canInventory || !selected.length}
+                active={operation === "inventory"}
+                onClick={() => setOperation("inventory")}
               />
               <BulkAction
                 icon={Edit3}
                 label="Editar atributos"
                 description="Editar campos y atributos"
                 disabled={!permissions.canEdit || !selected.length}
+                active={operation === "attributes"}
+                onClick={() => setOperation("attributes")}
               />
+              {permissions.canPublish ? (
+                <BulkAction
+                  icon={Send}
+                  label="Cambiar publicación"
+                  description="Publicar, ocultar o revisar"
+                  disabled={!selected.length}
+                  active={operation === "publish" || operation === "hide"}
+                  onClick={() => setOperation("publish")}
+                />
+              ) : null}
             </div>
           </div>
-          <div className="rounded-xl border border-[#edf2f6] p-3">
-            <p className="text-[10px] font-black text-[#102a43]">3. Configura la acción</p>
+          <div className="rounded-xl border border-[#edf2f6] p-4 xl:col-span-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black text-[#102a43]">
+                3. Configura y revisa el impacto
+              </p>
+              {operationMeta ? (
+                <span className="text-[8px] font-black text-[#2277ee]">{selectedLabel}</span>
+              ) : null}
+            </div>
             <p className="mt-2 text-[9px] leading-4 text-[#8296a9]">
               Define los nuevos valores a aplicar.
             </p>
             <div className="mt-6 grid gap-3">
-              <div className="rounded-lg border border-dashed border-[#dce6ee] p-4 text-center text-[9px] text-[#8296a9]">
-                Selecciona una acción para ver su configuración.
+              <div
+                className={`rounded-xl border p-4 text-[9px] ${operationMeta ? "border-[#cfe0f7] bg-[#f5f9ff] text-[#526b84]" : "border-dashed border-[#dce6ee] text-center text-[#8296a9]"}`}
+              >
+                {operationMeta ? (
+                  <div className="text-left">
+                    <div className="flex items-start gap-3">
+                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2277ee]">
+                        <Info className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <b className="text-[11px] text-[#102a43]">{operationMeta.title}</b>
+                        <p className="mt-1 leading-4 text-[#71869c]">{operationMeta.description}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 border-t border-[#dce8f5] pt-3">
+                      <p className="font-extrabold uppercase tracking-[0.08em] text-[#8296a9]">
+                        Impacto previsto
+                      </p>
+                      <p className="mt-1 leading-4 text-[#526b84]">
+                        {operation === "publish"
+                          ? "La validación previa identificará referencias elegibles y bloqueadas antes de publicar."
+                          : operation === "review"
+                            ? "Las referencias seleccionadas pasarán a revisión editorial y quedarán auditadas."
+                            : "No se aplicará ningún cambio hasta continuar en el flujo correspondiente."}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+                {operationMeta
+                  ? "Revisa el alcance antes de continuar."
+                  : "Selecciona una acción para ver su configuración."}
               </div>
               <button
                 type="button"
-                disabled
-                className="h-9 rounded-lg bg-[#eef1f4] text-[10px] font-extrabold text-[#a2b0bd]"
+                disabled={!operation}
+                onClick={continueOperation}
+                className="h-9 rounded-lg bg-[#2277ee] text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(34,119,238,0.18)] disabled:cursor-not-allowed disabled:bg-[#eef1f4] disabled:text-[#a2b0bd]"
               >
-                Previsualizar cambios
+                {operationMeta?.cta ?? "Previsualizar cambios"}
               </button>
             </div>
           </div>
-          <div className="rounded-xl border border-[#edf2f6] p-3">
-            <p className="text-[10px] font-black text-[#102a43]">4. Confirma y aplica</p>
+          <div className="rounded-xl border border-[#edf2f6] p-4 xl:col-span-12">
+            <p className="text-[10px] font-black text-[#102a43]">Acciones de publicación</p>
             <p className="mt-2 text-[9px] leading-4 text-[#8296a9]">
               Las publicaciones requieren preflight real antes de persistir.
             </p>
-            <div className="mt-6 grid gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {permissions.canPublish ? (
                 <button
                   type="button"
-                  onClick={() => onBulk("publish")}
+                  onClick={() => setOperation("publish")}
                   disabled={!selected.length}
                   className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#ff830e] text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -1409,14 +1548,24 @@ function BulkWorkspace({
                   Revisar publicación
                 </button>
               ) : null}
+              {permissions.canReview ? (
+                <button
+                  type="button"
+                  onClick={() => setOperation("review")}
+                  disabled={!selected.length}
+                  className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#526b84] disabled:opacity-40"
+                >
+                  Enviar a revisión
+                </button>
+              ) : null}
               {permissions.canPublish ? (
                 <button
                   type="button"
-                  onClick={() => onBulk("review")}
+                  onClick={() => setOperation("hide")}
                   disabled={!selected.length}
-                  className="h-9 rounded-lg border border-[#dce6ee] text-[10px] font-extrabold text-[#526b84] disabled:opacity-40"
+                  className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#526b84] disabled:opacity-40"
                 >
-                  Enviar a revisión
+                  Ocultar productos
                 </button>
               ) : null}
             </div>
@@ -1726,17 +1875,23 @@ function BulkAction({
   label,
   description,
   disabled,
+  active = false,
+  onClick,
 }: {
   icon: typeof Tag;
   label: string;
   description: string;
   disabled: boolean;
+  active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
-      className="flex items-center gap-2 rounded-lg border border-[#edf2f6] p-2 text-left disabled:cursor-not-allowed disabled:opacity-45"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex items-center gap-2 rounded-lg border p-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2277ee]/30 disabled:cursor-not-allowed disabled:opacity-45 ${active ? "border-[#2277ee] bg-[#f2f7ff] shadow-[0_2px_7px_rgba(34,119,238,0.10)]" : "border-[#edf2f6] hover:border-[#bdd4ec] hover:bg-[#fbfdff]"}`}
     >
       <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#e8f1ff] text-[#2277ee]">
         <Icon className="h-3.5 w-3.5" />
@@ -1874,8 +2029,8 @@ export function AdminProductCatalog({
     items.length > 0 && items.every((item) => selectedIds.includes(item.id));
   const params = useMemo(() => new URLSearchParams(queryString), [queryString]);
   // Keep the controlled search field aligned after server navigation.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchValue(params.get("query") ?? "");
   }, [params]);
   function navigate(href: string) {
@@ -2168,43 +2323,58 @@ export function AdminProductCatalog({
               : improvement === "up"
                 ? difference > 0
                 : difference < 0;
-          const chartColor =
-            tone === "green"
-              ? "#159263"
-              : tone === "orange"
-                ? "#f58b20"
-                : tone === "red"
-                  ? "#ed4b4b"
-                  : tone === "purple"
-                    ? "#8057e8"
-                    : "#2277ee";
+          const ComparisonIcon =
+            difference === null || difference === 0
+              ? null
+              : difference > 0
+                ? ArrowUpRight
+                : ArrowDownRight;
           return (
             <Link
               key={label}
               href={href}
-              className={`${panel} group p-3.5 transition hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(16,42,67,0.08)]`}
+              className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2277ee]/30 focus-visible:ring-offset-2"
             >
-              <div className="flex items-start gap-2.5">
-                <span
-                  className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${tone === "green" ? "bg-[#e4f7ef] text-[#159263]" : tone === "orange" ? "bg-[#fff0e0] text-[#f58b20]" : tone === "red" ? "bg-[#ffe8e8] text-[#ed4b4b]" : tone === "purple" ? "bg-[#eee9ff] text-[#8057e8]" : "bg-[#e8f1ff] text-[#2277ee]"}`}
-                >
-                  <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold leading-4 text-[#7d91a5]">{label}</p>
-                  <p className="mt-1 text-[20px] font-black tracking-[-0.03em] text-[#102a43]">
-                    {value.toLocaleString("es-PE")}
-                  </p>
-                  <p
-                    className={`mt-1 text-[9px] font-extrabold ${changeIsGood === null ? "text-[#7d91a5]" : changeIsGood ? "text-[#159263]" : "text-[#ed4b4b]"}`}
+              <article
+                className={`${panel} min-h-[172px] p-4 transition hover:-translate-y-0.5 hover:border-[#b9d2eb] hover:shadow-[0_8px_20px_rgba(16,42,67,0.08)] sm:p-5`}
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${tone === "green" ? "bg-[#e4f7ef] text-[#159263]" : tone === "orange" ? "bg-[#fff0e0] text-[#f58b20]" : tone === "red" ? "bg-[#ffe8e8] text-[#ed4b4b]" : tone === "purple" ? "bg-[#eee9ff] text-[#8057e8]" : "bg-[#e8f1ff] text-[#2277ee]"}`}
                   >
-                    {comparisonLabel}
-                  </p>
+                    <Icon className="h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-semibold leading-4 text-[#8195aa]">{label}</p>
+                    <p className="mt-1 font-display text-[26px] font-black tracking-[-0.025em] text-[#102a43]">
+                      {value.toLocaleString("es-PE")}
+                    </p>
+                    <p
+                      className={`mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold ${changeIsGood === null ? "text-[#8195aa]" : changeIsGood ? "text-[#159263]" : "text-[#ed4b4b]"}`}
+                    >
+                      {ComparisonIcon ? (
+                        <ComparisonIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : null}
+                      {comparisonLabel}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2.5 border-t border-[#edf2f6] pt-1.5">
-                <MetricSparkline label={label} points={trend.points} color={chartColor} />
-              </div>
+                <AdminSparkline
+                  tone={tone}
+                  data={trend.points.length >= 2 ? trend.points : undefined}
+                  ariaLabel={
+                    trend.points.length >= 2
+                      ? `Tendencia diaria de ${label.toLowerCase()}`
+                      : `${label}: sin serie diaria disponible`
+                  }
+                  className="mt-3 block h-11 w-full"
+                />
+                {trend.points.length < 2 ? (
+                  <p className="mt-1 text-[9px] font-semibold text-[#a5b6c5]">
+                    Sin serie diaria disponible
+                  </p>
+                ) : null}
+              </article>
             </Link>
           );
         })}
@@ -2212,9 +2382,9 @@ export function AdminProductCatalog({
       <div className={`${panel} p-3`}>
         <form
           onSubmit={onSearchSubmit}
-          className="grid gap-2 xl:grid-cols-[minmax(240px,1fr)_repeat(4,minmax(120px,0.42fr))]"
+          className="grid gap-x-3 gap-y-2 xl:grid-cols-[minmax(320px,2.8fr)_repeat(4,minmax(132px,1fr))]"
         >
-          <label className="relative min-w-0">
+          <label className="relative min-w-0 xl:self-end">
             <Search
               className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8ca0b3]"
               aria-hidden="true"
@@ -2224,8 +2394,15 @@ export function AdminProductCatalog({
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               placeholder="Buscar por SKU, nombre, marca o categoría…"
-              className="h-9 w-full rounded-lg border border-[#dce6ee] pl-9 pr-3 text-[10px] font-semibold text-[#304b66] outline-none focus:border-[#2277ee] focus:ring-2 focus:ring-[#2277ee]/10"
+              className="h-9 w-full rounded-lg border border-[#dce6ee] pl-9 pr-9 text-[10px] font-semibold text-[#304b66] outline-none transition focus:border-[#2277ee] focus:ring-2 focus:ring-[#2277ee]/10"
             />
+            <button
+              type="submit"
+              aria-label="Buscar productos"
+              className="absolute right-1.5 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[#526b84] transition hover:bg-[#f2f7ff] hover:text-[#2277ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2277ee]/30"
+            >
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
           </label>
           <FilterSelect
             label="Categoría"

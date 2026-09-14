@@ -5,6 +5,7 @@ import { users } from "@/db/schema";
 import { notificationStates, type NotificationState } from "@/lib/operations-validation";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { dispatchNotificationEvent } from "@/lib/notification-rules-service";
+import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
 export class NotificationInvalidFilterError extends Error { constructor() { super("NOTIFICATION_INVALID_FILTER"); this.name = "NotificationInvalidFilterError"; } }
@@ -22,9 +23,52 @@ function dayStart(value: string) { return new Date(`${value}T00:00:00-05:00`); }
 function dayAfter(value: string) { return new Date(dayStart(value).getTime() + 86_400_000); }
 export function parseNotificationFilters(params: URLSearchParams): NotificationFilters { const state = params.get("state")?.trim() || undefined; if (state && !(notificationStates as readonly string[]).includes(state)) throw new NotificationInvalidFilterError(); const page = params.get("page") ? Number(params.get("page")) : undefined; const pageSize = params.get("pageSize") ? Number(params.get("pageSize")) : undefined; if ((page !== undefined && (!Number.isInteger(page) || page < 1)) || (pageSize !== undefined && (!Number.isInteger(pageSize) || pageSize < 1))) throw new NotificationInvalidFilterError(); const dateFrom = params.get("dateFrom")?.trim() || undefined; const dateTo = params.get("dateTo")?.trim() || undefined; if ((dateFrom && !/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) || (dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) || (dateFrom && dateTo && dateFrom > dateTo)) throw new NotificationInvalidFilterError(); return { state: state as NotificationState | undefined, type: params.get("type")?.trim() || undefined, query: params.get("query")?.trim() || undefined, dateFrom, dateTo, page, pageSize }; }
 function filterWhere(recipientId: string, filters: NotificationFilters) { const conditions: SQL[] = [eq(notifications.recipientId, recipientId)]; if (filters.state) conditions.push(eq(notifications.state, filters.state)); if (filters.type) conditions.push(eq(notifications.type, normalizeType(filters.type))); if (filters.query) { const pattern = `%${filters.query}%`; conditions.push(or(ilike(notifications.title, pattern), ilike(notifications.body, pattern), ilike(notifications.type, pattern))!); } if (filters.dateFrom) conditions.push(gte(notifications.createdAt, dayStart(filters.dateFrom))); if (filters.dateTo) conditions.push(lt(notifications.createdAt, dayAfter(filters.dateTo))); return and(...conditions); }
-function mapNotification(row: typeof notifications.$inferSelect) { return { id: row.id, type: row.type, title: row.title, body: row.body, link: row.link, state: row.state, createdAt: row.createdAt, readAt: row.readAt, dismissedAt: row.dismissedAt, metadata: safeMetadata(row.metadata), dedupeKey: row.dedupeKey }; }
+export type NotificationPriority = "Alta" | "Media" | "Baja";
+// Rule-triggered notifications already carry a real severity (metadata.severity, set by
+// dispatchNotificationEvent) — map that straight across. Everything else (targetRoles
+// fan-out, manual sends, schedules) never gets a severity, so fall back to a heuristic on
+// the type string itself, same spirit as isFailedAction in the audit module: computed
+// display classification, not a fabricated stored value.
+const highPriorityType = /CRITICAL|FAILED|OVERDUE|URGENT|BLOCKED/i;
+const mediumPriorityType = /PENDING|REVIEW|WARNING|LOW$/i;
+export function priorityOf(notification: { type: string; metadata: Record<string, unknown> | null }): NotificationPriority {
+  const severity = typeof notification.metadata?.severity === "string" ? notification.metadata.severity : null;
+  if (severity === "CRITICAL") return "Alta";
+  if (severity === "WARNING") return "Media";
+  if (severity === "INFO") return "Baja";
+  if (highPriorityType.test(notification.type)) return "Alta";
+  if (mediumPriorityType.test(notification.type)) return "Media";
+  return "Baja";
+}
+
+function mapNotification(row: typeof notifications.$inferSelect) { const metadata = safeMetadata(row.metadata); return { id: row.id, type: row.type, title: row.title, body: row.body, link: row.link, state: row.state, createdAt: row.createdAt, readAt: row.readAt, dismissedAt: row.dismissedAt, metadata, dedupeKey: row.dedupeKey, priority: priorityOf({ type: row.type, metadata }) }; }
+
+// Real distinct types this recipient has actually received — backs the inbox's "Tipo"
+// filter (replacing the mock's fake channel filter, which has no backing data at all).
+export async function listNotificationTypes(recipientId: string) {
+  const rows = await getDb().selectDistinct({ value: notifications.type }).from(notifications).where(eq(notifications.recipientId, recipientId)).orderBy(notifications.type);
+  return rows.map((row) => row.value);
+}
 
 export async function getNotificationsPage(recipientId: string, filters: NotificationFilters = {}) { const pageSize = Math.min(100, Math.max(1, Math.floor(filters.pageSize ?? 25))); const page = Math.max(1, Math.floor(filters.page ?? 1)); const where = filterWhere(recipientId, filters); const db = getDb(); const globalUnread = db.select({ value: count() }).from(notifications).where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD"))); const [rows, total, unreadCount, unread, read, dismissed] = await Promise.all([db.select().from(notifications).where(where).orderBy(desc(notifications.createdAt)).limit(pageSize).offset((page - 1) * pageSize), db.select({ value: count() }).from(notifications).where(where), globalUnread, db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "UNREAD"))), db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "READ"))), db.select({ value: count() }).from(notifications).where(and(where, eq(notifications.state, "DISMISSED")))]); const totalItems = Number(total[0]?.value ?? 0); return { items: rows.map(mapNotification), page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), unreadCount: Number(unreadCount[0]?.value ?? 0), metrics: { unread: Number(unread[0]?.value ?? 0), read: Number(read[0]?.value ?? 0), dismissed: Number(dismissed[0]?.value ?? 0) } }; }
+// "No leídas" KPI as a flow, not a raw gauge: notifications created for this recipient in
+// the last 24h that are still unread right now, vs. the same for the previous 24h — so it
+// pairs sensibly with a "vs. período anterior" delta (a bare unread-total snapshot has no
+// real prior-period value to diff against without tracking history we don't have).
+export async function getPersonalUnreadKpi(recipientId: string): Promise<PeriodKpi> {
+  const db = getDb();
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - 86_400_000);
+  const windowPrevStart = new Date(windowStart.getTime() - 86_400_000);
+  const [current, previous] = await Promise.all([
+    db.select({ value: count() }).from(notifications).where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD"), gte(notifications.createdAt, windowStart))),
+    db.select({ value: count() }).from(notifications).where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD"), gte(notifications.createdAt, windowPrevStart), lt(notifications.createdAt, windowStart))),
+  ]);
+  const currentValue = Number(current[0]?.value ?? 0);
+  const previousValue = Number(previous[0]?.value ?? 0);
+  return { current: currentValue, previous: previousValue, deltaPct: deltaPct(currentValue, previousValue) };
+}
+
 export async function getUnreadNotificationCount(recipientId: string) {
   const [row] = await getDb()
     .select({ value: count() })

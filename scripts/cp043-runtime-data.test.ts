@@ -8,7 +8,8 @@ test("auditoria: consulta real devuelve página, métricas y filtros aislados", 
   assert.equal(result.page, 1);
   assert.equal(result.pageSize, 10);
   assert.equal(result.totalItems, 0);
-  assert.equal(result.metrics.total, 0);
-  assert.equal(result.metrics.failedAttempts, null);
+  assert.equal(result.metrics.events.current, 0);
+  assert.equal(result.metrics.failed.current, 0);
   assert.ok(Array.isArray(result.facets.modules));
+  assert.ok(Array.isArray(result.trend));
 });

@@ -1,0 +1,373 @@
+- generic [ref=f26e1]:
+  - main [ref=f26e2]:
+    - generic [ref=f26e3]:
+      - complementary [ref=f26e4]:
+        - link "Ir al inicio de ColdPower" [ref=f26e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f26e7]
+        - navigation "Navegacion administrativa" [ref=f26e8]:
+          - generic [ref=f26e9]:
+            - link "Inicio" [ref=f26e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f26e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f26e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f26e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f26e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f26e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f26e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f26e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f26e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f26e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f26e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f26e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f26e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f26e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f26e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f26e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f26e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f26e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f26e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f26e112]:
+          - group [ref=f26e113]:
+            - generic "Necesitas ayuda?" [ref=f26e114] [cursor=pointer]
+          - generic [ref=f26e123]:
+            - strong [ref=f26e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f26e125]:
+        - generic [ref=f26e126]:
+          - generic [ref=f26e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f26e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f26e129]:
+            - link "Ver notificaciones" [ref=f26e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - button "Open user menu" [ref=f26e136] [cursor=pointer]:
+              - img "Jean's logo" [ref=f26e139]
+            - generic [ref=f26e141]:
+              - paragraph [ref=f26e142]: Superadmin
+              - paragraph [ref=f26e143]: Superadministrador
+        - main [ref=f26e146]:
+          - generic [ref=f26e147]:
+            - generic [ref=f26e148]:
+              - generic [ref=f26e154]:
+                - heading "Configuración empresarial" [level=1] [ref=f26e155]
+                - paragraph [ref=f26e156]: Gestiona la información de tu empresa, locales, documentos, integraciones y preferencias del sistema.
+              - generic [ref=f26e157]:
+                - button "Descartar" [ref=f26e158]
+                - button "Guardar cambios" [ref=f26e162]
+                - button "Probar integración" [ref=f26e168]
+            - generic [ref=f26e172]:
+              - article [ref=f26e173]:
+                - generic [ref=f26e179]:
+                  - paragraph [ref=f26e180]: Locales
+                  - paragraph [ref=f26e181]: "6"
+                  - generic [ref=f26e182]: 0.0% vs. período anterior
+                - img "Tendencia de Locales" [ref=f26e186]
+              - article [ref=f26e187]:
+                - generic [ref=f26e193]:
+                  - paragraph [ref=f26e194]: Listas de precio
+                  - paragraph [ref=f26e195]: "2"
+                  - generic [ref=f26e196]: Sin base comparable
+                - img "Tendencia de Listas de precio" [ref=f26e198]
+              - article [ref=f26e199]:
+                - generic [ref=f26e205]:
+                  - paragraph [ref=f26e206]: Series activas
+                  - paragraph [ref=f26e207]: "0"
+                  - generic [ref=f26e208]: Aún no configuradas
+                - generic "Tendencia de Series activas" [ref=f26e209]
+              - article [ref=f26e210]:
+                - generic [ref=f26e217]:
+                  - paragraph [ref=f26e218]: Integraciones
+                  - paragraph [ref=f26e219]: 0/5
+                  - generic [ref=f26e220]: Conectadas / configuradas
+                - generic "Tendencia de Integraciones" [ref=f26e221]
+              - article [ref=f26e222]:
+                - generic [ref=f26e227]:
+                  - paragraph [ref=f26e228]: Métodos de contacto
+                  - paragraph [ref=f26e229]: "0"
+                  - generic [ref=f26e230]: Teléfono, WhatsApp y correos
+                - generic "Tendencia de Métodos de contacto" [ref=f26e231]
+            - navigation "Secciones de configuración" [ref=f26e232]:
+              - link "Empresa" [ref=f26e233] [cursor=pointer]:
+                - /url: "#company-general"
+              - link "Locales" [ref=f26e234] [cursor=pointer]:
+                - /url: "#company-addresses"
+              - link "Series y documentos" [ref=f26e235] [cursor=pointer]:
+                - /url: "#company-operation"
+              - link "Precios" [ref=f26e236] [cursor=pointer]:
+                - /url: /admin/precios
+              - link "Integraciones" [ref=f26e237] [cursor=pointer]:
+                - /url: "#company-integrations"
+              - link "Branding" [ref=f26e238] [cursor=pointer]:
+                - /url: "#company-branding"
+            - generic [ref=f26e239]:
+              - generic [ref=f26e240]:
+                - generic [ref=f26e241]:
+                  - generic [ref=f26e242]:
+                    - heading "Información de la empresa" [level=2] [ref=f26e243]
+                    - paragraph [ref=f26e246]: Datos generales de tu empresa que se mostrarán en documentos y comunicaciones. Los campos vacíos permanecen ocultos en la web.
+                    - generic [ref=f26e247]:
+                      - generic [ref=f26e248]:
+                        - generic [ref=f26e249]:
+                          - text: Razón social
+                          - generic [ref=f26e250]: "*"
+                          - textbox "Razón social *" [ref=f26e251]
+                        - generic [ref=f26e252]:
+                          - text: Nombre comercial
+                          - textbox "Nombre comercial" [ref=f26e253]
+                        - generic [ref=f26e254]:
+                          - text: RUC
+                          - generic [ref=f26e255]: "*"
+                          - textbox "RUC *" [ref=f26e256]
+                        - generic [ref=f26e257]:
+                          - text: Página web
+                          - textbox "Página web" [ref=f26e258]
+                        - generic [ref=f26e259]:
+                          - text: Correo electrónico
+                          - generic [ref=f26e260]: "*"
+                          - textbox "Correo electrónico *" [ref=f26e261]
+                        - generic [ref=f26e262]:
+                          - text: Dirección fiscal
+                          - generic [ref=f26e263]: "*"
+                          - textbox "Dirección fiscal *" [ref=f26e264]
+                        - generic [ref=f26e265]:
+                          - text: Teléfono principal
+                          - generic [ref=f26e266]: "*"
+                          - generic [ref=f26e267]:
+                            - generic [ref=f26e268]: 🇵🇪 +51
+                            - textbox "Teléfono principal * 🇵🇪 +51" [ref=f26e269]
+                        - generic [ref=f26e270]:
+                          - text: WhatsApp
+                          - generic [ref=f26e271]:
+                            - generic [ref=f26e272]: 🇵🇪 +51
+                            - textbox "WhatsApp 🇵🇪 +51" [ref=f26e273]
+                        - generic [ref=f26e274]:
+                          - text: País
+                          - combobox "País" [ref=f26e275] [cursor=pointer]:
+                            - option "Selecciona…" [selected]
+                            - option "Perú"
+                        - generic [ref=f26e276]:
+                          - text: Departamento
+                          - combobox "Departamento" [active] [ref=f26e277] [cursor=pointer]:
+                            - option "Selecciona…" [selected]
+                            - option "Amazonas"
+                            - option "Áncash"
+                            - option "Apurímac"
+                            - option "Arequipa"
+                            - option "Ayacucho"
+                            - option "Cajamarca"
+                            - option "Callao"
+                            - option "Cusco"
+                            - option "Huancavelica"
+                            - option "Huánuco"
+                            - option "Ica"
+                            - option "Junín"
+                            - option "La Libertad"
+                            - option "Lambayeque"
+                            - option "Lima"
+                            - option "Loreto"
+                            - option "Madre de Dios"
+                            - option "Moquegua"
+                            - option "Pasco"
+                            - option "Piura"
+                            - option "Puno"
+                            - option "San Martín"
+                            - option "Tacna"
+                            - option "Tumbes"
+                            - option "Ucayali"
+                        - generic [ref=f26e278]:
+                          - text: Provincia
+                          - combobox "Provincia" [disabled] [ref=f26e279]:
+                            - option "Selecciona un departamento primero" [selected]
+                        - generic [ref=f26e280]:
+                          - text: Distrito
+                          - combobox "Distrito" [disabled] [ref=f26e281]:
+                            - option "Selecciona una provincia primero" [selected]
+                        - generic [ref=f26e282]:
+                          - text: Horario de atención
+                          - textbox "Horario de atención" [ref=f26e283]:
+                            - /placeholder: "Lun - Vie: 8:00 a.m. - 6:00 p.m."
+                      - generic [ref=f26e284]:
+                        - heading "Logo y branding" [level=3] [ref=f26e285]
+                        - paragraph [ref=f26e286]: Identidad visual de tu empresa.
+                        - generic [ref=f26e287]:
+                          - generic [ref=f26e288]: Logo
+                          - generic [ref=f26e289]:
+                            - generic [ref=f26e290]: Sin logo
+                            - generic "Cambiar logo" [ref=f26e291] [cursor=pointer]
+                            - generic [ref=f26e295]: "Formatos: PNG, JPG o SVG. Máx. 2MB."
+                          - generic [ref=f26e296]:
+                            - generic [ref=f26e297]: N/D
+                            - generic [ref=f26e298] [cursor=pointer]: Cambiar favicon
+                          - generic [ref=f26e302]:
+                            - text: Color principal
+                            - generic [ref=f26e303]:
+                              - textbox "Selector de color principal" [ref=f26e305] [cursor=pointer]: "#2277ee"
+                              - textbox "#2563EB" [ref=f26e306]
+                          - generic [ref=f26e307]:
+                            - text: Color secundario
+                            - generic [ref=f26e308]:
+                              - textbox "Selector de color secundario" [ref=f26e310] [cursor=pointer]: "#0ea5e9"
+                              - textbox "#0EA5E9" [ref=f26e311]
+                  - generic [ref=f26e313]:
+                    - generic [ref=f26e314]:
+                      - generic [ref=f26e315]:
+                        - heading "Locales y almacenes" [level=2] [ref=f26e316]
+                        - paragraph [ref=f26e317]: Administra tus locales, almacenes y puntos de venta.
+                      - button "Nuevo local" [ref=f26e319]
+                    - table [ref=f26e322]:
+                      - rowgroup [ref=f26e323]:
+                        - row [ref=f26e324]:
+                          - columnheader "Código" [ref=f26e325]
+                          - columnheader "Nombre" [ref=f26e326]
+                          - columnheader "Tipo" [ref=f26e327]
+                          - columnheader "Dirección" [ref=f26e328]
+                          - columnheader "Ciudad" [ref=f26e329]
+                          - columnheader "Estado" [ref=f26e330]
+                          - columnheader "Acciones" [ref=f26e331]
+                      - rowgroup [ref=f26e332]:
+                        - row [ref=f26e333]:
+                          - cell "CP-TRU-DEV" [ref=f26e334]
+                          - cell "Sucursal Trujillo" [ref=f26e335]
+                          - cell "Tienda" [ref=f26e336]
+                          - cell "Av. Principal 300, Trujillo" [ref=f26e337]
+                          - cell "N/D" [ref=f26e338]
+                          - cell "Activo" [ref=f26e339]
+                          - cell [ref=f26e341]:
+                            - button "Acciones del local" [ref=f26e343]
+                        - row [ref=f26e348]:
+                          - cell "CP-CUS-DEV" [ref=f26e349]
+                          - cell "Sucursal Cusco" [ref=f26e350]
+                          - cell "Tienda" [ref=f26e351]
+                          - cell "Av. Principal 301, Cusco" [ref=f26e352]
+                          - cell "N/D" [ref=f26e353]
+                          - cell "Activo" [ref=f26e354]
+                          - cell [ref=f26e356]:
+                            - button "Acciones del local" [ref=f26e358]
+                        - row [ref=f26e363]:
+                          - cell "CP-PIU-DEV" [ref=f26e364]
+                          - cell "Sucursal Piura" [ref=f26e365]
+                          - cell "Tienda" [ref=f26e366]
+                          - cell "Av. Principal 302, Piura" [ref=f26e367]
+                          - cell "N/D" [ref=f26e368]
+                          - cell "Activo" [ref=f26e369]
+                          - cell [ref=f26e371]:
+                            - button "Acciones del local" [ref=f26e373]
+                        - row [ref=f26e378]:
+                          - cell "CP-CHI-DEV" [ref=f26e379]
+                          - cell "Sucursal Chiclayo" [ref=f26e380]
+                          - cell "Tienda" [ref=f26e381]
+                          - cell "Av. Principal 303, Chiclayo" [ref=f26e382]
+                          - cell "N/D" [ref=f26e383]
+                          - cell "Activo" [ref=f26e384]
+                          - cell [ref=f26e386]:
+                            - button "Acciones del local" [ref=f26e388]
+                        - row [ref=f26e393]:
+                          - cell "CP-LIM-DEV" [ref=f26e394]
+                          - cell "Almacén Lima" [ref=f26e395]
+                          - cell "Almacén" [ref=f26e396]
+                          - cell "Av. Industrial 100, Lima" [ref=f26e397]
+                          - cell "N/D" [ref=f26e398]
+                          - cell "Activo" [ref=f26e399]
+                          - cell [ref=f26e401]:
+                            - button "Acciones del local" [ref=f26e403]
+                    - generic [ref=f26e408]:
+                      - generic [ref=f26e409]: Mostrando 5 de 6 locales
+                      - link "Ver todos los locales →" [ref=f26e410] [cursor=pointer]:
+                        - /url: /admin/inventario
+                - generic [ref=f26e412]:
+                  - generic [ref=f26e414]:
+                    - generic [ref=f26e415]:
+                      - generic [ref=f26e416]:
+                        - heading "Estado de integraciones" [level=2] [ref=f26e417]
+                        - paragraph [ref=f26e418]: Conecta ColdPower con otras herramientas.
+                      - link "Gestionar integraciones" [ref=f26e419] [cursor=pointer]:
+                        - /url: "#company-integrations"
+                    - list [ref=f26e422]:
+                      - listitem [ref=f26e423]:
+                        - generic [ref=f26e428]:
+                          - paragraph [ref=f26e429]: SUNAT
+                          - paragraph [ref=f26e430]: Consulta de RUC y facturación electrónica
+                        - generic [ref=f26e431]: No configurado
+                        - button "Acciones de la integración" [ref=f26e433]
+                      - listitem [ref=f26e438]:
+                        - generic [ref=f26e442]:
+                          - paragraph [ref=f26e443]: WhatsApp
+                          - paragraph [ref=f26e444]: Notificaciones y comunicación con clientes
+                        - generic [ref=f26e445]: No configurado
+                        - button "Acciones de la integración" [ref=f26e447]
+                      - listitem [ref=f26e452]:
+                        - generic [ref=f26e457]:
+                          - paragraph [ref=f26e458]: Email (SMTP)
+                          - paragraph [ref=f26e459]: Envío de documentos y notificaciones
+                        - generic [ref=f26e460]: No configurado
+                        - button "Acciones de la integración" [ref=f26e462]
+                      - listitem [ref=f26e467]:
+                        - generic [ref=f26e471]:
+                          - paragraph [ref=f26e472]: Pasarela de pagos
+                          - paragraph [ref=f26e473]: Procesamiento de pagos online
+                        - generic [ref=f26e474]: No configurado
+                        - button "Acciones de la integración" [ref=f26e476]
+                      - listitem [ref=f26e481]:
+                        - generic [ref=f26e486]:
+                          - paragraph [ref=f26e487]: API externa
+                          - paragraph [ref=f26e488]: Sincronización con sistemas externos
+                        - generic [ref=f26e489]: No configurado
+                        - button "Acciones de la integración" [ref=f26e491]
+                  - generic [ref=f26e496]:
+                    - generic [ref=f26e498]:
+                      - heading "Políticas y reglas del negocio" [level=2] [ref=f26e499]
+                      - paragraph [ref=f26e500]: Configura reglas y parámetros generales.
+                    - list [ref=f26e501]:
+                      - listitem [ref=f26e502]:
+                        - link "Precios y descuentos Margen mínimo, descuentos máximos, reglas de precio." [ref=f26e503] [cursor=pointer]:
+                          - /url: /admin/precios
+                          - generic [ref=f26e508]:
+                            - generic [ref=f26e509]: Precios y descuentos
+                            - generic [ref=f26e510]: Margen mínimo, descuentos máximos, reglas de precio.
+                      - listitem [ref=f26e511]:
+                        - link "Inventario Alertas de stock, stock mínimo, reservas." [ref=f26e512] [cursor=pointer]:
+                          - /url: /admin/inventario
+                          - generic [ref=f26e518]:
+                            - generic [ref=f26e519]: Inventario
+                            - generic [ref=f26e520]: Alertas de stock, stock mínimo, reservas.
+                      - listitem [ref=f26e521]:
+                        - link "Pedidos y ventas Validación de stock, aprobación, condiciones de venta." [ref=f26e522] [cursor=pointer]:
+                          - /url: /admin/pedidos
+                          - generic [ref=f26e528]:
+                            - generic [ref=f26e529]: Pedidos y ventas
+                            - generic [ref=f26e530]: Validación de stock, aprobación, condiciones de venta.
+                      - listitem [ref=f26e531]:
+                        - link "Clientes Límites de crédito, categorías, aprobación de clientes nuevos." [ref=f26e532] [cursor=pointer]:
+                          - /url: /admin/clientes
+                          - generic [ref=f26e538]:
+                            - generic [ref=f26e539]: Clientes
+                            - generic [ref=f26e540]: Límites de crédito, categorías, aprobación de clientes nuevos.
+              - group [ref=f26e541]:
+                - 'generic "Más configuración: marca, contacto adicional, redes y enlaces" [ref=f26e542] [cursor=pointer]'
+              - generic [ref=f26e543]:
+                - button "Guardar configuración" [disabled] [ref=f26e544]
+                - button "Descartar cambios" [disabled] [ref=f26e545]
+  - button "Open Next.js Dev Tools" [ref=f26e551] [cursor=pointer]
+  - alert [ref=f26e555]

@@ -49,6 +49,12 @@ function frequencyLabel(value: ReportSchedule["frequency"]) {
   return value === "DAILY" ? "Diario" : value === "WEEKLY" ? "Semanal" : "Mensual";
 }
 
+function scheduleStatusMeta(status: ReportSchedule["status"]) {
+  if (status === "ACTIVE") return { label: "Activa", classes: "bg-[#e4f7ef] text-[#13895a]", icon: CheckCircle2 };
+  if (status === "PAUSED") return { label: "Pausada", classes: "bg-[#fff5e8] text-[#a96216]", icon: Clock3 };
+  return { label: "Cancelada", classes: "bg-[#fff0f0] text-[#c34242]", icon: XCircle };
+}
+
 export function ReportScheduleControls({
   schedules,
   filters,
@@ -193,14 +199,11 @@ export function ReportScheduleControls({
                       {schedule.lastRun ? ` · ${schedule.lastRun.status}` : ""}
                     </td>
                     <td className="px-2 py-3">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#e4f7ef] px-2 py-1 text-[9px] font-extrabold text-[#13895a]">
-                        {schedule.status === "ACTIVE" ? (
-                          <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-                        ) : (
-                          <XCircle className="h-3 w-3" aria-hidden="true" />
-                        )}
-                        {schedule.status === "ACTIVE" ? "Activa" : "Cancelada"}
-                      </span>
+                      {(() => {
+                        const status = scheduleStatusMeta(schedule.status);
+                        const StatusIcon = status.icon;
+                        return <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[9px] font-extrabold ${status.classes}`}><StatusIcon className="h-3 w-3" aria-hidden="true" />{status.label}</span>;
+                      })()}
                     </td>
                     <td className="px-2 py-3">
                       {schedule.status === "ACTIVE" ? (

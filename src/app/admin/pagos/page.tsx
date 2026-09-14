@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
-import { getPaymentsPage } from "@/lib/payments-repository";
+import { getPaymentsKpiSeries, getPaymentsPage } from "@/lib/payments-repository";
 import { parsePaymentsFilters } from "@/lib/payments-contract";
 import { PaymentsControlCenter } from "@/components/admin/PaymentsControlCenter";
 
@@ -22,10 +22,12 @@ export default async function AdminPagosPage({
     if (typeof value === "string") query.set(key, value);
     else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
   }
-  const page = await getPaymentsPage(parsePaymentsFilters(query));
+  const filters = parsePaymentsFilters(query);
+  const [page, series] = await Promise.all([getPaymentsPage(filters), getPaymentsKpiSeries(filters)]);
   return (
     <PaymentsControlCenter
       page={page}
+      series={series}
       queryString={query.toString()}
       canManage={can(actor.role, "payments.review")}
       canRefund={can(actor.role, "payments.refund")}

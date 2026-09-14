@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Tanda2Reports } from "@/components/admin/AdminTanda2Workspaces";
+import { AdminReportsStitch } from "@/components/admin/AdminReportsStitch";
 import { requirePermission } from "@/lib/auth";
 import { type DashboardFilters, type DashboardRange } from "@/lib/operations-dashboard";
 import { getReportSnapshot, listReportOptions, listReportSchedules } from "@/lib/reporting-service";
@@ -119,8 +119,9 @@ export default async function AdminReportesPage({
     {
       label: "Margen bruto",
       value: data ? formatMoney(data.grossProfit, data.currency) : "N/D",
-      note:
-        data?.grossMargin === null || data?.grossMargin === undefined
+      note: !data?.currency
+        ? "Selecciona una moneda"
+        : data.grossMargin === null || data.grossMargin === undefined
           ? "Costo histórico incompleto"
           : `${(data.grossMargin * 100).toFixed(1)}% sobre ventas`,
       tone: "green" as const,
@@ -278,7 +279,7 @@ export default async function AdminReportesPage({
   );
 
   return (
-    <Tanda2Reports
+    <AdminReportsStitch
       exportHref={`/api/admin/reportes/export?${dashboardFiltersToQuery(filters).toString()}`}
       error={
         reportError

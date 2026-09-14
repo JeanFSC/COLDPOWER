@@ -6,7 +6,7 @@ import { Tanda2Settings } from "@/components/admin/AdminTanda2Workspaces";
 import { CompanySettingsForm } from "@/components/admin/CompanySettingsForm";
 import { requirePermission } from "@/lib/auth";
 import { listActivePriceTypes, countActivePriceTypesBefore } from "@/lib/price-lists";
-import { listDocumentSeries } from "@/lib/document-series";
+import { listDocumentSeries, countActiveDocumentSeriesBefore } from "@/lib/document-series";
 import { listIntegrations } from "@/lib/integrations";
 
 export const metadata: Metadata = { title: "Configuracion empresarial | Panel admin ColdPower", description: "Gestiona datos empresariales confirmados y publicados." };
@@ -36,9 +36,10 @@ export default async function AdminConfiguracionPage() {
   let previousContactMethods: number | null = null;
   let documentSeries: Awaited<ReturnType<typeof listDocumentSeries>> = [];
   let integrations: Awaited<ReturnType<typeof listIntegrations>> = [];
+  let previousActiveSeriesCount = 0;
 
   try {
-    const [[settings], [locationCount], [locationTotalRow], rows, [previousLocations], priceListRows, previousPriceTypes, seriesRows, integrationRows, [previousSettingsHistory]] = await Promise.all([
+    const [[settings], [locationCount], [locationTotalRow], rows, [previousLocations], priceListRows, previousPriceTypes, seriesRows, integrationRows, [previousSettingsHistory], previousActiveSeries] = await Promise.all([
       db.select({ legalName: companySettings.legalName, tradeName: companySettings.tradeName, ruc: companySettings.ruc, paymentMethods: companySettings.paymentMethods, version: companySettings.version, updatedAt: companySettings.updatedAt, logoMediaId: companySettings.logoMediaId, phone: companySettings.phone, whatsapp: companySettings.whatsapp, email: companySettings.email, salesEmail: companySettings.salesEmail }).from(companySettings).where(eq(companySettings.id, "default")).limit(1),
       db.select({ count: count() }).from(locations).where(eq(locations.active, true)),
       db.select({ count: count() }).from(locations),
@@ -49,6 +50,7 @@ export default async function AdminConfiguracionPage() {
       listDocumentSeries(),
       listIntegrations(),
       db.select({ after: companySettingsHistory.after }).from(companySettingsHistory).where(lt(companySettingsHistory.createdAt, cutoff)).orderBy(desc(companySettingsHistory.createdAt)).limit(1),
+      countActiveDocumentSeriesBefore(cutoff),
     ]);
     const contactMethods = [settings?.phone, settings?.whatsapp, settings?.email, settings?.salesEmail].filter((value) => Boolean(value?.trim())).length;
     summary = { legalName: settings?.legalName, tradeName: settings?.tradeName, ruc: settings?.ruc, locations: Number(locationCount?.count ?? 0), paymentMethods: settings?.paymentMethods?.length ?? null, version: settings?.version ?? null, updatedAt: settings?.updatedAt ?? null, logoMediaId: settings?.logoMediaId, contactMethods };
@@ -60,6 +62,7 @@ export default async function AdminConfiguracionPage() {
     documentSeries = seriesRows;
     integrations = integrationRows;
     previousContactMethods = previousSettingsHistory ? contactMethodsFromSnapshot(previousSettingsHistory.after) : null;
+    previousActiveSeriesCount = previousActiveSeries;
   } catch (error) {
     console.error("ColdPower: no se pudo cargar el resumen de configuración", error);
   }
@@ -74,6 +77,7 @@ export default async function AdminConfiguracionPage() {
       previousPriceTypesCount={previousPriceTypesCount}
       previousContactMethods={previousContactMethods}
       documentSeries={documentSeries}
+      previousActiveSeriesCount={previousActiveSeriesCount}
       integrations={integrations}
       controls={<CompanySettingsForm />}
     />

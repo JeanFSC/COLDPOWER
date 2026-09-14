@@ -1,0 +1,72 @@
+- generic [active] [ref=f11e1]:
+  - main [ref=f11e2]:
+    - generic [ref=f11e3]:
+      - complementary [ref=f11e4]:
+        - link "Ir al inicio de ColdPower" [ref=f11e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f11e7]
+        - navigation "Navegacion administrativa" [ref=f11e8]:
+          - generic [ref=f11e9]:
+            - link "Inicio" [ref=f11e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f11e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f11e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f11e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f11e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f11e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f11e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f11e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f11e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f11e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f11e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f11e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f11e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f11e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f11e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f11e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f11e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f11e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f11e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f11e112]:
+          - group [ref=f11e113]:
+            - generic "Necesitas ayuda?" [ref=f11e114] [cursor=pointer]
+          - generic [ref=f11e123]:
+            - strong [ref=f11e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f11e125]:
+        - generic [ref=f11e126]:
+          - generic [ref=f11e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f11e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f11e129]:
+            - link "Ver notificaciones" [ref=f11e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+              - generic [ref=f11e134]: "4"
+            - generic [ref=f11e136]:
+              - paragraph [ref=f11e137]: Superadmin
+              - paragraph [ref=f11e138]: Superadministrador
+        - main [ref=f11e141]:
+          - generic "Cargando pagos" [ref=f11e142]
+  - button "Open Next.js Dev Tools" [ref=f11e167] [cursor=pointer]
+  - alert [ref=f11e171]

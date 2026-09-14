@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, lt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { documentSeries } from "@/db/schema";
 
@@ -21,6 +21,18 @@ export async function listDocumentSeries(): Promise<DocumentSeriesRow[]> {
 
 export async function countActiveDocumentSeries(): Promise<number> {
   const rows = await getDb().select({ id: documentSeries.id }).from(documentSeries).where(eq(documentSeries.active, true));
+  return rows.length;
+}
+
+// Same before-cutoff convention as previousLocationsCount / countActivePriceTypesBefore:
+// series existing before the cutoff, active or not, approximate what was active back then
+// isn't tracked historically, so this counts rows created before the cutoff as the closest
+// honest baseline rather than fabricating a trend.
+export async function countActiveDocumentSeriesBefore(cutoff: Date): Promise<number> {
+  const rows = await getDb()
+    .select({ id: documentSeries.id })
+    .from(documentSeries)
+    .where(and(eq(documentSeries.active, true), lt(documentSeries.createdAt, cutoff)));
   return rows.length;
 }
 

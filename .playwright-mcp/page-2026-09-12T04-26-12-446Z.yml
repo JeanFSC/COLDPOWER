@@ -1,0 +1,421 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - complementary [ref=e4]:
+        - link "Ir al inicio de ColdPower" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=e7]
+        - navigation "Navegacion administrativa" [ref=e8]:
+          - generic [ref=e9]:
+            - link "Inicio" [ref=e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=e112]:
+          - group [ref=e113]:
+            - generic "Necesitas ayuda?" [ref=e114] [cursor=pointer]
+          - generic [ref=e123]:
+            - strong [ref=e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=e125]:
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - textbox "Buscar en el panel administrativo" [ref=e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=e129]:
+            - link "Ver notificaciones" [ref=e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - generic [ref=e135]:
+              - paragraph [ref=e136]: Superadmin
+              - paragraph [ref=e137]: Superadministrador
+        - main [ref=e140]:
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e148]:
+                  - heading "Auditoría" [level=1] [ref=e149]
+                  - paragraph [ref=e150]: Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.
+                - generic [ref=e151]:
+                  - button "Exportar logs" [ref=e152]
+                  - button "Guardar filtro" [ref=e156]
+              - generic [ref=e160]:
+                - generic [ref=e161]:
+                  - generic [ref=e162]: Eventos 24h
+                  - generic [ref=e167]: 1,842
+                  - generic [ref=e168]: ↗ 12% vs. día anterior
+                - generic [ref=e173]:
+                  - generic [ref=e174]: Eventos críticos
+                  - generic [ref=e179]: "32"
+                  - generic [ref=e180]: ↘ 28% vs. día anterior
+                - generic [ref=e185]:
+                  - generic [ref=e186]: Cambios sensibles
+                  - generic [ref=e191]: "186"
+                  - generic [ref=e192]: ↗ 14% vs. día anterior
+                - generic [ref=e197]:
+                  - generic [ref=e198]: Inicios de sesión
+                  - generic [ref=e203]: "412"
+                  - generic [ref=e204]: ↗ 6% vs. día anterior
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Errores de integración
+                  - generic [ref=e215]: "24"
+                  - generic [ref=e216]: ↗ 33% vs. día anterior
+                - generic [ref=e221]:
+                  - generic [ref=e222]: Acciones fallidas
+                  - generic [ref=e227]: "57"
+                  - generic [ref=e228]: ↘ 18% vs. día anterior
+              - generic [ref=e233]:
+                - textbox "Buscar por actor, acción, objeto, IP o ID de correlación..." [ref=e235]
+                - generic [ref=e236]:
+                  - generic [ref=e237] [cursor=pointer]:
+                    - generic [ref=e238]: Actor
+                    - generic [ref=e239]: Todos
+                  - generic [ref=e242] [cursor=pointer]:
+                    - generic [ref=e243]: Módulo
+                    - generic [ref=e244]: Todos
+                  - generic [ref=e247] [cursor=pointer]:
+                    - generic [ref=e248]: Severidad
+                    - generic [ref=e249]: Todas
+                  - generic [ref=e252] [cursor=pointer]:
+                    - generic [ref=e253]: Fecha
+                    - generic [ref=e256]: Últimos 30 días
+                  - button "Más filtros" [ref=e259]
+                  - button "Limpiar" [ref=e263]
+              - generic [ref=e264]:
+                - generic [ref=e265]:
+                  - generic [ref=e266]:
+                    - generic [ref=e267]:
+                      - heading "Volumen de eventos" [level=3] [ref=e268]
+                      - img [ref=e269] [cursor=pointer]
+                    - generic [ref=e271] [cursor=pointer]: Diario
+                  - generic [ref=e275]:
+                    - generic [ref=e276]: Total
+                    - generic [ref=e279]: Críticos
+                    - generic [ref=e282]: Fallidos
+                    - generic [ref=e285]: Cambios sensibles
+                  - generic [ref=e288]:
+                    - generic:
+                      - generic: "300"
+                      - generic: "200"
+                      - generic: "100"
+                      - generic: "0"
+                    - generic [ref=e309]:
+                      - generic [ref=e310]: 1 ago
+                      - generic [ref=e311]: 4 ago
+                      - generic [ref=e312]: 7 ago
+                      - generic [ref=e313]: 10 ago
+                      - generic [ref=e314]: 13 ago
+                      - generic [ref=e315]: 16 ago
+                      - generic [ref=e316]: 19 ago
+                      - generic [ref=e317]: 22 ago
+                      - generic [ref=e318]: 25 ago
+                      - generic [ref=e319]: 28 ago
+                      - generic [ref=e320]: 31 ago
+                - generic [ref=e321]:
+                  - generic [ref=e322]:
+                    - heading "Alertas y cumplimiento" [level=3] [ref=e323]
+                    - link "Ver todas" [ref=e324] [cursor=pointer]:
+                      - /url: "#"
+                  - generic [ref=e325]:
+                    - generic [ref=e330]:
+                      - paragraph [ref=e331]: 32 eventos críticos en las últimas 24 horas
+                      - paragraph [ref=e332]: Requieren revisión inmediata.
+                    - generic [ref=e337]:
+                      - paragraph [ref=e338]: 186 cambios sensibles detectados
+                      - paragraph [ref=e339]: Incluye modificaciones en precios, permisos y configuraciones.
+                    - generic [ref=e344]:
+                      - paragraph [ref=e345]: Cumplimiento
+                      - paragraph [ref=e346]: Todos los eventos se registran y conservan por 2 años.
+                    - generic [ref=e351]:
+                      - paragraph [ref=e352]: Sin anomalías de seguridad
+                      - paragraph [ref=e353]: No se detectaron accesos inusuales en el período.
+              - generic [ref=e354]:
+                - generic [ref=e355]:
+                  - generic [ref=e356]:
+                    - heading "Registro de auditoría" [level=2] [ref=e357]
+                    - paragraph [ref=e358]: 1,842 resultados
+                  - generic [ref=e359]:
+                    - generic [ref=e360] [cursor=pointer]: 10 por página
+                    - generic [ref=e364]:
+                      - button [ref=e365]
+                      - button "1" [ref=e368]
+                      - button "2" [ref=e369]
+                      - button "3" [ref=e370]
+                      - button "4" [ref=e371]
+                      - button "5" [ref=e372]
+                      - generic [ref=e373]: ...
+                      - button "185" [ref=e374]
+                      - button [ref=e375]
+                - table [ref=e379]:
+                  - rowgroup [ref=e380]:
+                    - row [ref=e381]:
+                      - columnheader [ref=e382]:
+                        - checkbox [ref=e383]
+                      - columnheader "Fecha y hora" [ref=e384]
+                      - columnheader "Actor" [ref=e389]
+                      - columnheader "Módulo" [ref=e390]
+                      - columnheader "Acción" [ref=e391]
+                      - columnheader "Objeto" [ref=e392]
+                      - columnheader "Severidad" [ref=e393]
+                      - columnheader "IP" [ref=e394]
+                      - columnheader "Resultado" [ref=e395]
+                      - columnheader "Acciones" [ref=e396]
+                  - rowgroup [ref=e397]:
+                    - row [ref=e398]:
+                      - cell [ref=e399]:
+                        - checkbox [ref=e400]
+                      - cell "31 ago 2024, 10:24" [ref=e401]
+                      - cell "JP Jean Pérez jean.perez@empresa.com" [ref=e402]:
+                        - generic [ref=e403]:
+                          - generic [ref=e404]: JP
+                          - generic [ref=e405]:
+                            - paragraph [ref=e406]: Jean Pérez
+                            - paragraph [ref=e407]: jean.perez@empresa.com
+                      - cell "Precios" [ref=e408]
+                      - cell "Actualizar" [ref=e409]
+                      - cell [ref=e410]:
+                        - paragraph [ref=e411]: Precio de producto
+                        - paragraph [ref=e412]: "SKU: REF-TURBO-520W"
+                      - cell "Media" [ref=e413]
+                      - cell "190.5.24.18" [ref=e415]
+                      - cell "Exitoso" [ref=e416]
+                      - cell [ref=e418] [cursor=pointer]
+                    - row [ref=e421]:
+                      - cell [ref=e422]:
+                        - checkbox [checked] [ref=e423]
+                      - cell "31 ago 2024, 09:15" [ref=e424]
+                      - cell "AC Ana Gómez ana.gomez@empresa.com" [ref=e425]:
+                        - generic [ref=e426]:
+                          - generic [ref=e427]: AC
+                          - generic [ref=e428]:
+                            - paragraph [ref=e429]: Ana Gómez
+                            - paragraph [ref=e430]: ana.gomez@empresa.com
+                      - cell "Clientes" [ref=e431]
+                      - cell "Crear" [ref=e432]
+                      - cell [ref=e433]:
+                        - paragraph [ref=e434]: Cliente
+                        - paragraph [ref=e435]: "RUC: 20567890101"
+                      - cell "Baja" [ref=e436]
+                      - cell "181.61.72.10" [ref=e438]
+                      - cell "Exitoso" [ref=e439]
+                      - cell [ref=e441] [cursor=pointer]
+                    - row [ref=e444]:
+                      - cell [ref=e445]:
+                        - checkbox [ref=e446]
+                      - cell "31 ago 2024, 08:40" [ref=e447]
+                      - cell "SC Sistema sistema@coldpower.com" [ref=e448]:
+                        - generic [ref=e449]:
+                          - generic [ref=e450]: SC
+                          - generic [ref=e451]:
+                            - paragraph [ref=e452]: Sistema
+                            - paragraph [ref=e453]: sistema@coldpower.com
+                      - cell "Inventario" [ref=e454]
+                      - cell "Ajustar stock" [ref=e455]
+                      - cell [ref=e456]:
+                        - paragraph [ref=e457]: Producto
+                        - paragraph [ref=e458]: "SKU: REF-CON-002"
+                      - cell "Alta" [ref=e459]
+                      - cell "10.0.5.12" [ref=e461]
+                      - cell "Exitoso" [ref=e462]
+                      - cell [ref=e464] [cursor=pointer]
+                    - row [ref=e467]:
+                      - cell [ref=e468]:
+                        - checkbox [ref=e469]
+                      - cell "30 ago 2024, 18:30" [ref=e470]
+                      - cell "LM Luis Herrera luis.herrera@empresa.com" [ref=e471]:
+                        - generic [ref=e472]:
+                          - generic [ref=e473]: LM
+                          - generic [ref=e474]:
+                            - paragraph [ref=e475]: Luis Herrera
+                            - paragraph [ref=e476]: luis.herrera@empresa.com
+                      - cell "Pedidos" [ref=e477]
+                      - cell "Actualizar" [ref=e478]
+                      - cell [ref=e479]:
+                        - paragraph [ref=e480]: Pedido
+                        - paragraph [ref=e481]: N° PED-001245
+                      - cell "Media" [ref=e482]
+                      - cell "200.48.12.90" [ref=e484]
+                      - cell "Exitoso" [ref=e485]
+                      - cell [ref=e487] [cursor=pointer]
+                    - row [ref=e490]:
+                      - cell [ref=e491]:
+                        - checkbox [ref=e492]
+                      - cell "30 ago 2024, 17:10" [ref=e493]
+                      - cell "RV María Rivera m.rivera@empresa.com" [ref=e494]:
+                        - generic [ref=e495]:
+                          - generic [ref=e496]: RV
+                          - generic [ref=e497]:
+                            - paragraph [ref=e498]: María Rivera
+                            - paragraph [ref=e499]: m.rivera@empresa.com
+                      - cell "Usuarios" [ref=e500]
+                      - cell "Cambiar rol" [ref=e501]
+                      - cell [ref=e502]:
+                        - paragraph [ref=e503]: Usuario
+                        - paragraph [ref=e504]: "ID: USR-028"
+                      - cell "Alta" [ref=e505]
+                      - cell "190.5.24.33" [ref=e507]
+                      - cell "Exitoso" [ref=e508]
+                      - cell [ref=e510] [cursor=pointer]
+                    - row [ref=e513]:
+                      - cell [ref=e514]:
+                        - checkbox [ref=e515]
+                      - cell "30 ago 2024, 16:05" [ref=e516]
+                      - cell "JP Jean Pérez jean.perez@empresa.com" [ref=e517]:
+                        - generic [ref=e518]:
+                          - generic [ref=e519]: JP
+                          - generic [ref=e520]:
+                            - paragraph [ref=e521]: Jean Pérez
+                            - paragraph [ref=e522]: jean.perez@empresa.com
+                      - cell "Cotizaciones" [ref=e523]
+                      - cell "Eliminar" [ref=e524]
+                      - cell [ref=e525]:
+                        - paragraph [ref=e526]: Cotización
+                        - paragraph [ref=e527]: N° CP-2024-058
+                      - cell "Crítica" [ref=e528]
+                      - cell "181.61.72.10" [ref=e530]
+                      - cell "Fallido" [ref=e531]
+                      - cell [ref=e533] [cursor=pointer]
+                    - row [ref=e536]:
+                      - cell [ref=e537]:
+                        - checkbox [ref=e538]
+                      - cell "30 ago 2024, 14:22" [ref=e539]
+                      - cell "IN Integración API api@coldpower.com" [ref=e540]:
+                        - generic [ref=e541]:
+                          - generic [ref=e542]: IN
+                          - generic [ref=e543]:
+                            - paragraph [ref=e544]: Integración API
+                            - paragraph [ref=e545]: api@coldpower.com
+                      - cell "Integraciones" [ref=e546]
+                      - cell "Sincronizar" [ref=e547]
+                      - cell [ref=e548]:
+                        - paragraph [ref=e549]: Inventario
+                        - paragraph [ref=e550]: "Conector: SAP"
+                      - cell "Media" [ref=e551]
+                      - cell "10.0.10.45" [ref=e553]
+                      - cell "Exitoso" [ref=e554]
+                      - cell [ref=e556] [cursor=pointer]
+                    - row [ref=e559]:
+                      - cell [ref=e560]:
+                        - checkbox [ref=e561]
+                      - cell "30 ago 2024, 11:18" [ref=e562]
+                      - cell "AC Ana Gómez ana.gomez@empresa.com" [ref=e563]:
+                        - generic [ref=e564]:
+                          - generic [ref=e565]: AC
+                          - generic [ref=e566]:
+                            - paragraph [ref=e567]: Ana Gómez
+                            - paragraph [ref=e568]: ana.gomez@empresa.com
+                      - cell "Productos" [ref=e569]
+                      - cell "Modificar" [ref=e570]
+                      - cell [ref=e571]:
+                        - paragraph [ref=e572]: Producto
+                        - paragraph [ref=e573]: "SKU: REF-MAB-100G"
+                      - cell "Media" [ref=e574]
+                      - cell "181.61.72.10" [ref=e576]
+                      - cell "Exitoso" [ref=e577]
+                      - cell [ref=e579] [cursor=pointer]
+            - complementary [ref=e582]:
+              - generic [ref=e583]:
+                - heading "Detalle del evento" [level=2] [ref=e584]
+                - button [ref=e585]
+              - generic [ref=e588]:
+                - generic [ref=e589]:
+                  - generic [ref=e594]:
+                    - heading "Cliente creado" [level=3] [ref=e595]
+                    - paragraph [ref=e596]: 31 ago 2024, 09:15:42
+                  - generic [ref=e597]: Exitoso
+                - navigation [ref=e599]:
+                  - button "Información" [ref=e600]
+                  - button "Cambios" [ref=e601]
+                  - button "Relacionado" [ref=e602]
+                - generic [ref=e603]:
+                  - generic [ref=e604]:
+                    - generic [ref=e605]: ID de correlación
+                    - generic [ref=e606]:
+                      - generic [ref=e607]: b7f4c9e2-3a10-4d5e-8c2a-9f1e6d3c7b2d
+                      - button [ref=e608]
+                  - generic [ref=e611]:
+                    - generic [ref=e612]: Actor
+                    - generic [ref=e613]:
+                      - generic [ref=e614]: AC
+                      - generic [ref=e615]:
+                        - paragraph [ref=e616]: Ana Gómez
+                        - paragraph [ref=e617]: ana.gomez@empresa.com
+                  - generic [ref=e618]:
+                    - generic [ref=e619]: ID del evento
+                    - generic [ref=e620]: AUD-2024-00045871
+                  - generic [ref=e621]:
+                    - generic [ref=e622]: Módulo
+                    - generic [ref=e623]: Clientes
+                  - generic [ref=e624]:
+                    - generic [ref=e625]: Acción
+                    - generic [ref=e626]: Crear
+                  - generic [ref=e627]:
+                    - generic [ref=e628]: Objeto
+                    - generic [ref=e629]: Cliente
+                  - generic [ref=e630]:
+                    - generic [ref=e631]: ID del objeto
+                    - generic [ref=e632]: CLI-2024-00567
+                  - generic [ref=e633]:
+                    - generic [ref=e634]: Navegador
+                    - generic [ref=e635]: Chrome 128.0.6613.120
+                  - generic [ref=e636]:
+                    - generic [ref=e637]: Duración
+                    - generic [ref=e638]: 342 ms
+                  - generic [ref=e639]:
+                    - generic [ref=e640]: IP
+                    - generic [ref=e641]:
+                      - generic [ref=e642]: 181.61.72.10
+                      - generic [ref=e647]: Lima, Perú
+                  - generic [ref=e648]:
+                    - generic [ref=e649]: Resultado
+                    - generic [ref=e650]: Exitoso
+                - generic [ref=e651]:
+                  - heading "Datos del cambio" [level=4] [ref=e652]
+                  - generic [ref=e653]:
+                    - generic [ref=e654]:
+                      - generic [ref=e655]: Antes
+                      - generic [ref=e656]: No existía
+                    - generic [ref=e657]:
+                      - generic [ref=e658]:
+                        - generic [ref=e659]: Después
+                        - button [ref=e660]
+                      - generic [ref=e663]: "{ \"id\": \"CLI-2024-00567\", \"ruc\": \"20567890101\", \"nombre\": \"Cliente corporativo 028\", \"tipo\": \"EMPRESA\", \"estado\": \"ACTIVO\", \"telefono\": \"+51 910 123 456\", \"email\": \"compras@empresa.com\", \"ciudad\": \"Lima\" }"
+                - generic [ref=e665]: Eventos relacionados (3)
+  - button "Open Next.js Dev Tools" [ref=e675] [cursor=pointer]
+  - alert [ref=e679]

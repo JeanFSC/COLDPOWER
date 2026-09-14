@@ -28,6 +28,7 @@ import {
   Package,
   PackageCheck,
   RefreshCw,
+  Save,
   Search,
   Settings2,
   ShieldCheck,
@@ -39,7 +40,7 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import Image from "next/image";
 import {
   AdminDashboardControls,
@@ -56,7 +57,7 @@ import {
 import { PurchaseActions } from "@/components/admin/PurchaseActions";
 import { PurchaseRequestActions } from "@/components/admin/PurchaseRequestActions";
 import { ReportScheduleControls } from "@/components/admin/ReportScheduleControls";
-import { TestIntegrationsButton } from "@/components/admin/TestIntegrationsButton";
+import { TestIntegrationsButton, IntegrationRowMenu } from "@/components/admin/TestIntegrationsButton";
 import type { DocumentSeriesItem } from "@/components/admin/DocumentSeriesManager";
 import { DiscardSettingsButton } from "@/components/admin/DiscardSettingsButton";
 import { NewLocationButton } from "@/components/admin/NewLocationButton";
@@ -2676,211 +2677,6 @@ export function Tanda2Cms({
   );
 }
 
-export function Tanda2Audit({
-  rows,
-  metrics,
-  controls,
-  pagination,
-  exportHref,
-  selectedId,
-  baseQuery,
-}: {
-  rows: Array<{
-    id: string;
-    date: string;
-    user: string;
-    action: string;
-    entity: string;
-    module?: string;
-    severity?: string;
-    result?: string;
-    actorRole?: string | null;
-    requestId?: string | null;
-    correlationId?: string | null;
-    metadata?: string;
-    before?: string;
-    after?: string;
-    origin?: string;
-    tone?: string;
-  }>;
-  metrics?: { total: number; critical: number; actors: number; failedAttempts: number | null };
-  controls?: ReactNode;
-  pagination?: { page: number; totalPages: number; totalItems: number };
-  exportHref?: string;
-  selectedId?: string;
-  baseQuery?: string;
-}) {
-  const selected = rows.find((row) => row.id === selectedId) ?? rows[0];
-  const eventHref = (id: string) => {
-    const query = new URLSearchParams(baseQuery ?? "");
-    query.set("eventId", id);
-    return `/admin/auditoria?${query.toString()}`;
-  };
-  return (
-    <div className="space-y-4">
-      <T2PageHeader
-        icon={ShieldCheck}
-        title="Auditoría"
-        description="Consulta todas las acciones y cambios realizados en ColdPower."
-      >
-        <Action href={exportHref} icon={Download} download>
-          Exportar logs
-        </Action>
-        <Action href="#audit-filters" icon={Filter}>
-          Guardar filtro
-        </Action>
-      </T2PageHeader>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <Metric label="Eventos 24 h" value={number(metrics?.total)} icon={FileClock} color="blue" />
-        <Metric label="Críticos" value={number(metrics?.critical)} icon={AlertCircle} color="red" />
-        <Metric label="Cambios sensibles" value="N/D" icon={ShieldCheck} color="orange" />
-        <Metric label="Accesos" value={number(metrics?.actors)} icon={UsersRound} color="green" />
-        <Metric
-          label="Fallidos"
-          value={metrics?.failedAttempts === null ? "N/D" : number(metrics?.failedAttempts)}
-          icon={AlertCircle}
-          color="red"
-        />
-        <Metric label="Integraciones con error" value="N/D" icon={RefreshCw} color="purple" />
-      </div>
-      <Panel
-        title="Registro de auditoría"
-        subtitle={`${metrics?.total ?? rows.length} eventos · append-only`}
-      >
-        <div className="mt-3 overflow-x-auto">
-          {rows.length ? (
-            <table className="w-full min-w-[900px] text-left">
-              <thead>
-                <tr className="border-b border-[#edf2f6]">
-                  {[
-                    "Fecha y hora",
-                    "Actor",
-                    "Módulo / acción",
-                    "Objeto",
-                    "Severidad",
-                    "Resultado",
-                    "Origen",
-                    "Detalle",
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.slice(0, 15).map((row, index) => (
-                  <tr
-                    key={row.id || `${row.date}-${index}`}
-                    className={`border-b border-[#f1f4f7] last:border-0 ${selected?.id === row.id ? "bg-[#f5faff]" : ""}`}
-                  >
-                    <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
-                      {row.date}
-                    </td>
-                    <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">
-                      {row.user === "SYSTEM" ? "Sistema" : row.user}
-                    </td>
-                    <td className="px-2 py-3">
-                      <span className="block text-[10px] font-extrabold text-[#304b66]">
-                        {row.action}
-                      </span>
-                    </td>
-                    <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
-                      {row.entity}
-                    </td>
-                    <td className="px-2 py-3">
-                      <Pill>
-                        {row.tone === "red"
-                          ? "CRITICAL"
-                          : row.tone === "orange"
-                            ? "WARNING"
-                            : "INFO"}
-                      </Pill>
-                    </td>
-                    <td className="px-2 py-3">
-                      <Pill>SUCCESS</Pill>
-                    </td>
-                    <td className="px-2 py-3 text-[10px] font-mono text-[#526b84]">
-                      {row.origin ?? "N/D"}
-                    </td>
-                    <td className="px-2 py-3">
-                      <Link
-                        href={eventHref(row.id)}
-                        aria-current={selected?.id === row.id ? "true" : undefined}
-                        className="inline-flex rounded-md px-2 py-1 text-[9px] font-extrabold text-[#2277ee] hover:bg-[#e8f1ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2277ee]"
-                      >
-                        Ver detalle
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <Empty
-              title="No hay eventos de auditoría"
-              description="No se recibieron eventos para este alcance."
-              icon={ShieldCheck}
-            />
-          )}
-        </div>
-        <div className={`mt-3 border-t border-[#edf2f6] pt-3 text-[10px] font-semibold ${muted}`}>
-          Página {pagination?.page ?? 1} de {pagination?.totalPages ?? 1} ·{" "}
-          {pagination?.totalItems ?? rows.length} eventos
-        </div>
-      </Panel>
-      {selected ? (
-        <Panel
-          title="Detalle del evento seleccionado"
-          subtitle={`${selected.action} · ${selected.entity}`}
-        >
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <MiniValue
-              label="Actor"
-              value={selected.user === "SYSTEM" ? "Sistema" : selected.user}
-              note={selected.date}
-              icon={UsersRound}
-            />
-            <MiniValue
-              label="Antes"
-              value={selected.before ?? "N/D"}
-              note="Snapshot redacted"
-              icon={FileClock}
-            />
-            <MiniValue
-              label="Después"
-              value={selected.after ?? "N/D"}
-              note={selected.origin ?? "Origen N/D"}
-              icon={ShieldCheck}
-            />
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className="rounded-lg border border-[#e2eaf1] bg-[#fbfcfd] p-3">
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#91a3b3]">Información del evento</p>
-              <dl className="mt-2 grid gap-1.5 text-[10px]">
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Módulo</dt><dd className="font-extrabold text-[#304b66]">{selected.module ?? "N/D"}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Severidad</dt><dd className="font-extrabold text-[#304b66]">{selected.severity ?? "INFO"}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Resultado</dt><dd className="font-extrabold text-[#304b66]">{selected.result ?? "SUCCESS"}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Rol</dt><dd className="font-extrabold text-[#304b66]">{selected.actorRole ?? "N/D"}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Request ID</dt><dd className="max-w-[65%] truncate font-mono text-[#526b84]">{selected.requestId ?? "N/D"}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="font-semibold text-[#71869c]">Correlation ID</dt><dd className="max-w-[65%] truncate font-mono text-[#526b84]">{selected.correlationId ?? "N/D"}</dd></div>
-              </dl>
-            </div>
-            <div className="rounded-lg border border-[#e2eaf1] bg-[#102a43] p-3 text-white">
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#c8d8e7]">Metadata JSON</p>
-              <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap break-words text-[9px] leading-4 text-[#eef5fb]">{selected.metadata ?? "{}"}</pre>
-            </div>
-          </div>
-        </Panel>
-      ) : null}
-      {controls}
-    </div>
-  );
-}
-
 const permissionMatrixRoles: Array<{ role: AppRole; label: string }> = [
   { role: "SUPERADMIN", label: "Superadmin" },
   { role: "GERENCIA", label: "Gerencia" },
@@ -3205,6 +3001,7 @@ export function Tanda2Settings({
   previousPriceTypesCount = 0,
   previousContactMethods = null,
   documentSeries = [],
+  previousActiveSeriesCount = 0,
   integrations = [],
 }: {
   controls?: ReactNode;
@@ -3226,6 +3023,7 @@ export function Tanda2Settings({
   previousPriceTypesCount?: number;
   previousContactMethods?: number | null;
   documentSeries?: DocumentSeriesItem[];
+  previousActiveSeriesCount?: number;
   integrations?: Array<{ id: string; key: string; label: string; description: string | null; category: string; lastCheckedStatus: string; lastCheckedAt: Date | string | null; lastCheckedMessage: string | null }>;
 }) {
   const connectedIntegrations = integrations.filter((row) => row.lastCheckedStatus === "CONNECTED").length;
@@ -3243,7 +3041,7 @@ export function Tanda2Settings({
         description="Gestiona la información de tu empresa, locales, documentos, integraciones y preferencias del sistema."
       >
         <DiscardSettingsButton />
-        <Action form="company-settings-form" type="submit" icon={CheckCircle2}>
+        <Action form="company-settings-form" type="submit" icon={Save}>
           Guardar cambios
         </Action>
         <TestIntegrationsButton />
@@ -3260,7 +3058,7 @@ export function Tanda2Settings({
         <Metric
           label="Listas de precio"
           value={number(priceLists.length)}
-          note={priceLists.length ? `${number(totalPricesTracked)} precios activos` : "Sin precios activos registrados"}
+          note={priceLists.length ? <Delta current={priceLists.length} previous={previousPriceTypesCount} /> : "Sin precios activos registrados"}
           icon={Tag}
           color="orange"
           sparkline={priceLists.length ? [previousPriceTypesCount, priceLists.length] : undefined}
@@ -3268,9 +3066,10 @@ export function Tanda2Settings({
         <Metric
           label="Series activas"
           value={number(activeSeries)}
-          note={documentSeries.length ? `De ${documentSeries.length} registradas` : "Aún no configuradas"}
+          note={documentSeries.length ? <Delta current={activeSeries} previous={previousActiveSeriesCount} /> : "Aún no configuradas"}
           icon={FileText}
           color="green"
+          sparkline={documentSeries.length ? [previousActiveSeriesCount, activeSeries] : undefined}
         />
         <Metric
           label="Integraciones"
@@ -3282,7 +3081,7 @@ export function Tanda2Settings({
         <Metric
           label="Métodos de contacto"
           value={number(summary?.contactMethods)}
-          note="Teléfono, WhatsApp y correos"
+          note={summary?.contactMethods != null && previousContactMethods != null ? <Delta current={summary.contactMethods} previous={previousContactMethods} /> : "Teléfono, WhatsApp y correos"}
           icon={Smartphone}
           color="green"
           sparkline={summary?.contactMethods != null && previousContactMethods != null ? [previousContactMethods, summary.contactMethods] : undefined}
@@ -3306,8 +3105,8 @@ export function Tanda2Settings({
           </Link>
         ))}
       </nav>
-      {controls}
-      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+      {(() => {
+        const localesPanel = (
       <div id="company-addresses" className="scroll-mt-24">
         <Panel
           title="Locales y almacenes"
@@ -3356,31 +3155,35 @@ export function Tanda2Settings({
           )}
         </Panel>
       </div>
+        );
+        const integrationsColumn = (
       <div className="grid content-start gap-3">
         <div id="company-integrations" className="scroll-mt-24">
-          <Panel title="Estado de integraciones" subtitle="Conecta ColdPower con otras herramientas.">
+          <Panel
+            title="Estado de integraciones"
+            subtitle="Conecta ColdPower con otras herramientas."
+            action={
+              <Link href="#company-integrations" className="shrink-0 text-[11px] font-extrabold text-[#2277ee]">
+                Gestionar integraciones <ChevronRight className="inline h-3 w-3" />
+              </Link>
+            }
+          >
             {orderedIntegrations.length ? (
               <ul className="mt-3 grid gap-2">
                 {orderedIntegrations.map((integration) => {
                   const status = integrationStatusLabels[integration.lastCheckedStatus] ?? integrationStatusLabels.NOT_CONFIGURED;
                   const iconInfo = integrationIcons[integration.key] ?? { icon: Workflow, bg: "bg-[#f1f4f7]", ink: "text-[#8296a9]" };
                   return (
-                    <li key={integration.id} className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-2.5">
-                      <div className="flex items-start gap-2.5">
-                        <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconInfo.bg} ${iconInfo.ink}`}>
-                          <iconInfo.icon className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center justify-between gap-1.5">
-                            <p className="truncate text-[11px] font-extrabold text-[#304b66]">{integration.label}</p>
-                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold ${status.bg} ${status.ink}`}>{status.label}</span>
-                          </div>
-                          <p className={`mt-0.5 truncate text-[9px] font-semibold ${muted}`}>{integration.description ?? integration.category}</p>
-                        </div>
+                    <li key={integration.id} className="flex items-center gap-2.5 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-2.5">
+                      <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconInfo.bg} ${iconInfo.ink}`}>
+                        <iconInfo.icon className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[11px] font-extrabold text-[#304b66]">{integration.label}</p>
+                        <p className={`mt-0.5 truncate text-[9px] font-semibold ${muted}`}>{integration.description ?? integration.category}</p>
                       </div>
-                      <div className="mt-2 flex justify-end">
-                        <TestIntegrationsButton integrationKey={integration.key} compact />
-                      </div>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold ${status.bg} ${status.ink}`}>{status.label}</span>
+                      <IntegrationRowMenu integrationKey={integration.key} />
                     </li>
                   );
                 })}
@@ -3414,128 +3217,11 @@ export function Tanda2Settings({
           </ul>
         </Panel>
       </div>
-      </div>
-    </div>
-  );
-}
-
-export function Tanda2Notifications({
-  children,
-  unreadCount = 0,
-  metrics,
-  automation,
-  templatesCount,
-  controls,
-}: {
-  children?: ReactNode;
-  unreadCount?: number;
-  metrics?: { unread: number; read: number; dismissed: number };
-  automation?: {
-    critical: number;
-    activeRules: number;
-    scheduled: number;
-    remindersToday: number;
-  } | null;
-  templatesCount?: number;
-  controls?: ReactNode;
-}) {
-  const statusRows = [
-    { label: "No leídas", value: metrics?.unread ?? 0, color: "#2277ee" },
-    { label: "Leídas", value: metrics?.read ?? 0, color: "#159263" },
-    { label: "Descartadas", value: metrics?.dismissed ?? 0, color: "#94a9bb" },
-  ];
-  const statusTotal = statusRows.reduce((total, row) => total + row.value, 0);
-  let statusCursor = 0;
-  const statusGradient = statusTotal
-    ? statusRows.map((row) => {
-        const start = (statusCursor / statusTotal) * 100;
-        statusCursor += row.value;
-        return `${row.color} ${start.toFixed(2)}% ${((statusCursor / statusTotal) * 100).toFixed(2)}%`;
-      }).join(", ")
-    : "#edf2f6 0 100%";
-  return (
-    <div className="space-y-4">
-      <T2PageHeader
-        icon={Bell}
-        title="Notificaciones internas"
-        description="Administra alertas y comunicaciones del sistema."
-      >
-        <Action href="#notification-tools" icon={Bell}>
-          Nuevo aviso
-        </Action>
-        <Action href="#notification-tools" primary icon={Workflow}>
-          Crear regla
-        </Action>
-      </T2PageHeader>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <Metric label="No leídas" value={number(unreadCount)} icon={Bell} color="blue" />
-        <Metric
-          label="Alertas críticas"
-          value={automation ? number(automation.critical) : "N/D"}
-          note={automation ? "Alertas críticas registradas" : "Automatización no disponible"}
-          icon={AlertCircle}
-          color="red"
-        />
-        <Metric
-          label="Reglas activas"
-          value={automation ? number(automation.activeRules) : "N/D"}
-          icon={Workflow}
-          color="green"
-        />
-        <Metric
-          label="Programadas"
-          value={automation ? number(automation.scheduled) : "N/D"}
-          icon={CalendarDays}
-          color="orange"
-        />
-        <Metric
-          label="Recordatorios hoy"
-          value={automation ? number(automation.remindersToday) : "N/D"}
-          icon={Clock3}
-          color="purple"
-        />
-        <Metric
-          label="Descartadas"
-          value={number(metrics?.dismissed)}
-          icon={ArrowUpRight}
-          color="blue"
-        />
-      </div>
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-        <div>{children}</div>
-        {controls ? (
-          <div id="notification-tools">
-            <Panel title="Reglas, plantillas y envíos" subtitle="Operación persistida y auditable">
-              {controls}
-            </Panel>
-          </div>
-        ) : null}
-      </div>
-      <div className="grid gap-3 xl:grid-cols-2">
-        <Panel title="Estado de notificaciones" subtitle="Distribución de la bandeja del alcance actual">
-          {statusTotal ? (
-            <div className="mt-3 grid items-center gap-4 sm:grid-cols-[150px_minmax(0,1fr)]">
-              <div className="relative mx-auto h-32 w-32 rounded-full" style={{ background: `conic-gradient(${statusGradient})` }} role="img" aria-label={`Estado de notificaciones: ${statusRows.map((row) => `${row.label} ${row.value}`).join(", ")}`}>
-                <span className="absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white text-center">
-                  <strong className="text-[16px] font-black text-[#102a43]">{statusTotal}</strong>
-                  <span className="mt-0.5 text-[9px] font-semibold text-[#748aa0]">total</span>
-                </span>
-              </div>
-              <dl className="grid gap-2">
-                {statusRows.map((row) => <div key={row.label} className="flex items-center gap-2 text-[10px]"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.color }} aria-hidden="true" /><dt className="min-w-0 flex-1 font-semibold text-[#748aa0]">{row.label}</dt><dd className="font-extrabold text-[#304b66]">{row.value}</dd></div>)}
-              </dl>
-            </div>
-          ) : <Empty title="Sin entregas registradas" description="El desglose aparecerá cuando existan notificaciones persistidas para este alcance." icon={Bell} />}
-        </Panel>
-        <Panel title="Automatización y plantillas" subtitle="Configuración persistida y auditable">
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-            <MiniValue label="Reglas activas" value={automation ? number(automation.activeRules) : "N/D"} note="Disparadores habilitados" icon={Workflow} />
-            <MiniValue label="Avisos programados" value={automation ? number(automation.scheduled) : "N/D"} note="Pendientes de ejecución" icon={CalendarDays} />
-            <MiniValue label="Recordatorios hoy" value={automation ? number(automation.remindersToday) : "N/D"} note="Agenda local" icon={Clock3} />
-            <MiniValue label="Plantillas" value={templatesCount == null ? "N/D" : number(templatesCount)} note="Versiones disponibles" icon={FileText} />
-          </dl>
-        </Panel>
-      </div>
+        );
+        return isValidElement(controls)
+          ? cloneElement(controls as ReactElement<{ belowGeneral?: ReactNode; belowBranding?: ReactNode }>, { belowGeneral: localesPanel, belowBranding: integrationsColumn })
+          : controls;
+      })()}
     </div>
   );
 }

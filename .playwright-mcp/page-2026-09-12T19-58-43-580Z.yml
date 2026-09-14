@@ -1,0 +1,258 @@
+- generic [active] [ref=f22e1]:
+  - main [ref=f22e2]:
+    - generic [ref=f22e3]:
+      - complementary [ref=f22e4]:
+        - link "Ir al inicio de ColdPower" [ref=f22e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f22e7]
+        - navigation "Navegacion administrativa" [ref=f22e8]:
+          - generic [ref=f22e9]:
+            - link "Inicio" [ref=f22e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f22e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f22e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f22e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f22e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f22e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f22e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f22e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f22e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f22e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f22e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f22e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f22e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f22e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f22e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f22e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f22e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f22e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f22e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f22e112]:
+          - group [ref=f22e113]:
+            - generic "Necesitas ayuda?" [ref=f22e114] [cursor=pointer]
+          - generic [ref=f22e123]:
+            - strong [ref=f22e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f22e125]:
+        - generic [ref=f22e126]:
+          - generic [ref=f22e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f22e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f22e129]:
+            - link "Ver notificaciones" [ref=f22e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+              - generic [ref=f22e134]: "1"
+            - button "Open user menu" [ref=f22e137] [cursor=pointer]:
+              - img "Jean's logo" [ref=f22e140]
+            - generic [ref=f22e142]:
+              - paragraph [ref=f22e143]: Superadmin
+              - paragraph [ref=f22e144]: Superadministrador
+        - main [ref=f22e147]:
+          - generic [ref=f22e148]:
+            - generic [ref=f22e154]:
+              - heading "Notificaciones internas" [level=1] [ref=f22e155]
+              - paragraph [ref=f22e156]: Centraliza las comunicaciones, alertas y recordatorios del equipo.
+            - generic [ref=f22e157]:
+              - generic [ref=f22e162]:
+                - generic [ref=f22e163]: No leídas
+                - text: "1"
+                - generic [ref=f22e164]: Sin datos del período anterior
+              - generic [ref=f22e169]:
+                - generic [ref=f22e170]: Automatizaciones activas
+                - text: "0"
+                - generic [ref=f22e171]: Sin datos del período anterior
+              - generic [ref=f22e176]:
+                - generic [ref=f22e177]: Fallidas
+                - text: "0"
+                - generic [ref=f22e178]: → 0% vs. período anterior
+              - generic [ref=f22e183]:
+                - generic [ref=f22e184]: Alertas SLA
+                - text: "0"
+                - generic [ref=f22e185]: ↘ 100% vs. período anterior
+              - generic [ref=f22e190]:
+                - generic [ref=f22e191]: Recordatorios hoy
+                - text: "0"
+                - generic [ref=f22e192]: → 0% vs. período anterior
+              - generic [ref=f22e197]:
+                - generic [ref=f22e198]: En cola
+                - text: "0"
+                - generic [ref=f22e199]: Sin datos del período anterior
+            - generic [ref=f22e200]:
+              - generic [ref=f22e202]:
+                - generic [ref=f22e204]:
+                  - heading "Bandeja de notificaciones" [level=2] [ref=f22e205]
+                  - paragraph [ref=f22e206]: 1 resultados
+                - generic [ref=f22e207]:
+                  - textbox "Buscar en notificaciones..." [ref=f22e209]
+                  - generic [ref=f22e210]:
+                    - combobox [ref=f22e211] [cursor=pointer]:
+                      - option "Todos los tipos" [selected]
+                      - option "MANUAL"
+                    - combobox [ref=f22e212] [cursor=pointer]:
+                      - option "Todos los estados" [selected]
+                      - option "No leídas"
+                      - option "Leídas"
+                      - option "Descartadas"
+                    - button "Filtrar" [ref=f22e213]
+                  - generic [ref=f22e214]:
+                    - generic [ref=f22e215]:
+                      - text: Desde
+                      - textbox "Desde" [ref=f22e216]
+                    - generic [ref=f22e217]:
+                      - text: Hasta
+                      - textbox "Hasta" [ref=f22e218]
+                    - link "Limpiar" [ref=f22e219] [cursor=pointer]:
+                      - /url: /admin/notificaciones
+                - generic [ref=f22e220]:
+                  - generic [ref=f22e221]:
+                    - checkbox "Seleccionar Prueba de aviso real" [ref=f22e222]
+                    - link "Prueba de aviso real Hace 3 min Verificando el flujo real end to end. No leída Baja" [ref=f22e227] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=notification-dd6c73ce-8d5f-4adc-be53-4d2973542de4
+                      - generic [ref=f22e228]:
+                        - heading "Prueba de aviso real" [level=3] [ref=f22e229]
+                        - generic [ref=f22e230]: Hace 3 min
+                      - paragraph [ref=f22e231]: Verificando el flujo real end to end.
+                      - generic [ref=f22e232]:
+                        - generic [ref=f22e233]: No leída
+                        - generic [ref=f22e234]: Baja
+                    - generic [ref=f22e235]:
+                      - button "Marcar leída" [ref=f22e236]
+                      - button "Descartar" [ref=f22e237]
+                  - generic [ref=f22e238]:
+                    - checkbox "Seleccionar todas las notificaciones de esta página" [ref=f22e239]
+                    - text: Seleccionar todas las de esta página
+                - generic [ref=f22e240]: Mostrando 1 de 1
+              - complementary [ref=f22e243]:
+                - paragraph [ref=f22e246]: Selecciona una notificación
+                - paragraph [ref=f22e247]: Elige un elemento de la bandeja para ver su detalle completo.
+              - generic [ref=f22e248]:
+                - generic [ref=f22e249]:
+                  - generic [ref=f22e250]:
+                    - heading "Reglas de automatización" [level=3] [ref=f22e253]
+                    - generic [ref=f22e254]: "0"
+                  - paragraph [ref=f22e255]: Sin reglas configuradas.
+                - generic [ref=f22e256]:
+                  - generic [ref=f22e258]:
+                    - heading "Estado de entrega" [level=3] [ref=f22e259]
+                    - paragraph [ref=f22e260]: "Entregadas/fallidas: últimos 30 días · resto: ahora"
+                  - generic [ref=f22e261]:
+                    - generic [ref=f22e270]:
+                      - generic [ref=f22e271]: "2"
+                      - generic [ref=f22e272]: Total
+                    - generic [ref=f22e273]:
+                      - generic [ref=f22e274]:
+                        - generic [ref=f22e275]: Entregadas (30d)
+                        - generic [ref=f22e278]: "1"
+                      - generic [ref=f22e279]:
+                        - generic [ref=f22e280]: En cola
+                        - generic [ref=f22e283]: "0"
+                      - generic [ref=f22e284]:
+                        - generic [ref=f22e285]: Fallidas (30d)
+                        - generic [ref=f22e288]: "0"
+                      - generic [ref=f22e289]:
+                        - generic [ref=f22e290]: Pendientes
+                        - generic [ref=f22e293]: "0"
+                      - generic [ref=f22e294]:
+                        - generic [ref=f22e295]: No leídas
+                        - generic [ref=f22e298]: "1"
+                - generic [ref=f22e299]:
+                  - generic [ref=f22e300]:
+                    - heading "Plantillas de mensajes" [level=3] [ref=f22e303]
+                    - generic [ref=f22e304]: "0"
+                  - paragraph [ref=f22e305]: Sin plantillas creadas.
+            - generic [ref=f22e306]:
+              - 'heading "Gestión: avisos, plantillas, reglas y programaciones" [level=3] [ref=f22e307]'
+              - generic [ref=f22e308]:
+                - group [ref=f22e309]:
+                  - generic "Nuevo aviso interno" [ref=f22e310] [cursor=pointer]
+                  - generic [ref=f22e311]:
+                    - textbox "Título del aviso" [ref=f22e312]
+                    - textbox "Mensaje interno" [ref=f22e313]
+                    - textbox "Enlace interno opcional" [ref=f22e314]:
+                      - /placeholder: Enlace interno (opcional)
+                    - group "Destinatarios por rol" [ref=f22e315]:
+                      - generic [ref=f22e317]:
+                        - generic [ref=f22e318]:
+                          - checkbox "Superadmin" [ref=f22e319]
+                          - text: Superadmin
+                        - generic [ref=f22e320]:
+                          - checkbox "Gerencia" [ref=f22e321]
+                          - text: Gerencia
+                        - generic [ref=f22e322]:
+                          - checkbox "Operaciones y ventas" [ref=f22e323]
+                          - text: Operaciones y ventas
+                        - generic [ref=f22e324]:
+                          - checkbox "Jefatura" [ref=f22e325]
+                          - text: Jefatura
+                        - generic [ref=f22e326]:
+                          - checkbox "Ventas" [ref=f22e327]
+                          - text: Ventas
+                        - generic [ref=f22e328]:
+                          - checkbox "Almacén" [ref=f22e329]
+                          - text: Almacén
+                        - generic [ref=f22e330]:
+                          - checkbox "Compras" [ref=f22e331]
+                          - text: Compras
+                        - generic [ref=f22e332]:
+                          - checkbox "Reportes" [ref=f22e333]
+                          - text: Reportes
+                    - paragraph [ref=f22e334]: "Destinatarios activos: 0"
+                    - button "Enviar aviso" [disabled] [ref=f22e335]
+                - group [ref=f22e336]:
+                  - generic "Plantilla de notificación" [ref=f22e337] [cursor=pointer]
+                  - generic [ref=f22e338]:
+                    - textbox "Nombre de plantilla" [ref=f22e339]
+                    - textbox "Título de la plantilla" [ref=f22e340]:
+                      - /placeholder: "Título · ejemplo: Pago {{entity.code}}"
+                    - textbox "Cuerpo de la plantilla" [ref=f22e341]:
+                      - /placeholder: "Cuerpo · variables permitidas {{entity.status}}"
+                    - textbox "Ruta interna de la plantilla" [ref=f22e342]:
+                      - /placeholder: Ruta interna, por ejemplo /admin/pedidos
+                    - button "Guardar plantilla" [ref=f22e343]
+                - group [ref=f22e344]:
+                  - generic "Crear regla declarativa" [ref=f22e345] [cursor=pointer]
+                  - option "QUOTE_CREATED" [selected]
+                  - option "LEAD_CREATED"
+                  - option "FOLLOW_UP_OVERDUE"
+                  - option "ORDER_CREATED"
+                  - option "ORDER_READY"
+                  - option "PAYMENT_APPROVED"
+                  - option "TRANSFER_APPROVAL_PENDING"
+                  - option "INFO" [selected]
+                  - option "WARNING"
+                  - option "CRITICAL"
+                  - option "Sin plantilla" [selected]
+                  - option "Estado de entidad" [selected]
+                  - option "Importe"
+                  - option "Antigüedad"
+                  - option "Stock disponible"
+                  - option "Diferencia de pago"
+                  - option "es igual a" [selected]
+                  - option "es distinto de"
+                  - option "mayor que"
+                  - option "menor que"
+                - group [ref=f22e346]:
+                  - generic "Programar aviso" [ref=f22e347] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f22e353] [cursor=pointer]
+  - alert [ref=f22e357]

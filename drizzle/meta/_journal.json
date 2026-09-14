@@ -330,6 +330,13 @@
       "when": 1789200000000,
       "tag": "0046_catalog_metric_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1789223912667,
+      "tag": "0047_cp_audit_saved_filters",
+      "breakpoints": true
     }
   ]
 }

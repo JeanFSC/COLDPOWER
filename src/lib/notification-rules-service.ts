@@ -1,6 +1,7 @@
-import { and, count, desc, eq, gte, inArray, lt, lte, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, gte, inArray, lt, lte, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
+import { crmTasks } from "@/db/crm-schema";
 import {
   notificationRules,
   notificationSchedules,
@@ -8,6 +9,7 @@ import {
   notifications,
 } from "@/db/operations-schema";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
+import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 
 export const notificationSeverities = ["INFO", "WARNING", "CRITICAL"] as const;
 export type NotificationSeverity = (typeof notificationSeverities)[number];
@@ -664,108 +666,212 @@ export async function processDueNotificationSchedules(now = new Date()) {
     .orderBy(notificationSchedules.scheduledAt)
     .limit(100);
   let delivered = 0;
+  let failed = 0;
   for (const candidate of due) {
-    await db.transaction(async (tx) => {
-      const [schedule] = await tx
-        .select()
-        .from(notificationSchedules)
-        .where(
-          and(
-            eq(notificationSchedules.id, candidate.id),
-            eq(notificationSchedules.status, "SCHEDULED"),
-          ),
-        )
-        .for("update")
-        .limit(1);
-      if (!schedule) return 0;
-      const activeRows = schedule.recipientUserIds?.length
-        ? await tx
-            .select({ id: users.id })
-            .from(users)
-            .where(and(eq(users.status, "ACTIVE"), inArray(users.id, schedule.recipientUserIds)))
-        : [];
-      const ids = activeRows.map((row) => row.id);
-      if (ids.length) {
-        const rows = await tx
-          .insert(notifications)
-          .values(
-            ids.map((recipientId) => ({
-              id: id("notification"),
-              recipientId,
-              type: "SCHEDULED",
-              title: schedule.title,
-              body: schedule.body,
-              link: safeLink(schedule.link),
-              metadata: { scheduleId: schedule.id },
-              dedupeKey: `schedule:${schedule.id}`,
-            })),
+    try {
+      delivered += await db.transaction(async (tx) => {
+        const [schedule] = await tx
+          .select()
+          .from(notificationSchedules)
+          .where(
+            and(
+              eq(notificationSchedules.id, candidate.id),
+              eq(notificationSchedules.status, "SCHEDULED"),
+            ),
           )
-          .onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] })
-          .returning({ id: notifications.id });
-        delivered += rows.length;
-      }
-      await tx
+          .for("update")
+          .limit(1);
+        if (!schedule) return 0;
+        const activeRows = schedule.recipientUserIds?.length
+          ? await tx
+              .select({ id: users.id })
+              .from(users)
+              .where(and(eq(users.status, "ACTIVE"), inArray(users.id, schedule.recipientUserIds)))
+          : [];
+        const ids = activeRows.map((row) => row.id);
+        let deliveredCount = 0;
+        if (ids.length) {
+          const rows = await tx
+            .insert(notifications)
+            .values(
+              ids.map((recipientId) => ({
+                id: id("notification"),
+                recipientId,
+                type: "SCHEDULED",
+                title: schedule.title,
+                body: schedule.body,
+                link: safeLink(schedule.link),
+                metadata: { scheduleId: schedule.id },
+                dedupeKey: `schedule:${schedule.id}`,
+              })),
+            )
+            .onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] })
+            .returning({ id: notifications.id });
+          deliveredCount = rows.length;
+        }
+        await tx
+          .update(notificationSchedules)
+          .set({ status: "SENT", sentAt: now, updatedAt: now })
+          .where(eq(notificationSchedules.id, schedule.id));
+        await tx
+          .insert(auditLogs)
+          .values(
+            audit(
+              { userId: schedule.createdBy, role: "SYSTEM" },
+              "notifications.schedule_sent",
+              "notification_schedule",
+              schedule.id,
+              { status: schedule.status },
+              { status: "SENT", delivered: ids.length },
+            ),
+          );
+        return deliveredCount;
+      });
+    } catch (error) {
+      // A schedule that errors mid-processing (bad recipient data, DB hiccup) must not
+      // stay silently stuck in SCHEDULED forever — record the real failure using the
+      // FAILED status + error column that already existed in the schema but nothing
+      // ever set, so the "Fallidas" KPI reflects something that actually happened.
+      failed += 1;
+      const message = error instanceof Error ? error.message.slice(0, 500) : "Error desconocido al procesar la programación.";
+      await db
         .update(notificationSchedules)
-        .set({ status: "SENT", sentAt: now, updatedAt: now })
-        .where(eq(notificationSchedules.id, schedule.id));
-      await tx
+        .set({ status: "FAILED", error: message, updatedAt: now })
+        .where(and(eq(notificationSchedules.id, candidate.id), eq(notificationSchedules.status, "SCHEDULED")));
+      await db
         .insert(auditLogs)
         .values(
           audit(
-            { userId: schedule.createdBy, role: "SYSTEM" },
-            "notifications.schedule_sent",
+            { userId: candidate.createdBy, role: "SYSTEM" },
+            "notifications.schedule_failed",
             "notification_schedule",
-            schedule.id,
-            { status: schedule.status },
-            { status: "SENT", delivered: ids.length },
+            candidate.id,
+            { status: candidate.status },
+            { status: "FAILED", error: message },
           ),
         );
-      return 1;
-    });
+    }
   }
-  return { processed: due.length, delivered };
+  return { processed: due.length, delivered, failed };
 }
 
-export async function getNotificationAutomationMetrics() {
+function toKpi(current: number, previous: number): PeriodKpi {
+  return { current, previous, deltaPct: deltaPct(current, previous) };
+}
+
+export type NotificationAutomationMetrics = {
+  critical: number;
+  activeRules: PeriodKpi;
+  scheduled: PeriodKpi;
+  remindersToday: PeriodKpi;
+  failed: PeriodKpi;
+  slaAlerts: PeriodKpi;
+  delivery: { entregadas: number; enCola: number; fallidas: number; pendientes: number; noLeidas: number };
+};
+
+// KPI deltas follow the same convention established for auditoría: current vs. the
+// equal-length window immediately before it. Two of these (activeRules, scheduled)
+// are point-in-time gauges with no historical snapshot to diff against, so their
+// `previous`/`deltaPct` stay null ("sin datos del período anterior") rather than being
+// paired with an unrelated flow number that would misrepresent what changed.
+export async function getNotificationAutomationMetrics(): Promise<NotificationAutomationMetrics> {
   const db = getDb();
-  const today = new Date();
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today.getTime() + 86_400_000);
-  const [critical, activeRules, scheduled, todaySchedules] = await Promise.all([
-    db
-      .select({ value: count() })
-      .from(notifications)
-      .where(
-        or(
-          eq(notifications.type, "INVENTORY_CRITICAL"),
-          sql`${notifications.metadata} ->> 'severity' = 'CRITICAL'`,
-        ),
-      ),
-    db
-      .select({ value: count() })
-      .from(notificationRules)
-      .where(eq(notificationRules.status, "ACTIVE")),
-    db
-      .select({ value: count() })
-      .from(notificationSchedules)
-      .where(eq(notificationSchedules.status, "SCHEDULED")),
-    db
-      .select({ value: count() })
-      .from(notificationSchedules)
-      .where(
-        and(
-          gte(notificationSchedules.scheduledAt, today),
-          lt(notificationSchedules.scheduledAt, tomorrow),
-          eq(notificationSchedules.status, "SCHEDULED"),
-        ),
-      ),
+  const yesterday = new Date(today.getTime() - 86_400_000);
+  const windowStart = new Date(now.getTime() - 86_400_000);
+  const windowPrevStart = new Date(windowStart.getTime() - 86_400_000);
+
+  const [
+    critical, activeRules, scheduled,
+    todayReminders, yesterdayReminders,
+    failedCurrent, failedPrevious,
+    slaCurrent, slaPrevious,
+    entregadas, enCola, pendientes, fallidasTotal, noLeidas,
+  ] = await Promise.all([
+    db.select({ value: count() }).from(notifications).where(or(eq(notifications.type, "INVENTORY_CRITICAL"), sql`${notifications.metadata} ->> 'severity' = 'CRITICAL'`)),
+    db.select({ value: count() }).from(notificationRules).where(eq(notificationRules.status, "ACTIVE")),
+    db.select({ value: count() }).from(notificationSchedules).where(eq(notificationSchedules.status, "SCHEDULED")),
+    db.select({ value: count() }).from(notificationSchedules).where(and(gte(notificationSchedules.scheduledAt, today), lt(notificationSchedules.scheduledAt, tomorrow))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(gte(notificationSchedules.scheduledAt, yesterday), lt(notificationSchedules.scheduledAt, today))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(eq(notificationSchedules.status, "FAILED"), gte(notificationSchedules.updatedAt, windowStart))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(eq(notificationSchedules.status, "FAILED"), gte(notificationSchedules.updatedAt, windowPrevStart), lt(notificationSchedules.updatedAt, windowStart))),
+    // "Alertas SLA" reuses the same overdue-CRM-task definition already established in
+    // operations-dashboard.ts ("Seguimientos vencidos": crmTasks PENDING past dueAt) —
+    // not a new invented concept, and framed as a flow (became overdue in this window)
+    // so it pairs sensibly with a delta.
+    db.select({ value: count() }).from(crmTasks).where(and(eq(crmTasks.status, "PENDING"), gte(crmTasks.dueAt, windowStart), lt(crmTasks.dueAt, now))),
+    db.select({ value: count() }).from(crmTasks).where(and(eq(crmTasks.status, "PENDING"), gte(crmTasks.dueAt, windowPrevStart), lt(crmTasks.dueAt, windowStart))),
+    db.select({ value: count() }).from(notifications).where(gte(notifications.createdAt, new Date(now.getTime() - 30 * 86_400_000))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(eq(notificationSchedules.status, "SCHEDULED"), gt(notificationSchedules.scheduledAt, now))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(eq(notificationSchedules.status, "SCHEDULED"), lte(notificationSchedules.scheduledAt, now))),
+    db.select({ value: count() }).from(notificationSchedules).where(and(eq(notificationSchedules.status, "FAILED"), gte(notificationSchedules.updatedAt, new Date(now.getTime() - 30 * 86_400_000)))),
+    db.select({ value: count() }).from(notifications).where(eq(notifications.state, "UNREAD")),
   ]);
+
+  const activeRulesCount = Number(activeRules[0]?.value ?? 0);
+  const scheduledCount = Number(scheduled[0]?.value ?? 0);
   return {
     critical: Number(critical[0]?.value ?? 0),
-    activeRules: Number(activeRules[0]?.value ?? 0),
-    scheduled: Number(scheduled[0]?.value ?? 0),
-    remindersToday: Number(todaySchedules[0]?.value ?? 0),
+    activeRules: { current: activeRulesCount, previous: 0, deltaPct: null },
+    scheduled: { current: scheduledCount, previous: 0, deltaPct: null },
+    remindersToday: toKpi(Number(todayReminders[0]?.value ?? 0), Number(yesterdayReminders[0]?.value ?? 0)),
+    failed: toKpi(Number(failedCurrent[0]?.value ?? 0), Number(failedPrevious[0]?.value ?? 0)),
+    slaAlerts: toKpi(Number(slaCurrent[0]?.value ?? 0), Number(slaPrevious[0]?.value ?? 0)),
+    delivery: {
+      entregadas: Number(entregadas[0]?.value ?? 0),
+      enCola: Number(enCola[0]?.value ?? 0),
+      pendientes: Number(pendientes[0]?.value ?? 0),
+      fallidas: Number(fallidasTotal[0]?.value ?? 0),
+      noLeidas: Number(noLeidas[0]?.value ?? 0),
+    },
   };
+}
+
+// Reconstructs a single broadcast's full picture from data that already exists: sibling
+// rows sharing the same dedupeKey (the fan-out this system already does at creation time)
+// for "who got this and did they read it", plus the audit-log entry the originating rule/
+// schedule/manual-send already writes, for "how was this generated". No new tables.
+// `restrictToRecipientId`, when set, limits the lookup to that recipient's own copy — used
+// for actors without notifications.manage so they can't inspect other people's notifications.
+export async function getNotificationDetail(notificationId: string, restrictToRecipientId?: string) {
+  const db = getDb();
+  const where = restrictToRecipientId
+    ? and(eq(notifications.id, notificationId), eq(notifications.recipientId, restrictToRecipientId))
+    : eq(notifications.id, notificationId);
+  const [row] = await db.select().from(notifications).where(where).limit(1);
+  if (!row) return null;
+
+  const siblings = row.dedupeKey
+    ? await db.select().from(notifications).where(eq(notifications.dedupeKey, row.dedupeKey)).orderBy(notifications.createdAt)
+    : [row];
+  const recipientIdList = [...new Set(siblings.map((sibling) => sibling.recipientId))];
+  const recipientUsers = recipientIdList.length
+    ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, recipientIdList))
+    : [];
+  const usersById = new Map(recipientUsers.map((user) => [user.id, user]));
+  const recipients = siblings.map((sibling) => ({
+    id: sibling.id,
+    recipientId: sibling.recipientId,
+    name: usersById.get(sibling.recipientId)?.name ?? null,
+    email: usersById.get(sibling.recipientId)?.email ?? null,
+    state: sibling.state,
+    readAt: sibling.readAt,
+    dismissedAt: sibling.dismissedAt,
+  }));
+
+  const metadata = row.metadata as Record<string, unknown> | null;
+  const ruleId = typeof metadata?.ruleId === "string" ? metadata.ruleId : null;
+  const scheduleId = typeof metadata?.scheduleId === "string" ? metadata.scheduleId : null;
+  const originEntityId = ruleId ?? scheduleId ?? (row.type === "MANUAL" ? row.id : null);
+  const originAction = ruleId ? "notifications.rule_triggered" : scheduleId ? "notifications.schedule_sent" : row.type === "MANUAL" ? "notifications.manual_sent" : null;
+  const origin = originEntityId && originAction
+    ? (await db.select({ action: auditLogs.action, createdAt: auditLogs.createdAt }).from(auditLogs).where(and(eq(auditLogs.entityId, originEntityId), eq(auditLogs.action, originAction))).orderBy(desc(auditLogs.createdAt)).limit(1))[0] ?? null
+    : null;
+
+  return { notification: row, recipients, origin, originKind: ruleId ? ("rule" as const) : scheduleId ? ("schedule" as const) : row.type === "MANUAL" ? ("manual" as const) : ("event" as const) };
 }
 
 export async function cancelNotificationSchedule(scheduleId: string, actor: Actor) {

@@ -17,7 +17,7 @@ import {
   type SQL,
 } from "drizzle-orm";
 import { getDb } from "@/db";
-import { locations } from "@/db/schema";
+import { categories, inventoryBalances, locations, products } from "@/db/schema";
 import {
   purchaseItems,
   purchaseReceiptItems,
@@ -431,5 +431,151 @@ export async function getSupplierDetail(supplierId: string) {
           ["DRAFT", "PENDING", "PARTIAL_RECEIVED"].includes(purchase.status),
       ).length,
     },
+  };
+}
+
+const openPurchaseStatuses = ["DRAFT", "PENDING", "PARTIAL_RECEIVED"] as const;
+
+// Real spend by product category (unit cost x quantity ordered), used by the "Gasto por
+// categoría" donut instead of a fabricated breakdown.
+export async function getCategorySpend(filters: PurchasesFilters = {}) {
+  const where = wherePurchases(filters);
+  const db = getDb();
+  const rows = await db
+    .select({
+      categoryId: categories.id,
+      categoryName: categories.name,
+      amount: sql<string>`coalesce(sum(${purchaseItems.unitCost} * ${purchaseItems.quantityOrdered}), 0)`,
+    })
+    .from(purchaseItems)
+    .innerJoin(purchases, eq(purchaseItems.purchaseId, purchases.id))
+    .innerJoin(suppliers, eq(purchases.supplierId, suppliers.id))
+    .innerJoin(products, eq(purchaseItems.productId, products.id))
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(where)
+    .groupBy(categories.id, categories.name)
+    .orderBy(desc(sql`sum(${purchaseItems.unitCost} * ${purchaseItems.quantityOrdered})`));
+  return rows.map((row) => ({ categoryId: row.categoryId, categoryName: row.categoryName, amount: num(row.amount) }));
+}
+
+// Real spend by supplier, used by the "Rendimiento por proveedor" ranking.
+export async function getSupplierSpendRanking(filters: PurchasesFilters = {}) {
+  const where = wherePurchases(filters);
+  const db = getDb();
+  const rows = await db
+    .select({ supplierId: suppliers.id, supplierName: suppliers.name, amount: sum(purchases.subtotal) })
+    .from(purchases)
+    .innerJoin(suppliers, eq(purchases.supplierId, suppliers.id))
+    .where(where)
+    .groupBy(suppliers.id, suppliers.name)
+    .orderBy(desc(sum(purchases.subtotal)));
+  return rows.map((row) => ({ supplierId: row.supplierId, supplierName: row.supplierName, amount: num(row.amount) }));
+}
+
+// System-wide supplier scorecard: same on-time/fill-rate/incidents definitions as
+// getSupplierDetail's per-supplier performance block, aggregated across every supplier.
+// "Calificación promedio" from the design reference has no backing column anywhere in the
+// schema, so it is replaced with a real "proveedores activos" count instead of a fabricated
+// star rating.
+export async function getSupplierScorecard() {
+  const db = getDb();
+  const [supplierStatusRows, purchaseRows, receiptDates, itemTotals] = await Promise.all([
+    db.select({ status: suppliers.status, total: count(suppliers.id) }).from(suppliers).groupBy(suppliers.status),
+    db
+      .select({ id: purchases.id, status: purchases.status, expectedDeliveryAt: purchases.expectedDeliveryAt, supplierStatus: suppliers.status })
+      .from(purchases)
+      .innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)),
+    db.select({ purchaseId: purchaseReceipts.purchaseId, receivedAt: max(purchaseReceipts.receivedAt) }).from(purchaseReceipts).groupBy(purchaseReceipts.purchaseId),
+    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems),
+  ]);
+  const receivedAtByPurchase = new Map(receiptDates.map((row) => [row.purchaseId, row.receivedAt]));
+  const completed = purchaseRows.filter((row) => row.status === "RECEIVED");
+  const onTime = completed.filter((row) => {
+    const receivedAt = receivedAtByPurchase.get(row.id);
+    return Boolean(row.expectedDeliveryAt && receivedAt && receivedAt <= row.expectedDeliveryAt);
+  });
+  const ordered = num(itemTotals[0]?.ordered);
+  const received = num(itemTotals[0]?.received);
+  const incidents = purchaseRows.filter(
+    (row) => row.supplierStatus === "INACTIVE" && (openPurchaseStatuses as readonly string[]).includes(row.status),
+  ).length;
+  const statusMap = new Map(supplierStatusRows.map((row) => [row.status, num(row.total)]));
+  const totalSuppliers = supplierStatusRows.reduce((sum, row) => sum + num(row.total), 0);
+  return {
+    onTimeRate: completed.length ? Number(((onTime.length / completed.length) * 100).toFixed(1)) : null,
+    fillRate: ordered ? Number(((received / ordered) * 100).toFixed(1)) : null,
+    incidents,
+    activeSuppliers: statusMap.get("ACTIVE") ?? 0,
+    totalSuppliers,
+  };
+}
+
+// Real, non-fabricated alert counters: delayed open orders, suppliers flagged inactive with
+// open orders, products already below their configured minimum stock while still in transit
+// on an open purchase, and purchase requests awaiting approval.
+export async function getPurchaseAlerts() {
+  const db = getDb();
+  const now = new Date();
+  const [delayedRows, criticalRows, pendingRequestRows, scorecard] = await Promise.all([
+    db.select({ total: count(purchases.id) }).from(purchases).where(and(lt(purchases.expectedDeliveryAt, now), inArray(purchases.status, [...openPurchaseStatuses]))),
+    db
+      .selectDistinct({ productId: purchaseItems.productId })
+      .from(purchaseItems)
+      .innerJoin(purchases, eq(purchaseItems.purchaseId, purchases.id))
+      .innerJoin(inventoryBalances, and(eq(inventoryBalances.productId, purchaseItems.productId), eq(inventoryBalances.locationId, purchases.locationId))!)
+      .where(
+        and(
+          inArray(purchases.status, [...openPurchaseStatuses]),
+          sql`${inventoryBalances.minimumStock} is not null and (${inventoryBalances.onHand} - ${inventoryBalances.reserved}) <= ${inventoryBalances.minimumStock}`,
+        ),
+      ),
+    db.select({ total: count(purchaseRequests.id) }).from(purchaseRequests).where(inArray(purchaseRequests.status, ["SUBMITTED", "APPROVED"])),
+    getSupplierScorecard(),
+  ]);
+  return {
+    delayed: num(delayedRows[0]?.total),
+    supplierIncidents: scorecard.incidents,
+    criticalInTransit: criticalRows.length,
+    pendingRequests: num(pendingRequestRows[0]?.total),
+  };
+}
+
+const trendDays = 14;
+function limaDayKey(date: Date) {
+  return new Date(date.getTime() - 5 * 3_600_000).toISOString().slice(0, 10);
+}
+function fillTrend(rows: Array<{ date: string; total: string | number | null }>, keys: string[]) {
+  const map = new Map(rows.map((row) => [row.date, num(row.total)]));
+  return keys.map((key) => map.get(key) ?? 0);
+}
+
+// Day-bucketed real series (Lima calendar days) for the purchases KPI sparklines — same
+// pattern as payments-repository.ts's getPaymentsKpiSeries, so these cards show a real
+// trend instead of a fabricated one.
+export async function getPurchasesKpiSeries(filters: PurchasesFilters = {}) {
+  const db = getDb();
+  const to = new Date();
+  // +1 day of headroom on the SQL lower bound so "today" (partial day at query time) is never
+  // excluded; the display keys below independently cover the last `trendDays` calendar days
+  // ending today, so any row older than that simply won't match a key and is dropped as before.
+  const from = new Date(to.getTime() - (trendDays + 1) * 86_400_000);
+  const keys = Array.from({ length: trendDays }, (_, index) => limaDayKey(new Date(to.getTime() - (trendDays - 1 - index) * 86_400_000)));
+  const where = wherePurchases({ ...filters, createdFrom: undefined, createdTo: undefined });
+  const bucketCreated = sql<string>`to_char((${purchases.createdAt} - interval '5 hours'), 'YYYY-MM-DD')`;
+  const bucketReceived = sql<string>`to_char((${purchaseReceipts.receivedAt} - interval '5 hours'), 'YYYY-MM-DD')`;
+  const bucketRequested = sql<string>`to_char((${purchaseRequests.createdAt} - interval '5 hours'), 'YYYY-MM-DD')`;
+  const [openRows, spendRows, incidentRows, receptionRows, requestRows] = await Promise.all([
+    db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketCreated, total: sum(purchases.subtotal) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to), eq(suppliers.status, "INACTIVE"))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketReceived, total: count(purchaseReceipts.id) }).from(purchaseReceipts).where(and(gte(purchaseReceipts.receivedAt, from), lt(purchaseReceipts.receivedAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketRequested, total: count(purchaseRequests.id) }).from(purchaseRequests).where(and(gte(purchaseRequests.createdAt, from), lt(purchaseRequests.createdAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+  ]);
+  return {
+    openPurchases: fillTrend(openRows, keys),
+    spend: fillTrend(spendRows, keys),
+    incidentPurchases: fillTrend(incidentRows, keys),
+    receptions: fillTrend(receptionRows, keys),
+    requests: fillTrend(requestRows, keys),
   };
 }

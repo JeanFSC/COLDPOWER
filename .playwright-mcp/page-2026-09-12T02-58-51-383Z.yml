@@ -1,0 +1,121 @@
+- generic [active] [ref=f19e1]:
+  - main [ref=f19e2]:
+    - generic [ref=f19e3]:
+      - complementary [ref=f19e4]:
+        - link "Ir al inicio de ColdPower" [ref=f19e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f19e7]
+        - navigation "Navegacion administrativa" [ref=f19e8]:
+          - generic [ref=f19e9]:
+            - link "Inicio" [ref=f19e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f19e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f19e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f19e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f19e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f19e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f19e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f19e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f19e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f19e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f19e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f19e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f19e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f19e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f19e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f19e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f19e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f19e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f19e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f19e112]:
+          - group [ref=f19e113]:
+            - generic "Necesitas ayuda?" [ref=f19e114] [cursor=pointer]
+          - generic [ref=f19e123]:
+            - strong [ref=f19e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f19e125]:
+        - generic [ref=f19e126]:
+          - generic [ref=f19e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f19e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f19e129]:
+            - link "Ver notificaciones" [ref=f19e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - generic [ref=f19e135]:
+              - paragraph [ref=f19e136]: Superadmin
+              - paragraph [ref=f19e137]: Superadministrador
+        - main [ref=f19e140]:
+          - generic [ref=f19e141]:
+            - generic [ref=f19e142]:
+              - generic [ref=f19e148]:
+                - heading "Configuración empresarial" [level=1] [ref=f19e149]
+                - paragraph [ref=f19e150]: Gestiona la información de tu empresa, locales, documentos, integraciones y preferencias del sistema.
+              - generic [ref=f19e151]:
+                - button "Descartar" [ref=f19e152]
+                - button "Guardar cambios" [ref=f19e156]
+                - button "Probar integración" [ref=f19e162]
+            - generic [ref=f19e166]:
+              - article [ref=f19e167]:
+                - generic [ref=f19e173]:
+                  - paragraph [ref=f19e174]: Locales
+                  - paragraph [ref=f19e175]: "6"
+                  - generic [ref=f19e176]: 0.0% vs. período anterior
+              - article [ref=f19e181]:
+                - generic [ref=f19e187]:
+                  - paragraph [ref=f19e188]: Listas de precio
+                  - paragraph [ref=f19e189]: "2"
+                  - generic [ref=f19e190]: Sin base comparable
+              - article [ref=f19e193]:
+                - generic [ref=f19e199]:
+                  - paragraph [ref=f19e200]: Series activas
+                  - paragraph [ref=f19e201]: "0"
+                  - generic [ref=f19e202]: Aún no configuradas
+              - article [ref=f19e204]:
+                - generic [ref=f19e211]:
+                  - paragraph [ref=f19e212]: Integraciones
+                  - paragraph [ref=f19e213]: 0/5
+                  - generic [ref=f19e214]: Conectadas / configuradas
+                - generic "Tendencia de Integraciones" [ref=f19e215]
+              - article [ref=f19e216]:
+                - generic [ref=f19e221]:
+                  - paragraph [ref=f19e222]: Métodos de contacto
+                  - paragraph [ref=f19e223]: "0"
+                  - generic [ref=f19e224]: Teléfono, WhatsApp y correos
+                - generic "Tendencia de Métodos de contacto" [ref=f19e225]
+            - navigation "Secciones de configuración" [ref=f19e226]:
+              - link "Empresa" [ref=f19e227] [cursor=pointer]:
+                - /url: "#company-general"
+              - link "Locales" [ref=f19e228] [cursor=pointer]:
+                - /url: "#company-addresses"
+              - link "Series y documentos" [ref=f19e229] [cursor=pointer]:
+                - /url: "#company-operation"
+              - link "Precios" [ref=f19e230] [cursor=pointer]:
+                - /url: /admin/precios
+              - link "Integraciones" [ref=f19e231] [cursor=pointer]:
+                - /url: "#company-integrations"
+              - link "Branding" [ref=f19e232] [cursor=pointer]:
+                - /url: "#company-branding"
+            - paragraph [ref=f19e233]: Cargando configuración empresarial…
+  - button "Open Next.js Dev Tools" [ref=f19e239] [cursor=pointer]
+  - alert [ref=f19e243]

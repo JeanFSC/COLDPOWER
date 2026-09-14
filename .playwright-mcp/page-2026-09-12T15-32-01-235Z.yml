@@ -1,0 +1,775 @@
+- generic [active] [ref=f12e1]:
+  - main [ref=f12e2]:
+    - generic [ref=f12e3]:
+      - complementary [ref=f12e4]:
+        - link "Ir al inicio de ColdPower" [ref=f12e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f12e7]
+        - navigation "Navegacion administrativa" [ref=f12e8]:
+          - generic [ref=f12e9]:
+            - link "Inicio" [ref=f12e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f12e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f12e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f12e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f12e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f12e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f12e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f12e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f12e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f12e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f12e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f12e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f12e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f12e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f12e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f12e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f12e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f12e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f12e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f12e112]:
+          - group [ref=f12e113]:
+            - generic "Necesitas ayuda?" [ref=f12e114] [cursor=pointer]
+          - generic [ref=f12e123]:
+            - strong [ref=f12e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f12e125]:
+        - generic [ref=f12e126]:
+          - generic [ref=f12e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f12e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f12e129]:
+            - link "Ver notificaciones" [ref=f12e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - button "Open user menu" [ref=f12e978] [cursor=pointer]:
+              - img "Jean's logo" [ref=f12e981]
+            - generic [ref=f12e135]:
+              - paragraph [ref=f12e136]: Superadmin
+              - paragraph [ref=f12e137]: Superadministrador
+        - main [ref=f12e140]:
+          - generic [ref=f12e141]:
+            - generic [ref=f12e142]:
+              - generic [ref=f12e143]:
+                - generic [ref=f12e148]:
+                  - heading "Auditoría" [level=1] [ref=f12e149]
+                  - paragraph [ref=f12e150]: Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.
+                - generic [ref=f12e151]:
+                  - link "Exportar logs" [ref=f12e152] [cursor=pointer]:
+                    - /url: /api/admin/auditoria/export?module=customers
+                  - button "Guardar filtro" [ref=f12e156]
+              - generic [ref=f12e160]:
+                - generic [ref=f12e161]:
+                  - generic [ref=f12e162]: Eventos 24h
+                  - generic [ref=f12e167]: "0"
+                  - generic [ref=f12e168]: → 0% vs. período anterior
+                  - img "Tendencia de eventos 24h" [ref=f12e983]
+                - generic [ref=f12e170]:
+                  - generic [ref=f12e171]: Eventos críticos
+                  - generic [ref=f12e176]: "0"
+                  - generic [ref=f12e177]: → 0% vs. período anterior
+                  - img "Tendencia de eventos críticos" [ref=f12e178]
+                - generic [ref=f12e179]:
+                  - generic [ref=f12e180]: Cambios sensibles
+                  - generic [ref=f12e185]: "0"
+                  - generic [ref=f12e186]: → 0% vs. período anterior
+                  - img "Tendencia de cambios sensibles" [ref=f12e187]
+                - generic [ref=f12e188]:
+                  - generic [ref=f12e189]: Inicios de sesión
+                  - generic [ref=f12e194]: "0"
+                  - generic [ref=f12e195]: → 0% vs. período anterior
+                  - img "Tendencia de inicios de sesión" [ref=f12e196]
+                - generic [ref=f12e197]:
+                  - generic [ref=f12e198]: Errores de integración
+                  - generic [ref=f12e203]: "0"
+                  - generic [ref=f12e204]: → 0% vs. período anterior
+                  - img "Tendencia de errores de integración" [ref=f12e205]
+                - generic [ref=f12e206]:
+                  - generic [ref=f12e207]: Acciones fallidas
+                  - generic [ref=f12e212]: "0"
+                  - generic [ref=f12e213]: → 0% vs. período anterior
+                  - img "Tendencia de acciones fallidas" [ref=f12e214]
+              - generic [ref=f12e215]:
+                - textbox "Buscar por actor, acción, objeto, IP o ID de correlación..." [ref=f12e217]
+                - generic [ref=f12e218]:
+                  - button "Módulo Clientes" [ref=f12e1015]:
+                    - generic [ref=f12e221]: Módulo
+                    - generic [ref=f12e222]: Clientes
+                  - button "Severidad Todas" [ref=f12e226]:
+                    - generic [ref=f12e227]: Severidad
+                    - generic [ref=f12e228]: Todas
+                  - generic [ref=f12e231]:
+                    - generic [ref=f12e232]: Desde
+                    - textbox "Desde" [ref=f12e233]
+                  - generic [ref=f12e234]:
+                    - generic [ref=f12e235]: Hasta
+                    - textbox "Hasta" [ref=f12e236]
+                  - button "Aplicar" [ref=f12e237]
+                  - button "Más filtros" [ref=f12e239]
+                  - link "Limpiar" [ref=f12e1016] [cursor=pointer]:
+                    - /url: /admin/auditoria
+              - generic [ref=f12e242]:
+                - generic [ref=f12e243]:
+                  - generic [ref=f12e244]:
+                    - heading "Volumen de eventos" [level=3] [ref=f12e245]
+                    - generic [ref=f12e246]:
+                      - generic [ref=f12e247]: Total
+                      - generic [ref=f12e249]: Período anterior
+                  - group "Volumen de eventos de auditoría, últimos 30 días" [ref=f12e251]:
+                    - paragraph [ref=f12e252]: "Volumen de eventos de auditoría, últimos 30 días. Valores actuales: 13-ago: 0; 14-ago: 1; 15-ago: 0; 16-ago: 2; 17-ago: 0; 18-ago: 1; 19-ago: 1; 20-ago: 4; 21-ago: 0; 22-ago: 0; 23-ago: 0; 24-ago: 0; 25-ago: 0; 26-ago: 1; 27-ago: 0; 28-ago: 0; 29-ago: 0; 30-ago: 0; 31-ago: 5; 01-set: 0; 02-set: 2; 03-set: 0; 04-set: 0; 05-set: 1; 06-set: 87; 07-set: 0; 08-set: 0; 09-set: 0; 10-set: 0; 11-set: 0."
+                    - table [ref=f12e253]:
+                      - caption [ref=f12e254]: Volumen de eventos de auditoría, últimos 30 días
+                      - rowgroup [ref=f12e255]:
+                        - row [ref=f12e256]:
+                          - columnheader "Período" [ref=f12e257]
+                          - columnheader "Actual" [ref=f12e258]
+                          - columnheader "Anterior" [ref=f12e259]
+                      - rowgroup [ref=f12e260]:
+                        - row [ref=f12e1017]:
+                          - rowheader "13-ago" [ref=f12e262]
+                          - cell "0" [ref=f12e1018]
+                          - cell "0" [ref=f12e264]
+                        - row [ref=f12e1019]:
+                          - rowheader "14-ago" [ref=f12e266]
+                          - cell "1" [ref=f12e1020]
+                          - cell "0" [ref=f12e268]
+                        - row [ref=f12e1021]:
+                          - rowheader "15-ago" [ref=f12e270]
+                          - cell "0" [ref=f12e1022]
+                          - cell "0" [ref=f12e272]
+                        - row [ref=f12e1023]:
+                          - rowheader "16-ago" [ref=f12e274]
+                          - cell "2" [ref=f12e1024]
+                          - cell "0" [ref=f12e276]
+                        - row [ref=f12e1025]:
+                          - rowheader "17-ago" [ref=f12e278]
+                          - cell "0" [ref=f12e1026]
+                          - cell "0" [ref=f12e280]
+                        - row [ref=f12e1027]:
+                          - rowheader "18-ago" [ref=f12e282]
+                          - cell "1" [ref=f12e1028]
+                          - cell "1" [ref=f12e1029]
+                        - row [ref=f12e1030]:
+                          - rowheader "19-ago" [ref=f12e286]
+                          - cell "1" [ref=f12e1031]
+                          - cell "0" [ref=f12e288]
+                        - row [ref=f12e1032]:
+                          - rowheader "20-ago" [ref=f12e290]
+                          - cell "4" [ref=f12e1033]
+                          - cell "0" [ref=f12e292]
+                        - row [ref=f12e1034]:
+                          - rowheader "21-ago" [ref=f12e294]
+                          - cell "0" [ref=f12e1035]
+                          - cell "0" [ref=f12e296]
+                        - row [ref=f12e1036]:
+                          - rowheader "22-ago" [ref=f12e298]
+                          - cell "0" [ref=f12e1037]
+                          - cell "0" [ref=f12e300]
+                        - row [ref=f12e1038]:
+                          - rowheader "23-ago" [ref=f12e302]
+                          - cell "0" [ref=f12e1039]
+                          - cell "0" [ref=f12e304]
+                        - row [ref=f12e305]:
+                          - rowheader "24-ago" [ref=f12e306]
+                          - cell "0" [ref=f12e307]
+                          - cell "0" [ref=f12e308]
+                        - row [ref=f12e1040]:
+                          - rowheader "25-ago" [ref=f12e310]
+                          - cell "0" [ref=f12e311]
+                          - cell "1" [ref=f12e1041]
+                        - row [ref=f12e1042]:
+                          - rowheader "26-ago" [ref=f12e314]
+                          - cell "1" [ref=f12e1043]
+                          - cell "0" [ref=f12e316]
+                        - row [ref=f12e317]:
+                          - rowheader "27-ago" [ref=f12e318]
+                          - cell "0" [ref=f12e319]
+                          - cell "0" [ref=f12e320]
+                        - row [ref=f12e1044]:
+                          - rowheader "28-ago" [ref=f12e322]
+                          - cell "0" [ref=f12e323]
+                          - cell "0" [ref=f12e1045]
+                        - row [ref=f12e1046]:
+                          - rowheader "29-ago" [ref=f12e326]
+                          - cell "0" [ref=f12e327]
+                          - cell "0" [ref=f12e1047]
+                        - row [ref=f12e1048]:
+                          - rowheader "30-ago" [ref=f12e330]
+                          - cell "0" [ref=f12e331]
+                          - cell "0" [ref=f12e1049]
+                        - row [ref=f12e1050]:
+                          - rowheader "31-ago" [ref=f12e334]
+                          - cell "5" [ref=f12e1051]
+                          - cell "0" [ref=f12e1052]
+                        - row [ref=f12e337]:
+                          - rowheader "01-set" [ref=f12e338]
+                          - cell "0" [ref=f12e339]
+                          - cell "1" [ref=f12e340]
+                        - row [ref=f12e1053]:
+                          - rowheader "02-set" [ref=f12e342]
+                          - cell "2" [ref=f12e1054]
+                          - cell "0" [ref=f12e1055]
+                        - row [ref=f12e1056]:
+                          - rowheader "03-set" [ref=f12e346]
+                          - cell "0" [ref=f12e347]
+                          - cell "0" [ref=f12e1057]
+                        - row [ref=f12e1058]:
+                          - rowheader "04-set" [ref=f12e350]
+                          - cell "0" [ref=f12e351]
+                          - cell "1" [ref=f12e1059]
+                        - row [ref=f12e1060]:
+                          - rowheader "05-set" [ref=f12e354]
+                          - cell "1" [ref=f12e1061]
+                          - cell "0" [ref=f12e1062]
+                        - row [ref=f12e1063]:
+                          - rowheader "06-set" [ref=f12e358]
+                          - cell "87" [ref=f12e1064]
+                          - cell "0" [ref=f12e1065]
+                        - row [ref=f12e1066]:
+                          - rowheader "07-set" [ref=f12e362]
+                          - cell "0" [ref=f12e1067]
+                          - cell "0" [ref=f12e1068]
+                        - row [ref=f12e1069]:
+                          - rowheader "08-set" [ref=f12e366]
+                          - cell "0" [ref=f12e367]
+                          - cell "0" [ref=f12e1070]
+                        - row [ref=f12e1071]:
+                          - rowheader "09-set" [ref=f12e370]
+                          - cell "0" [ref=f12e371]
+                          - cell "1" [ref=f12e1072]
+                        - row [ref=f12e1073]:
+                          - rowheader "10-set" [ref=f12e374]
+                          - cell "0" [ref=f12e375]
+                          - cell "0" [ref=f12e1074]
+                        - row [ref=f12e1075]:
+                          - rowheader "11-set" [ref=f12e378]
+                          - cell "0" [ref=f12e379]
+                          - cell "1" [ref=f12e1076]
+                    - generic:
+                      - generic: "87"
+                      - generic: "65"
+                      - generic: "44"
+                      - generic: "22"
+                      - generic: "0"
+                      - generic: 13-ago
+                      - generic: 20-ago
+                      - generic: 28-ago
+                      - generic: 04-set
+                      - generic: 11-set
+                - generic [ref=f12e385]:
+                  - heading "Alertas y cumplimiento" [level=3] [ref=f12e386]
+                  - generic [ref=f12e387]:
+                    - generic [ref=f12e392]:
+                      - paragraph [ref=f12e393]: Cumplimiento
+                      - paragraph [ref=f12e394]: Todos los eventos se registran y conservan de forma permanente (append-only).
+                    - generic [ref=f12e399]:
+                      - paragraph [ref=f12e400]: Sin anomalías de seguridad
+                      - paragraph [ref=f12e401]: No se detectaron eventos críticos ni fallidos en el período.
+              - generic [ref=f12e402]:
+                - generic [ref=f12e403]:
+                  - generic [ref=f12e404]:
+                    - heading "Registro de auditoría" [level=2] [ref=f12e405]
+                    - paragraph [ref=f12e406]: 154 resultados
+                  - generic [ref=f12e407]:
+                    - link "Página anterior" [ref=f12e408] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=1
+                    - link "1" [ref=f12e411] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=1
+                    - link "2" [ref=f12e412] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=2
+                    - link "3" [ref=f12e413] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=3
+                    - link "4" [ref=f12e414] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=4
+                    - link "5" [ref=f12e415] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=5
+                    - link "Página siguiente" [ref=f12e416] [cursor=pointer]:
+                      - /url: /admin/auditoria?module=customers&page=2
+                - table [ref=f12e420]:
+                  - rowgroup [ref=f12e421]:
+                    - row [ref=f12e422]:
+                      - columnheader "Fecha y hora" [ref=f12e423]
+                      - columnheader "Actor" [ref=f12e428]
+                      - columnheader "Módulo" [ref=f12e429]
+                      - columnheader "Acción" [ref=f12e430]
+                      - columnheader "Objeto" [ref=f12e431]
+                      - columnheader "Severidad" [ref=f12e432]
+                      - columnheader "Resultado" [ref=f12e433]
+                      - columnheader "Detalle" [ref=f12e434]
+                  - rowgroup [ref=f12e435]:
+                    - row [ref=f12e520]:
+                      - cell "26 dic 2026, 03:00 p. m." [ref=f12e521]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e522]:
+                        - generic [ref=f12e523]:
+                          - generic [ref=f12e524]: JE
+                          - generic [ref=f12e525]:
+                            - paragraph [ref=f12e526]: Jean
+                            - paragraph [ref=f12e527]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e528]
+                      - cell "Creó el cliente" [ref=f12e529]
+                      - cell [ref=f12e530]:
+                        - paragraph [ref=f12e531]: Cliente
+                        - paragraph [ref=f12e532]: cp-dashboard-v5-customer-013
+                      - cell "Info" [ref=f12e533]
+                      - cell "Exitoso" [ref=f12e535]
+                      - cell [ref=f12e537]:
+                        - link "Ver detalle" [ref=f12e538] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-048-6
+                    - row [ref=f12e730]:
+                      - cell "19 dic 2026, 03:00 p. m." [ref=f12e731]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e732]:
+                        - generic [ref=f12e733]:
+                          - generic [ref=f12e734]: JE
+                          - generic [ref=f12e735]:
+                            - paragraph [ref=f12e736]: Jean
+                            - paragraph [ref=f12e737]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e738]
+                      - cell "Creó el cliente" [ref=f12e739]
+                      - cell [ref=f12e740]:
+                        - paragraph [ref=f12e741]: Cliente
+                        - paragraph [ref=f12e742]: cp-dashboard-v5-customer-014
+                      - cell "Info" [ref=f12e743]
+                      - cell "Exitoso" [ref=f12e745]
+                      - cell [ref=f12e747]:
+                        - link "Ver detalle" [ref=f12e748] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-047-6
+                    - row [ref=f12e940]:
+                      - cell "12 dic 2026, 03:00 p. m." [ref=f12e941]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e942]:
+                        - generic [ref=f12e943]:
+                          - generic [ref=f12e944]: JE
+                          - generic [ref=f12e945]:
+                            - paragraph [ref=f12e946]: Jean
+                            - paragraph [ref=f12e947]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e948]
+                      - cell "Creó el cliente" [ref=f12e949]
+                      - cell [ref=f12e950]:
+                        - paragraph [ref=f12e951]: Cliente
+                        - paragraph [ref=f12e952]: cp-dashboard-v5-customer-015
+                      - cell "Info" [ref=f12e953]
+                      - cell "Exitoso" [ref=f12e955]
+                      - cell [ref=f12e957]:
+                        - link "Ver detalle" [ref=f12e958] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-046-6
+                    - row [ref=f12e1077]:
+                      - cell "05 dic 2026, 03:00 p. m." [ref=f12e1078]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1079]:
+                        - generic [ref=f12e1080]:
+                          - generic [ref=f12e1081]: JE
+                          - generic [ref=f12e1082]:
+                            - paragraph [ref=f12e1083]: Jean
+                            - paragraph [ref=f12e1084]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1085]
+                      - cell "Creó el cliente" [ref=f12e1086]
+                      - cell [ref=f12e1087]:
+                        - paragraph [ref=f12e1088]: Cliente
+                        - paragraph [ref=f12e1089]: cp-dashboard-v5-customer-016
+                      - cell "Info" [ref=f12e1090]
+                      - cell "Exitoso" [ref=f12e1092]
+                      - cell [ref=f12e1094]:
+                        - link "Ver detalle" [ref=f12e1095] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-045-6
+                    - row [ref=f12e1098]:
+                      - cell "26 nov 2026, 03:00 p. m." [ref=f12e1099]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1100]:
+                        - generic [ref=f12e1101]:
+                          - generic [ref=f12e1102]: JE
+                          - generic [ref=f12e1103]:
+                            - paragraph [ref=f12e1104]: Jean
+                            - paragraph [ref=f12e1105]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1106]
+                      - cell "Creó el cliente" [ref=f12e1107]
+                      - cell [ref=f12e1108]:
+                        - paragraph [ref=f12e1109]: Cliente
+                        - paragraph [ref=f12e1110]: cp-dashboard-v5-customer-018
+                      - cell "Info" [ref=f12e1111]
+                      - cell "Exitoso" [ref=f12e1113]
+                      - cell [ref=f12e1115]:
+                        - link "Ver detalle" [ref=f12e1116] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-044-6
+                    - row [ref=f12e1119]:
+                      - cell "19 nov 2026, 03:00 p. m." [ref=f12e1120]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1121]:
+                        - generic [ref=f12e1122]:
+                          - generic [ref=f12e1123]: JE
+                          - generic [ref=f12e1124]:
+                            - paragraph [ref=f12e1125]: Jean
+                            - paragraph [ref=f12e1126]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1127]
+                      - cell "Creó el cliente" [ref=f12e1128]
+                      - cell [ref=f12e1129]:
+                        - paragraph [ref=f12e1130]: Cliente
+                        - paragraph [ref=f12e1131]: cp-dashboard-v5-customer-019
+                      - cell "Info" [ref=f12e1132]
+                      - cell "Exitoso" [ref=f12e1134]
+                      - cell [ref=f12e1136]:
+                        - link "Ver detalle" [ref=f12e1137] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-043-6
+                    - row [ref=f12e1140]:
+                      - cell "12 nov 2026, 03:00 p. m." [ref=f12e1141]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1142]:
+                        - generic [ref=f12e1143]:
+                          - generic [ref=f12e1144]: JE
+                          - generic [ref=f12e1145]:
+                            - paragraph [ref=f12e1146]: Jean
+                            - paragraph [ref=f12e1147]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1148]
+                      - cell "Creó el cliente" [ref=f12e1149]
+                      - cell [ref=f12e1150]:
+                        - paragraph [ref=f12e1151]: Cliente
+                        - paragraph [ref=f12e1152]: cp-dashboard-v5-customer-020
+                      - cell "Info" [ref=f12e1153]
+                      - cell "Exitoso" [ref=f12e1155]
+                      - cell [ref=f12e1157]:
+                        - link "Ver detalle" [ref=f12e1158] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-042-6
+                    - row [ref=f12e1161]:
+                      - cell "05 nov 2026, 03:00 p. m." [ref=f12e1162]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1163]:
+                        - generic [ref=f12e1164]:
+                          - generic [ref=f12e1165]: JE
+                          - generic [ref=f12e1166]:
+                            - paragraph [ref=f12e1167]: Jean
+                            - paragraph [ref=f12e1168]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1169]
+                      - cell "Creó el cliente" [ref=f12e1170]
+                      - cell [ref=f12e1171]:
+                        - paragraph [ref=f12e1172]: Cliente
+                        - paragraph [ref=f12e1173]: cp-dashboard-v5-customer-021
+                      - cell "Info" [ref=f12e1174]
+                      - cell "Exitoso" [ref=f12e1176]
+                      - cell [ref=f12e1178]:
+                        - link "Ver detalle" [ref=f12e1179] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-041-6
+                    - row [ref=f12e1182]:
+                      - cell "26 oct 2026, 03:00 p. m." [ref=f12e1183]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1184]:
+                        - generic [ref=f12e1185]:
+                          - generic [ref=f12e1186]: JE
+                          - generic [ref=f12e1187]:
+                            - paragraph [ref=f12e1188]: Jean
+                            - paragraph [ref=f12e1189]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1190]
+                      - cell "Creó el cliente" [ref=f12e1191]
+                      - cell [ref=f12e1192]:
+                        - paragraph [ref=f12e1193]: Cliente
+                        - paragraph [ref=f12e1194]: cp-dashboard-v5-customer-022
+                      - cell "Info" [ref=f12e1195]
+                      - cell "Exitoso" [ref=f12e1197]
+                      - cell [ref=f12e1199]:
+                        - link "Ver detalle" [ref=f12e1200] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-040-6
+                    - row [ref=f12e1203]:
+                      - cell "19 oct 2026, 03:00 p. m." [ref=f12e1204]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1205]:
+                        - generic [ref=f12e1206]:
+                          - generic [ref=f12e1207]: JE
+                          - generic [ref=f12e1208]:
+                            - paragraph [ref=f12e1209]: Jean
+                            - paragraph [ref=f12e1210]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1211]
+                      - cell "Creó el cliente" [ref=f12e1212]
+                      - cell [ref=f12e1213]:
+                        - paragraph [ref=f12e1214]: Cliente
+                        - paragraph [ref=f12e1215]: cp-dashboard-v5-customer-023
+                      - cell "Info" [ref=f12e1216]
+                      - cell "Exitoso" [ref=f12e1218]
+                      - cell [ref=f12e1220]:
+                        - link "Ver detalle" [ref=f12e1221] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-039-6
+                    - row [ref=f12e1224]:
+                      - cell "12 oct 2026, 03:00 p. m." [ref=f12e1225]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1226]:
+                        - generic [ref=f12e1227]:
+                          - generic [ref=f12e1228]: JE
+                          - generic [ref=f12e1229]:
+                            - paragraph [ref=f12e1230]: Jean
+                            - paragraph [ref=f12e1231]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1232]
+                      - cell "Creó el cliente" [ref=f12e1233]
+                      - cell [ref=f12e1234]:
+                        - paragraph [ref=f12e1235]: Cliente
+                        - paragraph [ref=f12e1236]: cp-dashboard-v5-customer-024
+                      - cell "Info" [ref=f12e1237]
+                      - cell "Exitoso" [ref=f12e1239]
+                      - cell [ref=f12e1241]:
+                        - link "Ver detalle" [ref=f12e1242] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-038-6
+                    - row [ref=f12e1245]:
+                      - cell "05 oct 2026, 03:00 p. m." [ref=f12e1246]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1247]:
+                        - generic [ref=f12e1248]:
+                          - generic [ref=f12e1249]: JE
+                          - generic [ref=f12e1250]:
+                            - paragraph [ref=f12e1251]: Jean
+                            - paragraph [ref=f12e1252]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1253]
+                      - cell "Creó el cliente" [ref=f12e1254]
+                      - cell [ref=f12e1255]:
+                        - paragraph [ref=f12e1256]: Cliente
+                        - paragraph [ref=f12e1257]: cp-dashboard-v5-customer-025
+                      - cell "Info" [ref=f12e1258]
+                      - cell "Exitoso" [ref=f12e1260]
+                      - cell [ref=f12e1262]:
+                        - link "Ver detalle" [ref=f12e1263] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-037-6
+                    - row [ref=f12e1266]:
+                      - cell "26 set 2026, 03:00 p. m." [ref=f12e1267]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1268]:
+                        - generic [ref=f12e1269]:
+                          - generic [ref=f12e1270]: JE
+                          - generic [ref=f12e1271]:
+                            - paragraph [ref=f12e1272]: Jean
+                            - paragraph [ref=f12e1273]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1274]
+                      - cell "Creó el cliente" [ref=f12e1275]
+                      - cell [ref=f12e1276]:
+                        - paragraph [ref=f12e1277]: Cliente
+                        - paragraph [ref=f12e1278]: cp-dashboard-v5-customer-026
+                      - cell "Info" [ref=f12e1279]
+                      - cell "Exitoso" [ref=f12e1281]
+                      - cell [ref=f12e1283]:
+                        - link "Ver detalle" [ref=f12e1284] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-036-6
+                    - row [ref=f12e1287]:
+                      - cell "19 set 2026, 03:00 p. m." [ref=f12e1288]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1289]:
+                        - generic [ref=f12e1290]:
+                          - generic [ref=f12e1291]: JE
+                          - generic [ref=f12e1292]:
+                            - paragraph [ref=f12e1293]: Jean
+                            - paragraph [ref=f12e1294]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1295]
+                      - cell "Creó el cliente" [ref=f12e1296]
+                      - cell [ref=f12e1297]:
+                        - paragraph [ref=f12e1298]: Cliente
+                        - paragraph [ref=f12e1299]: cp-dashboard-v5-customer-028
+                      - cell "Info" [ref=f12e1300]
+                      - cell "Exitoso" [ref=f12e1302]
+                      - cell [ref=f12e1304]:
+                        - link "Ver detalle" [ref=f12e1305] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-035-6
+                    - row [ref=f12e1308]:
+                      - cell "12 set 2026, 03:00 p. m." [ref=f12e1309]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1310]:
+                        - generic [ref=f12e1311]:
+                          - generic [ref=f12e1312]: JE
+                          - generic [ref=f12e1313]:
+                            - paragraph [ref=f12e1314]: Jean
+                            - paragraph [ref=f12e1315]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1316]
+                      - cell "Creó el cliente" [ref=f12e1317]
+                      - cell [ref=f12e1318]:
+                        - paragraph [ref=f12e1319]: Cliente
+                        - paragraph [ref=f12e1320]: cp-dashboard-v5-customer-029
+                      - cell "Info" [ref=f12e1321]
+                      - cell "Exitoso" [ref=f12e1323]
+                      - cell [ref=f12e1325]:
+                        - link "Ver detalle" [ref=f12e1326] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=cp-visual-year-2026-audit-034-6
+                    - row [ref=f12e1329]:
+                      - cell "06 set 2026, 06:20 p. m." [ref=f12e1330]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1331]:
+                        - generic [ref=f12e1332]:
+                          - generic [ref=f12e1333]: JE
+                          - generic [ref=f12e1334]:
+                            - paragraph [ref=f12e1335]: Jean
+                            - paragraph [ref=f12e1336]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1337]
+                      - cell "Exportó clientes" [ref=f12e1338]
+                      - cell [ref=f12e1339]:
+                        - paragraph [ref=f12e1340]: Cliente
+                        - paragraph [ref=f12e1341]: customers-export
+                      - cell "Info" [ref=f12e1342]
+                      - cell "Exitoso" [ref=f12e1344]
+                      - cell [ref=f12e1346]:
+                        - link "Ver detalle" [ref=f12e1347] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-45ce7ce3-6302-4588-97bf-243114b1f07c
+                    - row [ref=f12e1350]:
+                      - cell "06 set 2026, 06:20 p. m." [ref=f12e1351]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1352]:
+                        - generic [ref=f12e1353]:
+                          - generic [ref=f12e1354]: JE
+                          - generic [ref=f12e1355]:
+                            - paragraph [ref=f12e1356]: Jean
+                            - paragraph [ref=f12e1357]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1358]
+                      - cell "Exportó clientes" [ref=f12e1359]
+                      - cell [ref=f12e1360]:
+                        - paragraph [ref=f12e1361]: Cliente
+                        - paragraph [ref=f12e1362]: customers-export
+                      - cell "Info" [ref=f12e1363]
+                      - cell "Exitoso" [ref=f12e1365]
+                      - cell [ref=f12e1367]:
+                        - link "Ver detalle" [ref=f12e1368] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-36c48fce-0413-4668-9fff-cead865fa2ba
+                    - row [ref=f12e1371]:
+                      - cell "06 set 2026, 06:18 p. m." [ref=f12e1372]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1373]:
+                        - generic [ref=f12e1374]:
+                          - generic [ref=f12e1375]: JE
+                          - generic [ref=f12e1376]:
+                            - paragraph [ref=f12e1377]: Jean
+                            - paragraph [ref=f12e1378]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1379]
+                      - cell "Exportó clientes" [ref=f12e1380]
+                      - cell [ref=f12e1381]:
+                        - paragraph [ref=f12e1382]: Cliente
+                        - paragraph [ref=f12e1383]: customers-export
+                      - cell "Info" [ref=f12e1384]
+                      - cell "Exitoso" [ref=f12e1386]
+                      - cell [ref=f12e1388]:
+                        - link "Ver detalle" [ref=f12e1389] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-00e698fc-48a0-4e18-a928-4c5831aed3f6
+                    - row [ref=f12e1392]:
+                      - cell "06 set 2026, 06:03 p. m." [ref=f12e1393]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1394]:
+                        - generic [ref=f12e1395]:
+                          - generic [ref=f12e1396]: JE
+                          - generic [ref=f12e1397]:
+                            - paragraph [ref=f12e1398]: Jean
+                            - paragraph [ref=f12e1399]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1400]
+                      - cell "Exportó clientes" [ref=f12e1401]
+                      - cell [ref=f12e1402]:
+                        - paragraph [ref=f12e1403]: Cliente
+                        - paragraph [ref=f12e1404]: customers-export
+                      - cell "Info" [ref=f12e1405]
+                      - cell "Exitoso" [ref=f12e1407]
+                      - cell [ref=f12e1409]:
+                        - link "Ver detalle" [ref=f12e1410] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-04510b80-4084-4a4b-9d46-54d29db20311
+                    - row [ref=f12e1413]:
+                      - cell "06 set 2026, 06:02 p. m." [ref=f12e1414]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1415]:
+                        - generic [ref=f12e1416]:
+                          - generic [ref=f12e1417]: JE
+                          - generic [ref=f12e1418]:
+                            - paragraph [ref=f12e1419]: Jean
+                            - paragraph [ref=f12e1420]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1421]
+                      - cell "Exportó clientes" [ref=f12e1422]
+                      - cell [ref=f12e1423]:
+                        - paragraph [ref=f12e1424]: Cliente
+                        - paragraph [ref=f12e1425]: customers-export
+                      - cell "Info" [ref=f12e1426]
+                      - cell "Exitoso" [ref=f12e1428]
+                      - cell [ref=f12e1430]:
+                        - link "Ver detalle" [ref=f12e1431] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-e1207401-8949-483d-aba9-f34f3b7e57b7
+                    - row [ref=f12e1434]:
+                      - cell "06 set 2026, 05:56 p. m." [ref=f12e1435]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1436]:
+                        - generic [ref=f12e1437]:
+                          - generic [ref=f12e1438]: JE
+                          - generic [ref=f12e1439]:
+                            - paragraph [ref=f12e1440]: Jean
+                            - paragraph [ref=f12e1441]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1442]
+                      - cell "Exportó clientes" [ref=f12e1443]
+                      - cell [ref=f12e1444]:
+                        - paragraph [ref=f12e1445]: Cliente
+                        - paragraph [ref=f12e1446]: customers-export
+                      - cell "Info" [ref=f12e1447]
+                      - cell "Exitoso" [ref=f12e1449]
+                      - cell [ref=f12e1451]:
+                        - link "Ver detalle" [ref=f12e1452] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-b082cc62-8ec4-4cf3-a3b0-f5d3c57a0a17
+                    - row [ref=f12e1455]:
+                      - cell "06 set 2026, 05:55 p. m." [ref=f12e1456]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1457]:
+                        - generic [ref=f12e1458]:
+                          - generic [ref=f12e1459]: JE
+                          - generic [ref=f12e1460]:
+                            - paragraph [ref=f12e1461]: Jean
+                            - paragraph [ref=f12e1462]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1463]
+                      - cell "Exportó clientes" [ref=f12e1464]
+                      - cell [ref=f12e1465]:
+                        - paragraph [ref=f12e1466]: Cliente
+                        - paragraph [ref=f12e1467]: customers-export
+                      - cell "Info" [ref=f12e1468]
+                      - cell "Exitoso" [ref=f12e1470]
+                      - cell [ref=f12e1472]:
+                        - link "Ver detalle" [ref=f12e1473] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-880ca79f-e46b-4b42-bd55-a32aa067422f
+                    - row [ref=f12e1476]:
+                      - cell "06 set 2026, 05:55 p. m." [ref=f12e1477]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1478]:
+                        - generic [ref=f12e1479]:
+                          - generic [ref=f12e1480]: JE
+                          - generic [ref=f12e1481]:
+                            - paragraph [ref=f12e1482]: Jean
+                            - paragraph [ref=f12e1483]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1484]
+                      - cell "Exportó clientes" [ref=f12e1485]
+                      - cell [ref=f12e1486]:
+                        - paragraph [ref=f12e1487]: Cliente
+                        - paragraph [ref=f12e1488]: customers-export
+                      - cell "Info" [ref=f12e1489]
+                      - cell "Exitoso" [ref=f12e1491]
+                      - cell [ref=f12e1493]:
+                        - link "Ver detalle" [ref=f12e1494] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-9b9d76f8-f7ed-4cdc-9237-338259187a1a
+                    - row [ref=f12e1497]:
+                      - cell "06 set 2026, 05:54 p. m." [ref=f12e1498]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1499]:
+                        - generic [ref=f12e1500]:
+                          - generic [ref=f12e1501]: JE
+                          - generic [ref=f12e1502]:
+                            - paragraph [ref=f12e1503]: Jean
+                            - paragraph [ref=f12e1504]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1505]
+                      - cell "Exportó clientes" [ref=f12e1506]
+                      - cell [ref=f12e1507]:
+                        - paragraph [ref=f12e1508]: Cliente
+                        - paragraph [ref=f12e1509]: customers-export
+                      - cell "Info" [ref=f12e1510]
+                      - cell "Exitoso" [ref=f12e1512]
+                      - cell [ref=f12e1514]:
+                        - link "Ver detalle" [ref=f12e1515] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-92eafdd8-9d94-44bf-8df2-5d7ba90ce441
+                    - row [ref=f12e1518]:
+                      - cell "06 set 2026, 05:54 p. m." [ref=f12e1519]
+                      - cell "JE Jean xslync@gmail.com" [ref=f12e1520]:
+                        - generic [ref=f12e1521]:
+                          - generic [ref=f12e1522]: JE
+                          - generic [ref=f12e1523]:
+                            - paragraph [ref=f12e1524]: Jean
+                            - paragraph [ref=f12e1525]: xslync@gmail.com
+                      - cell "Clientes" [ref=f12e1526]
+                      - cell "Exportó clientes" [ref=f12e1527]
+                      - cell [ref=f12e1528]:
+                        - paragraph [ref=f12e1529]: Cliente
+                        - paragraph [ref=f12e1530]: customers-export
+                      - cell "Info" [ref=f12e1531]
+                      - cell "Exitoso" [ref=f12e1533]
+                      - cell [ref=f12e1535]:
+                        - link "Ver detalle" [ref=f12e1536] [cursor=pointer]:
+                          - /url: /admin/auditoria?module=customers&eventId=audit-fc24566e-441b-4d16-a1b7-1697fba3277f
+            - complementary [ref=f12e961]:
+              - generic [ref=f12e962]:
+                - paragraph [ref=f12e965]: Selecciona un evento
+                - paragraph [ref=f12e966]: Elige una fila del registro para ver su detalle completo.
+  - button "Open Next.js Dev Tools" [ref=f12e972] [cursor=pointer]
+  - alert [ref=f12e976]

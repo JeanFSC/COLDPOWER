@@ -6,6 +6,7 @@ import { isAppRole, isStaffRole, setUserRole, type AppRole } from "@/lib/auth";
 import { getDb } from "@/db";
 import { auditLogs, clerkWebhookEvents, users } from "@/db/schema";
 import { syncClerkRoleFromMetadata } from "@/lib/user-administration";
+import { AUDIT_LOGIN_ACTION } from "@/lib/audit-contract";
 
 type ClerkEmailAddress = { id: string; email_address: string };
 type ClerkPhoneNumber = { phone_number: string };
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     if (event.type === "user.created") await handleUserCreated(event.data);
     if (event.type === "user.updated") await handleUserUpdated(event.data);
     if (event.type === "user.deleted") await handleUserDeleted(event.data);
-    if (event.type === "session.created" && event.data.user_id) await handleSessionCreated(event.data.user_id, event.data.created_at);
+    if (event.type === "session.created" && event.data.user_id) await handleSessionCreated(event.data.user_id, event.data.created_at, event.data as unknown as Record<string, unknown>);
     await db.update(clerkWebhookEvents).set({ status: "PROCESSED", processedAt: new Date(), error: null }).where(eq(clerkWebhookEvents.id, svixId));
     await db.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: null, actorRole: "SYSTEM", action: "clerk.webhook_processed", entityType: "clerk_webhook", entityId: svixId, before: null, after: { type: event.type, status: "PROCESSED" }, metadata: { source: "clerk" } });
   } catch (error) {
@@ -138,8 +139,31 @@ async function handleUserUpdated(data: ClerkUserPayload) {
   }
 }
 
-async function handleSessionCreated(userId: string, createdAt?: number | null) {
+// Clerk's session.created payload is server-to-server (Clerk's own IP, not the end
+// user's), so this deliberately does NOT use writeAuditLog's request-header capture —
+// that would mislabel Clerk's infrastructure as the user's login origin. Only fields
+// Clerk itself reports about the session's client (when its activity tracking is on)
+// are stored; anything absent stays null rather than being backfilled from this request.
+async function handleSessionCreated(userId: string, createdAt: number | null | undefined, raw: Record<string, unknown>) {
   await getDb().update(users).set({ lastSignInAt: createdAt ? new Date(createdAt) : new Date(), updatedAt: new Date() }).where(eq(users.id, userId));
+  const activity = isRecord(raw.latest_activity) ? raw.latest_activity : null;
+  const ip = typeof activity?.ip_address === "string" ? activity.ip_address : typeof raw.ip_address === "string" ? raw.ip_address : null;
+  const browser = typeof activity?.browser_name === "string" ? [activity.browser_name, activity.browser_version].filter((part) => typeof part === "string").join(" ") : null;
+  const city = typeof activity?.city === "string" ? activity.city : null;
+  const country = typeof activity?.country === "string" ? activity.country : null;
+  await getDb().insert(auditLogs).values({
+    id: `audit-${crypto.randomUUID()}`,
+    actorId: userId,
+    actorRole: null,
+    action: AUDIT_LOGIN_ACTION,
+    entityType: "user",
+    entityId: userId,
+    module: "access",
+    severity: "INFO",
+    before: null,
+    after: null,
+    metadata: { source: "clerk.session.created", ip, browser, city, country },
+  });
 }
 
 async function handleUserDeleted(data: ClerkUserPayload) {

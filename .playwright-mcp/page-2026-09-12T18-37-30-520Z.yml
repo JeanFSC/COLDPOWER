@@ -1,0 +1,355 @@
+- generic [active] [ref=f13e1]:
+  - main [ref=f13e2]:
+    - generic [ref=f13e3]:
+      - complementary [ref=f13e4]:
+        - link "Ir al inicio de ColdPower" [ref=f13e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f13e7]
+        - navigation "Navegacion administrativa" [ref=f13e8]:
+          - generic [ref=f13e9]:
+            - link "Inicio" [ref=f13e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f13e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f13e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f13e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f13e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f13e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f13e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f13e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f13e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f13e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f13e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f13e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f13e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f13e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f13e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f13e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f13e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f13e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f13e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f13e112]:
+          - group [ref=f13e113]:
+            - generic "Necesitas ayuda?" [ref=f13e114] [cursor=pointer]
+          - generic [ref=f13e123]:
+            - strong [ref=f13e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f13e125]:
+        - generic [ref=f13e126]:
+          - generic [ref=f13e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f13e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f13e129]:
+            - link "Ver notificaciones" [ref=f13e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - generic [ref=f13e135]:
+              - paragraph [ref=f13e136]: Superadmin
+              - paragraph [ref=f13e137]: Superadministrador
+        - main [ref=f13e140]:
+          - generic [ref=f13e141]:
+            - generic [ref=f13e142]:
+              - generic [ref=f13e147]:
+                - heading "Notificaciones internas" [level=1] [ref=f13e148]
+                - paragraph [ref=f13e149]: Centraliza las comunicaciones, alertas y recordatorios del equipo.
+              - generic [ref=f13e150]:
+                - button "Nuevo aviso" [ref=f13e151]
+                - button "Crear regla" [ref=f13e155]
+                - button "Enviar ahora" [ref=f13e159]
+            - generic [ref=f13e163]:
+              - generic [ref=f13e168]:
+                - generic [ref=f13e169]: No leídas
+                - text: "12"
+                - generic [ref=f13e170]: ↗ 33% vs. periodo anterior
+              - generic [ref=f13e175]:
+                - generic [ref=f13e176]: Automatizaciones activas
+                - text: "8"
+                - generic [ref=f13e177]: ↗ 14% vs. periodo anterior
+              - generic [ref=f13e182]:
+                - generic [ref=f13e183]: Fallidas
+                - text: "3"
+                - generic [ref=f13e184]: ↗ 50% vs. periodo anterior
+              - generic [ref=f13e189]:
+                - generic [ref=f13e190]: Alertas SLA
+                - text: "6"
+                - generic [ref=f13e191]: ↗ 20% vs. periodo anterior
+              - generic [ref=f13e196]:
+                - generic [ref=f13e197]: Recordatorios hoy
+                - text: "15"
+                - generic [ref=f13e198]: ↗ 25% vs. periodo anterior
+              - generic [ref=f13e203]:
+                - generic [ref=f13e204]: En cola
+                - text: "9"
+                - generic [ref=f13e205]: → 0% vs. periodo anterior
+            - generic [ref=f13e206]:
+              - generic [ref=f13e207]:
+                - generic [ref=f13e209]:
+                  - heading "Bandeja de notificaciones" [level=2] [ref=f13e210]
+                  - paragraph [ref=f13e211]: 120 resultados
+                - generic [ref=f13e212]:
+                  - textbox "Buscar en notificaciones..." [ref=f13e214]
+                  - generic [ref=f13e215]:
+                    - combobox [ref=f13e217] [cursor=pointer]:
+                      - option "Todos los canales" [selected]
+                    - combobox [ref=f13e219] [cursor=pointer]:
+                      - option "Todos los estados" [selected]
+                    - button "Filtros" [ref=f13e220]
+                - generic [ref=f13e224]:
+                  - generic [ref=f13e230] [cursor=pointer]:
+                    - generic [ref=f13e231]:
+                      - heading "Stock bajo en producto" [level=3] [ref=f13e232]
+                      - generic [ref=f13e233]: Hace 15 min
+                    - paragraph [ref=f13e234]: El producto REFRIGERACIÓN - MOTOR FAN 16W 220V YDK tiene 4 unidades en stock (mín. 10).
+                    - generic [ref=f13e235]: Alta
+                  - generic [ref=f13e242] [cursor=pointer]:
+                    - generic [ref=f13e243]:
+                      - heading "Nueva cotización recibida" [level=3] [ref=f13e244]
+                      - generic [ref=f13e245]: Hace 28 min
+                    - paragraph [ref=f13e246]: Cliente corporativo 025 ha solicitado una nueva cotización por S/ 12,480.00.
+                    - generic [ref=f13e247]: Media
+                  - generic [ref=f13e254] [cursor=pointer]:
+                    - generic [ref=f13e255]:
+                      - heading "Pago confirmado" [level=3] [ref=f13e256]
+                      - generic [ref=f13e257]: Hace 1 h
+                    - paragraph [ref=f13e258]: Se ha registrado el pago del pedido PCN-0247 por S/ 6,750.00 (vía transferencia).
+                    - generic [ref=f13e259]: Baja
+                  - generic [ref=f13e266] [cursor=pointer]:
+                    - generic [ref=f13e267]:
+                      - heading "Pedido retrasado" [level=3] [ref=f13e268]
+                      - generic [ref=f13e269]: Hace 2 h
+                    - paragraph [ref=f13e270]: "El pedido PCN-0244 presenta un retraso en la entrega (programada: 29 ago)."
+                    - generic [ref=f13e271]: Alta
+                  - generic [ref=f13e278] [cursor=pointer]:
+                    - generic [ref=f13e279]:
+                      - heading "Cliente sin actividad" [level=3] [ref=f13e280]
+                      - generic [ref=f13e281]: Hace 3 h
+                    - paragraph [ref=f13e282]: El cliente Restaurante Costa Azul no registra actividad hace 30 días.
+                    - generic [ref=f13e283]: Media
+                  - generic [ref=f13e290] [cursor=pointer]:
+                    - generic [ref=f13e291]:
+                      - heading "Recordatorio de seguimiento" [level=3] [ref=f13e292]
+                      - generic [ref=f13e293]: Hace 4 h
+                    - paragraph [ref=f13e294]: Tienes 5 cotizaciones pendientes de seguimiento.
+                    - generic [ref=f13e295]: Baja
+                  - generic [ref=f13e302] [cursor=pointer]:
+                    - generic [ref=f13e303]:
+                      - heading "Alerta de SLA" [level=3] [ref=f13e304]
+                      - generic [ref=f13e305]: Hace 5 h
+                    - paragraph [ref=f13e306]: La cotización CP-CT-2024-058 lleva más de 48 horas sin respuesta.
+                    - generic [ref=f13e307]: Alta
+                  - generic [ref=f13e314] [cursor=pointer]:
+                    - generic [ref=f13e315]:
+                      - heading "Nueva oportunidad en pipeline" [level=3] [ref=f13e316]
+                      - generic [ref=f13e317]: Hace 6 h
+                    - paragraph [ref=f13e318]: Se ha creado una nueva oportunidad para Cliente corporativo 031 por S/ 18,320.00.
+                    - generic [ref=f13e319]: Media
+                - generic [ref=f13e321]:
+                  - generic [ref=f13e322]: Mostrando 1 a 8 de 120 notificaciones
+                  - generic [ref=f13e323]:
+                    - button "1" [ref=f13e324]
+                    - button "2" [ref=f13e325]
+                    - button "3" [ref=f13e326]
+                    - generic [ref=f13e327]: ...
+                    - button "15" [ref=f13e328]
+                    - button [ref=f13e329]
+              - generic [ref=f13e332]:
+                - generic [ref=f13e333]:
+                  - generic [ref=f13e334]:
+                    - heading "Detalle de notificación" [level=2] [ref=f13e335]
+                    - generic [ref=f13e336]: "ID de evento: #NTF-2024-8921"
+                  - generic [ref=f13e337]:
+                    - button "Marcar como leída" [ref=f13e338]
+                    - button [ref=f13e342]
+                - generic [ref=f13e345]:
+                  - generic [ref=f13e346]:
+                    - generic [ref=f13e351]:
+                      - heading "Stock bajo en producto" [level=3] [ref=f13e352]
+                      - paragraph [ref=f13e353]:
+                        - generic [ref=f13e354]: 31 ago 2024, 10:24 a. m.
+                        - generic [ref=f13e355]: •
+                        - generic [ref=f13e356]: Almacén Central
+                    - generic [ref=f13e357]: Crítica
+                  - paragraph [ref=f13e358]:
+                    - text: El producto
+                    - strong [ref=f13e359]: REFRIGERACIÓN - MOTOR FAN 16W 220V YDK
+                    - text: ha alcanzado 4 unidades en stock, situándose por debajo del umbral mínimo de seguridad (10 unidades).
+                - generic [ref=f13e360]:
+                  - generic [ref=f13e361]:
+                    - generic [ref=f13e362]: Detalles técnicos
+                    - generic [ref=f13e363]: Reponer pronto
+                  - generic [ref=f13e364]:
+                    - generic [ref=f13e365]:
+                      - generic [ref=f13e366]: Producto
+                      - link "REFRIGERACIÓN - MOTOR FAN 16W 220V YDK" [ref=f13e367] [cursor=pointer]:
+                        - /url: "#"
+                    - generic [ref=f13e368]:
+                      - generic [ref=f13e369]: SKU
+                      - generic [ref=f13e370]: REF-FAN-16W
+                    - generic [ref=f13e371]:
+                      - generic [ref=f13e372]: Estado de inventario
+                      - generic [ref=f13e373]:
+                        - generic [ref=f13e374]: "4"
+                        - generic [ref=f13e375]: / 10 mín.
+                    - generic [ref=f13e376]:
+                      - generic [ref=f13e377]: Ubicación
+                      - generic [ref=f13e378]: Almacén Lima • Pasillo D4
+                - generic [ref=f13e379]:
+                  - heading "Acciones rápidas 4 disponibles" [level=4] [ref=f13e380]:
+                    - generic [ref=f13e381]: Acciones rápidas
+                    - generic [ref=f13e382]: 4 disponibles
+                  - generic [ref=f13e383]:
+                    - button "Ver producto" [ref=f13e384]
+                    - button "Ajustar stock" [ref=f13e388]
+                    - button "Crear pedido" [ref=f13e392]
+                    - button "Notificar equipo" [ref=f13e396]
+                - generic [ref=f13e400]:
+                  - generic [ref=f13e401]:
+                    - generic [ref=f13e402]:
+                      - heading "Trazabilidad del evento" [level=4] [ref=f13e403]
+                      - generic [ref=f13e406]: 4 registros
+                    - generic [ref=f13e407]:
+                      - generic [ref=f13e408]:
+                        - generic [ref=f13e410]:
+                          - paragraph [ref=f13e411]: Generada por regla automática
+                          - generic [ref=f13e412]: 10:24:02 a. m.
+                        - paragraph [ref=f13e413]: "Disparador: Umbral de stock < 10 unidades"
+                      - generic [ref=f13e414]:
+                        - generic [ref=f13e416]:
+                          - paragraph [ref=f13e417]: Despachada a cola multi-canal
+                          - generic [ref=f13e418]: 10:24:05 a. m.
+                        - paragraph [ref=f13e419]: Push interno y bandeja de panel web
+                      - generic [ref=f13e420]:
+                        - generic [ref=f13e422]:
+                          - paragraph [ref=f13e423]: Lectura parcial
+                          - generic [ref=f13e424]: 1 de 3 leídos
+                        - paragraph [ref=f13e425]: 2 destinatarios con acuse pendiente
+                  - generic [ref=f13e426]:
+                    - generic [ref=f13e427]:
+                      - heading "Destinatarios y estado" [level=4] [ref=f13e428]
+                      - generic [ref=f13e431]: 3 asignados
+                    - generic [ref=f13e432]:
+                      - generic [ref=f13e433]:
+                        - generic [ref=f13e434]:
+                          - generic [ref=f13e435]: JP
+                          - generic [ref=f13e436]:
+                            - paragraph [ref=f13e437]: Jean Pérez
+                            - paragraph [ref=f13e438]: Superadmin • In-App
+                        - generic [ref=f13e439]: Leído hace 8 min
+                      - generic [ref=f13e440]:
+                        - generic [ref=f13e441]:
+                          - generic [ref=f13e442]: LH
+                          - generic [ref=f13e443]:
+                            - paragraph [ref=f13e444]: Luis Herrera
+                            - paragraph [ref=f13e445]: Almacén Lima • In-App
+                        - generic [ref=f13e446]: No leído
+                      - generic [ref=f13e447]:
+                        - generic [ref=f13e448]:
+                          - generic [ref=f13e449]: CM
+                          - generic [ref=f13e450]:
+                            - paragraph [ref=f13e451]: Carlos Méndez
+                            - paragraph [ref=f13e452]: Compras • Email + Push
+                        - generic [ref=f13e453]: No leído
+              - generic [ref=f13e454]:
+                - generic [ref=f13e455]:
+                  - generic [ref=f13e456]:
+                    - heading "Reglas de automatización" [level=3] [ref=f13e459]
+                    - link "Ver todas" [ref=f13e460] [cursor=pointer]:
+                      - /url: "#"
+                  - generic [ref=f13e461]:
+                    - generic [ref=f13e462]:
+                      - generic [ref=f13e467]:
+                        - heading "Stock bajo" [level=4] [ref=f13e468]
+                        - paragraph [ref=f13e469]: Disparo al llegar a umbral mín.
+                      - generic [ref=f13e470] [cursor=pointer]
+                    - generic [ref=f13e472]:
+                      - generic [ref=f13e477]:
+                        - heading "Cotización por vencer" [level=4] [ref=f13e478]
+                        - paragraph [ref=f13e479]: Alerta preventiva 24h antes
+                      - generic [ref=f13e480] [cursor=pointer]
+                    - generic [ref=f13e482]:
+                      - generic [ref=f13e487]:
+                        - heading "Pago pendiente" [level=4] [ref=f13e488]
+                        - paragraph [ref=f13e489]: Aviso tras 3 días sin liquidar
+                      - generic [ref=f13e490] [cursor=pointer]
+                    - generic [ref=f13e492]:
+                      - generic [ref=f13e497]:
+                        - heading "Pedido retrasado" [level=4] [ref=f13e498]
+                        - paragraph [ref=f13e499]: Excede fecha pactada
+                      - generic [ref=f13e500] [cursor=pointer]
+                - generic [ref=f13e502]:
+                  - generic [ref=f13e503]:
+                    - generic [ref=f13e504]:
+                      - heading "Estado de entrega" [level=3] [ref=f13e505]
+                      - paragraph [ref=f13e506]: Últimos 30 días
+                    - link "Ver reporte" [ref=f13e507] [cursor=pointer]:
+                      - /url: "#"
+                  - generic [ref=f13e508]:
+                    - generic [ref=f13e517]:
+                      - generic [ref=f13e518]: "120"
+                      - generic [ref=f13e519]: Total
+                    - generic [ref=f13e520]:
+                      - generic [ref=f13e521]:
+                        - generic [ref=f13e522]: Entregadas
+                        - generic [ref=f13e525]: 7865%
+                      - generic [ref=f13e526]:
+                        - generic [ref=f13e527]: En cola
+                        - generic [ref=f13e530]: 97%
+                      - generic [ref=f13e531]:
+                        - generic [ref=f13e532]: Fallidas
+                        - generic [ref=f13e535]: 65%
+                      - generic [ref=f13e536]:
+                        - generic [ref=f13e537]: Pendientes
+                        - generic [ref=f13e540]: 1210%
+                      - generic [ref=f13e541]:
+                        - generic [ref=f13e542]: No leídas
+                        - generic [ref=f13e545]: 1513%
+                - generic [ref=f13e546]:
+                  - generic [ref=f13e547]:
+                    - heading "Plantillas de mensajes" [level=3] [ref=f13e550]
+                    - link "Ver todas" [ref=f13e551] [cursor=pointer]:
+                      - /url: "#"
+                  - generic [ref=f13e552]:
+                    - link [ref=f13e553] [cursor=pointer]:
+                      - /url: "#"
+                      - generic [ref=f13e558]:
+                        - heading "Alerta de stock bajo" [level=4] [ref=f13e559]
+                        - paragraph [ref=f13e560]: Aviso de inventario crítico
+                    - link [ref=f13e563] [cursor=pointer]:
+                      - /url: "#"
+                      - generic [ref=f13e568]:
+                        - heading "Seguimiento de cotización" [level=4] [ref=f13e569]
+                        - paragraph [ref=f13e570]: Recordatorio al equipo de ventas
+                    - link [ref=f13e573] [cursor=pointer]:
+                      - /url: "#"
+                      - generic [ref=f13e578]:
+                        - heading "Pago confirmado" [level=4] [ref=f13e579]
+                        - paragraph [ref=f13e580]: Notificación de abono contable
+                    - link [ref=f13e583] [cursor=pointer]:
+                      - /url: "#"
+                      - generic [ref=f13e588]:
+                        - heading "Pedido en ruta" [level=4] [ref=f13e589]
+                        - paragraph [ref=f13e590]: Confirmación de despacho logístico
+            - generic [ref=f13e593]:
+              - generic [ref=f13e594]: "Última actualización: 31 de agosto de 2024, 10:24 a. m."
+              - button [ref=f13e595]
+  - button "Open Next.js Dev Tools" [ref=f13e603] [cursor=pointer]
+  - alert [ref=f13e607]

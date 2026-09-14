@@ -1,0 +1,786 @@
+- generic [active] [ref=f3e1]:
+  - main [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - complementary [ref=f3e4]:
+        - link "Ir al inicio de ColdPower" [ref=f3e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f3e7]
+        - navigation "Navegacion administrativa" [ref=f3e8]:
+          - generic [ref=f3e9]:
+            - link "Inicio" [ref=f3e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f3e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f3e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f3e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f3e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f3e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f3e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f3e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f3e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f3e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f3e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f3e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f3e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f3e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f3e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f3e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f3e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f3e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f3e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f3e112]:
+          - group [ref=f3e113]:
+            - generic "Necesitas ayuda?" [ref=f3e114] [cursor=pointer]
+          - generic [ref=f3e123]:
+            - strong [ref=f3e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f3e125]:
+        - generic [ref=f3e126]:
+          - generic [ref=f3e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f3e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f3e129]:
+            - link "Ver notificaciones" [ref=f3e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - generic [ref=f3e135]:
+              - paragraph [ref=f3e136]: Superadmin
+              - paragraph [ref=f3e137]: Superadministrador
+        - main [ref=f3e140]:
+          - generic [ref=f3e141]:
+            - generic [ref=f3e142]:
+              - generic [ref=f3e143]:
+                - generic [ref=f3e148]:
+                  - heading "Auditoría" [level=1] [ref=f3e149]
+                  - paragraph [ref=f3e150]: Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.
+                - generic [ref=f3e151]:
+                  - link "Exportar logs" [ref=f3e152] [cursor=pointer]:
+                    - /url: /api/admin/auditoria/export
+                  - button "Guardar filtro" [ref=f3e156]
+              - generic [ref=f3e160]:
+                - generic [ref=f3e161]:
+                  - generic [ref=f3e162]: Eventos 24h
+                  - generic [ref=f3e167]: "22"
+                  - generic [ref=f3e168]: Sin datos del período anterior
+                - generic [ref=f3e170]:
+                  - generic [ref=f3e171]: Eventos críticos
+                  - generic [ref=f3e176]: "0"
+                  - generic [ref=f3e177]: → 0% vs. período anterior
+                - generic [ref=f3e179]:
+                  - generic [ref=f3e180]: Cambios sensibles
+                  - generic [ref=f3e185]: "0"
+                  - generic [ref=f3e186]: → 0% vs. período anterior
+                - generic [ref=f3e188]:
+                  - generic [ref=f3e189]: Inicios de sesión
+                  - generic [ref=f3e194]: "0"
+                  - generic [ref=f3e195]: → 0% vs. período anterior
+                  - img "Tendencia de inicios de sesión" [ref=f3e196]
+                - generic [ref=f3e197]:
+                  - generic [ref=f3e198]: Errores de integración
+                  - generic [ref=f3e203]: "0"
+                  - generic [ref=f3e204]: → 0% vs. período anterior
+                  - img "Tendencia de errores de integración" [ref=f3e205]
+                - generic [ref=f3e206]:
+                  - generic [ref=f3e207]: Acciones fallidas
+                  - generic [ref=f3e212]: "0"
+                  - generic [ref=f3e213]: → 0% vs. período anterior
+                  - img "Tendencia de acciones fallidas" [ref=f3e214]
+              - generic [ref=f3e215]:
+                - textbox "Buscar por actor, acción, objeto, IP o ID de correlación..." [ref=f3e217]
+                - generic [ref=f3e218]:
+                  - generic [ref=f3e219]:
+                    - generic [ref=f3e220]: Módulo
+                    - combobox "Módulo" [ref=f3e221] [cursor=pointer]:
+                      - option "Todos" [selected]
+                      - option "Auditoría"
+                      - option "Productos"
+                      - option "Pipeline"
+                      - option "Clientes"
+                      - option "Inventario"
+                      - option "Inventario"
+                      - option "Operaciones"
+                      - option "Pedidos"
+                      - option "Pagos"
+                      - option "Pipeline"
+                      - option "Precios"
+                      - option "Productos"
+                      - option "Promociones"
+                      - option "Compras"
+                      - option "Cotizaciones"
+                      - option "Ventas"
+                  - generic [ref=f3e222]:
+                    - generic [ref=f3e223]: Severidad
+                    - combobox "Severidad" [ref=f3e224] [cursor=pointer]:
+                      - option "Todas" [selected]
+                      - option "Info"
+                  - generic [ref=f3e225]:
+                    - generic [ref=f3e226]: Desde
+                    - textbox "Desde Hasta" [ref=f3e227]
+                    - generic [ref=f3e228]: Hasta
+                    - textbox [ref=f3e229]
+                  - button "Aplicar" [ref=f3e230]
+                  - button "Más filtros" [ref=f3e232]
+              - generic [ref=f3e235]:
+                - generic [ref=f3e236]:
+                  - generic [ref=f3e237]:
+                    - heading "Volumen de eventos" [level=3] [ref=f3e238]
+                    - generic [ref=f3e239]:
+                      - generic [ref=f3e240]: Total
+                      - generic [ref=f3e242]: Período anterior
+                  - group "Volumen de eventos de auditoría, últimos 30 días" [ref=f3e244]:
+                    - paragraph [ref=f3e245]: "Volumen de eventos de auditoría, últimos 30 días. Valores actuales: 13-ago: 2; 14-ago: 14; 15-ago: 107; 16-ago: 75; 17-ago: 2; 18-ago: 5; 19-ago: 15; 20-ago: 5; 21-ago: 6; 22-ago: 11; 23-ago: 6; 24-ago: 0; 25-ago: 0; 26-ago: 10; 27-ago: 0; 28-ago: 0; 29-ago: 0; 30-ago: 0; 31-ago: 43; 01-set: 0; 02-set: 3; 03-set: 0; 04-set: 0; 05-set: 10; 06-set: 318; 07-set: 3; 08-set: 0; 09-set: 0; 10-set: 0; 11-set: 0."
+                    - table [ref=f3e246]:
+                      - caption [ref=f3e247]: Volumen de eventos de auditoría, últimos 30 días
+                      - rowgroup [ref=f3e248]:
+                        - row [ref=f3e249]:
+                          - columnheader "Período" [ref=f3e250]
+                          - columnheader "Actual" [ref=f3e251]
+                          - columnheader "Anterior" [ref=f3e252]
+                      - rowgroup [ref=f3e253]:
+                        - row [ref=f3e254]:
+                          - rowheader "13-ago" [ref=f3e255]
+                          - cell "2" [ref=f3e256]
+                          - cell "0" [ref=f3e257]
+                        - row [ref=f3e258]:
+                          - rowheader "14-ago" [ref=f3e259]
+                          - cell "14" [ref=f3e260]
+                          - cell "0" [ref=f3e261]
+                        - row [ref=f3e262]:
+                          - rowheader "15-ago" [ref=f3e263]
+                          - cell "107" [ref=f3e264]
+                          - cell "0" [ref=f3e265]
+                        - row [ref=f3e266]:
+                          - rowheader "16-ago" [ref=f3e267]
+                          - cell "75" [ref=f3e268]
+                          - cell "0" [ref=f3e269]
+                        - row [ref=f3e270]:
+                          - rowheader "17-ago" [ref=f3e271]
+                          - cell "2" [ref=f3e272]
+                          - cell "0" [ref=f3e273]
+                        - row [ref=f3e274]:
+                          - rowheader "18-ago" [ref=f3e275]
+                          - cell "5" [ref=f3e276]
+                          - cell "10" [ref=f3e277]
+                        - row [ref=f3e278]:
+                          - rowheader "19-ago" [ref=f3e279]
+                          - cell "15" [ref=f3e280]
+                          - cell "0" [ref=f3e281]
+                        - row [ref=f3e282]:
+                          - rowheader "20-ago" [ref=f3e283]
+                          - cell "5" [ref=f3e284]
+                          - cell "0" [ref=f3e285]
+                        - row [ref=f3e286]:
+                          - rowheader "21-ago" [ref=f3e287]
+                          - cell "6" [ref=f3e288]
+                          - cell "0" [ref=f3e289]
+                        - row [ref=f3e290]:
+                          - rowheader "22-ago" [ref=f3e291]
+                          - cell "11" [ref=f3e292]
+                          - cell "0" [ref=f3e293]
+                        - row [ref=f3e294]:
+                          - rowheader "23-ago" [ref=f3e295]
+                          - cell "6" [ref=f3e296]
+                          - cell "0" [ref=f3e297]
+                        - row [ref=f3e298]:
+                          - rowheader "24-ago" [ref=f3e299]
+                          - cell "0" [ref=f3e300]
+                          - cell "0" [ref=f3e301]
+                        - row [ref=f3e302]:
+                          - rowheader "25-ago" [ref=f3e303]
+                          - cell "0" [ref=f3e304]
+                          - cell "10" [ref=f3e305]
+                        - row [ref=f3e306]:
+                          - rowheader "26-ago" [ref=f3e307]
+                          - cell "10" [ref=f3e308]
+                          - cell "0" [ref=f3e309]
+                        - row [ref=f3e310]:
+                          - rowheader "27-ago" [ref=f3e311]
+                          - cell "0" [ref=f3e312]
+                          - cell "0" [ref=f3e313]
+                        - row [ref=f3e314]:
+                          - rowheader "28-ago" [ref=f3e315]
+                          - cell "0" [ref=f3e316]
+                          - cell "1" [ref=f3e317]
+                        - row [ref=f3e318]:
+                          - rowheader "29-ago" [ref=f3e319]
+                          - cell "0" [ref=f3e320]
+                          - cell "1" [ref=f3e321]
+                        - row [ref=f3e322]:
+                          - rowheader "30-ago" [ref=f3e323]
+                          - cell "0" [ref=f3e324]
+                          - cell "1" [ref=f3e325]
+                        - row [ref=f3e326]:
+                          - rowheader "31-ago" [ref=f3e327]
+                          - cell "43" [ref=f3e328]
+                          - cell "1" [ref=f3e329]
+                        - row [ref=f3e330]:
+                          - rowheader "01-set" [ref=f3e331]
+                          - cell "0" [ref=f3e332]
+                          - cell "1" [ref=f3e333]
+                        - row [ref=f3e334]:
+                          - rowheader "02-set" [ref=f3e335]
+                          - cell "3" [ref=f3e336]
+                          - cell "1" [ref=f3e337]
+                        - row [ref=f3e338]:
+                          - rowheader "03-set" [ref=f3e339]
+                          - cell "0" [ref=f3e340]
+                          - cell "1" [ref=f3e341]
+                        - row [ref=f3e342]:
+                          - rowheader "04-set" [ref=f3e343]
+                          - cell "0" [ref=f3e344]
+                          - cell "11" [ref=f3e345]
+                        - row [ref=f3e346]:
+                          - rowheader "05-set" [ref=f3e347]
+                          - cell "10" [ref=f3e348]
+                          - cell "1" [ref=f3e349]
+                        - row [ref=f3e350]:
+                          - rowheader "06-set" [ref=f3e351]
+                          - cell "318" [ref=f3e352]
+                          - cell "1" [ref=f3e353]
+                        - row [ref=f3e354]:
+                          - rowheader "07-set" [ref=f3e355]
+                          - cell "3" [ref=f3e356]
+                          - cell "1" [ref=f3e357]
+                        - row [ref=f3e358]:
+                          - rowheader "08-set" [ref=f3e359]
+                          - cell "0" [ref=f3e360]
+                          - cell "1" [ref=f3e361]
+                        - row [ref=f3e362]:
+                          - rowheader "09-set" [ref=f3e363]
+                          - cell "0" [ref=f3e364]
+                          - cell "2" [ref=f3e365]
+                        - row [ref=f3e366]:
+                          - rowheader "10-set" [ref=f3e367]
+                          - cell "0" [ref=f3e368]
+                          - cell "2" [ref=f3e369]
+                        - row [ref=f3e370]:
+                          - rowheader "11-set" [ref=f3e371]
+                          - cell "0" [ref=f3e372]
+                          - cell "12" [ref=f3e373]
+                    - generic:
+                      - generic: "318"
+                      - generic: "239"
+                      - generic: "159"
+                      - generic: "80"
+                      - generic: "0"
+                      - generic: 13-ago
+                      - generic: 20-ago
+                      - generic: 28-ago
+                      - generic: 04-set
+                      - generic: 11-set
+                - generic [ref=f3e378]:
+                  - heading "Alertas y cumplimiento" [level=3] [ref=f3e379]
+                  - generic [ref=f3e380]:
+                    - generic [ref=f3e385]:
+                      - paragraph [ref=f3e386]: Cumplimiento
+                      - paragraph [ref=f3e387]: Todos los eventos se registran y conservan de forma permanente (append-only).
+                    - generic [ref=f3e392]:
+                      - paragraph [ref=f3e393]: Sin anomalías de seguridad
+                      - paragraph [ref=f3e394]: No se detectaron eventos críticos ni fallidos en el período.
+              - generic [ref=f3e395]:
+                - generic [ref=f3e396]:
+                  - generic [ref=f3e397]:
+                    - heading "Registro de auditoría" [level=2] [ref=f3e398]
+                    - paragraph [ref=f3e399]: 1,136 resultados
+                  - generic [ref=f3e400]:
+                    - link "Página anterior" [ref=f3e401] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=1
+                    - link "1" [ref=f3e404] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=1
+                    - link "2" [ref=f3e405] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=2
+                    - link "3" [ref=f3e406] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=3
+                    - link "4" [ref=f3e407] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=4
+                    - link "5" [ref=f3e408] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=5
+                    - link "Página siguiente" [ref=f3e409] [cursor=pointer]:
+                      - /url: /admin/auditoria?page=2
+                - table [ref=f3e413]:
+                  - rowgroup [ref=f3e414]:
+                    - row [ref=f3e415]:
+                      - columnheader "Fecha y hora" [ref=f3e416]
+                      - columnheader "Actor" [ref=f3e421]
+                      - columnheader "Módulo" [ref=f3e422]
+                      - columnheader "Acción" [ref=f3e423]
+                      - columnheader "Objeto" [ref=f3e424]
+                      - columnheader "Severidad" [ref=f3e425]
+                      - columnheader "Resultado" [ref=f3e426]
+                      - columnheader "Detalle" [ref=f3e427]
+                  - rowgroup [ref=f3e428]:
+                    - row [ref=f3e429]:
+                      - cell "26 dic 2026, 07:00 p. m." [ref=f3e430]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e431]:
+                        - generic [ref=f3e432]:
+                          - generic [ref=f3e433]: JE
+                          - generic [ref=f3e434]:
+                            - paragraph [ref=f3e435]: Jean
+                            - paragraph [ref=f3e436]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e437]
+                      - cell "Asoció un archivo multimedia" [ref=f3e438]
+                      - cell [ref=f3e439]:
+                        - paragraph [ref=f3e440]: Producto
+                        - paragraph [ref=f3e441]: product-cp-bag-otr-0657
+                      - cell "Info" [ref=f3e442]
+                      - cell "Exitoso" [ref=f3e444]
+                      - cell [ref=f3e446]:
+                        - link "Ver detalle" [ref=f3e447] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-10
+                    - row [ref=f3e450]:
+                      - cell "26 dic 2026, 06:00 p. m." [ref=f3e451]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e452]:
+                        - generic [ref=f3e453]:
+                          - generic [ref=f3e454]: JE
+                          - generic [ref=f3e455]:
+                            - paragraph [ref=f3e456]: Jean
+                            - paragraph [ref=f3e457]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e458]
+                      - cell "Actualizó contenido editorial" [ref=f3e459]
+                      - cell [ref=f3e460]:
+                        - paragraph [ref=f3e461]: Producto
+                        - paragraph [ref=f3e462]: product-cp-bag-otr-0657
+                      - cell "Info" [ref=f3e463]
+                      - cell "Exitoso" [ref=f3e465]
+                      - cell [ref=f3e467]:
+                        - link "Ver detalle" [ref=f3e468] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-9
+                    - row [ref=f3e471]:
+                      - cell "26 dic 2026, 05:00 p. m." [ref=f3e472]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e473]:
+                        - generic [ref=f3e474]:
+                          - generic [ref=f3e475]: JE
+                          - generic [ref=f3e476]:
+                            - paragraph [ref=f3e477]: Jean
+                            - paragraph [ref=f3e478]: xslync@gmail.com
+                      - cell "Inventario" [ref=f3e479]
+                      - cell "Ajustó el inventario" [ref=f3e480]
+                      - cell [ref=f3e481]:
+                        - paragraph [ref=f3e482]: Inventario
+                        - paragraph [ref=f3e483]: cp-visual-year-2026-order-048
+                      - cell "Info" [ref=f3e484]
+                      - cell "Exitoso" [ref=f3e486]
+                      - cell [ref=f3e488]:
+                        - link "Ver detalle" [ref=f3e489] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-8
+                    - row [ref=f3e492]:
+                      - cell "26 dic 2026, 04:00 p. m." [ref=f3e493]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e494]:
+                        - generic [ref=f3e495]:
+                          - generic [ref=f3e496]: JE
+                          - generic [ref=f3e497]:
+                            - paragraph [ref=f3e498]: Jean
+                            - paragraph [ref=f3e499]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e500]
+                      - cell "Actualizó un precio" [ref=f3e501]
+                      - cell [ref=f3e502]:
+                        - paragraph [ref=f3e503]: Producto
+                        - paragraph [ref=f3e504]: product-cp-bag-otr-0657
+                      - cell "Info" [ref=f3e505]
+                      - cell "Exitoso" [ref=f3e507]
+                      - cell [ref=f3e509]:
+                        - link "Ver detalle" [ref=f3e510] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-7
+                    - row [ref=f3e513]:
+                      - cell "26 dic 2026, 03:00 p. m." [ref=f3e514]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e515]:
+                        - generic [ref=f3e516]:
+                          - generic [ref=f3e517]: JE
+                          - generic [ref=f3e518]:
+                            - paragraph [ref=f3e519]: Jean
+                            - paragraph [ref=f3e520]: xslync@gmail.com
+                      - cell "Clientes" [ref=f3e521]
+                      - cell "Creó el cliente" [ref=f3e522]
+                      - cell [ref=f3e523]:
+                        - paragraph [ref=f3e524]: Cliente
+                        - paragraph [ref=f3e525]: cp-dashboard-v5-customer-013
+                      - cell "Info" [ref=f3e526]
+                      - cell "Exitoso" [ref=f3e528]
+                      - cell [ref=f3e530]:
+                        - link "Ver detalle" [ref=f3e531] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-6
+                    - row [ref=f3e534]:
+                      - cell "26 dic 2026, 02:00 p. m." [ref=f3e535]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e536]:
+                        - generic [ref=f3e537]:
+                          - generic [ref=f3e538]: JE
+                          - generic [ref=f3e539]:
+                            - paragraph [ref=f3e540]: Jean
+                            - paragraph [ref=f3e541]: xslync@gmail.com
+                      - cell "Pagos" [ref=f3e542]
+                      - cell "Registró el pago" [ref=f3e543]
+                      - cell [ref=f3e544]:
+                        - paragraph [ref=f3e545]: Pago
+                        - paragraph [ref=f3e546]: cp-visual-year-2026-payment-048
+                      - cell "Info" [ref=f3e547]
+                      - cell "Exitoso" [ref=f3e549]
+                      - cell [ref=f3e551]:
+                        - link "Ver detalle" [ref=f3e552] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-5
+                    - row [ref=f3e555]:
+                      - cell "26 dic 2026, 01:00 p. m." [ref=f3e556]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e557]:
+                        - generic [ref=f3e558]:
+                          - generic [ref=f3e559]: JE
+                          - generic [ref=f3e560]:
+                            - paragraph [ref=f3e561]: Jean
+                            - paragraph [ref=f3e562]: xslync@gmail.com
+                      - cell "Pedidos" [ref=f3e563]
+                      - cell "Creó el pedido" [ref=f3e564]
+                      - cell [ref=f3e565]:
+                        - paragraph [ref=f3e566]: Pedido
+                        - paragraph [ref=f3e567]: cp-visual-year-2026-order-048
+                      - cell "Info" [ref=f3e568]
+                      - cell "Exitoso" [ref=f3e570]
+                      - cell [ref=f3e572]:
+                        - link "Ver detalle" [ref=f3e573] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-4
+                    - row [ref=f3e576]:
+                      - cell "26 dic 2026, 12:00 p. m." [ref=f3e577]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e578]:
+                        - generic [ref=f3e579]:
+                          - generic [ref=f3e580]: JE
+                          - generic [ref=f3e581]:
+                            - paragraph [ref=f3e582]: Jean
+                            - paragraph [ref=f3e583]: xslync@gmail.com
+                      - cell "Ventas" [ref=f3e584]
+                      - cell "Creó la venta" [ref=f3e585]
+                      - cell [ref=f3e586]:
+                        - paragraph [ref=f3e587]: Venta
+                        - paragraph [ref=f3e588]: cp-visual-year-2026-sale-048
+                      - cell "Info" [ref=f3e589]
+                      - cell "Exitoso" [ref=f3e591]
+                      - cell [ref=f3e593]:
+                        - link "Ver detalle" [ref=f3e594] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-3
+                    - row [ref=f3e597]:
+                      - cell "26 dic 2026, 11:00 a. m." [ref=f3e598]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e599]:
+                        - generic [ref=f3e600]:
+                          - generic [ref=f3e601]: JE
+                          - generic [ref=f3e602]:
+                            - paragraph [ref=f3e603]: Jean
+                            - paragraph [ref=f3e604]: xslync@gmail.com
+                      - cell "Pipeline" [ref=f3e605]
+                      - cell "Creó la oportunidad" [ref=f3e606]
+                      - cell [ref=f3e607]:
+                        - paragraph [ref=f3e608]: Oportunidad
+                        - paragraph [ref=f3e609]: cp-visual-year-2026-opportunity-048
+                      - cell "Info" [ref=f3e610]
+                      - cell "Exitoso" [ref=f3e612]
+                      - cell [ref=f3e614]:
+                        - link "Ver detalle" [ref=f3e615] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-2
+                    - row [ref=f3e618]:
+                      - cell "26 dic 2026, 10:00 a. m." [ref=f3e619]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e620]:
+                        - generic [ref=f3e621]:
+                          - generic [ref=f3e622]: JE
+                          - generic [ref=f3e623]:
+                            - paragraph [ref=f3e624]: Jean
+                            - paragraph [ref=f3e625]: xslync@gmail.com
+                      - cell "Cotizaciones" [ref=f3e626]
+                      - cell "Creó la cotización" [ref=f3e627]
+                      - cell [ref=f3e628]:
+                        - paragraph [ref=f3e629]: Cotización
+                        - paragraph [ref=f3e630]: cp-visual-year-2026-quote-048
+                      - cell "Info" [ref=f3e631]
+                      - cell "Exitoso" [ref=f3e633]
+                      - cell [ref=f3e635]:
+                        - link "Ver detalle" [ref=f3e636] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-048-1
+                    - row [ref=f3e639]:
+                      - cell "19 dic 2026, 07:00 p. m." [ref=f3e640]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e641]:
+                        - generic [ref=f3e642]:
+                          - generic [ref=f3e643]: JE
+                          - generic [ref=f3e644]:
+                            - paragraph [ref=f3e645]: Jean
+                            - paragraph [ref=f3e646]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e647]
+                      - cell "Asoció un archivo multimedia" [ref=f3e648]
+                      - cell [ref=f3e649]:
+                        - paragraph [ref=f3e650]: Producto
+                        - paragraph [ref=f3e651]: product-cp-bag-otr-0656
+                      - cell "Info" [ref=f3e652]
+                      - cell "Exitoso" [ref=f3e654]
+                      - cell [ref=f3e656]:
+                        - link "Ver detalle" [ref=f3e657] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-10
+                    - row [ref=f3e660]:
+                      - cell "19 dic 2026, 06:00 p. m." [ref=f3e661]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e662]:
+                        - generic [ref=f3e663]:
+                          - generic [ref=f3e664]: JE
+                          - generic [ref=f3e665]:
+                            - paragraph [ref=f3e666]: Jean
+                            - paragraph [ref=f3e667]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e668]
+                      - cell "Actualizó contenido editorial" [ref=f3e669]
+                      - cell [ref=f3e670]:
+                        - paragraph [ref=f3e671]: Producto
+                        - paragraph [ref=f3e672]: product-cp-bag-otr-0656
+                      - cell "Info" [ref=f3e673]
+                      - cell "Exitoso" [ref=f3e675]
+                      - cell [ref=f3e677]:
+                        - link "Ver detalle" [ref=f3e678] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-9
+                    - row [ref=f3e681]:
+                      - cell "19 dic 2026, 05:00 p. m." [ref=f3e682]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e683]:
+                        - generic [ref=f3e684]:
+                          - generic [ref=f3e685]: JE
+                          - generic [ref=f3e686]:
+                            - paragraph [ref=f3e687]: Jean
+                            - paragraph [ref=f3e688]: xslync@gmail.com
+                      - cell "Inventario" [ref=f3e689]
+                      - cell "Ajustó el inventario" [ref=f3e690]
+                      - cell [ref=f3e691]:
+                        - paragraph [ref=f3e692]: Inventario
+                        - paragraph [ref=f3e693]: cp-visual-year-2026-order-047
+                      - cell "Info" [ref=f3e694]
+                      - cell "Exitoso" [ref=f3e696]
+                      - cell [ref=f3e698]:
+                        - link "Ver detalle" [ref=f3e699] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-8
+                    - row [ref=f3e702]:
+                      - cell "19 dic 2026, 04:00 p. m." [ref=f3e703]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e704]:
+                        - generic [ref=f3e705]:
+                          - generic [ref=f3e706]: JE
+                          - generic [ref=f3e707]:
+                            - paragraph [ref=f3e708]: Jean
+                            - paragraph [ref=f3e709]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e710]
+                      - cell "Actualizó un precio" [ref=f3e711]
+                      - cell [ref=f3e712]:
+                        - paragraph [ref=f3e713]: Producto
+                        - paragraph [ref=f3e714]: product-cp-bag-otr-0656
+                      - cell "Info" [ref=f3e715]
+                      - cell "Exitoso" [ref=f3e717]
+                      - cell [ref=f3e719]:
+                        - link "Ver detalle" [ref=f3e720] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-7
+                    - row [ref=f3e723]:
+                      - cell "19 dic 2026, 03:00 p. m." [ref=f3e724]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e725]:
+                        - generic [ref=f3e726]:
+                          - generic [ref=f3e727]: JE
+                          - generic [ref=f3e728]:
+                            - paragraph [ref=f3e729]: Jean
+                            - paragraph [ref=f3e730]: xslync@gmail.com
+                      - cell "Clientes" [ref=f3e731]
+                      - cell "Creó el cliente" [ref=f3e732]
+                      - cell [ref=f3e733]:
+                        - paragraph [ref=f3e734]: Cliente
+                        - paragraph [ref=f3e735]: cp-dashboard-v5-customer-014
+                      - cell "Info" [ref=f3e736]
+                      - cell "Exitoso" [ref=f3e738]
+                      - cell [ref=f3e740]:
+                        - link "Ver detalle" [ref=f3e741] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-6
+                    - row [ref=f3e744]:
+                      - cell "19 dic 2026, 02:00 p. m." [ref=f3e745]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e746]:
+                        - generic [ref=f3e747]:
+                          - generic [ref=f3e748]: JE
+                          - generic [ref=f3e749]:
+                            - paragraph [ref=f3e750]: Jean
+                            - paragraph [ref=f3e751]: xslync@gmail.com
+                      - cell "Pagos" [ref=f3e752]
+                      - cell "Registró el pago" [ref=f3e753]
+                      - cell [ref=f3e754]:
+                        - paragraph [ref=f3e755]: Pago
+                        - paragraph [ref=f3e756]: cp-visual-year-2026-payment-047
+                      - cell "Info" [ref=f3e757]
+                      - cell "Exitoso" [ref=f3e759]
+                      - cell [ref=f3e761]:
+                        - link "Ver detalle" [ref=f3e762] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-5
+                    - row [ref=f3e765]:
+                      - cell "19 dic 2026, 01:00 p. m." [ref=f3e766]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e767]:
+                        - generic [ref=f3e768]:
+                          - generic [ref=f3e769]: JE
+                          - generic [ref=f3e770]:
+                            - paragraph [ref=f3e771]: Jean
+                            - paragraph [ref=f3e772]: xslync@gmail.com
+                      - cell "Pedidos" [ref=f3e773]
+                      - cell "Creó el pedido" [ref=f3e774]
+                      - cell [ref=f3e775]:
+                        - paragraph [ref=f3e776]: Pedido
+                        - paragraph [ref=f3e777]: cp-visual-year-2026-order-047
+                      - cell "Info" [ref=f3e778]
+                      - cell "Exitoso" [ref=f3e780]
+                      - cell [ref=f3e782]:
+                        - link "Ver detalle" [ref=f3e783] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-4
+                    - row [ref=f3e786]:
+                      - cell "19 dic 2026, 12:00 p. m." [ref=f3e787]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e788]:
+                        - generic [ref=f3e789]:
+                          - generic [ref=f3e790]: JE
+                          - generic [ref=f3e791]:
+                            - paragraph [ref=f3e792]: Jean
+                            - paragraph [ref=f3e793]: xslync@gmail.com
+                      - cell "Ventas" [ref=f3e794]
+                      - cell "Creó la venta" [ref=f3e795]
+                      - cell [ref=f3e796]:
+                        - paragraph [ref=f3e797]: Venta
+                        - paragraph [ref=f3e798]: cp-visual-year-2026-sale-047
+                      - cell "Info" [ref=f3e799]
+                      - cell "Exitoso" [ref=f3e801]
+                      - cell [ref=f3e803]:
+                        - link "Ver detalle" [ref=f3e804] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-3
+                    - row [ref=f3e807]:
+                      - cell "19 dic 2026, 11:00 a. m." [ref=f3e808]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e809]:
+                        - generic [ref=f3e810]:
+                          - generic [ref=f3e811]: JE
+                          - generic [ref=f3e812]:
+                            - paragraph [ref=f3e813]: Jean
+                            - paragraph [ref=f3e814]: xslync@gmail.com
+                      - cell "Pipeline" [ref=f3e815]
+                      - cell "Creó la oportunidad" [ref=f3e816]
+                      - cell [ref=f3e817]:
+                        - paragraph [ref=f3e818]: Oportunidad
+                        - paragraph [ref=f3e819]: cp-visual-year-2026-opportunity-047
+                      - cell "Info" [ref=f3e820]
+                      - cell "Exitoso" [ref=f3e822]
+                      - cell [ref=f3e824]:
+                        - link "Ver detalle" [ref=f3e825] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-2
+                    - row [ref=f3e828]:
+                      - cell "19 dic 2026, 10:00 a. m." [ref=f3e829]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e830]:
+                        - generic [ref=f3e831]:
+                          - generic [ref=f3e832]: JE
+                          - generic [ref=f3e833]:
+                            - paragraph [ref=f3e834]: Jean
+                            - paragraph [ref=f3e835]: xslync@gmail.com
+                      - cell "Cotizaciones" [ref=f3e836]
+                      - cell "Creó la cotización" [ref=f3e837]
+                      - cell [ref=f3e838]:
+                        - paragraph [ref=f3e839]: Cotización
+                        - paragraph [ref=f3e840]: cp-visual-year-2026-quote-047
+                      - cell "Info" [ref=f3e841]
+                      - cell "Exitoso" [ref=f3e843]
+                      - cell [ref=f3e845]:
+                        - link "Ver detalle" [ref=f3e846] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-047-1
+                    - row [ref=f3e849]:
+                      - cell "12 dic 2026, 07:00 p. m." [ref=f3e850]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e851]:
+                        - generic [ref=f3e852]:
+                          - generic [ref=f3e853]: JE
+                          - generic [ref=f3e854]:
+                            - paragraph [ref=f3e855]: Jean
+                            - paragraph [ref=f3e856]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e857]
+                      - cell "Asoció un archivo multimedia" [ref=f3e858]
+                      - cell [ref=f3e859]:
+                        - paragraph [ref=f3e860]: Producto
+                        - paragraph [ref=f3e861]: product-cp-aut-aut-1353
+                      - cell "Info" [ref=f3e862]
+                      - cell "Exitoso" [ref=f3e864]
+                      - cell [ref=f3e866]:
+                        - link "Ver detalle" [ref=f3e867] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-046-10
+                    - row [ref=f3e870]:
+                      - cell "12 dic 2026, 06:00 p. m." [ref=f3e871]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e872]:
+                        - generic [ref=f3e873]:
+                          - generic [ref=f3e874]: JE
+                          - generic [ref=f3e875]:
+                            - paragraph [ref=f3e876]: Jean
+                            - paragraph [ref=f3e877]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e878]
+                      - cell "Actualizó contenido editorial" [ref=f3e879]
+                      - cell [ref=f3e880]:
+                        - paragraph [ref=f3e881]: Producto
+                        - paragraph [ref=f3e882]: product-cp-aut-aut-1353
+                      - cell "Info" [ref=f3e883]
+                      - cell "Exitoso" [ref=f3e885]
+                      - cell [ref=f3e887]:
+                        - link "Ver detalle" [ref=f3e888] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-046-9
+                    - row [ref=f3e891]:
+                      - cell "12 dic 2026, 05:00 p. m." [ref=f3e892]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e893]:
+                        - generic [ref=f3e894]:
+                          - generic [ref=f3e895]: JE
+                          - generic [ref=f3e896]:
+                            - paragraph [ref=f3e897]: Jean
+                            - paragraph [ref=f3e898]: xslync@gmail.com
+                      - cell "Inventario" [ref=f3e899]
+                      - cell "Ajustó el inventario" [ref=f3e900]
+                      - cell [ref=f3e901]:
+                        - paragraph [ref=f3e902]: Inventario
+                        - paragraph [ref=f3e903]: cp-visual-year-2026-order-046
+                      - cell "Info" [ref=f3e904]
+                      - cell "Exitoso" [ref=f3e906]
+                      - cell [ref=f3e908]:
+                        - link "Ver detalle" [ref=f3e909] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-046-8
+                    - row [ref=f3e912]:
+                      - cell "12 dic 2026, 04:00 p. m." [ref=f3e913]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e914]:
+                        - generic [ref=f3e915]:
+                          - generic [ref=f3e916]: JE
+                          - generic [ref=f3e917]:
+                            - paragraph [ref=f3e918]: Jean
+                            - paragraph [ref=f3e919]: xslync@gmail.com
+                      - cell "Productos" [ref=f3e920]
+                      - cell "Actualizó un precio" [ref=f3e921]
+                      - cell [ref=f3e922]:
+                        - paragraph [ref=f3e923]: Producto
+                        - paragraph [ref=f3e924]: product-cp-aut-aut-1353
+                      - cell "Info" [ref=f3e925]
+                      - cell "Exitoso" [ref=f3e927]
+                      - cell [ref=f3e929]:
+                        - link "Ver detalle" [ref=f3e930] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-046-7
+                    - row [ref=f3e933]:
+                      - cell "12 dic 2026, 03:00 p. m." [ref=f3e934]
+                      - cell "JE Jean xslync@gmail.com" [ref=f3e935]:
+                        - generic [ref=f3e936]:
+                          - generic [ref=f3e937]: JE
+                          - generic [ref=f3e938]:
+                            - paragraph [ref=f3e939]: Jean
+                            - paragraph [ref=f3e940]: xslync@gmail.com
+                      - cell "Clientes" [ref=f3e941]
+                      - cell "Creó el cliente" [ref=f3e942]
+                      - cell [ref=f3e943]:
+                        - paragraph [ref=f3e944]: Cliente
+                        - paragraph [ref=f3e945]: cp-dashboard-v5-customer-015
+                      - cell "Info" [ref=f3e946]
+                      - cell "Exitoso" [ref=f3e948]
+                      - cell [ref=f3e950]:
+                        - link "Ver detalle" [ref=f3e951] [cursor=pointer]:
+                          - /url: /admin/auditoria?eventId=cp-visual-year-2026-audit-046-6
+            - complementary [ref=f3e954]:
+              - generic [ref=f3e955]:
+                - paragraph [ref=f3e958]: Selecciona un evento
+                - paragraph [ref=f3e959]: Elige una fila del registro para ver su detalle completo.
+  - button "Open Next.js Dev Tools" [ref=f3e965] [cursor=pointer]
+  - alert [ref=f3e969]

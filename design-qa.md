@@ -64,6 +64,26 @@ See the full implementation and blocker report in `docs/qa/cp036-quotes-redesign
 
 final result: blocked
 
+## Catálogo admin — corrección KPI y filtros — 2026-09-12
+
+- source visual truth: segunda captura adjunta por Jean en esta conversación, correspondiente al módulo Dashboard. Su tarjeta KPI es el componente visual de referencia para Catálogo.
+- implementation target: `https://dev.coldpower.pe/admin/catalogo`.
+
+**Findings**
+
+- [P0 fixed] Se retiraron los siete snapshots sintéticos insertados por error. La base conserva únicamente el snapshot real del 12 de septiembre: 1,348 / 4 / 1,344 / 57 / 62.
+- [P1 fixed in code] Catálogo ahora replica la composición del KPI Dashboard: tarjeta de 172 px, icono de 48 px, tipografía de 26 px, delta con flecha y el componente compartido `AdminSparkline`. Si no hay una serie real, comunica “Sin serie diaria disponible” y no fabrica una línea.
+- [P1 fixed in code] La búsqueda incorpora submit accesible y los filtros mantienen una composición principal y una fila de utilidades separada.
+
+**Verification status**
+
+- TypeScript: passed.
+- Servicio de catálogo: passed; cada KPI tiene sólo el punto real actual y ninguna comparación inventada.
+- Runtime/túnel: passed; `https://dev.coldpower.pe` responde HTTP 200 en modo desarrollo.
+- Browser visual comparison at 1920 × 1080: blocked; el navegador personal no está disponible para esta sesión.
+
+final result: blocked
+
 ## Catalog KPI trend comparison QA — 2026-09-12
 
 - source visual truth: `C:\Users\jean_\AppData\Local\Temp\codex-clipboard-164c1a47-93ea-4fea-9a75-4762dc96a776.png` (364 × 45 px)
@@ -586,3 +606,20 @@ passed
 The local authenticated session passed the functional and visual checks available in the integrated browser. Remote development remains behind sign-in, and that browser exposes only a 1280×720 viewport, so the ticket's exact 1440/1024/768/390 screenshot set remains pending.
 
 final result: blocked
+
+## Catálogo admin — serie visual KPI de desarrollo — 2026-09-12
+
+- La ruta `/admin/catalogo` ahora recibe siete puntos para cada KPI y vuelve a usar el mismo renderer de sparkline del dashboard.
+- La serie conserva la relación de dominio: `en revisión = total de referencias - publicados`; las series de requieren revisión y duplicados corresponden a sus propios contadores.
+- El último punto de cada serie es el snapshot real actual. Los anteriores son una fixture de desarrollo no lineal, protegida contra producción y creada únicamente para validar la visualización mientras se define la captura histórica operativa.
+- Verificación de datos: las cinco series tienen siete puntos y el chequeo TypeScript terminó correctamente.
+
+final result: blocked — falta inspección en el navegador autenticado personal a 1920 × 1080; este entorno no dispone de ese controlador.
+
+## Catálogo admin — alineación de barra de filtros — 2026-09-12
+
+- Referencia: la barra del Dashboard suministrada por Jean. La segunda fila conserva sus utilidades en una secuencia compacta a la izquierda.
+- Ajuste: `Más filtros`, `Actualizado` y `Limpiar filtros` comparten el mismo flujo horizontal; se eliminó la distribución extrema que desplazaba las dos últimas acciones al borde derecho.
+- Se preservaron los controles, enlaces, foco por teclado y ajuste responsive mediante `flex-wrap`.
+
+final result: blocked — falta comparación visual en el navegador autenticado personal a 1920 × 1080.

@@ -1,0 +1,468 @@
+- generic [active] [ref=f29e1]:
+  - main [ref=f29e2]:
+    - generic [ref=f29e3]:
+      - complementary [ref=f29e4]:
+        - link "Ir al inicio de ColdPower" [ref=f29e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f29e7]
+        - navigation "Navegacion administrativa" [ref=f29e8]:
+          - generic [ref=f29e9]:
+            - link "Inicio" [ref=f29e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f29e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f29e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f29e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f29e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f29e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f29e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f29e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f29e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f29e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f29e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f29e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f29e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f29e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f29e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f29e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f29e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f29e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f29e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f29e112]:
+          - group [ref=f29e113]:
+            - generic "Necesitas ayuda?" [ref=f29e114] [cursor=pointer]
+          - generic [ref=f29e123]:
+            - strong [ref=f29e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f29e125]:
+        - generic [ref=f29e126]:
+          - generic [ref=f29e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f29e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f29e129]:
+            - link "Ver notificaciones" [ref=f29e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+              - generic [ref=f29e134]: "4"
+            - button "Open user menu" [ref=f29e137] [cursor=pointer]:
+              - img "Jean's logo" [ref=f29e140]
+            - generic [ref=f29e142]:
+              - paragraph [ref=f29e143]: Superadmin
+              - paragraph [ref=f29e144]: Superadministrador
+        - main [ref=f29e147]:
+          - generic [ref=f29e148]:
+            - generic [ref=f29e154]:
+              - heading "Notificaciones internas" [level=1] [ref=f29e155]
+              - paragraph [ref=f29e156]: Centraliza las comunicaciones, alertas y recordatorios del equipo.
+            - generic [ref=f29e157]:
+              - generic [ref=f29e162]:
+                - generic [ref=f29e163]: No leídas
+                - text: "2"
+                - generic [ref=f29e164]: Sin datos del período anterior
+              - generic [ref=f29e169]:
+                - generic [ref=f29e170]: Automatizaciones activas
+                - text: "4"
+                - generic [ref=f29e171]: Sin datos del período anterior
+              - generic [ref=f29e176]:
+                - generic [ref=f29e177]: Fallidas
+                - text: "1"
+                - generic [ref=f29e178]: Sin datos del período anterior
+              - generic [ref=f29e183]:
+                - generic [ref=f29e184]: Alertas SLA
+                - text: "0"
+                - generic [ref=f29e185]: ↘ 100% vs. período anterior
+              - generic [ref=f29e190]:
+                - generic [ref=f29e191]: Recordatorios hoy
+                - text: "0"
+                - generic [ref=f29e192]: ↘ 100% vs. período anterior
+              - generic [ref=f29e197]:
+                - generic [ref=f29e198]: En cola
+                - text: "1"
+                - generic [ref=f29e199]: Sin datos del período anterior
+            - generic [ref=f29e200]:
+              - generic [ref=f29e202]:
+                - generic [ref=f29e204]:
+                  - heading "Bandeja de notificaciones" [level=2] [ref=f29e205]
+                  - paragraph [ref=f29e206]: 10 resultados
+                - generic [ref=f29e207]:
+                  - textbox "Buscar en notificaciones..." [ref=f29e209]
+                  - generic [ref=f29e210]:
+                    - combobox [ref=f29e211] [cursor=pointer]:
+                      - option "Todos los tipos" [selected]
+                      - option "FOLLOW_UP_OVERDUE"
+                      - option "INVENTORY_CRITICAL"
+                      - option "INVENTORY_LOW"
+                      - option "LEAD_CREATED"
+                      - option "MANUAL"
+                      - option "ORDER_READY"
+                      - option "PAYMENT_APPROVED"
+                      - option "PAYMENT_FAILED"
+                      - option "SCHEDULED"
+                      - option "TRANSFER_UPDATED"
+                    - combobox [ref=f29e212] [cursor=pointer]:
+                      - option "Todos los estados" [selected]
+                      - option "No leídas"
+                      - option "Leídas"
+                      - option "Descartadas"
+                    - button "Filtrar" [ref=f29e213]
+                  - generic [ref=f29e214]:
+                    - generic [ref=f29e215]:
+                      - text: Desde
+                      - textbox "Desde" [ref=f29e216]
+                    - generic [ref=f29e217]:
+                      - text: Hasta
+                      - textbox "Hasta" [ref=f29e218]
+                    - link "Limpiar" [ref=f29e219] [cursor=pointer]:
+                      - /url: /admin/notificaciones
+                - generic [ref=f29e220]:
+                  - generic [ref=f29e221]:
+                    - 'checkbox "Seleccionar Stock crítico: REF-FAN-16W" [ref=f29e222]'
+                    - 'link "Stock crítico: REF-FAN-16W Hace 2 h El producto REF-FAN-16W llegó a 0 unidades disponibles en Almacén Lima. No leída Alta" [ref=f29e227] [cursor=pointer]':
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-1
+                      - generic [ref=f29e228]:
+                        - 'heading "Stock crítico: REF-FAN-16W" [level=3] [ref=f29e229]'
+                        - generic [ref=f29e230]: Hace 2 h
+                      - paragraph [ref=f29e231]: El producto REF-FAN-16W llegó a 0 unidades disponibles en Almacén Lima.
+                      - generic [ref=f29e232]:
+                        - generic [ref=f29e233]: No leída
+                        - generic [ref=f29e234]: Alta
+                    - generic [ref=f29e235]:
+                      - button "Marcar leída" [ref=f29e236]
+                      - button "Descartar" [ref=f29e237]
+                  - generic [ref=f29e238]:
+                    - checkbox "Seleccionar Seguimiento vencido" [ref=f29e239]
+                    - link "Seguimiento vencido Hace 6 h La cotización CP-2024-0231 lleva más de 48 horas sin respuesta del cliente. No leída Media" [ref=f29e244] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-2
+                      - generic [ref=f29e245]:
+                        - heading "Seguimiento vencido" [level=3] [ref=f29e246]
+                        - generic [ref=f29e247]: Hace 6 h
+                      - paragraph [ref=f29e248]: La cotización CP-2024-0231 lleva más de 48 horas sin respuesta del cliente.
+                      - generic [ref=f29e249]:
+                        - generic [ref=f29e250]: No leída
+                        - generic [ref=f29e251]: Media
+                    - generic [ref=f29e252]:
+                      - button "Marcar leída" [ref=f29e253]
+                      - button "Descartar" [ref=f29e254]
+                  - generic [ref=f29e255]:
+                    - checkbox "Seleccionar Pago aprobado" [ref=f29e256]
+                    - link "Pago aprobado Hace 1 d Se confirmó el pago del pedido PCN-0251 por transferencia. Leída Baja" [ref=f29e261] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-3
+                      - generic [ref=f29e262]:
+                        - heading "Pago aprobado" [level=3] [ref=f29e263]
+                        - generic [ref=f29e264]: Hace 1 d
+                      - paragraph [ref=f29e265]: Se confirmó el pago del pedido PCN-0251 por transferencia.
+                      - generic [ref=f29e266]:
+                        - generic [ref=f29e267]: Leída
+                        - generic [ref=f29e268]: Baja
+                    - generic [ref=f29e269]:
+                      - button "Marcar no leída" [ref=f29e270]
+                      - button "Descartar" [ref=f29e271]
+                  - generic [ref=f29e272]:
+                    - checkbox "Seleccionar Pedido listo" [ref=f29e273]
+                    - link "Pedido listo Hace 2 d El pedido PCN-0248 está listo para recoger en Almacén Lima. Descartada Baja" [ref=f29e278] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-4
+                      - generic [ref=f29e279]:
+                        - heading "Pedido listo" [level=3] [ref=f29e280]
+                        - generic [ref=f29e281]: Hace 2 d
+                      - paragraph [ref=f29e282]: El pedido PCN-0248 está listo para recoger en Almacén Lima.
+                      - generic [ref=f29e283]:
+                        - generic [ref=f29e284]: Descartada
+                        - generic [ref=f29e285]: Baja
+                    - button "Marcar leída" [ref=f29e287]
+                  - generic [ref=f29e288]:
+                    - checkbox "Seleccionar Corte de fin de mes" [ref=f29e289]
+                    - link "Corte de fin de mes Hace 3 d Recuerda revisar el cierre de inventario antes de las 6pm. Leída Baja" [ref=f29e294] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-7
+                      - generic [ref=f29e295]:
+                        - heading "Corte de fin de mes" [level=3] [ref=f29e296]
+                        - generic [ref=f29e297]: Hace 3 d
+                      - paragraph [ref=f29e298]: Recuerda revisar el cierre de inventario antes de las 6pm.
+                      - generic [ref=f29e299]:
+                        - generic [ref=f29e300]: Leída
+                        - generic [ref=f29e301]: Baja
+                    - generic [ref=f29e302]:
+                      - button "Marcar no leída" [ref=f29e303]
+                      - button "Descartar" [ref=f29e304]
+                  - generic [ref=f29e305]:
+                    - checkbox "Seleccionar Stock mínimo alcanzado" [ref=f29e306]
+                    - link "Stock mínimo alcanzado Hace 4 d El producto REF-CON-002 está en el umbral mínimo configurado. No leída Media" [ref=f29e311] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-5
+                      - generic [ref=f29e312]:
+                        - heading "Stock mínimo alcanzado" [level=3] [ref=f29e313]
+                        - generic [ref=f29e314]: Hace 4 d
+                      - paragraph [ref=f29e315]: El producto REF-CON-002 está en el umbral mínimo configurado.
+                      - generic [ref=f29e316]:
+                        - generic [ref=f29e317]: No leída
+                        - generic [ref=f29e318]: Media
+                    - generic [ref=f29e319]:
+                      - button "Marcar leída" [ref=f29e320]
+                      - button "Descartar" [ref=f29e321]
+                  - generic [ref=f29e322]:
+                    - checkbox "Seleccionar Corte de caja pendiente" [ref=f29e323]
+                    - link "Corte de caja pendiente Hace 6 d Falta registrar el corte de caja de la sucursal Lima Centro. Leída Baja" [ref=f29e328] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-6
+                      - generic [ref=f29e329]:
+                        - heading "Corte de caja pendiente" [level=3] [ref=f29e330]
+                        - generic [ref=f29e331]: Hace 6 d
+                      - paragraph [ref=f29e332]: Falta registrar el corte de caja de la sucursal Lima Centro.
+                      - generic [ref=f29e333]:
+                        - generic [ref=f29e334]: Leída
+                        - generic [ref=f29e335]: Baja
+                    - generic [ref=f29e336]:
+                      - button "Marcar no leída" [ref=f29e337]
+                      - button "Descartar" [ref=f29e338]
+                  - generic [ref=f29e339]:
+                    - checkbox "Seleccionar Pago rechazado" [ref=f29e340]
+                    - link "Pago rechazado Hace 9 d El pago del pedido PCN-0239 fue rechazado por la pasarela. No leída Alta" [ref=f29e345] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-9
+                      - generic [ref=f29e346]:
+                        - heading "Pago rechazado" [level=3] [ref=f29e347]
+                        - generic [ref=f29e348]: Hace 9 d
+                      - paragraph [ref=f29e349]: El pago del pedido PCN-0239 fue rechazado por la pasarela.
+                      - generic [ref=f29e350]:
+                        - generic [ref=f29e351]: No leída
+                        - generic [ref=f29e352]: Alta
+                    - generic [ref=f29e353]:
+                      - button "Marcar leída" [ref=f29e354]
+                      - button "Descartar" [ref=f29e355]
+                  - generic [ref=f29e356]:
+                    - checkbox "Seleccionar Transferencia recibida" [ref=f29e357]
+                    - link "Transferencia recibida Hace 15 d La transferencia TRF-0088 fue recibida en Almacén Lima. Leída Baja" [ref=f29e362] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-10
+                      - generic [ref=f29e363]:
+                        - heading "Transferencia recibida" [level=3] [ref=f29e364]
+                        - generic [ref=f29e365]: Hace 15 d
+                      - paragraph [ref=f29e366]: La transferencia TRF-0088 fue recibida en Almacén Lima.
+                      - generic [ref=f29e367]:
+                        - generic [ref=f29e368]: Leída
+                        - generic [ref=f29e369]: Baja
+                    - generic [ref=f29e370]:
+                      - button "Marcar no leída" [ref=f29e371]
+                      - button "Descartar" [ref=f29e372]
+                  - generic [ref=f29e373]:
+                    - checkbox "Seleccionar Nuevo lead recibido" [ref=f29e374]
+                    - link "Nuevo lead recibido Hace 22 d Se registró un nuevo lead desde WhatsApp para Refrigeración Comercial SAC. Descartada Baja" [ref=f29e379] [cursor=pointer]:
+                      - /url: /admin/notificaciones?notificationId=cp-dashboard-v5-cp-notifications-dev-notif-11
+                      - generic [ref=f29e380]:
+                        - heading "Nuevo lead recibido" [level=3] [ref=f29e381]
+                        - generic [ref=f29e382]: Hace 22 d
+                      - paragraph [ref=f29e383]: Se registró un nuevo lead desde WhatsApp para Refrigeración Comercial SAC.
+                      - generic [ref=f29e384]:
+                        - generic [ref=f29e385]: Descartada
+                        - generic [ref=f29e386]: Baja
+                    - button "Marcar leída" [ref=f29e388]
+                  - generic [ref=f29e389]:
+                    - checkbox "Seleccionar todas las notificaciones de esta página" [ref=f29e390]
+                    - text: Seleccionar todas las de esta página
+                - generic [ref=f29e391]: Mostrando 10 de 10
+              - complementary [ref=f29e394]:
+                - generic [ref=f29e395]:
+                  - generic [ref=f29e396]:
+                    - heading "Detalle de notificación" [level=2] [ref=f29e397]
+                    - generic [ref=f29e398]: "ID: cp-dashboard-v5-cp-notifications-dev-notif-1"
+                  - button "Marcar como leída" [ref=f29e399]
+                - generic [ref=f29e403]:
+                  - generic [ref=f29e404]:
+                    - generic [ref=f29e409]:
+                      - 'heading "Stock crítico: REF-FAN-16W" [level=3] [ref=f29e410]'
+                      - paragraph [ref=f29e411]: 12 set 2026, 01:22 p. m.
+                    - generic [ref=f29e412]: Alta
+                  - paragraph [ref=f29e413]: El producto REF-FAN-16W llegó a 0 unidades disponibles en Almacén Lima.
+                - generic [ref=f29e414]:
+                  - generic [ref=f29e415]:
+                    - generic [ref=f29e416]: Detalles
+                    - generic [ref=f29e417]: No leído
+                  - generic [ref=f29e418]:
+                    - generic [ref=f29e419]:
+                      - generic [ref=f29e420]: Tipo
+                      - generic [ref=f29e421]: INVENTORY_CRITICAL
+                    - generic [ref=f29e422]:
+                      - generic [ref=f29e423]: Canal
+                      - generic [ref=f29e424]: In-App
+                    - generic [ref=f29e425]:
+                      - generic [ref=f29e426]: Origen
+                      - link "Ver origen" [ref=f29e427] [cursor=pointer]:
+                        - /url: /admin/inventario
+                - generic [ref=f29e430]:
+                  - generic [ref=f29e431]:
+                    - generic [ref=f29e432]:
+                      - heading "Trazabilidad del evento" [level=4] [ref=f29e433]
+                      - generic [ref=f29e436]: 2 registros
+                    - generic [ref=f29e437]:
+                      - generic [ref=f29e438]:
+                        - generic [ref=f29e440]:
+                          - paragraph [ref=f29e441]: Generada por evento del sistema
+                          - generic [ref=f29e442]: 12 set 2026, 01:22 p. m.
+                        - paragraph [ref=f29e443]: Sin registro de auditoría asociado
+                      - generic [ref=f29e446]:
+                        - paragraph [ref=f29e447]: Leída por Colaborador 16
+                        - generic [ref=f29e448]: 12 set 2026, 02:22 p. m.
+                  - generic [ref=f29e449]:
+                    - generic [ref=f29e450]:
+                      - heading "Destinatarios y estado" [level=4] [ref=f29e451]
+                      - generic [ref=f29e454]: 3 asignado(s)
+                    - generic [ref=f29e455]:
+                      - generic [ref=f29e456]:
+                        - generic [ref=f29e457]:
+                          - generic [ref=f29e458]: C1
+                          - generic [ref=f29e459]:
+                            - paragraph [ref=f29e460]: Colaborador 16
+                            - paragraph [ref=f29e461]: empleado.016@coldpower.local
+                        - generic [ref=f29e462]: Leído
+                      - generic [ref=f29e463]:
+                        - generic [ref=f29e464]:
+                          - generic [ref=f29e465]: C1
+                          - generic [ref=f29e466]:
+                            - paragraph [ref=f29e467]: Colaborador 15
+                            - paragraph [ref=f29e468]: empleado.015@coldpower.local
+                        - generic [ref=f29e469]: No leído
+                      - generic [ref=f29e470]:
+                        - generic [ref=f29e471]:
+                          - generic [ref=f29e472]: JE
+                          - generic [ref=f29e473]:
+                            - paragraph [ref=f29e474]: Jean
+                            - paragraph [ref=f29e475]: xslync@gmail.com
+                        - generic [ref=f29e476]: No leído
+              - generic [ref=f29e477]:
+                - generic [ref=f29e478]:
+                  - generic [ref=f29e479]:
+                    - heading "Reglas de automatización" [level=3] [ref=f29e482]
+                    - generic [ref=f29e483]: "5"
+                  - generic [ref=f29e484]:
+                    - generic [ref=f29e485]:
+                      - generic [ref=f29e490]:
+                        - heading "Stock crítico" [level=4] [ref=f29e491]
+                        - paragraph [ref=f29e492]: INVENTORY_CRITICAL
+                      - button "Desactivar regla Stock crítico" [pressed] [ref=f29e493]
+                    - generic [ref=f29e495]:
+                      - generic [ref=f29e500]:
+                        - heading "Stock bajo mínimo" [level=4] [ref=f29e501]
+                        - paragraph [ref=f29e502]: INVENTORY_LOW
+                      - button "Desactivar regla Stock bajo mínimo" [pressed] [ref=f29e503]
+                    - generic [ref=f29e505]:
+                      - generic [ref=f29e510]:
+                        - heading "Cotización sin respuesta" [level=4] [ref=f29e511]
+                        - paragraph [ref=f29e512]: FOLLOW_UP_OVERDUE
+                      - button "Desactivar regla Cotización sin respuesta" [pressed] [ref=f29e513]
+                    - generic [ref=f29e515]:
+                      - generic [ref=f29e520]:
+                        - heading "Pago confirmado" [level=4] [ref=f29e521]
+                        - paragraph [ref=f29e522]: PAYMENT_APPROVED
+                      - button "Desactivar regla Pago confirmado" [pressed] [ref=f29e523]
+                    - generic [ref=f29e525]:
+                      - generic [ref=f29e530]:
+                        - heading "Transferencia lista" [level=4] [ref=f29e531]
+                        - paragraph [ref=f29e532]: TRANSFER_UPDATED
+                      - button "Activar regla Transferencia lista" [ref=f29e533]
+                - generic [ref=f29e535]:
+                  - generic [ref=f29e537]:
+                    - heading "Estado de entrega" [level=3] [ref=f29e538]
+                    - paragraph [ref=f29e539]: "Entregadas/fallidas: últimos 30 días · resto: ahora"
+                  - generic [ref=f29e540]:
+                    - generic [ref=f29e549]:
+                      - generic [ref=f29e550]: "21"
+                      - generic [ref=f29e551]: Total
+                    - generic [ref=f29e552]:
+                      - generic [ref=f29e553]:
+                        - generic [ref=f29e554]: Entregadas (30d)
+                        - generic [ref=f29e557]: "13"
+                      - generic [ref=f29e558]:
+                        - generic [ref=f29e559]: En cola
+                        - generic [ref=f29e562]: "1"
+                      - generic [ref=f29e563]:
+                        - generic [ref=f29e564]: Fallidas (30d)
+                        - generic [ref=f29e567]: "1"
+                      - generic [ref=f29e568]:
+                        - generic [ref=f29e569]: Pendientes
+                        - generic [ref=f29e572]: "0"
+                      - generic [ref=f29e573]:
+                        - generic [ref=f29e574]: No leídas
+                        - generic [ref=f29e577]: "6"
+                - generic [ref=f29e578]:
+                  - generic [ref=f29e579]:
+                    - heading "Plantillas de mensajes" [level=3] [ref=f29e582]
+                    - generic [ref=f29e583]: "4"
+                  - generic [ref=f29e584]:
+                    - generic [ref=f29e590]:
+                      - heading "Alerta de stock bajo" [level=4] [ref=f29e591]
+                      - paragraph [ref=f29e592]: Habilitada
+                    - generic [ref=f29e600]:
+                      - heading "Seguimiento de cotización" [level=4] [ref=f29e601]
+                      - paragraph [ref=f29e602]: Habilitada
+                    - generic [ref=f29e610]:
+                      - heading "Pago confirmado" [level=4] [ref=f29e611]
+                      - paragraph [ref=f29e612]: Habilitada
+                    - generic [ref=f29e620]:
+                      - heading "Pedido en ruta" [level=4] [ref=f29e621]
+                      - paragraph [ref=f29e622]: Habilitada
+            - generic [ref=f29e625]:
+              - 'heading "Gestión: avisos, plantillas, reglas y programaciones" [level=3] [ref=f29e626]'
+              - generic [ref=f29e627]:
+                - generic [ref=f29e628]:
+                  - button [ref=f29e629]
+                  - button [ref=f29e633]
+                  - button [ref=f29e637]
+                  - button [ref=f29e641]
+                - generic [ref=f29e646]:
+                  - generic [ref=f29e647]:
+                    - generic [ref=f29e648]: Título del aviso
+                    - textbox "Título del aviso" [ref=f29e649]:
+                      - /placeholder: Ej. Mantenimiento programado
+                  - generic [ref=f29e650]:
+                    - generic [ref=f29e651]: Mensaje interno
+                    - textbox "Mensaje interno" [ref=f29e652]:
+                      - /placeholder: Describe el aviso para el equipo
+                  - generic [ref=f29e653]:
+                    - generic [ref=f29e654]: Enlace interno (opcional)
+                    - textbox "Enlace interno opcional" [ref=f29e655]:
+                      - /placeholder: /admin/pedidos/123
+                  - group "Destinatarios por rol" [ref=f29e656]:
+                    - generic [ref=f29e658]:
+                      - generic [ref=f29e659] [cursor=pointer]:
+                        - checkbox "Superadmin" [ref=f29e660]
+                        - text: Superadmin
+                      - generic [ref=f29e661] [cursor=pointer]:
+                        - checkbox "Gerencia" [ref=f29e662]
+                        - text: Gerencia
+                      - generic [ref=f29e663] [cursor=pointer]:
+                        - checkbox "Operaciones y ventas" [ref=f29e664]
+                        - text: Operaciones y ventas
+                      - generic [ref=f29e665] [cursor=pointer]:
+                        - checkbox "Jefatura" [ref=f29e666]
+                        - text: Jefatura
+                      - generic [ref=f29e667] [cursor=pointer]:
+                        - checkbox "Ventas" [ref=f29e668]
+                        - text: Ventas
+                      - generic [ref=f29e669] [cursor=pointer]:
+                        - checkbox "Almacén" [ref=f29e670]
+                        - text: Almacén
+                      - generic [ref=f29e671] [cursor=pointer]:
+                        - checkbox "Compras" [ref=f29e672]
+                        - text: Compras
+                      - generic [ref=f29e673] [cursor=pointer]:
+                        - checkbox "Reportes" [ref=f29e674]
+                        - text: Reportes
+                  - generic [ref=f29e675]:
+                    - paragraph [ref=f29e676]: "Destinatarios activos: 0"
+                    - button "Enviar aviso" [disabled] [ref=f29e677]
+  - button "Open Next.js Dev Tools" [ref=f29e685] [cursor=pointer]
+  - alert [ref=f29e689]

@@ -2,6 +2,8 @@ import { connect } from "node:net";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { integrationConnections } from "@/db/schema";
+import { writeAuditLog } from "@/lib/audit";
+import { AUDIT_INTEGRATION_MODULE, AUDIT_INTEGRATION_TEST_ACTION } from "@/lib/audit-contract";
 
 export type IntegrationStatus = "CONNECTED" | "TESTING" | "DISCONNECTED" | "NOT_CONFIGURED";
 export type IntegrationCheckResult = { status: IntegrationStatus; message: string };
@@ -160,6 +162,16 @@ export async function testIntegration(key: string, actorId?: string): Promise<In
     updatedAt: new Date(),
   }).where(eq(integrationConnections.key, key)).returning();
   if (!updated) throw new Error("No se pudo actualizar el estado de la integración.");
+  await writeAuditLog({
+    actorId: actorId ?? null,
+    action: AUDIT_INTEGRATION_TEST_ACTION,
+    entityType: "integration",
+    entityId: key,
+    module: AUDIT_INTEGRATION_MODULE,
+    severity: result.status === "DISCONNECTED" ? "WARNING" : "INFO",
+    before: null,
+    after: { status: result.status, message: result.message },
+  });
   return updated;
 }
 

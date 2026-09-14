@@ -7,6 +7,8 @@ export class PaymentsInvalidFilterError extends Error {
 export const reconciliationStates = ["PENDING", "MATCH", "UNDERPAID", "OVERPAID"] as const;
 export type ReconciliationState = (typeof reconciliationStates)[number];
 export const receivedPaymentStatuses = ["CONFIRMED", "APPROVED", "REFUNDED"] as const;
+export const paymentQueueKeys = ["pending", "difference", "providerErrors", "refunds"] as const;
+export type PaymentQueueKey = (typeof paymentQueueKeys)[number];
 
 export type PaymentLedgerRow = { amount: string | number; status: string };
 export type RefundLedgerRow = { amount: string | number; status: string };
@@ -26,6 +28,7 @@ export type PaymentsFilters = {
   currency?: string;
   dateFrom?: string;
   dateTo?: string;
+  queue?: PaymentQueueKey;
   page?: number;
   pageSize?: number;
 };
@@ -39,14 +42,16 @@ export function parsePaymentsFilters(params: URLSearchParams): PaymentsFilters {
   const methodType = text(params, "methodType");
   const reconciliation = text(params, "reconciliation");
   const currency = text(params, "currency")?.toUpperCase();
+  const queue = text(params, "queue");
   if (status && !(paymentStatusEnum.enumValues as readonly string[]).includes(status)) throw new PaymentsInvalidFilterError();
   if (methodType && !(paymentMethodTypeEnum.enumValues as readonly string[]).includes(methodType)) throw new PaymentsInvalidFilterError();
   if (reconciliation && !(reconciliationStates as readonly string[]).includes(reconciliation)) throw new PaymentsInvalidFilterError();
   if (currency && !/^[A-Z]{3}$/.test(currency)) throw new PaymentsInvalidFilterError();
+  if (queue && !(paymentQueueKeys as readonly string[]).includes(queue)) throw new PaymentsInvalidFilterError();
   const dateFrom = date(params, "dateFrom");
   const dateTo = date(params, "dateTo");
   if (dateFrom && dateTo && dateFrom > dateTo) throw new PaymentsInvalidFilterError();
-  return { query: text(params, "query") ?? text(params, "q"), status: status as PaymentsFilters["status"], reconciliation: reconciliation as ReconciliationState | undefined, provider: text(params, "provider"), method: text(params, "method"), methodType: methodType as PaymentsFilters["methodType"], orderId: text(params, "orderId"), orderQuery: text(params, "order"), saleId: text(params, "saleId"), customerId: text(params, "customerId"), customerQuery: text(params, "customer"), currency, dateFrom, dateTo, page: positive(params, "page"), pageSize: positive(params, "pageSize") };
+  return { query: text(params, "query") ?? text(params, "q"), status: status as PaymentsFilters["status"], reconciliation: reconciliation as ReconciliationState | undefined, provider: text(params, "provider"), method: text(params, "method"), methodType: methodType as PaymentsFilters["methodType"], orderId: text(params, "orderId"), orderQuery: text(params, "order"), saleId: text(params, "saleId"), customerId: text(params, "customerId"), customerQuery: text(params, "customer"), currency, dateFrom, dateTo, queue: queue as PaymentQueueKey | undefined, page: positive(params, "page"), pageSize: positive(params, "pageSize") };
 }
 
 export type PaymentListItem = {
@@ -70,7 +75,7 @@ export type PaymentsPageResponse = {
     total: number; pending: number; approved: number; rejected: number; refunded: number; observed: number;
     reconciledOrders: number; ordersWithConfirmedPayments: number; underpaidOrders: number; overpaidOrders: number; reconciliationRate: number | null;
     totalAmount: number; amountsByCurrency: CurrencyPaymentMetric[];
-    statusBreakdown: Array<{ status: string; count: number }>; methodBreakdown: Array<{ method: string; count: number }>;
+    statusBreakdown: Array<{ status: string; count: number }>; methodBreakdown: Array<{ method: string; count: number; confirmedAmountsByCurrency: CurrencyPaymentMetric[] }>;
   };
   facets: { statuses: string[]; providers: string[]; methods: string[]; currencies: string[] };
 };

@@ -1164,6 +1164,19 @@ export const auditLogs = pgTable(
     actorIndex: index("audit_logs_actor_idx").on(table.actorId),
   }),
 );
+export const auditSavedFilters = pgTable(
+  "audit_saved_filters",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    name: text("name").notNull(),
+    filters: jsonb("filters").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    ownerIndex: index("audit_saved_filters_owner_idx").on(table.ownerId),
+  }),
+);
 export const catalogMetricSnapshots = pgTable("catalog_metric_snapshots", {
   snapshotDate: date("snapshot_date").primaryKey(),
   totalProducts: integer("total_products").notNull(),

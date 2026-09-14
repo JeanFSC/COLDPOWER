@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import { asc, eq } from "drizzle-orm";
 import { requirePermission } from "@/lib/auth";
+import { can } from "@/lib/roles";
 import { getDb } from "@/db";
 import { locations } from "@/db/schema";
 import { listSuppliers } from "@/lib/purchases-service";
 import {
+  getCategorySpend,
+  getPurchaseAlerts,
   getPurchaseDetail,
   getPurchaseRequestDetail,
   getPurchaseRequestsPage,
+  getPurchasesKpiSeries,
   getPurchasesPage,
+  getSupplierScorecard,
+  getSupplierSpendRanking,
 } from "@/lib/purchases-repository";
 import { parsePurchasesFilters } from "@/lib/purchases-contract";
 import { PurchasesOperations } from "@/components/admin/PurchasesOperations";
-import { Tanda2Purchases } from "@/components/admin/AdminTanda2Workspaces";
+import { AdminPurchasesModule } from "@/components/admin/AdminPurchasesModule";
 
 export const metadata: Metadata = {
   title: "Compras | Panel admin ColdPower",
@@ -23,7 +29,7 @@ export default async function AdminComprasPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requirePermission("purchases.view");
+  const actor = await requirePermission("purchases.view");
   const params = (await searchParams) ?? {};
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -32,42 +38,44 @@ export default async function AdminComprasPage({
   }
   const db = getDb();
   const purchaseFilters = parsePurchasesFilters(query);
-  const [suppliers, activeLocations, purchasePage, requestPage, selectedRequest, selectedPurchase] =
-    await Promise.all([
-      listSuppliers(),
-      db
-        .select({ id: locations.id, name: locations.name })
-        .from(locations)
-        .where(eq(locations.active, true))
-        .orderBy(asc(locations.name)),
-      getPurchasesPage(purchaseFilters),
-      getPurchaseRequestsPage({
-        status: query.get("requestStatus") ?? undefined,
-        page: 1,
-        pageSize: 25,
-      }),
-      query.get("requestId")
-        ? getPurchaseRequestDetail(query.get("requestId")!)
-        : Promise.resolve(null),
-      query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
-    ]);
+  const [
+    suppliers,
+    activeLocations,
+    purchasePage,
+    requestPage,
+    selectedRequest,
+    selectedPurchase,
+    categorySpend,
+    supplierRanking,
+    scorecard,
+    alerts,
+    series,
+  ] = await Promise.all([
+    listSuppliers(),
+    db
+      .select({ id: locations.id, name: locations.name })
+      .from(locations)
+      .where(eq(locations.active, true))
+      .orderBy(asc(locations.name)),
+    getPurchasesPage(purchaseFilters),
+    getPurchaseRequestsPage({
+      status: query.get("requestStatus") ?? undefined,
+      page: 1,
+      pageSize: 25,
+    }),
+    query.get("requestId") ? getPurchaseRequestDetail(query.get("requestId")!) : Promise.resolve(null),
+    query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
+    getCategorySpend(purchaseFilters),
+    getSupplierSpendRanking(purchaseFilters),
+    getSupplierScorecard(),
+    getPurchaseAlerts(),
+    getPurchasesKpiSeries(purchaseFilters),
+  ]);
   const supplierOptions = suppliers.map((supplier) => ({
     id: supplier.id,
     name: supplier.name,
     currency: supplier.currency,
     status: supplier.status,
-  }));
-  const purchaseRows = purchasePage.items.map((purchase) => ({
-    id: purchase.id,
-    code: purchase.code,
-    supplierId: purchase.supplierId,
-    locationId: purchase.locationId,
-    status: purchase.status,
-    currency: purchase.currency,
-    subtotal: purchase.subtotal,
-    createdAt: purchase.createdAt,
-    issuedAt: purchase.issuedAt,
-    expectedDeliveryAt: purchase.expectedDeliveryAt,
   }));
   const purchaseDetail = selectedPurchase
     ? {
@@ -103,35 +111,27 @@ export default async function AdminComprasPage({
       }
     : null;
   return (
-    <Tanda2Purchases
+    <AdminPurchasesModule
       suppliers={supplierOptions}
       locations={activeLocations}
-      purchases={purchaseRows}
-      metrics={purchasePage.metrics}
-      requests={requestPage.items.map((request) => ({
-        id: request.id,
-        code: request.code,
-        status: request.status,
-        source: request.source,
-        itemCount: request.itemCount,
-        locationId: request.locationId ?? "",
-      }))}
-      requestMetrics={requestPage.metrics}
+      purchasePage={purchasePage}
+      requestPage={requestPage}
+      categorySpend={categorySpend}
+      supplierRanking={supplierRanking}
+      scorecard={scorecard}
+      alerts={alerts}
+      series={series}
       selectedRequest={selectedRequest}
       selectedPurchase={purchaseDetail}
       filters={purchaseFilters}
-      pagination={{
-        page: purchasePage.page,
-        totalPages: purchasePage.totalPages,
-        totalItems: purchasePage.totalItems,
-      }}
       queryString={query.toString()}
+      canManage={can(actor.role, "purchases.manage")}
       controls={
         <PurchasesOperations
           suppliers={supplierOptions}
           locations={activeLocations}
           products={[]}
-          purchases={purchaseRows}
+          purchases={purchasePage.items}
         />
       }
     />

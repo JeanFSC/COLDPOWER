@@ -1,0 +1,720 @@
+- generic [active] [ref=f3e1]:
+  - main [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - complementary [ref=f3e4]:
+        - link "Ir al inicio de ColdPower" [ref=f3e6] [cursor=pointer]:
+          - /url: /
+          - img "ColdPower" [ref=f3e7]
+        - navigation "Navegacion administrativa" [ref=f3e8]:
+          - generic [ref=f3e9]:
+            - link "Inicio" [ref=f3e10] [cursor=pointer]:
+              - /url: /admin/inicio
+            - link "Dashboard" [ref=f3e15] [cursor=pointer]:
+              - /url: /admin/dashboard
+            - link "Operaciones" [ref=f3e22] [cursor=pointer]:
+              - /url: /admin/operaciones
+            - link "Productos" [ref=f3e28] [cursor=pointer]:
+              - /url: /admin/catalogo
+            - link "Inventario" [ref=f3e34] [cursor=pointer]:
+              - /url: /admin/inventario
+            - link "Precios" [ref=f3e39] [cursor=pointer]:
+              - /url: /admin/precios
+            - link "Clientes" [ref=f3e44] [cursor=pointer]:
+              - /url: /admin/clientes
+            - link "Pipeline" [ref=f3e50] [cursor=pointer]:
+              - /url: /admin/crm
+            - link "Cotizaciones" [ref=f3e56] [cursor=pointer]:
+              - /url: /admin/cotizaciones
+            - link "Ventas" [ref=f3e60] [cursor=pointer]:
+              - /url: /admin/ventas
+            - link "Pedidos" [ref=f3e66] [cursor=pointer]:
+              - /url: /admin/pedidos
+            - link "Compras" [ref=f3e71] [cursor=pointer]:
+              - /url: /admin/compras
+            - link "Pagos" [ref=f3e77] [cursor=pointer]:
+              - /url: /admin/pagos
+            - link "CMS" [ref=f3e81] [cursor=pointer]:
+              - /url: /admin/cms
+            - link "Reportes" [ref=f3e87] [cursor=pointer]:
+              - /url: /admin/reportes
+            - link "Notificaciones" [ref=f3e91] [cursor=pointer]:
+              - /url: /admin/notificaciones
+            - link "Auditoría" [ref=f3e96] [cursor=pointer]:
+              - /url: /admin/auditoria
+            - link "Usuarios" [ref=f3e101] [cursor=pointer]:
+              - /url: /admin/usuarios
+            - link "Configuración" [ref=f3e107] [cursor=pointer]:
+              - /url: /admin/configuracion
+        - generic [ref=f3e112]:
+          - group [ref=f3e113]:
+            - generic "Necesitas ayuda?" [ref=f3e114] [cursor=pointer]
+          - generic [ref=f3e123]:
+            - strong [ref=f3e124]: ColdPower Commerce 2.0
+            - text: C&J COLD IMPORT PERÚ E.I.R.L.
+      - generic [ref=f3e125]:
+        - generic [ref=f3e126]:
+          - generic [ref=f3e127]:
+            - textbox "Buscar en el panel administrativo" [ref=f3e128]:
+              - /placeholder: Buscar productos, clientes, pedidos, cotizaciones...
+            - generic:
+              - generic: Ctrl
+              - generic: K
+          - generic [ref=f3e129]:
+            - link "Ver notificaciones" [ref=f3e130] [cursor=pointer]:
+              - /url: /admin/notificaciones
+              - generic [ref=f3e134]: "4"
+            - generic [ref=f3e136]:
+              - paragraph [ref=f3e137]: Superadmin
+              - paragraph [ref=f3e138]: Superadministrador
+        - main [ref=f3e141]:
+          - generic [ref=f3e142]:
+            - generic [ref=f3e143]:
+              - generic [ref=f3e149]:
+                - heading "Gestión de pagos" [level=1] [ref=f3e150]
+                - paragraph [ref=f3e151]: Administra, revisa y concilia los pagos recibidos.
+              - link "Exportar reporte" [ref=f3e152] [cursor=pointer]:
+                - /url: /api/admin/pagos/export?
+            - generic [ref=f3e156]:
+              - generic [ref=f3e162]:
+                - generic [ref=f3e163]: Monto confirmado
+                - generic [ref=f3e164]: PEN S/ 87,766.00
+                - generic [ref=f3e165]: Neto de reembolsos exitosos
+              - generic [ref=f3e171]:
+                - generic [ref=f3e172]: Órdenes conciliadas
+                - generic [ref=f3e173]: "58"
+                - generic [ref=f3e174]: Conciliación por orden
+              - generic [ref=f3e180]:
+                - generic [ref=f3e181]: Pendientes
+                - generic [ref=f3e182]: "46"
+                - generic [ref=f3e183]: Pendiente o en revisión
+              - generic [ref=f3e188]:
+                - generic [ref=f3e189]: Observados
+                - generic [ref=f3e190]: "0"
+                - generic [ref=f3e191]: Diferencia, rechazo o error
+              - generic [ref=f3e192]:
+                - generic [ref=f3e199]:
+                  - generic [ref=f3e200]: Tasa de conciliación
+                  - generic [ref=f3e201]: 100%
+                - paragraph [ref=f3e204]: 58 órdenes con pago neto
+            - generic [ref=f3e205]:
+              - generic [ref=f3e206]:
+                - heading "Estado de pago" [level=2] [ref=f3e207]
+                - generic [ref=f3e208]:
+                  - generic [ref=f3e216]:
+                    - generic [ref=f3e217]: "108"
+                    - generic [ref=f3e218]: Pagos totales
+                  - generic [ref=f3e219]:
+                    - generic [ref=f3e220]:
+                      - generic [ref=f3e221]: Aprobados
+                      - generic [ref=f3e224]:
+                        - text: "58"
+                        - generic [ref=f3e225]: (53.7%)
+                    - generic [ref=f3e226]:
+                      - generic [ref=f3e227]: Pendientes
+                      - generic [ref=f3e230]:
+                        - text: "46"
+                        - generic [ref=f3e231]: (42.6%)
+                    - generic [ref=f3e232]:
+                      - generic [ref=f3e233]: Rechazados
+                      - generic [ref=f3e236]:
+                        - text: "0"
+                        - generic [ref=f3e237]: (0.0%)
+                    - generic [ref=f3e238]:
+                      - generic [ref=f3e239]: Reembolsados / otros
+                      - generic [ref=f3e242]:
+                        - text: "4"
+                        - generic [ref=f3e243]: (3.7%)
+              - generic [ref=f3e244]:
+                - heading "Métodos de pago" [level=2] [ref=f3e245]
+                - generic [ref=f3e246]:
+                  - generic [ref=f3e247]:
+                    - generic [ref=f3e248]: Tarjeta
+                    - generic [ref=f3e253]:
+                      - generic [ref=f3e254]: PEN S/ 8,410.00
+                      - generic [ref=f3e255]: 9.6%
+                  - generic [ref=f3e256]:
+                    - generic [ref=f3e257]: Transferencia
+                    - generic [ref=f3e263]:
+                      - generic [ref=f3e264]: PEN S/ 46,850.00
+                      - generic [ref=f3e265]: 53.4%
+                  - generic [ref=f3e266]:
+                    - generic [ref=f3e267]: Tarjeta de crédito
+                    - generic [ref=f3e272]:
+                      - generic [ref=f3e273]: PEN S/ 6,435.00
+                      - generic [ref=f3e274]: 7.3%
+                  - generic [ref=f3e275]:
+                    - generic [ref=f3e276]: Yape
+                    - generic [ref=f3e281]:
+                      - generic [ref=f3e282]: PEN S/ 8,219.00
+                      - generic [ref=f3e283]: 9.4%
+                  - generic [ref=f3e284]:
+                    - generic [ref=f3e285]: Tarjeta de débito
+                    - generic [ref=f3e290]:
+                      - generic [ref=f3e291]: PEN S/ 7,257.00
+                      - generic [ref=f3e292]: 8.3%
+                  - generic [ref=f3e293]:
+                    - generic [ref=f3e294]: Plin
+                    - generic [ref=f3e299]:
+                      - generic [ref=f3e300]: PEN S/ 4,885.00
+                      - generic [ref=f3e301]: 5.6%
+                  - generic [ref=f3e302]:
+                    - generic [ref=f3e303]: Efectivo
+                    - generic [ref=f3e309]:
+                      - generic [ref=f3e310]: PEN S/ 5,710.00
+                      - generic [ref=f3e311]: 6.5%
+            - generic [ref=f3e312]:
+              - textbox [ref=f3e317]:
+                - /placeholder: Buscar pago, pedido, cliente o referencia...
+              - combobox "Estado" [ref=f3e318] [cursor=pointer]:
+                - option "Estado" [selected]
+                - option "Pendiente"
+                - option "En revisión"
+                - option "Confirmado"
+                - option "Aprobado"
+                - option "Cancelado"
+              - combobox "Conciliación" [ref=f3e319] [cursor=pointer]:
+                - option "Conciliación" [selected]
+                - option "Pendiente"
+                - option "Conciliado"
+                - option "Faltante"
+                - option "Sobrepago"
+              - combobox "Método" [ref=f3e320] [cursor=pointer]:
+                - option "Método" [selected]
+                - option "Tarjeta"
+                - option "Efectivo"
+                - option "Tarjeta de crédito"
+                - option "Tarjeta de débito"
+                - option "Plin"
+                - option "Transferencia"
+                - option "Yape"
+              - combobox "Moneda" [ref=f3e321] [cursor=pointer]:
+                - option "Moneda" [selected]
+                - option "PEN"
+              - group [ref=f3e322]:
+                - generic "Más filtros" [ref=f3e323] [cursor=pointer]
+                - option "Proveedor" [selected]
+                - option "development-gateway"
+                - option "manual-cash"
+                - option "Tipo de método" [selected]
+                - option "MANUAL"
+                - option "PROVIDER"
+              - button "Aplicar" [ref=f3e326]
+            - generic [ref=f3e327]:
+              - generic [ref=f3e328]:
+                - heading "Pagos" [level=2] [ref=f3e329]
+                - generic [ref=f3e330]: "108"
+              - table [ref=f3e332]:
+                - rowgroup [ref=f3e333]:
+                  - row [ref=f3e334]:
+                    - columnheader "Pago" [ref=f3e335]
+                    - columnheader "Cliente" [ref=f3e336]
+                    - columnheader "Pedido" [ref=f3e337]
+                    - columnheader "Monto" [ref=f3e338]
+                    - columnheader "Método" [ref=f3e339]
+                    - columnheader "Estado" [ref=f3e340]
+                    - columnheader "Conciliación" [ref=f3e341]
+                    - columnheader "Referencia" [ref=f3e342]
+                    - columnheader "Fecha" [ref=f3e343]
+                    - columnheader [ref=f3e344]
+                - rowgroup [ref=f3e345]:
+                  - row [ref=f3e346]:
+                    - cell [ref=f3e347]:
+                      - button "PAGO-048" [ref=f3e348]
+                    - cell "Cliente corporativo 013" [ref=f3e349]
+                    - cell [ref=f3e350]:
+                      - link "PED-2026-048" [ref=f3e351] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-048
+                    - cell "S/ 1,419.00" [ref=f3e352]
+                    - cell "Yape" [ref=f3e353]
+                    - cell "Confirmado" [ref=f3e355]
+                    - cell "Conciliado" [ref=f3e357]
+                    - cell "PAY-2026-048" [ref=f3e359]
+                    - cell "26/12/2026" [ref=f3e360]
+                    - cell [ref=f3e361]:
+                      - button "Ver pago cp-visual-year-2026-payment-048" [ref=f3e362]
+                  - row [ref=f3e366]:
+                    - cell [ref=f3e367]:
+                      - button "PAGO-047" [ref=f3e368]
+                    - cell "Cliente corporativo 014" [ref=f3e369]
+                    - cell [ref=f3e370]:
+                      - link "PED-2026-047" [ref=f3e371] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-047
+                    - cell "S/ 1,282.00" [ref=f3e372]
+                    - cell "Tarjeta de débito" [ref=f3e373]
+                    - cell "Confirmado" [ref=f3e375]
+                    - cell "Conciliado" [ref=f3e377]
+                    - cell "PAY-2026-047" [ref=f3e379]
+                    - cell "19/12/2026" [ref=f3e380]
+                    - cell [ref=f3e381]:
+                      - button "Ver pago cp-visual-year-2026-payment-047" [ref=f3e382]
+                  - row [ref=f3e386]:
+                    - cell [ref=f3e387]:
+                      - button "PAGO-046" [ref=f3e388]
+                    - cell "Cliente corporativo 015" [ref=f3e389]
+                    - cell [ref=f3e390]:
+                      - link "PED-2026-046" [ref=f3e391] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-046
+                    - cell "S/ 1,145.00" [ref=f3e392]
+                    - cell "Tarjeta de crédito" [ref=f3e393]
+                    - cell "Confirmado" [ref=f3e395]
+                    - cell "Conciliado" [ref=f3e397]
+                    - cell "PAY-2026-046" [ref=f3e399]
+                    - cell "12/12/2026" [ref=f3e400]
+                    - cell [ref=f3e401]:
+                      - button "Ver pago cp-visual-year-2026-payment-046" [ref=f3e402]
+                  - row [ref=f3e406]:
+                    - cell [ref=f3e407]:
+                      - button "PAGO-045" [ref=f3e408]
+                    - cell "Cliente corporativo 016" [ref=f3e409]
+                    - cell [ref=f3e410]:
+                      - link "PED-2026-045" [ref=f3e411] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-045
+                    - cell "S/ 1,008.00" [ref=f3e412]
+                    - cell "Efectivo" [ref=f3e413]
+                    - cell "Confirmado" [ref=f3e415]
+                    - cell "Conciliado" [ref=f3e417]
+                    - cell "PAY-2026-045" [ref=f3e419]
+                    - cell "5/12/2026" [ref=f3e420]
+                    - cell [ref=f3e421]:
+                      - button "Ver pago cp-visual-year-2026-payment-045" [ref=f3e422]
+                  - row [ref=f3e426]:
+                    - cell [ref=f3e427]:
+                      - button "PAGO-044" [ref=f3e428]
+                    - cell "Cliente corporativo 018" [ref=f3e429]
+                    - cell [ref=f3e430]:
+                      - link "PED-2026-044" [ref=f3e431] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-044
+                    - cell "S/ 871.00" [ref=f3e432]
+                    - cell "Plin" [ref=f3e433]
+                    - cell "En revisión" [ref=f3e435]
+                    - cell "Pendiente" [ref=f3e437]
+                    - cell "PAY-2026-044" [ref=f3e439]
+                    - cell "26/11/2026" [ref=f3e440]
+                    - cell [ref=f3e441]:
+                      - button "Ver pago cp-visual-year-2026-payment-044" [ref=f3e442]
+                  - row [ref=f3e446]:
+                    - cell [ref=f3e447]:
+                      - button "PAGO-043" [ref=f3e448]
+                    - cell "Cliente corporativo 019" [ref=f3e449]
+                    - cell [ref=f3e450]:
+                      - link "PED-2026-043" [ref=f3e451] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-043
+                    - cell "S/ 734.00" [ref=f3e452]
+                    - cell "Yape" [ref=f3e453]
+                    - cell "En revisión" [ref=f3e455]
+                    - cell "Pendiente" [ref=f3e457]
+                    - cell "PAY-2026-043" [ref=f3e459]
+                    - cell "19/11/2026" [ref=f3e460]
+                    - cell [ref=f3e461]:
+                      - button "Ver pago cp-visual-year-2026-payment-043" [ref=f3e462]
+                  - row [ref=f3e466]:
+                    - cell [ref=f3e467]:
+                      - button "PAGO-042" [ref=f3e468]
+                    - cell "Cliente corporativo 020" [ref=f3e469]
+                    - cell [ref=f3e470]:
+                      - link "PED-2026-042" [ref=f3e471] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-042
+                    - cell "S/ 597.00" [ref=f3e472]
+                    - cell "Tarjeta de débito" [ref=f3e473]
+                    - cell "En revisión" [ref=f3e475]
+                    - cell "Pendiente" [ref=f3e477]
+                    - cell "PAY-2026-042" [ref=f3e479]
+                    - cell "12/11/2026" [ref=f3e480]
+                    - cell [ref=f3e481]:
+                      - button "Ver pago cp-visual-year-2026-payment-042" [ref=f3e482]
+                  - row [ref=f3e486]:
+                    - cell [ref=f3e487]:
+                      - button "PAGO-041" [ref=f3e488]
+                    - cell "Cliente corporativo 021" [ref=f3e489]
+                    - cell [ref=f3e490]:
+                      - link "PED-2026-041" [ref=f3e491] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-041
+                    - cell "S/ 460.00" [ref=f3e492]
+                    - cell "Tarjeta de crédito" [ref=f3e493]
+                    - cell "En revisión" [ref=f3e495]
+                    - cell "Pendiente" [ref=f3e497]
+                    - cell "PAY-2026-041" [ref=f3e499]
+                    - cell "5/11/2026" [ref=f3e500]
+                    - cell [ref=f3e501]:
+                      - button "Ver pago cp-visual-year-2026-payment-041" [ref=f3e502]
+                  - row [ref=f3e506]:
+                    - cell [ref=f3e507]:
+                      - button "PAGO-040" [ref=f3e508]
+                    - cell "Cliente corporativo 022" [ref=f3e509]
+                    - cell [ref=f3e510]:
+                      - link "PED-2026-040" [ref=f3e511] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-040
+                    - cell "S/ 323.00" [ref=f3e512]
+                    - cell "Efectivo" [ref=f3e513]
+                    - cell "Confirmado" [ref=f3e515]
+                    - cell "Conciliado" [ref=f3e517]
+                    - cell "PAY-2026-040" [ref=f3e519]
+                    - cell "26/10/2026" [ref=f3e520]
+                    - cell [ref=f3e521]:
+                      - button "Ver pago cp-visual-year-2026-payment-040" [ref=f3e522]
+                  - row [ref=f3e526]:
+                    - cell [ref=f3e527]:
+                      - button "PAGO-039" [ref=f3e528]
+                    - cell "Cliente corporativo 023" [ref=f3e529]
+                    - cell [ref=f3e530]:
+                      - link "PED-2026-039" [ref=f3e531] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-039
+                    - cell "S/ 186.00" [ref=f3e532]
+                    - cell "Plin" [ref=f3e533]
+                    - cell "Confirmado" [ref=f3e535]
+                    - cell "Conciliado" [ref=f3e537]
+                    - cell "PAY-2026-039" [ref=f3e539]
+                    - cell "19/10/2026" [ref=f3e540]
+                    - cell [ref=f3e541]:
+                      - button "Ver pago cp-visual-year-2026-payment-039" [ref=f3e542]
+                  - row [ref=f3e546]:
+                    - cell [ref=f3e547]:
+                      - button "PAGO-038" [ref=f3e548]
+                    - cell "Cliente corporativo 024" [ref=f3e549]
+                    - cell [ref=f3e550]:
+                      - link "PED-2026-038" [ref=f3e551] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-038
+                    - cell "S/ 2,649.00" [ref=f3e552]
+                    - cell "Yape" [ref=f3e553]
+                    - cell "Confirmado" [ref=f3e555]
+                    - cell "Conciliado" [ref=f3e557]
+                    - cell "PAY-2026-038" [ref=f3e559]
+                    - cell "12/10/2026" [ref=f3e560]
+                    - cell [ref=f3e561]:
+                      - button "Ver pago cp-visual-year-2026-payment-038" [ref=f3e562]
+                  - row [ref=f3e566]:
+                    - cell [ref=f3e567]:
+                      - button "PAGO-037" [ref=f3e568]
+                    - cell "Cliente corporativo 025" [ref=f3e569]
+                    - cell [ref=f3e570]:
+                      - link "PED-2026-037" [ref=f3e571] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-037
+                    - cell "S/ 2,512.00" [ref=f3e572]
+                    - cell "Tarjeta de débito" [ref=f3e573]
+                    - cell "Confirmado" [ref=f3e575]
+                    - cell "Conciliado" [ref=f3e577]
+                    - cell "PAY-2026-037" [ref=f3e579]
+                    - cell "5/10/2026" [ref=f3e580]
+                    - cell [ref=f3e581]:
+                      - button "Ver pago cp-visual-year-2026-payment-037" [ref=f3e582]
+                  - row [ref=f3e586]:
+                    - cell [ref=f3e587]:
+                      - button "PAGO-036" [ref=f3e588]
+                    - cell "Cliente corporativo 026" [ref=f3e589]
+                    - cell [ref=f3e590]:
+                      - link "PED-2026-036" [ref=f3e591] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-036
+                    - cell "S/ 2,375.00" [ref=f3e592]
+                    - cell "Tarjeta de crédito" [ref=f3e593]
+                    - cell "Aprobado" [ref=f3e595]
+                    - cell "Conciliado" [ref=f3e597]
+                    - cell "PAY-2026-036" [ref=f3e599]
+                    - cell "26/9/2026" [ref=f3e600]
+                    - cell [ref=f3e601]:
+                      - button "Ver pago cp-visual-year-2026-payment-036" [ref=f3e602]
+                  - row [ref=f3e606]:
+                    - cell [ref=f3e607]:
+                      - button "PAGO-035" [ref=f3e608]
+                    - cell "Cliente corporativo 028" [ref=f3e609]
+                    - cell [ref=f3e610]:
+                      - link "PED-2026-035" [ref=f3e611] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-035
+                    - cell "S/ 2,238.00" [ref=f3e612]
+                    - cell "Efectivo" [ref=f3e613]
+                    - cell "Aprobado" [ref=f3e615]
+                    - cell "Conciliado" [ref=f3e617]
+                    - cell "PAY-2026-035" [ref=f3e619]
+                    - cell "19/9/2026" [ref=f3e620]
+                    - cell [ref=f3e621]:
+                      - button "Ver pago cp-visual-year-2026-payment-035" [ref=f3e622]
+                  - row [ref=f3e626]:
+                    - cell [ref=f3e627]:
+                      - button "PAGO-034" [ref=f3e628]
+                    - cell "Cliente corporativo 029" [ref=f3e629]
+                    - cell [ref=f3e630]:
+                      - link "PED-2026-034" [ref=f3e631] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-034
+                    - cell "S/ 2,101.00" [ref=f3e632]
+                    - cell "Plin" [ref=f3e633]
+                    - cell "Aprobado" [ref=f3e635]
+                    - cell "Conciliado" [ref=f3e637]
+                    - cell "PAY-2026-034" [ref=f3e639]
+                    - cell "12/9/2026" [ref=f3e640]
+                    - cell [ref=f3e641]:
+                      - button "Ver pago cp-visual-year-2026-payment-034" [ref=f3e642]
+                  - row [ref=f3e646]:
+                    - cell [ref=f3e647]:
+                      - button "PAGO-033" [ref=f3e648]
+                    - cell "Cliente corporativo 030" [ref=f3e649]
+                    - cell [ref=f3e650]:
+                      - link "PED-2026-033" [ref=f3e651] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-033
+                    - cell "S/ 1,964.00" [ref=f3e652]
+                    - cell "Yape" [ref=f3e653]
+                    - cell "Aprobado" [ref=f3e655]
+                    - cell "Conciliado" [ref=f3e657]
+                    - cell "PAY-2026-033" [ref=f3e659]
+                    - cell "5/9/2026" [ref=f3e660]
+                    - cell [ref=f3e661]:
+                      - button "Ver pago cp-visual-year-2026-payment-033" [ref=f3e662]
+                  - row [ref=f3e666]:
+                    - cell [ref=f3e667]:
+                      - button "PAGO-032" [ref=f3e668]
+                    - cell "Cliente corporativo 031" [ref=f3e669]
+                    - cell [ref=f3e670]:
+                      - link "PED-2026-032" [ref=f3e671] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-032
+                    - cell "S/ 1,827.00" [ref=f3e672]
+                    - cell "Tarjeta de débito" [ref=f3e673]
+                    - cell "Pendiente" [ref=f3e675]
+                    - cell "Pendiente" [ref=f3e677]
+                    - cell "PAY-2026-032" [ref=f3e679]
+                    - cell "26/8/2026" [ref=f3e680]
+                    - cell [ref=f3e681]:
+                      - button "Ver pago cp-visual-year-2026-payment-032" [ref=f3e682]
+                  - row [ref=f3e686]:
+                    - cell [ref=f3e687]:
+                      - button "PAGO-001" [ref=f3e688]
+                    - cell "Restaurante Costa Azul" [ref=f3e689]
+                    - cell [ref=f3e690]:
+                      - link "PED-DEV-001" [ref=f3e691] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-001
+                    - cell "S/ 55.00" [ref=f3e692]
+                    - cell "Tarjeta" [ref=f3e693]
+                    - cell "Aprobado" [ref=f3e695]
+                    - cell "Conciliado" [ref=f3e697]
+                    - cell "DEV-PAY-001" [ref=f3e699]
+                    - cell "22/8/2026" [ref=f3e700]
+                    - cell [ref=f3e701]:
+                      - button "Ver pago cp-dashboard-v5-payment-001" [ref=f3e702]
+                  - row [ref=f3e706]:
+                    - cell [ref=f3e707]:
+                      - button "PAGO-002" [ref=f3e708]
+                    - cell "Hotel Valle Sur" [ref=f3e709]
+                    - cell [ref=f3e710]:
+                      - link "PED-DEV-003" [ref=f3e711] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-003
+                    - cell "S/ 639.00" [ref=f3e712]
+                    - cell "Transferencia" [ref=f3e713]
+                    - cell "En revisión" [ref=f3e715]
+                    - cell "Pendiente" [ref=f3e717]
+                    - cell "DEV-PAY-002" [ref=f3e719]
+                    - cell "21/8/2026" [ref=f3e720]
+                    - cell [ref=f3e721]:
+                      - button "Ver pago cp-dashboard-v5-payment-002" [ref=f3e722]
+                  - row [ref=f3e726]:
+                    - cell [ref=f3e727]:
+                      - button "PAGO-003" [ref=f3e728]
+                    - cell "Distribuidora Andes" [ref=f3e729]
+                    - cell [ref=f3e730]:
+                      - link "PED-DEV-005" [ref=f3e731] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-005
+                    - cell "S/ 1,855.00" [ref=f3e732]
+                    - cell "Tarjeta" [ref=f3e733]
+                    - cell "Pendiente" [ref=f3e735]
+                    - cell "Pendiente" [ref=f3e737]
+                    - cell "DEV-PAY-003" [ref=f3e739]
+                    - cell "20/8/2026" [ref=f3e740]
+                    - cell [ref=f3e741]:
+                      - button "Ver pago cp-dashboard-v5-payment-003" [ref=f3e742]
+                  - row [ref=f3e746]:
+                    - cell [ref=f3e747]:
+                      - button "PAGO-004" [ref=f3e748]
+                    - cell "Cliente corporativo 007" [ref=f3e749]
+                    - cell [ref=f3e750]:
+                      - link "PED-DEV-007" [ref=f3e751] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-007
+                    - cell "S/ 529.00" [ref=f3e752]
+                    - cell "Transferencia" [ref=f3e753]
+                    - cell "Confirmado" [ref=f3e755]
+                    - cell "Conciliado" [ref=f3e757]
+                    - cell "DEV-PAY-004" [ref=f3e759]
+                    - cell "19/8/2026" [ref=f3e760]
+                    - cell [ref=f3e761]:
+                      - button "Ver pago cp-dashboard-v5-payment-004" [ref=f3e762]
+                  - row [ref=f3e766]:
+                    - cell [ref=f3e767]:
+                      - button "PAGO-031" [ref=f3e768]
+                    - cell "Cliente corporativo 032" [ref=f3e769]
+                    - cell [ref=f3e770]:
+                      - link "PED-2026-031" [ref=f3e771] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-2026-031
+                    - cell "S/ 1,690.00" [ref=f3e772]
+                    - cell "Tarjeta de crédito" [ref=f3e773]
+                    - cell "Pendiente" [ref=f3e775]
+                    - cell "Pendiente" [ref=f3e777]
+                    - cell "PAY-2026-031" [ref=f3e779]
+                    - cell "19/8/2026" [ref=f3e780]
+                    - cell [ref=f3e781]:
+                      - button "Ver pago cp-visual-year-2026-payment-031" [ref=f3e782]
+                  - row [ref=f3e786]:
+                    - cell [ref=f3e787]:
+                      - button "PAGO-005" [ref=f3e788]
+                    - cell "Cliente corporativo 009" [ref=f3e789]
+                    - cell [ref=f3e790]:
+                      - link "PED-DEV-009" [ref=f3e791] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-009
+                    - cell "S/ 2,061.00" [ref=f3e792]
+                    - cell "Tarjeta" [ref=f3e793]
+                    - cell "Pendiente" [ref=f3e795]
+                    - cell "Pendiente" [ref=f3e797]
+                    - cell "DEV-PAY-005" [ref=f3e799]
+                    - cell "18/8/2026" [ref=f3e800]
+                    - cell [ref=f3e801]:
+                      - button "Ver pago cp-dashboard-v5-payment-005" [ref=f3e802]
+                  - row [ref=f3e806]:
+                    - cell [ref=f3e807]:
+                      - button "PAGO-006" [ref=f3e808]
+                    - cell "Cliente corporativo 011" [ref=f3e809]
+                    - cell [ref=f3e810]:
+                      - link "PED-DEV-011" [ref=f3e811] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-011
+                    - cell "S/ 4,225.00" [ref=f3e812]
+                    - cell "Transferencia" [ref=f3e813]
+                    - cell "Aprobado" [ref=f3e815]
+                    - cell "Conciliado" [ref=f3e817]
+                    - cell "DEV-PAY-006" [ref=f3e819]
+                    - cell "17/8/2026" [ref=f3e820]
+                    - cell [ref=f3e821]:
+                      - button "Ver pago cp-dashboard-v5-payment-006" [ref=f3e822]
+                  - row [ref=f3e826]:
+                    - cell [ref=f3e827]:
+                      - button "PAGO-007" [ref=f3e828]
+                    - cell "Cliente corporativo 013" [ref=f3e829]
+                    - cell [ref=f3e830]:
+                      - link "PED-DEV-013" [ref=f3e831] [cursor=pointer]:
+                        - /url: /admin/pedidos?query=PED-DEV-013
+                    - cell "S/ 1,003.00" [ref=f3e832]
+                    - cell "Tarjeta" [ref=f3e833]
+                    - cell "Aprobado" [ref=f3e835]
+                    - cell "Conciliado" [ref=f3e837]
+                    - cell "DEV-PAY-007" [ref=f3e839]
+                    - cell "16/8/2026" [ref=f3e840]
+                    - cell [ref=f3e841]:
+                      - button "Ver pago cp-dashboard-v5-payment-007" [ref=f3e842]
+              - generic [ref=f3e846]:
+                - generic [ref=f3e847]: Página 1 de 5
+                - navigation "Paginación de pagos" [ref=f3e848]:
+                  - link [ref=f3e849] [cursor=pointer]:
+                    - /url: /admin/pagos?page=1
+                  - link "1" [ref=f3e852] [cursor=pointer]:
+                    - /url: /admin/pagos?page=1
+                  - link "2" [ref=f3e853] [cursor=pointer]:
+                    - /url: /admin/pagos?page=2
+                  - link "3" [ref=f3e854] [cursor=pointer]:
+                    - /url: /admin/pagos?page=3
+                  - link "4" [ref=f3e855] [cursor=pointer]:
+                    - /url: /admin/pagos?page=4
+                  - link "5" [ref=f3e856] [cursor=pointer]:
+                    - /url: /admin/pagos?page=5
+                  - link [ref=f3e857] [cursor=pointer]:
+                    - /url: /admin/pagos?page=2
+            - generic [ref=f3e860]:
+              - generic [ref=f3e861]:
+                - generic [ref=f3e862]:
+                  - heading "Gestión y conciliación" [level=2] [ref=f3e863]
+                  - paragraph [ref=f3e864]: Revisa y resuelve las diferencias para mantener la contabilidad al día.
+                - generic [ref=f3e865]:
+                  - link "Todos 108" [ref=f3e866] [cursor=pointer]:
+                    - /url: /admin/pagos?
+                  - link "Pendientes 46" [ref=f3e867] [cursor=pointer]:
+                    - /url: /admin/pagos?queue=pending
+                  - link "Con diferencia 0" [ref=f3e868] [cursor=pointer]:
+                    - /url: /admin/pagos?queue=difference
+                  - link "Errores de proveedor 0" [ref=f3e869] [cursor=pointer]:
+                    - /url: /admin/pagos?queue=providerErrors
+                  - link "Reembolsos 0" [ref=f3e870] [cursor=pointer]:
+                    - /url: /admin/pagos?queue=refunds
+              - generic [ref=f3e871]:
+                - generic [ref=f3e872]:
+                  - generic [ref=f3e873]:
+                    - generic [ref=f3e874]:
+                      - generic [ref=f3e875]: Pendiente
+                      - button "Ver pago cp-visual-year-2026-payment-044" [ref=f3e876]
+                    - heading "PAGO-044" [level=3] [ref=f3e880]
+                    - paragraph [ref=f3e881]: Cliente corporativo 018
+                    - generic [ref=f3e882]:
+                      - generic [ref=f3e883]:
+                        - generic [ref=f3e884]: Monto
+                        - generic [ref=f3e885]: S/ 871.00
+                      - generic [ref=f3e886]:
+                        - generic [ref=f3e887]: Referencia
+                        - generic [ref=f3e888]: PAY-2026-044
+                      - generic [ref=f3e889]:
+                        - generic [ref=f3e890]: Motivo
+                        - generic [ref=f3e891]: Pendiente de confirmación
+                  - button "Revisar pago" [ref=f3e892]
+                - generic [ref=f3e893]:
+                  - generic [ref=f3e894]:
+                    - generic [ref=f3e895]:
+                      - generic [ref=f3e896]: Pendiente
+                      - button "Ver pago cp-visual-year-2026-payment-043" [ref=f3e897]
+                    - heading "PAGO-043" [level=3] [ref=f3e901]
+                    - paragraph [ref=f3e902]: Cliente corporativo 019
+                    - generic [ref=f3e903]:
+                      - generic [ref=f3e904]:
+                        - generic [ref=f3e905]: Monto
+                        - generic [ref=f3e906]: S/ 734.00
+                      - generic [ref=f3e907]:
+                        - generic [ref=f3e908]: Referencia
+                        - generic [ref=f3e909]: PAY-2026-043
+                      - generic [ref=f3e910]:
+                        - generic [ref=f3e911]: Motivo
+                        - generic [ref=f3e912]: Pendiente de confirmación
+                  - button "Revisar pago" [ref=f3e913]
+                - generic [ref=f3e914]:
+                  - generic [ref=f3e915]:
+                    - generic [ref=f3e916]:
+                      - generic [ref=f3e917]: Pendiente
+                      - button "Ver pago cp-visual-year-2026-payment-042" [ref=f3e918]
+                    - heading "PAGO-042" [level=3] [ref=f3e922]
+                    - paragraph [ref=f3e923]: Cliente corporativo 020
+                    - generic [ref=f3e924]:
+                      - generic [ref=f3e925]:
+                        - generic [ref=f3e926]: Monto
+                        - generic [ref=f3e927]: S/ 597.00
+                      - generic [ref=f3e928]:
+                        - generic [ref=f3e929]: Referencia
+                        - generic [ref=f3e930]: PAY-2026-042
+                      - generic [ref=f3e931]:
+                        - generic [ref=f3e932]: Motivo
+                        - generic [ref=f3e933]: Pendiente de confirmación
+                  - button "Revisar pago" [ref=f3e934]
+                - generic [ref=f3e935]:
+                  - generic [ref=f3e936]:
+                    - generic [ref=f3e937]:
+                      - generic [ref=f3e938]: Pendiente
+                      - button "Ver pago cp-visual-year-2026-payment-041" [ref=f3e939]
+                    - heading "PAGO-041" [level=3] [ref=f3e943]
+                    - paragraph [ref=f3e944]: Cliente corporativo 021
+                    - generic [ref=f3e945]:
+                      - generic [ref=f3e946]:
+                        - generic [ref=f3e947]: Monto
+                        - generic [ref=f3e948]: S/ 460.00
+                      - generic [ref=f3e949]:
+                        - generic [ref=f3e950]: Referencia
+                        - generic [ref=f3e951]: PAY-2026-041
+                      - generic [ref=f3e952]:
+                        - generic [ref=f3e953]: Motivo
+                        - generic [ref=f3e954]: Pendiente de confirmación
+                  - button "Revisar pago" [ref=f3e955]
+                - generic [ref=f3e956]:
+                  - generic [ref=f3e957]:
+                    - generic [ref=f3e958]:
+                      - generic [ref=f3e959]: Pendiente
+                      - button "Ver pago cp-visual-year-2026-payment-032" [ref=f3e960]
+                    - heading "PAGO-032" [level=3] [ref=f3e964]
+                    - paragraph [ref=f3e965]: Cliente corporativo 031
+                    - generic [ref=f3e966]:
+                      - generic [ref=f3e967]:
+                        - generic [ref=f3e968]: Monto
+                        - generic [ref=f3e969]: S/ 1,827.00
+                      - generic [ref=f3e970]:
+                        - generic [ref=f3e971]: Referencia
+                        - generic [ref=f3e972]: PAY-2026-032
+                      - generic [ref=f3e973]:
+                        - generic [ref=f3e974]: Motivo
+                        - generic [ref=f3e975]: Pendiente de confirmación
+                  - button "Revisar pago" [ref=f3e976]
+  - button "Open Next.js Dev Tools" [ref=f3e982] [cursor=pointer]
+  - alert [ref=f3e986]
