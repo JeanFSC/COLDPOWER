@@ -61,16 +61,16 @@ export function AdminDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-stretch" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <button type="button" className="absolute inset-0 bg-[#102a43]/30" aria-label="Cerrar" onClick={onClose} />
-      <div ref={drawerRef} className={`relative flex max-h-[92dvh] h-full w-full ${size === "wide" ? "max-w-3xl" : "max-w-md"} flex-col rounded-t-2xl bg-white shadow-[0_18px_50px_rgba(16,42,67,0.18)] sm:max-h-none sm:rounded-l-2xl sm:rounded-t-none`}>
-        <div className="flex shrink-0 items-center justify-between border-b border-[#e3ebf2] px-5 py-4 sm:px-6">
-          <h2 id={titleId} className="text-base font-semibold text-[#173654]">{title}</h2>
-          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Cerrar" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#5b7186] hover:bg-[#f4f7fa]">
+      <button type="button" className="absolute inset-0 bg-slate-900/30" aria-label="Cerrar" onClick={onClose} />
+      <div ref={drawerRef} className={`relative flex max-h-[92dvh] h-full w-full ${size === "wide" ? "max-w-3xl" : "max-w-md"} flex-col rounded-t-2xl bg-white shadow-[0_18px_50px_rgba(15,23,42,0.18)] sm:max-h-none sm:rounded-l-2xl sm:rounded-t-none`}>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+          <h2 id={titleId} className="text-base font-semibold text-slate-900">{title}</h2>
+          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Cerrar" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100">
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
-        {footer ? <div className="shrink-0 border-t border-[#e3ebf2] bg-white/95 px-5 py-4 backdrop-blur sm:px-6">{footer}</div> : null}
+        {footer ? <div className="shrink-0 border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur sm:px-6">{footer}</div> : null}
       </div>
     </div>
   );

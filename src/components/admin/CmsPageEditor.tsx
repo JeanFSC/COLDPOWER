@@ -301,8 +301,8 @@ export function CmsPageEditor() {
     <section className="mt-6 rounded-md border border-border bg-white p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-primary">CMS</p>
-          <h1 className="mt-1 font-display text-2xl font-black text-dark">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-blue-600">CMS</p>
+          <h1 className="mt-1 font-display text-2xl font-black text-slate-900">
             Contenido administrable
           </h1>
           <p className="mt-2 text-sm text-gray-text">
@@ -315,7 +315,7 @@ export function CmsPageEditor() {
             href={`/api/admin/cms/${slug}/preview`}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-dark"
+            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-slate-900"
           >
             Previsualizar datos
           </a>
@@ -323,7 +323,7 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("DRAFT")}
             disabled={busy}
-            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-dark disabled:opacity-50"
+            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-slate-900 disabled:opacity-50"
           >
             Guardar borrador
           </button>
@@ -331,7 +331,7 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("PUBLISHED")}
             disabled={busy}
-            className="rounded-md bg-primary px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+            className="rounded-md bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
           >
             Publicar
           </button>
@@ -339,7 +339,7 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("ARCHIVED")}
             disabled={busy}
-            className="rounded-md border border-danger px-3 py-2 text-xs font-bold text-danger disabled:opacity-50"
+            className="rounded-md border border-rose-600 px-3 py-2 text-xs font-bold text-rose-600 disabled:opacity-50"
           >
             Archivar
           </button>
@@ -351,7 +351,7 @@ export function CmsPageEditor() {
           <select
             value={slug}
             onChange={(event) => setSlug(event.target.value as PageSlug)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-dark"
+            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
           >
             {pages.map((page) => (
               <option key={page} value={page}>
@@ -365,7 +365,7 @@ export function CmsPageEditor() {
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-dark"
+            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
             placeholder="Sin título editorial"
           />
         </label>
@@ -374,7 +374,7 @@ export function CmsPageEditor() {
           <select
             value={contentType}
             onChange={(event) => setContentType(event.target.value as ContentType)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-dark"
+            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
           >
             {Object.entries(contentTypeLabels).map(([value, label]) => (
               <option key={value} value={value}>
@@ -393,13 +393,13 @@ export function CmsPageEditor() {
               type="datetime-local"
               value={scheduleAt}
               onChange={(event) => setScheduleAt(event.target.value)}
-              className="h-10 min-w-0 flex-1 rounded-md border border-border bg-white px-2 text-sm font-normal text-dark"
+              className="h-10 min-w-0 flex-1 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
             />
             <button
               type="button"
               onClick={() => void save("SCHEDULED")}
               disabled={busy || !scheduleAt}
-              className="rounded-md border border-primary px-2 text-[10px] font-bold text-primary disabled:opacity-50"
+              className="rounded-md border border-blue-600 px-2 text-[10px] font-bold text-blue-600 disabled:opacity-50"
             >
               Programar
             </button>
@@ -457,7 +457,7 @@ export function CmsPageEditor() {
               <button
                 type="button"
                 onClick={() => removeBlock(index)}
-                className="inline-flex h-9 items-center justify-center gap-1 self-end text-xs font-bold text-danger"
+                className="inline-flex h-9 items-center justify-center gap-1 self-end text-xs font-bold text-rose-600"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Quitar
@@ -475,13 +475,13 @@ export function CmsPageEditor() {
                       value={value}
                       onChange={(event) => updateField(index, key, event.target.value)}
                       rows={5}
-                      className="rounded-md border border-border bg-white px-3 py-2 text-sm font-normal text-dark"
+                      className="rounded-md border border-border bg-white px-3 py-2 text-sm font-normal text-slate-900"
                     />
                   ) : (
                     <input
                       value={value}
                       onChange={(event) => updateField(index, key, event.target.value)}
-                      className="h-9 rounded-md border border-border bg-white px-2 text-sm font-normal text-dark"
+                      className="h-9 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
                     />
                   )}
                 </label>
@@ -490,11 +490,11 @@ export function CmsPageEditor() {
             {block.type === "links" ? (
               <div className="mt-4 rounded-md border border-border bg-white p-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold text-dark">Enlaces del bloque</p>
+                  <p className="text-xs font-extrabold text-slate-900">Enlaces del bloque</p>
                   <button
                     type="button"
                     onClick={() => addLink(index)}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600"
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     Agregar enlace
@@ -527,7 +527,7 @@ export function CmsPageEditor() {
                       <button
                         type="button"
                         onClick={() => removeLink(index, linkIndex)}
-                        className="text-xs font-bold text-danger"
+                        className="text-xs font-bold text-rose-600"
                       >
                         Quitar
                       </button>
@@ -545,7 +545,7 @@ export function CmsPageEditor() {
       <button
         type="button"
         onClick={addBlock}
-        className="mt-4 inline-flex items-center gap-1 rounded-md border border-primary px-3 py-2 text-xs font-bold text-primary"
+        className="mt-4 inline-flex items-center gap-1 rounded-md border border-blue-600 px-3 py-2 text-xs font-bold text-blue-600"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         Agregar bloque

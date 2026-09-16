@@ -199,11 +199,11 @@ function acceptedValue(items: QuoteListItem[]) {
     : "Por cotizar";
 }
 function statusTone(status: string) {
-  if (status === "ACCEPTED") return "border-success/25 bg-success/10 text-success";
+  if (status === "ACCEPTED") return "border-emerald-600/25 bg-emerald-600/10 text-emerald-600";
   if (status === "REJECTED" || status === "EXPIRED" || status === "CANCELLED")
-    return "border-danger/20 bg-danger/10 text-danger";
-  if (status === "CONVERTED") return "border-primary/20 bg-primary/10 text-primary";
-  if (status === "FOLLOW_UP") return "border-warning/25 bg-warning/10 text-[#a15c00]";
+    return "border-rose-600/20 bg-rose-600/10 text-rose-600";
+  if (status === "CONVERTED") return "border-blue-600/20 bg-blue-600/10 text-blue-600";
+  if (status === "FOLLOW_UP") return "border-amber-600/25 bg-amber-600/10 text-[#a15c00]";
   return "border-[#dbe8f3] bg-[#f5f9fc] text-[#45627c]";
 }
 function statusLabel(status: string) {
@@ -233,7 +233,7 @@ function IconBox({
     yellow: "bg-[#fff7df] text-[#dd9b13]",
     green: "bg-[#e8f8ef] text-[#21a05c]",
     purple: "bg-[#f2edff] text-[#7b59d6]",
-    blue: "bg-[#eaf2ff] text-primary",
+    blue: "bg-[#eaf2ff] text-blue-600",
   };
   return (
     <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>
@@ -367,15 +367,24 @@ export function QuotesWorkspace({
     { key: "ACCEPTED", label: "Aceptadas", count: page.summary.accepted },
     { key: "CONVERTED", label: "Convertidas", count: page.summary.converted },
   ];
+  const upcomingExpirations = page.items
+    .filter(
+      (item) =>
+        item.validUntil &&
+        ["SENT", "FOLLOW_UP"].includes(item.workflowStatus) &&
+        new Date(item.validUntil).getTime() >= new Date().getTime(),
+    )
+    .sort((a, b) => new Date(a.validUntil!).getTime() - new Date(b.validUntil!).getTime())
+    .slice(0, 5);
   return (
     <main className="min-h-full bg-[#f7fafc] px-4 pb-12 pt-7 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1550px]">
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
               Operaciones comerciales
             </p>
-            <h1 className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-dark sm:text-[36px]">
+            <h1 className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-slate-900 sm:text-[36px]">
               Gestión de cotizaciones
             </h1>
             <p className="mt-2 text-sm text-[#71869b]">
@@ -385,14 +394,18 @@ export function QuotesWorkspace({
           <div className="flex flex-wrap items-center gap-2">
             <a
               href={exportHref}
-              className="inline-flex h-11 items-center gap-2 rounded-pill border border-[#d8e4ee] bg-white px-4 text-sm font-bold text-dark hover:border-primary"
+              className="inline-flex h-11 items-center gap-2 rounded-pill border border-[#d8e4ee] bg-white px-4 text-sm font-bold text-slate-900 hover:border-blue-600"
             >
               <Download size={16} /> Exportar
             </a>
             {can("quotes.create") ? (
-              <Button size="sm" onClick={() => setNewQuoteOpen(true)}>
+              <button
+                type="button"
+                onClick={() => setNewQuoteOpen(true)}
+                className="inline-flex h-11 items-center gap-2 rounded-pill bg-blue-600 px-4 text-sm font-bold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700"
+              >
                 <Plus size={17} /> Nueva cotización
-              </Button>
+              </button>
             ) : null}
           </div>
         </div>
@@ -454,7 +467,7 @@ export function QuotesWorkspace({
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="h-11 w-full rounded-xl border border-[#e2ebf2] bg-[#fbfdff] pl-10 pr-3 text-sm outline-none placeholder:text-[#9aaebe] focus:border-primary"
+              className="h-11 w-full rounded-xl border border-[#e2ebf2] bg-[#fbfdff] pl-10 pr-3 text-sm outline-none placeholder:text-[#9aaebe] focus:border-blue-600"
               placeholder="Buscar por código, cliente, SKU, modelo o correo…"
               aria-label="Buscar cotizaciones"
             />
@@ -468,7 +481,7 @@ export function QuotesWorkspace({
             onChange={(event) =>
               pushParams({ workflowStatus: event.target.value || null, status: null })
             }
-            className="h-11 rounded-xl border border-[#e2ebf2] bg-white px-3 text-sm font-semibold text-dark"
+            className="h-11 rounded-xl border border-[#e2ebf2] bg-white px-3 text-sm font-semibold text-slate-900"
           >
             <option value="">Estado: Todos</option>
             {(
@@ -492,7 +505,7 @@ export function QuotesWorkspace({
             aria-label="Filtrar por vigencia"
             value={params.get("validity") ?? ""}
             onChange={(event) => pushParams({ validity: event.target.value || null })}
-            className="h-11 rounded-xl border border-[#e2ebf2] bg-white px-3 text-sm font-semibold text-dark"
+            className="h-11 rounded-xl border border-[#e2ebf2] bg-white px-3 text-sm font-semibold text-slate-900"
           >
             <option value="">Fecha: Todos</option>
             <option value="today">Vence hoy</option>
@@ -502,7 +515,7 @@ export function QuotesWorkspace({
           </select>
           <button
             type="submit"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#eef5ff] px-4 text-sm font-extrabold text-primary hover:bg-[#e2efff]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#eef5ff] px-4 text-sm font-extrabold text-blue-600 hover:bg-[#e2efff]"
           >
             <Filter size={16} /> Aplicar
           </button>
@@ -518,7 +531,7 @@ export function QuotesWorkspace({
         </form>
         {notice ? (
           <div
-            className="mt-4 flex items-center justify-between rounded-xl border border-success/20 bg-success/5 px-4 py-3 text-sm font-semibold text-success"
+            className="mt-4 flex items-center justify-between rounded-xl border border-emerald-600/20 bg-emerald-600/5 px-4 py-3 text-sm font-semibold text-emerald-600"
             role="status"
           >
             {notice}
@@ -531,7 +544,7 @@ export function QuotesWorkspace({
           <section className="min-w-0 overflow-hidden rounded-2xl border border-[#dde8f1] bg-white shadow-[0_8px_26px_rgba(16,42,67,0.04)]">
             <div className="flex items-center justify-between border-b border-[#e7eef4] px-5 py-4">
               <div>
-                <h2 className="font-display text-lg font-black text-dark">Bandeja comercial</h2>
+                <h2 className="font-display text-lg font-black text-slate-900">Bandeja comercial</h2>
                 <p className="mt-1 text-xs text-[#8195a8]">
                   {page.totalItems} registros · ordenados por última actualización
                 </p>
@@ -539,7 +552,7 @@ export function QuotesWorkspace({
               <button
                 type="button"
                 onClick={() => router.refresh()}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#e2ebf2] px-3 py-2 text-xs font-bold text-[#577087] hover:border-primary"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#e2ebf2] px-3 py-2 text-xs font-bold text-[#577087] hover:border-blue-600"
               >
                 <RefreshCw size={14} /> Actualizar
               </button>
@@ -586,10 +599,10 @@ export function QuotesWorkspace({
             <div className="rounded-2xl border border-[#dde8f1] bg-white p-5 shadow-[0_8px_26px_rgba(16,42,67,0.04)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-primary">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-blue-600">
                     Resumen del flujo
                   </p>
-                  <h2 className="mt-1 font-display text-xl font-black text-dark">
+                  <h2 className="mt-1 font-display text-xl font-black text-slate-900">
                     Estado de la cartera
                   </h2>
                 </div>
@@ -606,12 +619,12 @@ export function QuotesWorkspace({
                     className="group flex items-center gap-3 text-left"
                   >
                     <span
-                      className={`grid h-8 w-8 place-items-center rounded-full text-xs font-black ${index === 0 ? "bg-[#fff0e4] text-[#ec7a21]" : index === 4 ? "bg-[#e7f8ee] text-success" : "bg-[#edf4ff] text-primary"}`}
+                      className={`grid h-8 w-8 place-items-center rounded-full text-xs font-black ${index === 0 ? "bg-[#fff0e4] text-[#ec7a21]" : index === 4 ? "bg-[#e7f8ee] text-emerald-600" : "bg-[#edf4ff] text-blue-600"}`}
                     >
                       {item.count}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-dark group-hover:text-primary">
+                      <span className="block text-sm font-bold text-slate-900 group-hover:text-blue-600">
                         {item.label}
                       </span>
                       <span className="block text-[11px] text-[#8aa0b2]">
@@ -625,14 +638,64 @@ export function QuotesWorkspace({
               <div className="mt-5 border-t border-[#edf2f6] pt-4">
                 <div className="flex justify-between text-xs">
                   <span className="text-[#8195a8]">Valor aceptado</span>
-                  <strong className="text-dark">{acceptedValue(page.items)}</strong>
+                  <strong className="text-slate-900">{acceptedValue(page.items)}</strong>
                 </div>
                 <div className="mt-3 flex justify-between text-xs">
                   <span className="text-[#8195a8]">Seguimientos vencidos</span>
-                  <strong className={page.summary.followUps.overdue ? "text-danger" : "text-dark"}>
+                  <strong className={page.summary.followUps.overdue ? "text-rose-600" : "text-slate-900"}>
                     {page.summary.followUps.overdue}
                   </strong>
                 </div>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-[#dde8f1] bg-white p-5 shadow-[0_8px_26px_rgba(16,42,67,0.04)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-blue-600">
+                    Vigencia
+                  </p>
+                  <h2 className="mt-1 font-display text-xl font-black text-slate-900">
+                    Vencimientos próximos
+                  </h2>
+                </div>
+                <IconBox tone="yellow">
+                  <Clock3 size={17} />
+                </IconBox>
+              </div>
+              <div className="mt-4 grid gap-2">
+                {upcomingExpirations.length ? (
+                  upcomingExpirations.map((quote) => {
+                    const daysLeft = Math.ceil(
+                      (new Date(quote.validUntil!).getTime() - new Date().getTime()) / 86_400_000,
+                    );
+                    return (
+                      <button
+                        type="button"
+                        key={quote.id}
+                        onClick={() => openDetail(quote.id)}
+                        className="flex items-center justify-between gap-2 rounded-lg border border-[#edf2f6] px-3 py-2 text-left"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-xs font-bold text-slate-900">
+                            {quote.name}
+                          </span>
+                          <span className="block text-[10px] text-[#8aa0b2]">
+                            {quote.trackingCode} · {dateLabel(quote.validUntil)}
+                          </span>
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${daysLeft <= 1 ? "bg-rose-50 text-rose-600" : daysLeft <= 3 ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-600"}`}
+                        >
+                          {daysLeft <= 0 ? "Hoy" : `${daysLeft} ${daysLeft === 1 ? "día" : "días"}`}
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="rounded-lg border border-dashed border-[#dde8f1] p-3 text-center text-xs text-[#8aa0b2]">
+                    Sin vencimientos próximos.
+                  </p>
+                )}
               </div>
             </div>
             <div className="rounded-2xl border border-[#f4dfc8] bg-[#fffaf3] p-5">
@@ -644,7 +707,7 @@ export function QuotesWorkspace({
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#cc741f]">
                     Recomendación
                   </p>
-                  <h2 className="mt-1 font-display text-lg font-black text-dark">
+                  <h2 className="mt-1 font-display text-lg font-black text-slate-900">
                     Próximas acciones
                   </h2>
                 </div>
@@ -678,10 +741,10 @@ export function QuotesWorkspace({
           <div className="rounded-2xl border border-[#dde8f1] bg-white p-5 shadow-[0_8px_26px_rgba(16,42,67,0.04)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-primary">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-blue-600">
                   Operación diaria
                 </p>
-                <h2 className="mt-1 font-display text-xl font-black text-dark">
+                <h2 className="mt-1 font-display text-xl font-black text-slate-900">
                   Ruta de una cotización
                 </h2>
               </div>
@@ -692,12 +755,12 @@ export function QuotesWorkspace({
                 <div key={item.key} className="relative">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`grid h-9 w-9 place-items-center rounded-full text-xs font-black ${index === 4 ? "bg-success text-white" : "bg-[#edf4ff] text-primary"}`}
+                      className={`grid h-9 w-9 place-items-center rounded-full text-xs font-black ${index === 4 ? "bg-emerald-600 text-white" : "bg-[#edf4ff] text-blue-600"}`}
                     >
                       {index + 1}
                     </span>
                     <div>
-                      <p className="text-xs font-extrabold text-dark">{item.label}</p>
+                      <p className="text-xs font-extrabold text-slate-900">{item.label}</p>
                       <p className="text-[11px] text-[#8aa0b2]">{item.count} registros</p>
                     </div>
                   </div>
@@ -717,20 +780,20 @@ export function QuotesWorkspace({
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#6f54c4]">
                   Guía rápida
                 </p>
-                <h2 className="mt-1 font-display text-lg font-black text-dark">Buenas prácticas</h2>
+                <h2 className="mt-1 font-display text-lg font-black text-slate-900">Buenas prácticas</h2>
               </div>
             </div>
             <ul className="mt-4 grid gap-3 text-xs leading-5 text-[#617990]">
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-success" /> Enviar siempre una
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Enviar siempre una
                 versión con vigencia y moneda definidas.
               </li>
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-success" /> Convertir sólo la
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Convertir sólo la
                 versión que el cliente aceptó.
               </li>
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-success" /> Registrar respuesta y
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Registrar respuesta y
                 siguiente acción en CRM.
               </li>
             </ul>
@@ -796,12 +859,12 @@ function KpiCard({
       type="button"
       title={title}
       onClick={onClick}
-      className="group rounded-2xl border border-[#dde8f1] bg-white p-5 text-left shadow-[0_8px_26px_rgba(16,42,67,0.04)] transition hover:-translate-y-0.5 hover:border-primary/30"
+      className="group rounded-2xl border border-[#dde8f1] bg-white p-5 text-left shadow-[0_8px_26px_rgba(16,42,67,0.04)] transition hover:-translate-y-0.5 hover:border-blue-600/30"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold text-[#8195a8]">{label}</p>
-          <p className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-dark">
+          <p className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-slate-900">
             {value}
           </p>
         </div>
@@ -816,7 +879,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
     <tr className="group hover:bg-[#fbfdff]">
       <td className="px-5 py-4">
         <button type="button" onClick={() => onOpen(quote.id)} className="text-left">
-          <span className="font-mono text-xs font-extrabold text-primary">
+          <span className="font-mono text-xs font-extrabold text-blue-600">
             {quote.trackingCode}
           </span>
           <span className="mt-1 block text-[11px] text-[#8aa0b2]">
@@ -826,7 +889,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
       </td>
       <td className="px-3 py-4">
         <button type="button" onClick={() => onOpen(quote.id)} className="max-w-[160px] text-left">
-          <span className="block truncate text-sm font-extrabold text-dark">{quote.name}</span>
+          <span className="block truncate text-sm font-extrabold text-slate-900">{quote.name}</span>
           <span className="mt-1 block truncate text-[11px] text-[#8aa0b2]">
             {quote.email || quote.phone || "Sin contacto"}
           </span>
@@ -841,7 +904,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
         </span>
       </td>
       <td className="px-3 py-4 text-right">
-        <span className="whitespace-nowrap text-sm font-black text-dark">
+        <span className="whitespace-nowrap text-sm font-black text-slate-900">
           {amount(quote.currency, quote.total)}
         </span>
         <span className="mt-1 block text-[10px] text-[#8aa0b2]">
@@ -853,7 +916,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
       </td>
       <td className="px-3 py-4">
         <span
-          className={`text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-danger" : "text-[#536f87]"}`}
+          className={`text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-rose-600" : "text-[#536f87]"}`}
         >
           {quote.validUntil ? dateLabel(quote.validUntil) : "Por definir"}
         </span>
@@ -876,7 +939,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
           type="button"
           onClick={() => onOpen(quote.id)}
           aria-label={`Abrir ${quote.trackingCode}`}
-          className="grid h-8 w-8 place-items-center rounded-lg text-[#91a5b7] hover:bg-[#eef5ff] hover:text-primary"
+          className="grid h-8 w-8 place-items-center rounded-lg text-[#91a5b7] hover:bg-[#eef5ff] hover:text-blue-600"
         >
           <MoreHorizontal size={17} />
         </button>
@@ -899,8 +962,8 @@ function QuoteMobileCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-xs font-extrabold text-primary">{quote.trackingCode}</p>
-          <p className="mt-1 text-sm font-black text-dark">{quote.name}</p>
+          <p className="font-mono text-xs font-extrabold text-blue-600">{quote.trackingCode}</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{quote.name}</p>
         </div>
         <StatusBadge status={quote.workflowStatus} />
       </div>
@@ -910,7 +973,7 @@ function QuoteMobileCard({
       <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#edf2f6] pt-3">
         <div>
           <p className="text-[10px] uppercase tracking-wide text-[#8aa0b2]">Importe</p>
-          <p className="mt-1 text-sm font-black text-dark">{amount(quote.currency, quote.total)}</p>
+          <p className="mt-1 text-sm font-black text-slate-900">{amount(quote.currency, quote.total)}</p>
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-wide text-[#8aa0b2]">Actualizada</p>
@@ -926,7 +989,7 @@ function EmptyState({ onNew }: { onNew?: () => void }) {
       <IconBox tone="blue">
         <FileText size={18} />
       </IconBox>
-      <h3 className="mt-4 font-display text-lg font-black text-dark">
+      <h3 className="mt-4 font-display text-lg font-black text-slate-900">
         No hay cotizaciones para estos filtros
       </h3>
       <p className="mt-2 max-w-sm text-sm text-[#8195a8]">
@@ -934,9 +997,13 @@ function EmptyState({ onNew }: { onNew?: () => void }) {
         comercial reales.
       </p>
       {onNew ? (
-        <Button className="mt-5" size="sm" onClick={onNew}>
+        <button
+          type="button"
+          onClick={onNew}
+          className="mt-5 inline-flex h-10 items-center gap-2 rounded-pill bg-blue-600 px-4 text-sm font-bold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700"
+        >
           <Plus size={16} /> Nueva cotización
-        </Button>
+        </button>
       ) : null}
     </div>
   );
@@ -956,8 +1023,8 @@ function Pagination({
   return (
     <div className="flex items-center justify-between border-t border-[#e7eef4] px-5 py-4">
       <p className="text-xs text-[#8195a8]">
-        Página <strong className="text-dark">{page}</strong> de{" "}
-        <strong className="text-dark">{totalPages}</strong>
+        Página <strong className="text-slate-900">{page}</strong> de{" "}
+        <strong className="text-slate-900">{totalPages}</strong>
       </p>
       <div className="flex gap-2">
         <button
@@ -994,8 +1061,15 @@ function DrawerShell({
   close: () => void;
   wide?: boolean;
 }) {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [close]);
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#102a43]/35 backdrop-blur-[2px]">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/35 backdrop-blur-[2px]">
       <div
         role="dialog"
         aria-modal="true"
@@ -1004,17 +1078,17 @@ function DrawerShell({
       >
         <div className="flex items-start justify-between gap-4 border-b border-[#e7eef4] px-5 py-5 sm:px-7">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-blue-600">
               {eyebrow}
             </p>
-            <h2 className="mt-1 font-display text-2xl font-black tracking-[-0.03em] text-dark">
+            <h2 className="mt-1 font-display text-2xl font-black tracking-[-0.03em] text-slate-900">
               {title}
             </h2>
           </div>
           <button
             type="button"
             onClick={close}
-            className="grid h-9 w-9 place-items-center rounded-lg text-[#8195a8] hover:bg-[#f1f6fa] hover:text-dark"
+            className="grid h-9 w-9 place-items-center rounded-lg text-[#8195a8] hover:bg-[#f1f6fa] hover:text-slate-900"
             aria-label="Cerrar"
           >
             <X size={19} />
@@ -1091,7 +1165,7 @@ function DetailDrawer({
           <div className="flex items-center gap-2">
             <a
               href={`/api/admin/cotizaciones/${encodeURIComponent(quote.id)}/pdf`}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-dark hover:border-primary"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-slate-900 hover:border-blue-600"
             >
               <Download size={14} /> PDF
             </a>
@@ -1099,7 +1173,7 @@ function DetailDrawer({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-dark hover:border-primary"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-slate-900 hover:border-blue-600"
               >
                 <FileText size={14} /> Editar
               </button>
@@ -1112,7 +1186,7 @@ function DetailDrawer({
               type="button"
               key={item.key}
               onClick={() => setTab(item.key)}
-              className={`whitespace-nowrap border-b-2 px-2 py-3 text-xs font-extrabold ${tab === item.key ? "border-primary text-primary" : "border-transparent text-[#8195a8]"}`}
+              className={`whitespace-nowrap border-b-2 px-2 py-3 text-xs font-extrabold ${tab === item.key ? "border-blue-600 text-blue-600" : "border-transparent text-[#8195a8]"}`}
             >
               {item.label}
             </button>
@@ -1135,7 +1209,7 @@ function DetailDrawer({
       <div className="border-t border-[#e7eef4] bg-[#fbfdff] p-4 sm:p-5">
         {error ? (
           <p
-            className="mb-3 rounded-lg border border-danger/20 bg-danger/5 p-3 text-xs font-semibold text-danger"
+            className="mb-3 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-xs font-semibold text-rose-600"
             role="alert"
           >
             {error}
@@ -1275,7 +1349,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
       </div>
       <div className="rounded-xl border border-[#e0eaf2] bg-[#fbfdff] p-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-dark">Productos cotizados</h3>
+          <h3 className="text-sm font-black text-slate-900">Productos cotizados</h3>
           <span className="text-xs font-bold text-[#8195a8]">{detail.items.length} líneas</span>
         </div>
         <div className="mt-3 grid gap-2">
@@ -1286,12 +1360,12 @@ function SummaryTab({ detail }: { detail: Detail }) {
                 className="flex items-center justify-between gap-3 border-b border-[#edf2f6] py-2 last:border-0"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-dark">{item.productNameSnapshot}</p>
+                  <p className="truncate text-sm font-bold text-slate-900">{item.productNameSnapshot}</p>
                   <p className="text-[11px] text-[#8195a8]">
                     {item.skuSnapshot} · x{item.quantity}
                   </p>
                 </div>
-                <p className="whitespace-nowrap text-sm font-black text-dark">
+                <p className="whitespace-nowrap text-sm font-black text-slate-900">
                   {amount(item.currency, item.lineTotal)}
                 </p>
               </div>
@@ -1331,10 +1405,10 @@ function PricingTab({ detail }: { detail: Detail }) {
             <ShieldCheck size={17} />
           </IconBox>
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wide text-primary">
+            <p className="text-[10px] font-extrabold uppercase tracking-wide text-blue-600">
               Snapshot comercial
             </p>
-            <p className="mt-1 text-sm font-black text-dark">
+            <p className="mt-1 text-sm font-black text-slate-900">
               {version ? `Versión v${version.versionNumber}` : "Sin versión enviada"}
             </p>
           </div>
@@ -1371,9 +1445,9 @@ function PricingTab({ detail }: { detail: Detail }) {
               key={item.productId}
               className="grid grid-cols-[1fr_75px_105px] gap-2 border-t border-[#edf2f6] px-3 py-3 text-xs"
             >
-              <span className="font-semibold text-dark">{item.skuSnapshot}</span>
+              <span className="font-semibold text-slate-900">{item.skuSnapshot}</span>
               <span className="text-[#536f87]">{item.quantity}</span>
-              <span className="text-right font-black text-dark">
+              <span className="text-right font-black text-slate-900">
                 {amount(item.currency, item.lineTotal)}
               </span>
             </div>
@@ -1429,13 +1503,13 @@ function VersionsTab({ detail }: { detail: Detail }) {
           <div key={version.id} className="rounded-xl border border-[#e0eaf2] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-black text-dark">Versión v{version.versionNumber}</p>
+                <p className="text-sm font-black text-slate-900">Versión v{version.versionNumber}</p>
                 <p className="mt-1 text-xs text-[#8195a8]">
                   Creada {dateLabel(version.createdAt, true)}
                 </p>
               </div>
               <span
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${version.status === "ACCEPTED" ? "border-success/20 bg-success/10 text-success" : "border-[#dbe8f3] bg-[#f5f9fc] text-[#536f87]"}`}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${version.status === "ACCEPTED" ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-600" : "border-[#dbe8f3] bg-[#f5f9fc] text-[#536f87]"}`}
               >
                 {version.status === "ACCEPTED"
                   ? "Aceptada"
@@ -1448,7 +1522,7 @@ function VersionsTab({ detail }: { detail: Detail }) {
               <span className="text-[#8195a8]">
                 {version.items?.length || 0} productos · {version.currency || "Moneda pendiente"}
               </span>
-              <strong className="text-dark">{amount(version.currency, version.total)}</strong>
+              <strong className="text-slate-900">{amount(version.currency, version.total)}</strong>
             </div>
           </div>
         ))
@@ -1490,11 +1564,11 @@ function Timeline({
 }) {
   return (
     <div className="flex gap-3 rounded-xl border border-[#e0eaf2] p-4">
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-primary">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-blue-600">
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-black text-dark">{title}</p>
+        <p className="text-sm font-black text-slate-900">{title}</p>
         <p className="mt-1 text-[11px] font-semibold text-[#8195a8]">{meta}</p>
         {body ? <p className="mt-2 text-xs leading-5 text-[#536f87]">{body}</p> : null}
       </div>
@@ -1505,7 +1579,7 @@ function Info({ label, value, mono = false }: { label: string; value: string; mo
   return (
     <div>
       <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">{label}</p>
-      <p className={`mt-1 truncate text-sm font-bold text-dark ${mono ? "font-mono" : ""}`}>
+      <p className={`mt-1 truncate text-sm font-bold text-slate-900 ${mono ? "font-mono" : ""}`}>
         {value}
       </p>
     </div>
@@ -1523,7 +1597,7 @@ function Metric({
   return (
     <div className="rounded-xl border border-[#e0eaf2] p-3">
       <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">{label}</p>
-      <p className={`mt-1 text-sm font-black ${accent ? "text-primary" : "text-dark"}`}>{value}</p>
+      <p className={`mt-1 text-sm font-black ${accent ? "text-blue-600" : "text-slate-900"}`}>{value}</p>
     </div>
   );
 }
@@ -1587,10 +1661,10 @@ function ActionDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wide text-primary">
+            <p className="text-[10px] font-extrabold uppercase tracking-wide text-blue-600">
               Acción trazable
             </p>
-            <h3 className="mt-1 font-display text-xl font-black text-dark">{heading}</h3>
+            <h3 className="mt-1 font-display text-xl font-black text-slate-900">{heading}</h3>
           </div>
           <button type="button" onClick={close} aria-label="Cerrar">
             <X size={18} className="text-[#8195a8]" />
@@ -1598,7 +1672,7 @@ function ActionDialog({
         </div>
         {kind === "send" ? (
           <>
-            <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
               Canal
               <select
                 value={channel}
@@ -1614,7 +1688,7 @@ function ActionDialog({
                 <option value="IN_PERSON">Presencial</option>
               </select>
             </label>
-            <label className="mt-4 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-4 grid gap-2 text-sm font-bold text-slate-900">
               Destinatario / nota
               <textarea
                 value={reason}
@@ -1629,14 +1703,14 @@ function ActionDialog({
                 type="checkbox"
                 checked={confirmed}
                 onChange={(event) => setConfirmed(event.target.checked)}
-                className="mt-0.5 accent-primary"
+                className="mt-0.5 accent-blue-600"
               />
               Confirmo que el mensaje ya fue enviado y sólo estoy registrando la trazabilidad.
             </label>
           </>
         ) : kind === "response" ? (
           <>
-            <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
               Respuesta
               <select
                 value={response}
@@ -1649,7 +1723,7 @@ function ActionDialog({
                 <option value="NO_RESPONSE">Sin respuesta</option>
               </select>
             </label>
-            <label className="mt-4 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-4 grid gap-2 text-sm font-bold text-slate-900">
               Canal
               <select
                 value={channel}
@@ -1664,7 +1738,7 @@ function ActionDialog({
                 <option value="OTHER">Otro</option>
               </select>
             </label>
-            <label className="mt-4 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-4 grid gap-2 text-sm font-bold text-slate-900">
               Nota {response === "REJECTED" ? "(obligatoria)" : ""}
               <textarea
                 required={response === "REJECTED"}
@@ -1677,7 +1751,7 @@ function ActionDialog({
           </>
         ) : kind === "followUp" ? (
           <>
-            <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
               Siguiente acción
               <input
                 required
@@ -1687,7 +1761,7 @@ function ActionDialog({
                 maxLength={180}
               />
             </label>
-            <label className="mt-4 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-4 grid gap-2 text-sm font-bold text-slate-900">
               Fecha
               <input
                 required
@@ -1697,7 +1771,7 @@ function ActionDialog({
                 className="h-11 rounded-lg border border-[#dfe9f1] px-3 font-normal"
               />
             </label>
-            <label className="mt-4 grid gap-2 text-sm font-bold text-dark">
+            <label className="mt-4 grid gap-2 text-sm font-bold text-slate-900">
               Nota
               <textarea
                 value={reason}
@@ -1708,7 +1782,7 @@ function ActionDialog({
             </label>
           </>
         ) : (
-          <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+          <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
             Motivo (obligatorio)
             <textarea
               required
@@ -1720,7 +1794,7 @@ function ActionDialog({
           </label>
         )}
         {error ? (
-          <p className="mt-4 text-xs font-semibold text-danger" role="alert">
+          <p className="mt-4 text-xs font-semibold text-rose-600" role="alert">
             {error}
           </p>
         ) : null}
@@ -1935,10 +2009,10 @@ function NewQuoteDrawer({
             ? "Cargando cliente y productos de la oportunidad…"
             : "Selecciona un cliente y productos reales del catálogo. Los precios se resolverán y quedarán congelados al enviar."}
         </p>
-        <label className="mt-6 grid gap-2 text-sm font-bold text-dark">
+        <label className="mt-6 grid gap-2 text-sm font-bold text-slate-900">
           Cliente
           {customer ? (
-            <span className="flex items-center justify-between rounded-lg border border-success/20 bg-success/5 px-3 py-3 text-sm text-success">
+            <span className="flex items-center justify-between rounded-lg border border-emerald-600/20 bg-emerald-600/5 px-3 py-3 text-sm text-emerald-600">
               {customer.name}
               {lockedCustomer ? null : (
                 <button
@@ -1974,7 +2048,7 @@ function NewQuoteDrawer({
                       }}
                       className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                     >
-                      <span className="block font-bold text-dark">{item.name}</span>
+                      <span className="block font-bold text-slate-900">{item.name}</span>
                       <span className="text-[#8195a8]">
                         {item.documentNumber || item.email || item.phone || "Sin identificador"}
                       </span>
@@ -1985,7 +2059,7 @@ function NewQuoteDrawer({
             </>
           )}
         </label>
-        <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+        <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
           Agregar producto
           <input
             value={productQuery}
@@ -2002,8 +2076,8 @@ function NewQuoteDrawer({
                   onClick={() => addProduct(product)}
                   className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                 >
-                  <span className="font-mono font-bold text-primary">{product.sku}</span>
-                  <span className="ml-2 font-semibold text-dark">{product.productName}</span>
+                  <span className="font-mono font-bold text-blue-600">{product.sku}</span>
+                  <span className="ml-2 font-semibold text-slate-900">{product.productName}</span>
                 </button>
               ))}
             </div>
@@ -2015,9 +2089,9 @@ function NewQuoteDrawer({
               key={line.productId}
               className="flex items-center gap-3 rounded-lg border border-[#e0eaf2] p-3"
             >
-              <PackageSearch size={16} className="shrink-0 text-primary" />
+              <PackageSearch size={16} className="shrink-0 text-blue-600" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-dark">{line.name}</p>
+                <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
                 <p className="font-mono text-[10px] text-[#8195a8]">{line.sku}</p>
               </div>
               <input
@@ -2041,7 +2115,7 @@ function NewQuoteDrawer({
                 onClick={() =>
                   setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-[#9aaebe] hover:text-danger"
+                className="text-[#9aaebe] hover:text-rose-600"
                 aria-label={`Quitar ${line.sku}`}
               >
                 <X size={16} />
@@ -2050,7 +2124,7 @@ function NewQuoteDrawer({
           ))}
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm font-bold text-dark">
+          <label className="grid gap-2 text-sm font-bold text-slate-900">
             Vigencia
             <input
               type="date"
@@ -2059,7 +2133,7 @@ function NewQuoteDrawer({
               className="h-11 rounded-lg border border-[#dfe9f1] px-3 font-normal"
             />
           </label>
-          <label className="grid gap-2 text-sm font-bold text-dark">
+          <label className="grid gap-2 text-sm font-bold text-slate-900">
             Impuestos
             <select
               value={taxMode}
@@ -2072,7 +2146,7 @@ function NewQuoteDrawer({
             </select>
           </label>
         </div>
-        <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+        <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
           Nota comercial
           <textarea
             value={message}
@@ -2083,7 +2157,7 @@ function NewQuoteDrawer({
         </label>
         {error ? (
           <p
-            className="mt-5 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm font-semibold text-danger"
+            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-600"
             role="alert"
           >
             {error}
@@ -2177,7 +2251,7 @@ function EditQuoteDrawer({
           Los precios se vuelven a resolver en el servidor. Al enviar se creará una versión
           inmutable de esta propuesta.
         </p>
-        <label className="mt-6 grid gap-2 text-sm font-bold text-dark">
+        <label className="mt-6 grid gap-2 text-sm font-bold text-slate-900">
           Agregar producto
           <input
             value={productQuery}
@@ -2207,8 +2281,8 @@ function EditQuoteDrawer({
                   }}
                   className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                 >
-                  <span className="font-mono font-bold text-primary">{product.sku}</span>
-                  <span className="ml-2 font-semibold text-dark">{product.productName}</span>
+                  <span className="font-mono font-bold text-blue-600">{product.sku}</span>
+                  <span className="ml-2 font-semibold text-slate-900">{product.productName}</span>
                 </button>
               ))}
             </div>
@@ -2221,7 +2295,7 @@ function EditQuoteDrawer({
               className="flex items-center gap-3 rounded-lg border border-[#e0eaf2] p-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-dark">{line.name}</p>
+                <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
                 <p className="font-mono text-[10px] text-[#8195a8]">{line.sku}</p>
               </div>
               <input
@@ -2245,7 +2319,7 @@ function EditQuoteDrawer({
                 onClick={() =>
                   setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-[#9aaebe] hover:text-danger"
+                className="text-[#9aaebe] hover:text-rose-600"
                 aria-label={`Quitar ${line.sku}`}
               >
                 <X size={16} />
@@ -2254,7 +2328,7 @@ function EditQuoteDrawer({
           ))}
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm font-bold text-dark">
+          <label className="grid gap-2 text-sm font-bold text-slate-900">
             Vigencia
             <input
               type="date"
@@ -2263,7 +2337,7 @@ function EditQuoteDrawer({
               className="h-11 rounded-lg border border-[#dfe9f1] px-3 font-normal"
             />
           </label>
-          <label className="grid gap-2 text-sm font-bold text-dark">
+          <label className="grid gap-2 text-sm font-bold text-slate-900">
             Impuestos
             <select
               value={taxMode}
@@ -2276,7 +2350,7 @@ function EditQuoteDrawer({
             </select>
           </label>
         </div>
-        <label className="mt-5 grid gap-2 text-sm font-bold text-dark">
+        <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
           Nota comercial
           <textarea
             value={message}
@@ -2287,7 +2361,7 @@ function EditQuoteDrawer({
         </label>
         {error ? (
           <p
-            className="mt-5 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm font-semibold text-danger"
+            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-600"
             role="alert"
           >
             {error}

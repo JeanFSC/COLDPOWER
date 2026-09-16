@@ -5,16 +5,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronRight,
-  ClipboardCheck,
+  Clock,
   Download,
+  Eye,
   Filter,
   LoaderCircle,
+  Package,
   PackageCheck,
   Search,
   Truck,
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import type { OrderListItem, OrdersPageResponse } from "@/lib/orders-contract";
 
 type Detail = {
@@ -61,6 +63,14 @@ const incidentTypeLabel: Record<string, string> = {
   WRONG_PRODUCT: "Producto incorrecto",
   OTHER: "Otro",
 };
+const inputClass =
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20";
+const primaryButtonClass =
+  "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
+const secondaryButtonClass =
+  "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
+const STAGES = ["Pendiente", "Preparación", "Listo", "Entregado"] as const;
+
 function text(value: string | null | undefined) {
   return value ? (label[value] ?? value) : "N/D";
 }
@@ -68,16 +78,18 @@ function money(currency: string, value: string | number) {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(Number(value));
 }
 function tone(value: string) {
-  return value === "DELIVERED" ||
-    value === "MATCH" ||
-    value === "READY" ||
-    value === "READY_FOR_PICKUP"
-    ? "bg-[#e4f7ef] text-[#13885c]"
-    : value === "INCIDENT" || value === "OVERDUE" || value === "UNDERPAID"
-      ? "bg-[#fff0e8] text-[#d7641e]"
-      : value === "CANCELLED"
-        ? "bg-[#feecec] text-[#d94848]"
-        : "bg-[#e8f1ff] text-[#2277ee]";
+  if (value === "DELIVERED" || value === "MATCH" || value === "READY" || value === "READY_FOR_PICKUP")
+    return "bg-emerald-50 text-emerald-700 border-emerald-100";
+  if (value === "INCIDENT" || value === "OVERDUE" || value === "UNDERPAID")
+    return "bg-amber-50 text-amber-700 border-amber-100";
+  if (value === "CANCELLED") return "bg-rose-50 text-rose-700 border-rose-100";
+  return "bg-blue-50 text-blue-700 border-blue-100";
+}
+function stageIndex(status: string) {
+  if (status === "DELIVERED") return 3;
+  if (["READY", "READY_FOR_PICKUP", "IN_TRANSIT", "SHIPPED"].includes(status)) return 2;
+  if (status === "PREPARING") return 1;
+  return 0;
 }
 async function read(response: Response) {
   return response.json().catch(() => ({})) as Promise<Record<string, unknown>>;
@@ -104,110 +116,94 @@ export function OrdersControlCenter({
 }) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const { prepare, dispatch, pickup, incidents } = page.queues;
-  const metrics = [
-    ["Pedidos activos", page.metrics.active, "Todos salvo entregados/cancelados"],
-    ["En preparación", page.metrics.preparing, "Picking en curso"],
-    ["Listos", page.metrics.ready, "Despacho o recojo"],
-    ["En tránsito", page.metrics.inTransit, "Entrega pendiente"],
-    ["Pendientes", page.metrics.pending, "Pago, nuevos o recibidos"],
-  ] as const;
+  const kpis: Array<{
+    key: string;
+    label: string;
+    value: number;
+    note: string;
+    iconBg: string;
+    iconInk: string;
+    icon: typeof PackageCheck;
+  }> = [
+    { key: "total", label: "Pedidos totales", value: page.metrics.total, note: "Todos los pedidos registrados", icon: PackageCheck, iconBg: "bg-blue-50", iconInk: "text-blue-600" },
+    { key: "preparing", label: "En preparación", value: page.metrics.preparing, note: "Picking en curso", icon: Clock, iconBg: "bg-amber-50", iconInk: "text-amber-600" },
+    { key: "ready", label: "Listos", value: page.metrics.ready, note: "Despacho o recojo", icon: CheckCircle2, iconBg: "bg-emerald-50", iconInk: "text-emerald-600" },
+    { key: "delivered", label: "Entregados", value: page.metrics.delivered, note: "Completados", icon: Truck, iconBg: "bg-purple-50", iconInk: "text-purple-600" },
+    { key: "pending", label: "Pendientes", value: page.metrics.pending, note: "Pago, nuevos o recibidos", icon: AlertTriangle, iconBg: "bg-rose-50", iconInk: "text-rose-600" },
+  ];
   return (
-    <div className="space-y-4">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[27px] font-black tracking-tight text-[#102a43]">
-            Gestión de pedidos
-          </h1>
-          <p className="mt-1 text-[11px] font-semibold text-[#71869c]">
-            Controla la preparación, despacho y entrega de los pedidos.
-          </p>
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 shadow-xs">
+            <PackageCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900">Gestión de pedidos</h1>
+            <p className="text-xs font-normal text-slate-500">Controla la preparación, despacho y entrega de los pedidos.</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href={`/api/admin/pedidos/export?${queryString}`}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#dce6ee] bg-white px-3.5 text-[10px] font-extrabold text-[#304b66]"
-          >
-            <Download className="h-4 w-4" />
+        <div className="flex items-center gap-2.5">
+          <Link href={`/api/admin/pedidos/export?${queryString}`} className={secondaryButtonClass}>
+            <Download className="h-3.5 w-3.5 text-slate-500" />
             Exportar
           </Link>
           <button
             onClick={() => setDetailId(prepare[0]?.id ?? page.items[0]?.id ?? null)}
             disabled={!prepare.length && !page.items.length}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#2277ee] px-3.5 text-[10px] font-extrabold text-white disabled:opacity-50"
+            className={primaryButtonClass}
           >
-            <ClipboardCheck className="h-4 w-4" />
+            <PackageCheck className="h-3.5 w-3.5" />
             Preparar pedido
           </button>
         </div>
       </header>
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {metrics.map(([title, value, note], index) => (
-          <article
-            key={title}
-            className="min-h-[118px] rounded-xl border border-[#e2eaf1] bg-white p-3.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]"
-          >
-            <div className="flex gap-2.5">
-              <span
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${index === 4 ? "bg-[#fff0e8] text-[#d7641e]" : index === 3 ? "bg-[#e4f7ef] text-[#13885c]" : "bg-[#e8f1ff] text-[#2277ee]"}`}
-              >
-                {index === 4 ? (
-                  <AlertTriangle className="h-4 w-4" />
-                ) : index === 3 ? (
-                  <Truck className="h-4 w-4" />
-                ) : (
-                  <PackageCheck className="h-4 w-4" />
-                )}
-              </span>
-              <div>
-                <p className="text-[10px] font-semibold text-[#7d91a5]">{title}</p>
-                <p className="mt-1 font-display text-[20px] font-black text-[#102a43]">{value}</p>
-                <p className="mt-1 text-[9px] font-bold text-[#71869c]">{note}</p>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {kpis.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.key} className="flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.iconBg} ${item.iconInk}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="block truncate text-[11px] font-medium text-slate-500">{item.label}</span>
+                  <span className="block truncate text-lg font-bold leading-snug text-slate-900">{item.value}</span>
+                </div>
               </div>
+              <p className="mt-3 truncate text-[10.5px] font-semibold text-slate-400">{item.note}</p>
             </div>
-            <div className="mt-5 border-t border-[#edf2f6]" />
-          </article>
-        ))}
+          );
+        })}
       </section>
+
       <form
         action="/admin/pedidos"
-        className="flex flex-wrap gap-2 rounded-xl border border-[#e2eaf1] bg-white p-2.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]"
+        className="flex flex-wrap items-center gap-2.5 rounded-xl border border-slate-200/90 bg-white p-3 shadow-2xs"
       >
-        <label className="flex h-10 min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-[#dce6ee] px-3">
-          <Search className="h-4 w-4 text-[#71869c]" />
+        <label className="flex h-10 min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-3">
+          <Search className="h-4 w-4 text-slate-400" />
           <input
             name="query"
             defaultValue={new URLSearchParams(queryString).get("query") ?? ""}
             placeholder="Buscar pedido, cliente, SKU o producto..."
-            className="w-full bg-transparent text-[11px] font-semibold outline-none placeholder:text-[#9aabba]"
+            className="w-full bg-transparent text-xs font-medium text-slate-700 outline-none placeholder:text-slate-400"
           />
         </label>
         <Select name="status" label="Estado" values={page.facets.statuses} query={queryString} />
-        <Select
-          name="deliveryMethod"
-          label="Entrega"
-          values={page.facets.deliveryMethods}
-          query={queryString}
-        />
-        <Select
-          name="currency"
-          label="Moneda"
-          values={page.facets.currencies}
-          query={queryString}
-        />
+        <Select name="deliveryMethod" label="Entrega" values={page.facets.deliveryMethods} query={queryString} />
+        <Select name="currency" label="Moneda" values={page.facets.currencies} query={queryString} />
         {canPaymentsView ? (
-          <Select
-            name="reconciliation"
-            label="Pago"
-            values={["PENDING", "MATCH", "UNDERPAID", "OVERPAID"]}
-            query={queryString}
-          />
+          <Select name="reconciliation" label="Pago" values={["PENDING", "MATCH", "UNDERPAID", "OVERPAID"]} query={queryString} />
         ) : null}
         <details className="relative">
-          <summary className="inline-flex h-10 cursor-pointer list-none items-center gap-2 rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#304b66]">
-            <Filter className="h-3.5 w-3.5" />
+          <summary className="inline-flex h-10 cursor-pointer list-none items-center gap-2 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700">
+            <Filter className="h-3.5 w-3.5 text-slate-500" />
             Más filtros
           </summary>
-          <div className="absolute right-0 z-30 mt-2 grid w-[min(92vw,620px)] gap-3 rounded-xl border border-[#dce6ee] bg-white p-4 shadow-2xl sm:grid-cols-2">
+          <div className="absolute right-0 z-30 mt-2 grid w-[min(92vw,620px)] gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl sm:grid-cols-2">
             <FilterText name="customer" label="Cliente" query={queryString} placeholder="Nombre del cliente" />
             <FilterText name="seller" label="Vendedor" query={queryString} placeholder="Nombre del vendedor" />
             <Select
@@ -220,19 +216,16 @@ export function OrdersControlCenter({
             <Select name="withIncident" label="Incidencia" values={["true"]} labels={{ true: "Con incidencia abierta" }} query={queryString} />
             <FilterDate name="createdFrom" label="Creado desde" query={queryString} />
             <FilterDate name="createdTo" label="Creado hasta" query={queryString} />
-            <button className="h-10 rounded-lg bg-[#2277ee] px-3 text-[10px] font-extrabold text-white sm:col-span-2">
-              Aplicar filtros
-            </button>
+            <button className={`${primaryButtonClass} sm:col-span-2`}>Aplicar filtros</button>
           </div>
         </details>
-        <button className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#304b66]">
-          Aplicar
-        </button>
+        <button className={secondaryButtonClass}>Aplicar</button>
       </form>
-      <section className="overflow-hidden rounded-xl border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]">
+
+      <section className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs">
         <div className="hidden overflow-x-auto lg:block">
-          <table className="w-full min-w-[1000px] text-left">
-            <thead className="bg-[#fbfcfd] text-[8px] font-extrabold uppercase tracking-wide text-[#7890a7]">
+          <table className="w-full min-w-[1040px] text-left text-xs">
+            <thead className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
                 {[
                   "Pedido",
@@ -246,20 +239,15 @@ export function OrdersControlCenter({
                   "Local",
                   "",
                 ].map((header) => (
-                  <th key={header} className="px-3 py-3">
+                  <th key={header} className="px-3 py-3 font-medium">
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {page.items.map((item) => (
-                <OrderRow
-                  key={item.id}
-                  item={item}
-                  onOpen={setDetailId}
-                  canPaymentsView={canPaymentsView}
-                />
+                <OrderRow key={item.id} item={item} onOpen={setDetailId} canPaymentsView={canPaymentsView} />
               ))}
             </tbody>
           </table>
@@ -269,16 +257,14 @@ export function OrdersControlCenter({
             <button
               key={item.id}
               onClick={() => setDetailId(item.id)}
-              className="rounded-lg border border-[#e4edf4] p-3 text-left"
+              className="rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50/60"
             >
               <div className="flex justify-between gap-3">
                 <div>
-                  <p className="text-xs font-extrabold text-[#2277ee]">{item.code}</p>
-                  <p className="mt-1 text-[10px] text-[#526b84]">{item.customerName}</p>
+                  <p className="text-xs font-semibold text-blue-600">{item.code}</p>
+                  <p className="mt-1 text-[11px] text-slate-500">{item.customerName}</p>
                 </div>
-                <strong className="text-xs text-[#173654]">
-                  {money(item.currency, item.total)}
-                </strong>
+                <strong className="text-xs text-slate-900">{money(item.currency, item.total)}</strong>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <Badge value={item.status} />
@@ -288,26 +274,26 @@ export function OrdersControlCenter({
           ))}
         </div>
         {page.items.length === 0 ? (
-          <div className="border-t border-[#edf2f6] p-10 text-center">
-            <p className="text-sm font-extrabold text-[#304b66]">
+          <div className="border-t border-slate-100 p-10 text-center">
+            <p className="text-sm font-bold text-slate-700">
               {page.totalItems ? "No hay pedidos en esta página." : "No hay pedidos con estos filtros."}
             </p>
           </div>
         ) : null}
-        <Pager page={page.page} total={page.totalPages} query={queryString} />
+        <Pager page={page.page} total={page.totalPages} query={queryString} totalItems={page.totalItems} pageSize={page.pageSize} />
       </section>
+
       <section>
-        <h2 className="text-[15px] font-extrabold text-[#102a43]">Centro de operaciones</h2>
-        <p className="mt-1 text-[10px] font-semibold text-[#8296a9]">
-          Prioriza picking, despacho, recojo e incidencias sin cambiar estados libremente.
-        </p>
-        <div className="mt-3 grid gap-3 lg:grid-cols-4">
-          <Queue title="Listos para preparar" rows={prepare} onOpen={setDetailId} />
-          <Queue title="Listos para despacho" rows={dispatch} onOpen={setDetailId} />
-          <Queue title="Listos para recojo" rows={pickup} onOpen={setDetailId} />
-          <Queue title="Incidencias" rows={incidents} onOpen={setDetailId} />
+        <h2 className="text-sm font-bold tracking-tight text-slate-900">Centro de operaciones</h2>
+        <p className="mt-1 text-xs text-slate-500">Prioriza picking, despacho, recojo e incidencias sin cambiar estados libremente.</p>
+        <div className="mt-3 grid gap-4 lg:grid-cols-4">
+          <Queue title="Listos para preparar" rows={prepare} onOpen={setDetailId} icon={Package} />
+          <Queue title="Listos para despacho" rows={dispatch} onOpen={setDetailId} icon={Truck} />
+          <Queue title="Listos para recojo" rows={pickup} onOpen={setDetailId} icon={PackageCheck} />
+          <Queue title="Incidencias" rows={incidents} onOpen={setDetailId} icon={AlertTriangle} />
         </div>
       </section>
+
       <OrderDrawer
         key={detailId ?? "closed"}
         orderId={detailId}
@@ -315,6 +301,25 @@ export function OrdersControlCenter({
         canPaymentsView={canPaymentsView}
         onClose={() => setDetailId(null)}
       />
+    </div>
+  );
+}
+
+function tabButtonClass(active: boolean) {
+  if (active) return "rounded-md px-2.5 py-1.5 text-xs font-semibold bg-blue-50 text-blue-600";
+  return "rounded-md px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700";
+}
+function LogisticsStepper({ status }: { status: string }) {
+  if (status === "CANCELLED") {
+    return <span className="mt-1 block text-[10.5px] font-semibold text-slate-400">Sin seguimiento</span>;
+  }
+  const index = stageIndex(status);
+  const dotTone = status === "DELIVERED" ? "bg-emerald-500" : "bg-blue-500";
+  return (
+    <div className="mt-1.5 flex items-center gap-1" aria-hidden="true">
+      {STAGES.map((stage, i) => (
+        <span key={stage} className={`h-1.5 w-4 rounded-full ${i <= index ? dotTone : "bg-slate-200"}`} />
+      ))}
     </div>
   );
 }
@@ -329,45 +334,44 @@ function OrderRow({
   canPaymentsView: boolean;
 }) {
   return (
-    <tr className="border-t border-[#edf2f6] text-[10px] font-semibold text-[#526b84] hover:bg-[#fbfdff]">
+    <tr className="transition-colors hover:bg-slate-50/60">
       <td className="px-3 py-3">
-        <button onClick={() => onOpen(item.id)} className="text-left font-extrabold text-[#2277ee]">
+        <button onClick={() => onOpen(item.id)} className="text-left font-semibold text-blue-600 hover:underline">
           {item.code}
-          <span className="mt-0.5 block text-[9px] text-[#8296a9]">
+          <span className="mt-0.5 block text-[10.5px] font-normal text-slate-400">
             {item.quoteTrackingCode ?? "Venta directa"}
           </span>
         </button>
       </td>
-      <td className="px-3 py-3">{item.customerName}</td>
+      <td className="px-3 py-3 font-medium text-slate-900">{item.customerName}</td>
       <td className="px-3 py-3">
-        <strong className="text-[#304b66]">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-[10.5px] font-semibold text-slate-600">
+          <Package className="h-3 w-3" aria-hidden="true" />
           {item.pickedQuantity}/{item.totalQuantity}
-        </strong>
-        <span className="ml-1 text-[9px] text-[#8296a9]">preparados</span>
+        </span>
       </td>
-      <td className="px-3 py-3 font-extrabold text-[#173654]">
-        {money(item.currency, item.total)}
-      </td>
+      <td className="px-3 py-3 font-semibold text-slate-900">{money(item.currency, item.total)}</td>
       <td className="px-3 py-3">
         <Badge value={item.status} />
+        <LogisticsStepper status={item.status} />
       </td>
       <td className="px-3 py-3">
         <Badge value={item.attention} />
       </td>
-      <td className="px-3 py-3">{text(item.deliveryMethod)}</td>
+      <td className="px-3 py-3 text-slate-500">{text(item.deliveryMethod)}</td>
       {canPaymentsView ? (
         <td className="px-3 py-3">
           <Badge value={item.paymentReconciliation} />
         </td>
       ) : null}
-      <td className="px-3 py-3">{item.locationName ?? "N/D"}</td>
-      <td className="px-3 py-3">
+      <td className="px-3 py-3 text-slate-500">{item.locationName ?? "N/D"}</td>
+      <td className="px-3 py-3 text-center">
         <button
           onClick={() => onOpen(item.id)}
-          className="rounded p-1 text-[#526b84] hover:bg-[#edf4fa]"
+          className="inline-flex rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           aria-label={`Ver ${item.code}`}
         >
-          <ChevronRight className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
         </button>
       </td>
     </tr>
@@ -375,7 +379,7 @@ function OrderRow({
 }
 function Badge({ value }: { value: string }) {
   return (
-    <span className={`inline-flex rounded-md px-2 py-1 text-[8px] font-extrabold ${tone(value)}`}>
+    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-medium ${tone(value)}`}>
       {text(value)}
     </span>
   );
@@ -393,20 +397,15 @@ function Select({
   labels?: Record<string, string>;
   query: string;
 }) {
+  const current = new URLSearchParams(query).get(name) ?? "";
   return (
-    <select
+    <AdminSelect
       name={name}
-      aria-label={label}
-      defaultValue={new URLSearchParams(query).get(name) ?? ""}
-      className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#304b66]"
-    >
-        <option value="">{label}</option>
-        {values.map((value) => (
-          <option key={value} value={value}>
-            {labels[value] ?? text(value)}
-          </option>
-        ))}
-    </select>
+      ariaLabel={label}
+      className="w-auto min-w-[10rem]"
+      value={current}
+      options={[{ value: "", label }, ...values.map((value) => ({ value, label: labels[value] ?? text(value) }))]}
+    />
   );
 }
 function FilterText({
@@ -421,52 +420,76 @@ function FilterText({
   query: string;
 }) {
   return (
-    <label className="grid gap-1 text-[9px] font-extrabold text-[#526b84]">
+    <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
       {label}
       <input
         name={name}
         defaultValue={new URLSearchParams(query).get(name) ?? ""}
         placeholder={placeholder}
-        className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#304b66] outline-none focus:border-[#2277ee]"
+        className={`${inputClass} normal-case`}
       />
     </label>
   );
 }
 function FilterDate({ name, label, query }: { name: string; label: string; query: string }) {
   return (
-    <label className="grid gap-1 text-[9px] font-extrabold text-[#526b84]">
+    <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
       {label}
       <input
         type="date"
         name={name}
         defaultValue={new URLSearchParams(query).get(name) ?? ""}
-        className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#304b66]"
+        className={`${inputClass} normal-case`}
       />
     </label>
   );
 }
-function Pager({ page, total, query }: { page: number; total: number; query: string }) {
+function pagerLinkClass(active: boolean) {
+  if (active) return "flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-semibold text-white";
+  return "flex h-7 w-7 items-center justify-center rounded-lg text-xs text-slate-600 hover:text-slate-900";
+}
+function pageNumbers(current: number, total: number) {
+  const width = Math.min(5, total);
+  const start = Math.max(1, Math.min(current - 2, total - width + 1));
+  return Array.from({ length: width }, (_, index) => start + index);
+}
+function Pager({
+  page,
+  total,
+  query,
+  totalItems,
+  pageSize,
+}: {
+  page: number;
+  total: number;
+  query: string;
+  totalItems: number;
+  pageSize: number;
+}) {
   const href = (value: number) => {
     const params = new URLSearchParams(query);
     params.set("page", String(value));
     return `/admin/pedidos?${params}`;
   };
+  const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(totalItems, page * pageSize);
   return (
-    <div className="flex items-center justify-between border-t border-[#edf2f6] px-4 py-3 text-[10px]">
-      <span className="text-[#8296a9]">
-        Página {page} de {total}
-      </span>
-      <div className="flex gap-1">
-        <Link href={href(Math.max(1, page - 1))} className="rounded px-2 py-1 hover:bg-[#edf4fa]">
-          Anterior
-        </Link>
-        <Link
-          href={href(Math.min(total, page + 1))}
-          className="rounded px-2 py-1 hover:bg-[#edf4fa]"
-        >
-          Siguiente
-        </Link>
-      </div>
+    <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-5 py-3 sm:flex-row">
+      <span className="text-xs text-slate-500">Mostrando {from} a {to} de {totalItems} pedidos</span>
+      {total > 1 ? (
+        <nav aria-label="Paginación de pedidos" className="flex items-center gap-1">
+          {pageNumbers(page, total).map((value) => (
+            <Link
+              key={value}
+              href={href(value)}
+              aria-current={value === page ? "page" : undefined}
+              className={pagerLinkClass(value === page)}
+            >
+              {value}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
     </div>
   );
 }
@@ -474,31 +497,36 @@ function Queue({
   title,
   rows,
   onOpen,
+  icon: Icon,
 }: {
   title: string;
   rows: OrderListItem[];
   onOpen: (id: string) => void;
+  icon: typeof Package;
 }) {
   return (
-    <section className="rounded-xl border border-[#e2eaf1] bg-white p-3.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]">
-      <h3 className="text-[12px] font-extrabold text-[#173654]">{title}</h3>
+    <section className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs">
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
+        <h3 className="text-xs font-bold text-slate-900">{title}</h3>
+      </div>
       <div className="mt-3 grid gap-2">
         {rows.length ? (
           rows.map((row) => (
             <button
               key={row.id}
               onClick={() => onOpen(row.id)}
-              className="flex items-center justify-between gap-2 rounded-lg border border-[#edf2f6] p-2.5 text-left hover:bg-[#f8fbfe]"
+              className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 text-left transition-colors hover:border-slate-200"
             >
-              <div className="min-w-0">
-                <p className="truncate text-[10px] font-extrabold text-[#2277ee]">{row.code}</p>
-                <p className="mt-1 truncate text-[9px] text-[#71869c]">{row.customerName}</p>
-              </div>
+              <span className="min-w-0">
+                <strong className="block truncate text-[11.5px] font-semibold text-slate-800">{row.code}</strong>
+                <small className="mt-0.5 block truncate text-[10px] text-slate-400">{row.customerName}</small>
+              </span>
               <Badge value={row.openIncidentCount ? "INCIDENT" : row.status} />
             </button>
           ))
         ) : (
-          <p className="rounded-lg border border-dashed border-[#dce6ee] p-3 text-[10px] text-[#8296a9]">
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-center text-[10.5px] text-slate-400">
             Sin pedidos en esta cola.
           </p>
         )}
@@ -686,19 +714,19 @@ function OrderDrawer({
   return (
     <AdminDrawer open={Boolean(orderId)} onClose={onClose} title="Pedido y fulfillment" size="wide">
       {detailError ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-lg border border-rose-100 bg-rose-50 p-3 text-sm text-rose-700">
           <p role="alert">{detailError}</p>
           <button
             type="button"
             onClick={() => void loadDetail().catch(() => undefined)}
             disabled={detailLoading}
-            className="mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 text-[10px] font-extrabold text-red-800 disabled:opacity-50"
+            className="mt-3 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 disabled:opacity-50"
           >
             {detailLoading ? "Reintentando…" : "Reintentar"}
           </button>
         </div>
       ) : detailLoading || !detail ? (
-        <div className="flex gap-2 text-sm text-[#71869c]">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
           <LoaderCircle className="h-4 w-4 animate-spin" />
           Cargando pedido…
         </div>
@@ -709,73 +737,62 @@ function OrderDrawer({
               ["Pedido", order?.code],
               ["Cliente", detail.customer?.name],
               ["Total", money(currency, String(order?.total ?? 0))],
-                ...(canPaymentsView && detail.reconciliation
-                  ? [["Cobro", text(detail.reconciliation.status)] as [string, unknown]]
-                  : []),
+              ...(canPaymentsView && detail.reconciliation
+                ? [["Cobro", text(detail.reconciliation.status)] as [string, unknown]]
+                : []),
             ].map(([name, value]) => (
-              <div key={String(name)} className="rounded-lg border border-[#edf2f6] p-3">
-                <p className="text-[9px] font-extrabold uppercase text-[#71869c]">{String(name)}</p>
-                <p className="mt-1 truncate text-xs font-extrabold text-[#173654]">
-                  {String(value)}
-                </p>
+              <div key={String(name)} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{String(name)}</p>
+                <p className="mt-1 truncate text-xs font-bold text-slate-900">{String(value)}</p>
               </div>
             ))}
           </div>
-          <div
-            className="flex flex-wrap gap-1 border-b border-[#edf2f6] pb-2"
-            role="tablist"
-            aria-label="Secciones del pedido"
-          >
+          <div className="flex flex-wrap gap-1 border-b border-slate-100 pb-2" role="tablist" aria-label="Secciones del pedido">
             {(canPaymentsView
               ? ["Resumen", "Productos", "Preparación", "Entrega", "Pago", "Historial"]
               : ["Resumen", "Productos", "Preparación", "Entrega", "Historial"]
-            ).map(
-              (value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setTab(value)}
-                  aria-selected={tab === value}
-                  role="tab"
-                  className={`rounded-md px-2.5 py-1.5 text-[10px] font-extrabold ${tab === value ? "bg-[#e8f1ff] text-[#2277ee]" : "text-[#71869c]"}`}
-                >
-                  {value}
-                </button>
-              ),
-            )}
+            ).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                aria-selected={tab === value}
+                role="tab"
+                className={tabButtonClass(tab === value)}
+              >
+                {value}
+              </button>
+            ))}
           </div>
           {tab === "Productos" || tab === "Preparación" ? (
             <div className="space-y-2">
               {detail.items.map((item) => (
-                <div key={String(item.id)} className="rounded-lg border border-[#edf2f6] p-3">
+                <div key={String(item.id)} className="rounded-lg border border-slate-100 p-3">
                   <div className="flex justify-between gap-3">
                     <div>
-                      <p className="text-[10px] font-extrabold text-[#304b66]">
+                      <p className="text-xs font-semibold text-slate-700">
                         {String(item.skuSnapshot)} · {String(item.productNameSnapshot)}
                       </p>
-                      <p className="mt-1 text-[9px] text-[#8296a9]">
-                        Solicitado {String(item.quantity)} · Preparado {String(item.pickedQuantity)}{" "}
-                        · Reserva {item.reservationId ? "activa" : "N/D"}
+                      <p className="mt-1 text-[10.5px] text-slate-400">
+                        Solicitado {String(item.quantity)} · Preparado {String(item.pickedQuantity)} · Reserva{" "}
+                        {item.reservationId ? "activa" : "N/D"}
                       </p>
                     </div>
                     {tab === "Preparación" && canManage && String(order?.status) === "PREPARING" ? (
                       <button
                         disabled={busy || Number(item.pickedQuantity) >= Number(item.quantity)}
                         onClick={() =>
-                          void pick(
-                            item,
-                            Math.min(Number(item.quantity), Number(item.pickedQuantity) + 1),
-                          )
+                          void pick(item, Math.min(Number(item.quantity), Number(item.pickedQuantity) + 1))
                         }
-                        className="rounded-lg border border-[#2277ee] px-2 text-[9px] font-extrabold text-[#2277ee]"
+                        className="h-8 shrink-0 rounded-lg border border-blue-200 px-2.5 text-[10.5px] font-semibold text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         +1 preparado
                       </button>
                     ) : null}
                   </div>
-                  <div className="mt-2 h-1.5 rounded-full bg-[#edf2f6]">
+                  <div className="mt-2 h-1.5 rounded-full bg-slate-100">
                     <span
-                      className="block h-full rounded-full bg-[#159263]"
+                      className="block h-full rounded-full bg-emerald-500"
                       style={{
                         width: `${Math.min(100, (Number(item.pickedQuantity) / Math.max(1, Number(item.quantity))) * 100)}%`,
                       }}
@@ -793,62 +810,55 @@ function OrderDrawer({
                 ["Neto", detail.reconciliation.netReceivedAmount],
                 ["Diferencia", detail.reconciliation.difference],
               ].map(([name, value]) => (
-                <div key={String(name)} className="rounded-lg border border-[#edf2f6] p-3">
-                  <p className="text-[9px] text-[#71869c]">{name}</p>
-                  <p className="mt-1 text-xs font-extrabold text-[#173654]">
-                    {money(currency, String(value))}
-                  </p>
+                <div key={String(name)} className="rounded-lg border border-slate-100 p-3">
+                  <p className="text-[10.5px] text-slate-400">{name}</p>
+                  <p className="mt-1 text-xs font-bold text-slate-900">{money(currency, String(value))}</p>
                 </div>
               ))}
-              <Link href="/admin/pagos" className="text-[10px] font-extrabold text-[#2277ee]">
+              <Link href="/admin/pagos" className="text-xs font-semibold text-blue-600 hover:underline">
                 Gestionar pago →
               </Link>
             </div>
           ) : tab === "Historial" ? (
             <div className="grid gap-2">
               {detail.history.map((row) => (
-                <div
-                  key={String(row.id)}
-                  className="rounded-lg border border-[#edf2f6] p-3 text-[10px] text-[#526b84]"
-                >
-                  {text(String(row.status))} ·{" "}
-                  {new Date(String(row.createdAt)).toLocaleString("es-PE")}
+                <div key={String(row.id)} className="rounded-lg border border-slate-100 p-3 text-[11px] text-slate-500">
+                  {text(String(row.status))} · {new Date(String(row.createdAt)).toLocaleString("es-PE")}
                 </div>
               ))}
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="rounded-lg bg-[#f7fbff] p-3 text-[10px] text-[#526b84]">
+              <div className="rounded-lg bg-slate-50 p-3 text-[11px] text-slate-500">
                 {text(String(order?.deliveryMethod))} · {text(String(order?.status))} · Local{" "}
                 {String(detail.location?.name ?? "N/D")}
               </div>
               {tab === "Entrega" ? (
-                <p className="text-[10px] text-[#526b84]">
-                  El avance depende del método de entrega y se habilita solo cuando el picking está
-                  completo.
+                <p className="text-[11px] text-slate-500">
+                  El avance depende del método de entrega y se habilita solo cuando el picking está completo.
                 </p>
               ) : null}
               {canManage && actions.some((action) => action.status === "DELIVERED") ? (
-                <label className="block text-[10px] font-semibold text-[#526b84]">
+                <label className="block text-[11px] font-semibold text-slate-500">
                   Receptor (opcional)
                   <input
                     value={receivedBy}
                     onChange={(event) => setReceivedBy(event.target.value)}
                     maxLength={160}
                     placeholder="Nombre de quien recibe el pedido"
-                    className="mt-1 h-9 w-full rounded border border-[#dce6ee] px-2 text-[10px] text-[#173654]"
+                    className={`mt-1 ${inputClass}`}
                   />
                 </label>
               ) : null}
               {canManage && actions.some((action) => action.status === "CANCELLED") ? (
-                <label className="block text-[10px] font-semibold text-[#8a4b20]">
+                <label className="block text-[11px] font-semibold text-amber-700">
                   Motivo de cancelación
                   <input
                     value={cancelReason}
                     onChange={(event) => setCancelReason(event.target.value)}
                     maxLength={500}
                     placeholder="Obligatorio para cancelar y liberar reservas"
-                    className="mt-1 h-9 w-full rounded border border-[#e8d5c6] px-2 text-[10px] text-[#173654]"
+                    className={`mt-1 h-10 w-full rounded-lg border border-amber-200 bg-white px-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20`}
                   />
                 </label>
               ) : null}
@@ -856,12 +866,9 @@ function OrderDrawer({
               canPaymentsView &&
               detail.reconciliation &&
               Number(detail.reconciliation.netReceivedAmount) > 0 &&
-              ["NEW", "RECEIVED", "PAYMENT_PENDING", "PREPARING"].includes(
-                String(order?.status),
-              ) ? (
-                <p className="rounded-lg border border-[#f4d3bd] bg-[#fffaf6] p-2 text-[10px] text-[#8a4b20]">
-                  Este pedido tiene cobros confirmados. Antes de cancelarlo, gestiona el reembolso
-                  desde Pagos.
+              ["NEW", "RECEIVED", "PAYMENT_PENDING", "PREPARING"].includes(String(order?.status)) ? (
+                <p className="rounded-lg border border-amber-100 bg-amber-50 p-2.5 text-[11px] font-medium text-amber-700">
+                  Este pedido tiene cobros confirmados. Antes de cancelarlo, gestiona el reembolso desde Pagos.
                 </p>
               ) : null}
               <div className="flex flex-wrap gap-2">
@@ -871,31 +878,28 @@ function OrderDrawer({
                         key={action.status}
                         disabled={busy || (action.status === "CANCELLED" && !cancelReason.trim())}
                         onClick={() => void transition(action.status)}
-                        className="rounded-lg bg-[#2277ee] px-3 py-2 text-[10px] font-extrabold text-white disabled:opacity-50"
+                        className={primaryButtonClass}
                       >
                         {action.label}
                       </button>
                     ))
                   : null}
                 {canPaymentsView ? (
-                  <Link
-                    href="/admin/pagos"
-                    className="rounded-lg border border-[#dce6ee] px-3 py-2 text-[10px] font-extrabold text-[#2277ee]"
-                  >
+                  <Link href="/admin/pagos" className={secondaryButtonClass}>
                     Gestionar pago
                   </Link>
                 ) : null}
               </div>
               {tab === "Resumen" ? (
-                <section className="rounded-xl border border-[#e2eaf1] bg-white p-3">
+                <section className="rounded-xl border border-slate-200/90 bg-white p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="text-[11px] font-extrabold text-[#173654]">Incidencias</p>
-                      <p className="mt-1 text-[9px] text-[#8296a9]">
+                      <p className="text-xs font-bold text-slate-900">Incidencias</p>
+                      <p className="mt-1 text-[10.5px] text-slate-400">
                         Solo los bloqueadores impiden marcar el pedido como listo.
                       </p>
                     </div>
-                    <span className="rounded-full bg-[#fff0e8] px-2 py-1 text-[9px] font-extrabold text-[#d7641e]">
+                    <span className="rounded-full bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700">
                       {detail.incidents.filter((row) => String(row.status) === "OPEN").length} abiertas
                     </span>
                   </div>
@@ -907,23 +911,23 @@ function OrderDrawer({
                         return (
                           <div
                             key={String(row.id)}
-                            className={`rounded-lg border p-2.5 ${open ? "border-[#f4d3bd] bg-[#fffaf6]" : "border-[#dceee5] bg-[#f8fffb]"}`}
+                            className={`rounded-lg border p-2.5 ${open ? "border-amber-100 bg-amber-50" : "border-emerald-100 bg-emerald-50"}`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-extrabold text-[#304b66]">
+                                <p className="text-[10.5px] font-semibold text-slate-700">
                                   {incidentTypeLabel[String(row.type)] ?? String(row.type)}
                                   {row.blocker ? " · Bloqueadora" : ""}
                                 </p>
-                                <p className="mt-1 text-[10px] text-[#526b84]">{String(row.note)}</p>
-                                <p className="mt-1 text-[9px] text-[#8296a9]">
+                                <p className="mt-1 text-[10.5px] text-slate-500">{String(row.note)}</p>
+                                <p className="mt-1 text-[10px] text-slate-400">
                                   {item ? String(item.productNameSnapshot) : "Pedido completo"} · {open ? "Abierta" : "Resuelta"}
                                 </p>
                               </div>
                               {open ? (
-                                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#159263]" aria-hidden="true" />
+                                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" aria-hidden="true" />
                               ) : (
-                                <span className="shrink-0 text-[9px] font-extrabold text-[#159263]">Resuelta</span>
+                                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
                               )}
                             </div>
                             {open && canManage ? (
@@ -933,12 +937,12 @@ function OrderDrawer({
                                   onChange={(event) => setResolutionNote(event.target.value)}
                                   maxLength={800}
                                   placeholder="Nota de resolución (opcional)"
-                                  className="h-8 min-w-0 flex-1 rounded border border-[#dce6ee] bg-white px-2 text-[10px] text-[#173654]"
+                                  className="h-8 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 text-[10.5px] text-slate-700 focus:border-blue-400 focus:outline-none"
                                 />
                                 <button
                                   disabled={incidentBusyId !== null}
                                   onClick={() => void resolveIncident(String(row.id))}
-                                  className="rounded-lg bg-[#159263] px-3 py-2 text-[10px] font-extrabold text-white disabled:opacity-50"
+                                  className="rounded-lg bg-emerald-600 px-3 py-2 text-[10.5px] font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                   Resolver
                                 </button>
@@ -948,7 +952,7 @@ function OrderDrawer({
                         );
                       })
                     ) : (
-                      <p className="rounded-lg border border-dashed border-[#dce6ee] p-3 text-[10px] text-[#8296a9]">
+                      <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-center text-[10.5px] text-slate-400">
                         No hay incidencias registradas.
                       </p>
                     )}
@@ -956,52 +960,54 @@ function OrderDrawer({
                 </section>
               ) : null}
               {canManage ? (
-                <div className="rounded-xl border border-[#f4d3bd] bg-[#fffaf6] p-3">
-                  <p className="text-[11px] font-extrabold text-[#8a4b20]">Registrar incidencia</p>
+                <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-3">
+                  <p className="text-xs font-bold text-amber-800">Registrar incidencia</p>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    <select
+                    <AdminSelect
+                      ariaLabel="Tipo de incidencia"
                       value={incident.type}
-                      onChange={(event) => setIncident({ ...incident, type: event.target.value })}
-                      className="h-9 rounded border border-[#e8d5c6] px-2 text-[10px]"
-                    >
-                      <option value="PHYSICAL_SHORTAGE">Faltante físico</option>
-                      <option value="DAMAGED_PRODUCT">Producto dañado</option>
-                      <option value="STOCK_MISMATCH">Stock inconsistente</option>
-                      <option value="WRONG_PRODUCT">Producto incorrecto</option>
-                      <option value="OTHER">Otro</option>
-                    </select>
-                    <select
+                      onValueChange={(value) => setIncident({ ...incident, type: value })}
+                      options={[
+                        { value: "PHYSICAL_SHORTAGE", label: "Faltante físico" },
+                        { value: "DAMAGED_PRODUCT", label: "Producto dañado" },
+                        { value: "STOCK_MISMATCH", label: "Stock inconsistente" },
+                        { value: "WRONG_PRODUCT", label: "Producto incorrecto" },
+                        { value: "OTHER", label: "Otro" },
+                      ]}
+                    />
+                    <AdminSelect
+                      ariaLabel="Producto afectado"
                       value={incident.itemId}
-                      onChange={(event) => setIncident({ ...incident, itemId: event.target.value })}
-                      className="h-9 rounded border border-[#e8d5c6] px-2 text-[10px]"
-                    >
-                      <option value="">Pedido completo</option>
-                      {detail.items.map((item) => (
-                        <option key={String(item.id)} value={String(item.id)}>
-                          {String(item.productNameSnapshot)}
-                        </option>
-                      ))}
-                    </select>
+                      onValueChange={(value) => setIncident({ ...incident, itemId: value })}
+                      options={[
+                        { value: "", label: "Pedido completo" },
+                        ...detail.items.map((item) => ({
+                          value: String(item.id),
+                          label: String(item.productNameSnapshot),
+                        })),
+                      ]}
+                    />
                     <input
                       value={incident.note}
                       onChange={(event) => setIncident({ ...incident, note: event.target.value })}
                       placeholder="Describe la incidencia"
                       maxLength={1000}
-                      className="h-9 rounded border border-[#e8d5c6] px-2 text-[10px] sm:col-span-2"
+                      className={`${inputClass} h-9 sm:col-span-2`}
                     />
                   </div>
-                  <label className="mt-2 flex items-center gap-2 text-[10px] font-semibold text-[#8a4b20]">
+                  <label className="mt-2 flex items-center gap-2 text-[10.5px] font-semibold text-amber-800">
                     <input
                       type="checkbox"
                       checked={incident.blocker}
                       onChange={(event) => setIncident({ ...incident, blocker: event.target.checked })}
+                      className="h-3.5 w-3.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500/40"
                     />
                     Bloquea el avance hasta resolverla
                   </label>
                   <button
                     disabled={busy || !incident.note.trim()}
                     onClick={() => void createIncident()}
-                    className="mt-2 rounded-lg border border-[#d7641e] px-3 py-2 text-[10px] font-extrabold text-[#d7641e] disabled:opacity-50"
+                    className="mt-2 h-9 rounded-lg border border-amber-300 bg-white px-3 text-[10.5px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Guardar incidencia
                   </button>
@@ -1010,7 +1016,7 @@ function OrderDrawer({
             </div>
           )}
           {notice ? (
-            <p role="alert" className="text-[10px] font-bold text-[#c84848]">
+            <p role="alert" className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
               {notice}
             </p>
           ) : null}

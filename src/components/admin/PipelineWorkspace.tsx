@@ -117,12 +117,12 @@ type NewForm = {
 };
 
 const laneTone: Record<string, { border: string; dot: string; wash: string }> = {
-  NEW: { border: "border-[#2277ee]", dot: "bg-[#2277ee]", wash: "bg-[#f2f7ff]" },
-  CONTACTED: { border: "border-[#3f8df5]", dot: "bg-[#3f8df5]", wash: "bg-[#f3f8ff]" },
-  QUOTING: { border: "border-[#7c5cff]", dot: "bg-[#7c5cff]", wash: "bg-[#f8f6ff]" },
-  FOLLOW_UP: { border: "border-[#ff9a3d]", dot: "bg-[#ff9a3d]", wash: "bg-[#fff8ef]" },
-  NEGOTIATION: { border: "border-[#e07c22]", dot: "bg-[#e07c22]", wash: "bg-[#fff7ef]" },
-  WON: { border: "border-[#35a673]", dot: "bg-[#35a673]", wash: "bg-[#f1fbf6]" },
+  NEW: { border: "border-blue-600", dot: "bg-blue-600", wash: "bg-blue-50" },
+  CONTACTED: { border: "border-blue-400", dot: "bg-blue-400", wash: "bg-blue-50" },
+  QUOTING: { border: "border-purple-400", dot: "bg-purple-400", wash: "bg-purple-50" },
+  FOLLOW_UP: { border: "border-amber-300", dot: "bg-amber-400", wash: "bg-amber-50" },
+  NEGOTIATION: { border: "border-amber-600", dot: "bg-amber-600", wash: "bg-amber-50" },
+  WON: { border: "border-emerald-500", dot: "bg-emerald-500", wash: "bg-emerald-50" },
 };
 
 const initialForm: NewForm = {
@@ -188,14 +188,14 @@ function MetricCard({
   onClick?: () => void;
 }) {
   const tones = {
-    blue: "bg-[#eaf3ff] text-[#2277ee]",
-    orange: "bg-[#fff3e8] text-[#e78321]",
-    green: "bg-[#e9f8f0] text-[#35a673]",
-    purple: "bg-[#f0ecff] text-[#7657ec]",
+    blue: "bg-blue-50 text-blue-600",
+    orange: "bg-amber-50 text-amber-600",
+    green: "bg-emerald-50 text-emerald-500",
+    purple: "bg-purple-50 text-purple-600",
   };
   return (
     <article
-      className={`min-w-0 rounded-xl border border-[#e1e9f0] bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5 ${onClick ? "cursor-pointer transition hover:-translate-y-0.5 hover:border-[#bcd3eb] hover:shadow-[0_8px_20px_rgba(16,42,67,0.08)] focus-within:ring-2 focus-within:ring-[#2277ee]/20" : ""}`}
+      className={`min-w-0 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5 ${onClick ? "cursor-pointer transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_8px_20px_rgba(16,42,67,0.08)] focus-within:ring-2 focus-within:ring-blue-600/20" : ""}`}
       onClick={onClick}
       onKeyDown={(event) => {
         if (onClick && (event.key === "Enter" || event.key === " ")) {
@@ -208,7 +208,7 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#6e8498]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
             {label}
             {tooltip ? (
               <AdminTooltip label={tooltip}>
@@ -216,7 +216,7 @@ function MetricCard({
               </AdminTooltip>
             ) : null}
           </p>
-          <div className="mt-2 text-[22px] font-black tracking-[-0.04em] text-[#173654]">
+          <div className="mt-2 text-[22px] font-black tracking-[-0.04em] text-slate-900">
             {value}
           </div>
         </div>
@@ -226,7 +226,7 @@ function MetricCard({
           {icon}
         </span>
       </div>
-      <div className="mt-2 text-[11px] font-semibold text-[#7f93a6]">{helper}</div>
+      <div className="mt-2 text-[11px] font-semibold text-slate-400">{helper}</div>
     </article>
   );
 }
@@ -264,40 +264,40 @@ function Card({
   const amount = card.totalAmount ? money(card.totalAmount, card.currency) : "Valor por definir";
   const agingTone =
     card.agingDays == null
-      ? "bg-[#f1f5f8] text-[#71879b]"
+      ? "bg-slate-50 text-slate-500"
       : card.agingDays <= 2
-        ? "bg-[#f1f5f8] text-[#71879b]"
+        ? "bg-slate-50 text-slate-500"
         : card.agingDays <= 5
-          ? "bg-[#fff8ef] text-[#b56a1d]"
-          : "bg-[#fff0ed] text-[#d75942]";
+          ? "bg-amber-50 text-amber-700"
+          : "bg-rose-50 text-rose-600";
   return (
     <article
       draggable={canManage}
       onDragStart={(event) => onDragStart(event, card)}
       onDragEnd={onDragEnd}
-      className={`group rounded-xl border bg-white p-3.5 shadow-[0_3px_10px_rgba(16,42,67,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,42,67,0.1)] ${card.overdue ? "border-[#f2b9a9]" : "border-[#e2eaf1]"}`}
+      className={`group rounded-xl border bg-white p-3.5 shadow-[0_3px_10px_rgba(16,42,67,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,42,67,0.1)] ${card.overdue ? "border-rose-200" : "border-slate-200"}`}
     >
       <div className="flex items-start justify-between gap-2">
         <button type="button" onClick={() => onOpen(card.id)} className="min-w-0 text-left">
-          <p className="truncate text-[13px] font-extrabold text-[#173654]">{card.customerName}</p>
-          <p className="mt-0.5 truncate text-[11px] font-semibold text-[#7a8fa2]">
+          <p className="truncate text-[13px] font-extrabold text-slate-900">{card.customerName}</p>
+          <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-400">
             {card.code} · {card.title}
           </p>
         </button>
         <div className="relative">
           <button
             type="button"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[#8ba0b2] hover:bg-[#f2f6f9]"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-50"
             aria-label="Acciones de oportunidad"
             onClick={() => setMenu((value) => !value)}
           >
             <MoreHorizontal className="h-4 w-4" />
           </button>
           {menu ? (
-            <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border border-[#dce6ee] bg-white p-1 shadow-lg">
+            <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[11px] font-bold text-[#304b66] hover:bg-[#f5f8fb]"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[11px] font-bold text-slate-700 hover:bg-slate-50"
                 onClick={() => {
                   setMenu(false);
                   onOpen(card.id);
@@ -310,8 +310,8 @@ function Card({
         </div>
       </div>
       <button type="button" onClick={() => onOpen(card.id)} className="mt-3 block w-full text-left">
-        <p className="text-sm font-black text-[#173654]">{amount}</p>
-        <p className="mt-1 truncate text-[11px] font-semibold text-[#71879b]">
+        <p className="text-sm font-black text-slate-900">{amount}</p>
+        <p className="mt-1 truncate text-[11px] font-semibold text-slate-500">
           {card.items
             .slice(0, 2)
             .map((item) => `${item.quantity}× ${item.productNameSnapshot}`)
@@ -319,28 +319,28 @@ function Card({
           {card.items.length > 2 ? ` · +${card.items.length - 2} productos` : ""}
         </p>
       </button>
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-[#71879b]">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-slate-500">
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${card.assignedSellerName ? "bg-[#f1f5f8]" : "bg-[#fff8ef] text-[#b56a1d]"}`}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${card.assignedSellerName ? "bg-slate-50" : "bg-amber-50 text-amber-700"}`}
         >
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#173654] text-[8px] text-white">
+          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[8px] text-white">
             {(card.assignedSellerName ?? "S").slice(0, 1).toUpperCase()}
           </span>
           {card.assignedSellerName ?? "Sin responsable"}
         </span>
         <span
-          className={`rounded-full px-2 py-1 ${card.overdue ? "bg-[#fff0ed] text-[#d75942]" : agingTone}`}
+          className={`rounded-full px-2 py-1 ${card.overdue ? "bg-rose-50 text-rose-600" : agingTone}`}
         >
           {card.overdue
             ? `Vencido${card.followUpAt ? ` · ${dateLabel(card.followUpAt, true)}` : ""}`
             : `Aging ${relativeAge(card.agingDays)}`}
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-[#eef2f5] pt-2.5">
-        <span className="min-w-0 truncate text-[10px] font-semibold text-[#7c91a4]">
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+        <span className="min-w-0 truncate text-[10px] font-semibold text-slate-400">
           {card.nextAction ?? "Sin próxima acción"}
           {card.followUpAt && !card.overdue ? (
-            <span className="ml-1 font-bold text-[#304b66]">
+            <span className="ml-1 font-bold text-slate-700">
               · {dateLabel(card.followUpAt, true)}
             </span>
           ) : null}
@@ -355,7 +355,7 @@ function Card({
             id={`stage-${card.id}`}
             value={card.stage}
             onChange={(event) => onMove(card, event.target.value as OpportunityStage)}
-            className="max-w-[112px] rounded-md border border-[#dbe5ed] bg-white px-1.5 py-1 text-[10px] font-bold text-[#304b66] outline-none focus:border-[#2277ee]"
+            className="max-w-[112px] rounded-md border border-slate-200 bg-white px-1.5 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-400"
           >
             <option value={card.stage}>{pipelineStageLabels[card.stage]}</option>
             {stageChoices
@@ -828,7 +828,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
   }
 
   function tabClass(tab: string) {
-    return `border-b-2 px-1 pb-3 text-xs font-extrabold ${detailTab === tab ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#7d91a5] hover:text-[#304b66]"}`;
+    return `border-b-2 px-1 pb-3 text-xs font-extrabold ${detailTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-700"}`;
   }
   const timeline = detail
     ? [
@@ -873,14 +873,14 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             <button
               type="button"
               onClick={() => setNewOpen(false)}
-              className="rounded-lg border border-[#dbe5ed] px-4 py-2 text-xs font-extrabold text-[#71879b]"
+              className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-extrabold text-slate-500"
             >
               Cancelar
             </button>
             <button
               type="submit"
               form="new-opportunity-form"
-              className="rounded-lg bg-[#2277ee] px-4 py-2 text-xs font-extrabold text-white"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-extrabold text-white"
             >
               Crear oportunidad
             </button>
@@ -890,9 +890,9 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
         <form id="new-opportunity-form" onSubmit={submitNew} className="space-y-4">
           <Field label="Cliente">
             {presetCustomerId && newForm.customerId === presetCustomerId ? (
-              <div className="rounded-lg border border-[#dbe5ed] bg-[#f7fbff] px-3 py-3 text-xs font-extrabold text-[#304b66]">
+              <div className="rounded-lg border border-slate-200 bg-blue-50 px-3 py-3 text-xs font-extrabold text-slate-700">
                 {newForm.customerName || "Cliente seleccionado"}
-                <span className="mt-1 block text-[10px] font-semibold text-[#71879b]">
+                <span className="mt-1 block text-[10px] font-semibold text-slate-500">
                   Cliente preseleccionado desde Customer 360
                 </span>
               </div>
@@ -930,7 +930,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               </>
             )}
             {newForm.customerName ? (
-              <p className="mt-1 text-[10px] font-bold text-[#35a673]">
+              <p className="mt-1 text-[10px] font-bold text-emerald-500">
                 Cliente seleccionado: {newForm.customerName}
               </p>
             ) : null}
@@ -1042,9 +1042,9 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             {newForm.items.map((item, index) => (
               <div
                 key={item.productId}
-                className="mt-2 grid grid-cols-[minmax(0,1fr)_52px_82px_24px] items-center gap-1.5 rounded-lg bg-[#f5f8fb] p-2"
+                className="mt-2 grid grid-cols-[minmax(0,1fr)_52px_82px_24px] items-center gap-1.5 rounded-lg bg-blue-50 p-2"
               >
-                <span className="truncate text-[10px] font-bold text-[#304b66]">
+                <span className="truncate text-[10px] font-bold text-slate-700">
                   {item.sku} · {item.name}
                 </span>
                 <input
@@ -1088,14 +1088,14 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                       items: form.items.filter((_, rowIndex) => rowIndex !== index),
                     }))
                   }
-                  className="text-[#b74d3b]"
+                  className="text-rose-700"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
             {newForm.items.length ? (
-              <p className="mt-2 text-right text-xs font-black text-[#173654]">
+              <p className="mt-2 text-right text-xs font-black text-slate-900">
                 Total calculado:{" "}
                 {money(
                   newForm.items.reduce(
@@ -1140,13 +1140,13 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
       </AdminDrawer>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2277ee]">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">
             Pipeline
           </p>
-          <h1 className="mt-1 text-[25px] font-black tracking-[-0.045em] text-[#102a43] sm:text-[28px]">
+          <h1 className="mt-1 text-[25px] font-black tracking-[-0.045em] text-slate-900 sm:text-[28px]">
             Pipeline de oportunidades
           </h1>
-          <p className="mt-1 max-w-2xl text-xs font-semibold leading-5 text-[#7d91a5]">
+          <p className="mt-1 max-w-2xl text-xs font-semibold leading-5 text-slate-400">
             Gestiona y da seguimiento a tus oportunidades comerciales.
           </p>
         </div>
@@ -1156,7 +1156,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               board.scope.canExport ? `/api/admin/oportunidades/export?${queryString}` : undefined
             }
             aria-disabled={!board.scope.canExport}
-            className={`inline-flex h-9 items-center gap-2 rounded-lg border border-[#dbe5ed] bg-white px-3 text-[11px] font-extrabold text-[#304b66] shadow-sm ${!board.scope.canExport ? "pointer-events-none opacity-45" : "hover:bg-[#f7fafc]"}`}
+            className={`inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-700 shadow-sm ${!board.scope.canExport ? "pointer-events-none opacity-45" : "hover:bg-slate-50"}`}
           >
             <Download className="h-3.5 w-3.5" />
             Exportar
@@ -1165,7 +1165,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             type="button"
             onClick={() => setNewOpen(true)}
             disabled={!board.scope.canManage}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#ff830e] px-3.5 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(255,131,14,0.18)] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(37,99,235,0.18)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
           >
             <Plus className="h-3.5 w-3.5" />
             Nueva oportunidad
@@ -1210,22 +1210,22 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           onClick={() => updateQuery({ view: "closed" })}
         />
       </div>
-      <div className="rounded-xl border border-[#e1e9f0] bg-white px-4 pt-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:px-5">
+      <div className="rounded-xl border border-slate-100 bg-white px-4 pt-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
           <form onSubmit={applySearch} className="relative min-w-[220px] flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#91a4b5]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Buscar código, cliente, correo, producto o SKU"
-              className="h-9 w-full rounded-lg border border-[#dbe5ed] bg-[#fbfdff] pl-9 pr-3 text-xs font-semibold text-[#304b66] outline-none focus:border-[#2277ee]"
+              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400"
             />
           </form>
           <select
             aria-label="Filtrar por etapa"
             value={searchParams.get("stage") ?? ""}
             onChange={(event) => updateQuery({ stage: event.target.value || null })}
-            className="h-9 rounded-lg border border-[#dbe5ed] bg-white px-2 text-[11px] font-bold text-[#304b66]"
+            className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700"
           >
             <option value="">Todas las etapas</option>
             {filterableStages.map((stage) => (
@@ -1238,7 +1238,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             aria-label="Filtrar por vendedor"
             value={searchParams.get("sellerId") ?? ""}
             onChange={(event) => updateQuery({ sellerId: event.target.value || null })}
-            className="h-9 max-w-[180px] rounded-lg border border-[#dbe5ed] bg-white px-2 text-[11px] font-bold text-[#304b66]"
+            className="h-9 max-w-[180px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700"
           >
             <option value="">Todos los vendedores</option>
             {board.facets.sellers.map((seller) => (
@@ -1250,12 +1250,12 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           <button
             type="button"
             onClick={() => setMoreFilters((value) => !value)}
-            className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-[11px] font-extrabold ${moreFilters || activeFilterCount ? "border-[#2277ee] bg-[#f2f7ff] text-[#2277ee]" : "border-[#dbe5ed] text-[#304b66]"}`}
+            className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-[11px] font-extrabold ${moreFilters || activeFilterCount ? "border-blue-600 bg-blue-50 text-blue-600" : "border-slate-200 text-slate-700"}`}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             Más filtros
             {activeFilterCount ? (
-              <span className="rounded-full bg-[#2277ee] px-1.5 py-0.5 text-[9px] text-white">
+              <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[9px] text-white">
                 {activeFilterCount}
               </span>
             ) : null}
@@ -1263,12 +1263,12 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
         </div>
         {moreFilters ? (
           <>
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#edf2f5] pt-3 sm:grid-cols-4">
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:grid-cols-4">
               <select
                 aria-label="Filtrar por origen"
                 value={searchParams.get("origin") ?? ""}
                 onChange={(event) => updateQuery({ origin: event.target.value || null })}
-                className="h-9 rounded-lg border border-[#dbe5ed] px-2 text-[11px] font-bold text-[#304b66]"
+                className="h-9 rounded-lg border border-slate-200 px-2 text-[11px] font-bold text-slate-700"
               >
                 <option value="">Todos los orígenes</option>
                 {opportunityOrigins.map((origin) => (
@@ -1281,13 +1281,13 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                 aria-label="Filtrar por moneda"
                 value={searchParams.get("currency") ?? ""}
                 onChange={(event) => updateQuery({ currency: event.target.value || null })}
-                className="h-9 rounded-lg border border-[#dbe5ed] px-2 text-[11px] font-bold text-[#304b66]"
+                className="h-9 rounded-lg border border-slate-200 px-2 text-[11px] font-bold text-slate-700"
               >
                 <option value="">Todas las monedas</option>
                 <option value="PEN">PEN</option>
                 <option value="USD">USD</option>
               </select>
-              <label className="flex h-9 items-center gap-2 rounded-lg border border-[#dbe5ed] px-2 text-[11px] font-bold text-[#304b66]">
+              <label className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-2 text-[11px] font-bold text-slate-700">
                 <input
                   type="checkbox"
                   checked={searchParams.get("overdue") === "true"}
@@ -1300,7 +1300,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#dbe5ed] text-[11px] font-extrabold text-[#71879b] hover:bg-[#f7fafc]"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 text-[11px] font-extrabold text-slate-500 hover:bg-slate-50"
               >
                 <RefreshCcw className="h-3.5 w-3.5" />
                 Limpiar filtros
@@ -1369,7 +1369,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   </div>
                 ) : null}
               </div>
-              <label className="grid gap-1 text-[10px] font-extrabold text-[#304b66]">
+              <label className="grid gap-1 text-[10px] font-extrabold text-slate-700">
                 Creada desde
                 <input
                   type="date"
@@ -1379,7 +1379,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   className="field h-9"
                 />
               </label>
-              <label className="grid gap-1 text-[10px] font-extrabold text-[#304b66]">
+              <label className="grid gap-1 text-[10px] font-extrabold text-slate-700">
                 Creada hasta
                 <input
                   type="date"
@@ -1389,7 +1389,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   className="field h-9"
                 />
               </label>
-              <label className="grid gap-1 text-[10px] font-extrabold text-[#304b66]">
+              <label className="grid gap-1 text-[10px] font-extrabold text-slate-700">
                 Seguimiento desde
                 <input
                   type="date"
@@ -1399,7 +1399,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   className="field h-9"
                 />
               </label>
-              <label className="grid gap-1 text-[10px] font-extrabold text-[#304b66]">
+              <label className="grid gap-1 text-[10px] font-extrabold text-slate-700">
                 Seguimiento hasta
                 <input
                   type="date"
@@ -1409,7 +1409,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   className="field h-9"
                 />
               </label>
-              <label className="flex h-9 items-center gap-2 rounded-lg border border-[#dbe5ed] px-2 text-[10px] font-bold text-[#304b66]">
+              <label className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-2 text-[10px] font-bold text-slate-700">
                 <input
                   type="checkbox"
                   checked={searchParams.get("withoutNextAction") === "true"}
@@ -1440,13 +1440,13 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                 <option value="false">Sin monto</option>
               </select>
             </div>
-            <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-[#6f8498]">
+            <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500">
               {filterChips.map((chip) => (
                 <button
                   type="button"
                   key={chip.key}
                   onClick={() => updateQuery({ [chip.key]: null })}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#cfe0ef] bg-[#f7fbff] px-2.5 py-1.5 text-[#2277ee] hover:border-[#2277ee]"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-blue-50 px-2.5 py-1.5 text-blue-600 hover:border-blue-400"
                 >
                   {chip.label} <X className="h-3 w-3" />
                 </button>
@@ -1454,22 +1454,22 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             </div>
           </>
         ) : null}
-        <div className="mt-4 flex items-center gap-5 overflow-x-auto border-b border-[#e5edf2] text-nowrap">
+        <div className="mt-4 flex items-center gap-5 overflow-x-auto border-b border-slate-100 text-nowrap">
           <button
             type="button"
             onClick={() => updateQuery({ view: null })}
-            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "pipeline" ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#7d91a5]"}`}
+            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "pipeline" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
           >
             Pipeline
           </button>
           <button
             type="button"
             onClick={() => updateQuery({ view: "followups" })}
-            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "followups" ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#7d91a5]"}`}
+            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "followups" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
           >
             Seguimientos
             {board.metrics.overdueFollowUps ? (
-              <span className="ml-1 rounded-full bg-[#fff0ed] px-1.5 py-0.5 text-[9px] text-[#d75942]">
+              <span className="ml-1 rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] text-rose-600">
                 {board.metrics.overdueFollowUps}
               </span>
             ) : null}
@@ -1477,7 +1477,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           <button
             type="button"
             onClick={() => updateQuery({ view: "closed" })}
-            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "closed" ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#7d91a5]"}`}
+            className={`border-b-2 px-1 pb-3 text-xs font-extrabold ${selectedView === "closed" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
           >
             Cerradas
           </button>
@@ -1491,7 +1491,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                 key={lane.key}
                 type="button"
                 onClick={() => setMobileLane(lane.key)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-extrabold ${mobileLane === lane.key ? "border-[#2277ee] bg-[#2277ee] text-white" : "border-[#dbe5ed] bg-white text-[#71879b]"}`}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-extrabold ${mobileLane === lane.key ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 bg-white text-slate-500"}`}
               >
                 {lane.label} <span className="ml-1 opacity-70">{lane.total}</span>
               </button>
@@ -1507,30 +1507,28 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                     key={lane.key}
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={(event) => onDrop(event, lane)}
-                    className={`${mobileHidden ? "hidden md:block" : "block"} w-[285px] shrink-0 snap-start rounded-xl border bg-[#f8fafc] p-2.5 transition md:w-[270px] xl:w-[285px] ${
+                    className={`${mobileHidden ? "hidden md:block" : "block"} w-[285px] shrink-0 snap-start rounded-xl border bg-slate-50 p-2.5 transition md:w-[270px] xl:w-[285px] ${
                       draggingId
                         ? lane.stages.some((stage) => {
                             const dragged = allVisibleCards.find((card) => card.id === draggingId);
                             return dragged ? canTransitionOpportunity(dragged.stage, stage) : false;
                           })
-                          ? "border-[#2277ee] ring-2 ring-[#2277ee]/10"
-                          : "border-[#e1e9f0] opacity-55"
-                        : "border-[#e1e9f0]"
+                          ? "border-blue-600 ring-2 ring-blue-600/10"
+                          : "border-slate-100 opacity-55"
+                        : "border-slate-100"
                     }`}
                   >
-                    <div
-                      className={`mb-2 rounded-lg border-l-4 ${tone.border} ${tone.wash} px-3 py-2.5`}
-                    >
+                    <div className="mb-2 px-1 py-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-[#304b66]">
+                        <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-slate-700">
                           <span
                             className={`mr-1.5 inline-block h-2 w-2 rounded-full ${tone.dot}`}
                           />
                           {lane.label}
                         </h2>
-                        <span className="text-xs font-black text-[#173654]">{lane.total}</span>
+                        <span className="text-xs font-black text-slate-900">{lane.total}</span>
                       </div>
-                      <p className="mt-1 text-[10px] font-bold text-[#71879b]">
+                      <p className="mt-1 text-[10px] font-bold text-slate-500">
                         {amountList(lane.amountByCurrency)}
                       </p>
                     </div>
@@ -1552,13 +1550,13 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                           onClick={() =>
                             updateQuery({ lane: lane.key, lanePage: String(lane.page + 1) })
                           }
-                          className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-[#cbd9e4] py-2 text-[10px] font-extrabold text-[#71879b] hover:bg-white"
+                          className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-slate-200 py-2 text-[10px] font-extrabold text-slate-500 hover:bg-white"
                         >
                           Cargar más <ChevronDown className="h-3.5 w-3.5" />
                         </button>
                       ) : null}
                       {!lane.cards.length ? (
-                        <p className="rounded-lg border border-dashed border-[#d5e0e8] px-3 py-6 text-center text-[11px] font-semibold text-[#8ba0b2]">
+                        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-6 text-center text-[11px] font-semibold text-slate-400">
                           No hay oportunidades aquí.
                         </p>
                       ) : null}
@@ -1575,7 +1573,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
       ) : null}
       {selectedView === "closed" ? <ClosedView cards={board.closed} onOpen={openDetail} /> : null}
       {isPending ? (
-        <div className="fixed bottom-4 right-4 z-30 inline-flex items-center gap-2 rounded-full bg-[#173654] px-3 py-2 text-[11px] font-bold text-white shadow-lg">
+        <div className="fixed bottom-4 right-4 z-30 inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-[11px] font-bold text-white shadow-lg">
           <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
           Actualizando…
         </div>
@@ -1583,7 +1581,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
       {toast ? (
         <div
           role="status"
-          className="fixed bottom-4 left-1/2 z-[70] flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded-lg bg-[#173654] px-4 py-3 text-xs font-bold text-white shadow-xl"
+          className="fixed bottom-4 left-1/2 z-[70] flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-xs font-bold text-white shadow-xl"
         >
           <span>{toast}</span>
           <button type="button" aria-label="Cerrar aviso" onClick={() => setToast(null)}>
@@ -1605,14 +1603,14 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               <button
                 type="button"
                 onClick={() => setActivityOpen(true)}
-                className="flex-1 rounded-lg border border-[#dbe5ed] px-3 py-2 text-[11px] font-extrabold text-[#304b66]"
+                className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-extrabold text-slate-700"
               >
                 Registrar actividad
               </button>
               <button
                 type="button"
                 onClick={() => setFollowupOpen(true)}
-                className="flex-1 rounded-lg bg-[#2277ee] px-3 py-2 text-[11px] font-extrabold text-white"
+                className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-[11px] font-extrabold text-white"
               >
                 Nuevo seguimiento
               </button>
@@ -1622,56 +1620,56 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
       >
         {detail ? (
           <div className="space-y-5">
-            <div className="rounded-xl bg-[#f5f8fb] p-4">
+            <div className="rounded-xl bg-blue-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#7e94a7]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
                     {pipelineStageLabels[detail.stage]}
                   </p>
-                  <h3 className="mt-1 text-lg font-black text-[#173654]">{detail.title}</h3>
-                  <p className="mt-1 text-xs font-semibold text-[#71879b]">
+                  <h3 className="mt-1 text-lg font-black text-slate-900">{detail.title}</h3>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">
                     {detail.customerEmail ?? "Sin correo"} ·{" "}
                     {detail.customerPhone ?? "Sin teléfono"}
                   </p>
                 </div>
-                <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black text-[#2277ee]">
+                <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black text-blue-600">
                   {detail.origin}
                 </span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-[#8aa0b2]">Monto</p>
-                  <p className="mt-1 font-black text-[#173654]">
+                  <p className="text-[10px] font-bold uppercase text-slate-400">Monto</p>
+                  <p className="mt-1 font-black text-slate-900">
                     {money(detail.totalAmount, detail.currency)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-[#8aa0b2]">Aging</p>
-                  <p className="mt-1 font-black text-[#173654]">{relativeAge(detail.agingDays)}</p>
+                  <p className="text-[10px] font-bold uppercase text-slate-400">Aging</p>
+                  <p className="mt-1 font-black text-slate-900">{relativeAge(detail.agingDays)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-[#8aa0b2]">Responsable</p>
-                  <p className="mt-1 font-black text-[#173654]">
+                  <p className="text-[10px] font-bold uppercase text-slate-400">Responsable</p>
+                  <p className="mt-1 font-black text-slate-900">
                     {detail.assignedSellerName ?? "Sin asignar"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-[#8aa0b2]">Próxima acción</p>
-                  <p className="mt-1 font-black text-[#173654]">
+                  <p className="text-[10px] font-bold uppercase text-slate-400">Próxima acción</p>
+                  <p className="mt-1 font-black text-slate-900">
                     {detail.nextAction ?? "Sin definir"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-[#8aa0b2]">
+                  <p className="text-[10px] font-bold uppercase text-slate-400">
                     Próximo seguimiento
                   </p>
-                  <p className="mt-1 font-black text-[#173654]">
+                  <p className="mt-1 font-black text-slate-900">
                     {dateLabel(detail.followUpAt, true)}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="flex gap-4 overflow-x-auto border-b border-[#e5edf2]">
+            <div className="flex gap-4 overflow-x-auto border-b border-slate-100">
               {[
                 "Resumen",
                 "Productos",
@@ -1691,15 +1689,15 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               ))}
             </div>
             {detailTab === "Resumen" ? (
-              <div className="space-y-3 text-xs text-[#536d83]">
+              <div className="space-y-3 text-xs text-slate-600">
                 <p>{detail.notes ?? "Sin notas registradas."}</p>
                 {detail.lostReason ? (
-                  <p className="rounded-lg bg-[#fff3f0] p-3 font-semibold text-[#b74d3b]">
+                  <p className="rounded-lg bg-rose-50 p-3 font-semibold text-rose-700">
                     Motivo de cierre: {detail.lostReason}
                   </p>
                 ) : null}
-                <div className="rounded-lg border border-[#e2eaf1] p-3">
-                  <p className="font-black text-[#304b66]">Contacto más reciente</p>
+                <div className="rounded-lg border border-slate-200 p-3">
+                  <p className="font-black text-slate-700">Contacto más reciente</p>
                   <p className="mt-1 font-semibold">{dateLabel(detail.lastContactAt, true)}</p>
                 </div>
                 {detail.customerPhone || detail.customerEmail ? (
@@ -1709,7 +1707,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                         href={whatsappHref(detail.customerPhone)!}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#cfeedd] bg-[#effbf4] px-3 py-2 text-[10px] font-extrabold text-[#25885e]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[10px] font-extrabold text-emerald-700"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
                         WhatsApp
@@ -1718,7 +1716,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                     {detail.customerPhone ? (
                       <a
                         href={`tel:${detail.customerPhone}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#dbe5ed] px-3 py-2 text-[10px] font-extrabold text-[#304b66]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-[10px] font-extrabold text-slate-700"
                       >
                         <Phone className="h-3.5 w-3.5" />
                         Llamar
@@ -1727,7 +1725,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                     {detail.customerEmail ? (
                       <a
                         href={`mailto:${detail.customerEmail}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#dbe5ed] px-3 py-2 text-[10px] font-extrabold text-[#304b66]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-[10px] font-extrabold text-slate-700"
                       >
                         <Mail className="h-3.5 w-3.5" />
                         Email
@@ -1741,22 +1739,22 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               <div className="space-y-2">
                 {detail.items.length ? (
                   detail.items.map((item) => (
-                    <div key={item.id} className="rounded-lg border border-[#e2eaf1] p-3">
+                    <div key={item.id} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex justify-between gap-2">
-                        <p className="text-xs font-black text-[#304b66]">
+                        <p className="text-xs font-black text-slate-700">
                           {item.productNameSnapshot}
                         </p>
-                        <span className="text-[10px] font-bold text-[#71879b]">
+                        <span className="text-[10px] font-bold text-slate-500">
                           ×{item.quantity}
                         </span>
                       </div>
-                      <p className="mt-1 text-[10px] font-semibold text-[#8195a7]">
+                      <p className="mt-1 text-[10px] font-semibold text-slate-400">
                         {item.skuSnapshot} · {money(item.lineTotal, detail.currency)}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs font-semibold text-[#8195a7]">Sin productos.</p>
+                  <p className="text-xs font-semibold text-slate-400">Sin productos.</p>
                 )}
               </div>
             ) : null}
@@ -1765,36 +1763,36 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
               <div className="space-y-2">
                 {detail.followUps.length ? (
                   detail.followUps.map((item) => (
-                    <div key={item.id} className="rounded-lg border border-[#e2eaf1] p-3">
+                    <div key={item.id} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex justify-between gap-2">
                         <div>
-                          <p className="text-xs font-black text-[#304b66]">{item.title}</p>
-                          <p className="mt-1 text-[10px] font-semibold text-[#8195a7]">
+                          <p className="text-xs font-black text-slate-700">{item.title}</p>
+                          <p className="mt-1 text-[10px] font-semibold text-slate-400">
                             {dateLabel(item.dueAt, true)} · {item.assignedToName ?? "Sin asignar"}
                           </p>
                         </div>
-                        <span className="text-[10px] font-black text-[#71879b]">{item.status}</span>
+                        <span className="text-[10px] font-black text-slate-500">{item.status}</span>
                       </div>
                       {item.status === "PENDING" ? (
                         <div className="mt-2 flex gap-2">
                           <button
                             type="button"
                             onClick={() => updateFollowup(item.id, "COMPLETED")}
-                            className="rounded-md bg-[#e9f8f0] px-2 py-1 text-[10px] font-black text-[#2f9064]"
+                            className="rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-600"
                           >
                             Completar
                           </button>
                           <button
                             type="button"
                             onClick={() => updateFollowup(item.id, "CANCELLED")}
-                            className="rounded-md bg-[#fff3f0] px-2 py-1 text-[10px] font-black text-[#b74d3b]"
+                            className="rounded-md bg-rose-50 px-2 py-1 text-[10px] font-black text-rose-700"
                           >
                             Cancelar
                           </button>
                           <button
                             type="button"
                             onClick={() => editFollowup(item)}
-                            className="rounded-md bg-[#eef6ff] px-2 py-1 text-[10px] font-black text-[#2277ee]"
+                            className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-600"
                           >
                             Reprogramar
                           </button>
@@ -1803,23 +1801,23 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs font-semibold text-[#8195a7]">No hay seguimientos.</p>
+                  <p className="text-xs font-semibold text-slate-400">No hay seguimientos.</p>
                 )}
               </div>
             ) : null}
             {detailTab === "Cotizaciones" ? (
-              <div className="rounded-lg border border-[#e2eaf1] p-3 text-xs font-semibold text-[#536d83]">
+              <div className="rounded-lg border border-slate-200 p-3 text-xs font-semibold text-slate-600">
                 {detail.quoteId ? (
                   <a
                     href={`/admin/cotizaciones?query=${encodeURIComponent(detail.quoteId)}`}
-                    className="font-black text-[#2277ee]"
+                    className="font-black text-blue-600"
                   >
                     Abrir cotización {detail.quoteId}
                   </a>
                 ) : (
                   <a
                     href={`/admin/cotizaciones?opportunityId=${encodeURIComponent(detail.id)}`}
-                    className="font-black text-[#2277ee]"
+                    className="font-black text-blue-600"
                   >
                     Crear cotización desde esta oportunidad
                   </a>
@@ -1841,7 +1839,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           </div>
         ) : (
           <div className="flex items-center justify-center py-16">
-            <RefreshCcw className="h-5 w-5 animate-spin text-[#2277ee]" />
+            <RefreshCcw className="h-5 w-5 animate-spin text-blue-600" />
           </div>
         )}
       </AdminDrawer>
@@ -1868,7 +1866,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             }}
             className="space-y-3"
           >
-            <p className="text-xs font-semibold text-[#71879b]">
+            <p className="text-xs font-semibold text-slate-500">
               {stageDialog.card.customerName} · {stageDialog.card.code}
             </p>
             {stageDialog.stage === "FOLLOW_UP" ? (
@@ -1938,7 +1936,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             )}
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#2277ee] px-4 py-2.5 text-xs font-extrabold text-white"
+              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white"
             >
               Confirmar cambio
             </button>
@@ -1994,7 +1992,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             </Field>
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#2277ee] px-4 py-2.5 text-xs font-extrabold text-white"
+              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white"
             >
               Guardar actividad
             </button>
@@ -2027,7 +2025,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             </Field>
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#2277ee] px-4 py-2.5 text-xs font-extrabold text-white"
+              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white"
             >
               Crear seguimiento
             </button>
@@ -2060,7 +2058,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
             </Field>
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#2277ee] px-4 py-2.5 text-xs font-extrabold text-white"
+              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white"
             >
               Guardar nueva fecha
             </button>
@@ -2099,10 +2097,10 @@ function FollowupsView({
       {groups.map((group) => (
         <section key={group.key}>
           <div className="mb-2 flex items-center gap-2">
-            <h2 className="text-xs font-black uppercase tracking-[0.1em] text-[#304b66]">
+            <h2 className="text-xs font-black uppercase tracking-[0.1em] text-slate-700">
               {group.label}
             </h2>
-            <span className="rounded-full bg-[#f1f5f8] px-2 py-0.5 text-[10px] font-black text-[#71879b]">
+            <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-black text-slate-500">
               {group.items.length}
             </span>
           </div>
@@ -2112,22 +2110,22 @@ function FollowupsView({
                 type="button"
                 key={item.id}
                 onClick={() => onOpen(item.opportunityId)}
-                className="rounded-xl border border-[#e1e9f0] bg-white p-4 text-left shadow-sm hover:border-[#bcd3eb]"
+                className="rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm hover:border-blue-200"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[#173654]">{item.title}</p>
-                    <p className="mt-1 text-xs font-semibold text-[#71879b]">
+                    <p className="text-sm font-black text-slate-900">{item.title}</p>
+                    <p className="mt-1 text-xs font-semibold text-slate-500">
                       {item.opportunityCode} · {item.customerName}
                     </p>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-black ${item.overdue ? "bg-[#fff0ed] text-[#d75942]" : "bg-[#eef6ff] text-[#2277ee]"}`}
+                    className={`rounded-full px-2 py-1 text-[10px] font-black ${item.overdue ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"}`}
                   >
                     {item.overdue ? "Vencido" : "Pendiente"}
                   </span>
                 </div>
-                <p className="mt-3 text-xs font-bold text-[#304b66]">
+                <p className="mt-3 text-xs font-bold text-slate-700">
                   {dateLabel(item.dueAt, true)} · {item.assignedToName ?? "Sin asignar"}
                 </p>
               </button>
@@ -2149,21 +2147,21 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
           type="button"
           key={card.id}
           onClick={() => onOpen(card.id)}
-          className="rounded-xl border border-[#e1e9f0] bg-white p-4 text-left shadow-sm hover:border-[#bcd3eb]"
+          className="rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm hover:border-blue-200"
         >
           <div className="flex justify-between gap-2">
-            <p className="text-sm font-black text-[#173654]">{card.customerName}</p>
-            <span className="rounded-full bg-[#f1f5f8] px-2 py-1 text-[10px] font-black text-[#71879b]">
+            <p className="text-sm font-black text-slate-900">{card.customerName}</p>
+            <span className="rounded-full bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-500">
               {pipelineStageLabels[card.stage]}
             </span>
           </div>
-          <p className="mt-1 text-xs font-semibold text-[#71879b]">
+          <p className="mt-1 text-xs font-semibold text-slate-500">
             {card.code} · {card.title}
           </p>
-          <p className="mt-3 text-sm font-black text-[#304b66]">
+          <p className="mt-3 text-sm font-black text-slate-700">
             {money(card.totalAmount, card.currency)}
           </p>
-          <p className="mt-2 text-[11px] font-semibold text-[#b74d3b]">
+          <p className="mt-2 text-[11px] font-semibold text-rose-700">
             {card.nextAction ?? "Sin motivo registrado"}
           </p>
         </button>
@@ -2176,8 +2174,8 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
 }
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="col-span-full rounded-xl border border-dashed border-[#cfdae3] bg-white px-5 py-14 text-center text-xs font-semibold text-[#8195a7]">
-      <CalendarClock className="mx-auto mb-2 h-5 w-5 text-[#9db0bf]" />
+    <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white px-5 py-14 text-center text-xs font-semibold text-slate-400">
+      <CalendarClock className="mx-auto mb-2 h-5 w-5 text-slate-400" />
       {text}
     </div>
   );
@@ -2197,24 +2195,24 @@ function Timeline({
   return (
     <div className="space-y-3">
       {items.map((item) => (
-        <div key={item.id} className="relative border-l-2 border-[#dce8f2] pl-4">
-          <span className="absolute -left-[5px] top-1 h-2 w-2 rounded-full bg-[#2277ee]" />
-          <p className="text-xs font-black text-[#304b66]">{item.subject}</p>
-          <p className="mt-1 text-[10px] font-semibold text-[#8195a7]">
+        <div key={item.id} className="relative border-l-2 border-slate-200 pl-4">
+          <span className="absolute -left-[5px] top-1 h-2 w-2 rounded-full bg-blue-600" />
+          <p className="text-xs font-black text-slate-700">{item.subject}</p>
+          <p className="mt-1 text-[10px] font-semibold text-slate-400">
             {item.type} · {item.actorName} · {dateLabel(item.createdAt, true)}
           </p>
-          {item.body ? <p className="mt-2 text-xs leading-5 text-[#536d83]">{item.body}</p> : null}
+          {item.body ? <p className="mt-2 text-xs leading-5 text-slate-600">{item.body}</p> : null}
         </div>
       ))}
       {!items.length ? (
-        <p className="text-xs font-semibold text-[#8195a7]">Sin actividad registrada.</p>
+        <p className="text-xs font-semibold text-slate-400">Sin actividad registrada.</p>
       ) : null}
     </div>
   );
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block text-[11px] font-black text-[#304b66]">
+    <label className="block text-[11px] font-black text-slate-700">
       <span>{label}</span>
       <span className="relative mt-1 block">{children}</span>
     </label>
@@ -2231,19 +2229,19 @@ function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-[#102a43]/35 p-4"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/35 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
       <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-black text-[#173654]">{title}</h2>
+          <h2 className="text-base font-black text-slate-900">{title}</h2>
           <button
             type="button"
             aria-label="Cerrar"
             onClick={onClose}
-            className="rounded-md p-1 text-[#71879b] hover:bg-[#f3f6f8]"
+            className="rounded-md p-1 text-slate-500 hover:bg-slate-50"
           >
             <X className="h-4 w-4" />
           </button>

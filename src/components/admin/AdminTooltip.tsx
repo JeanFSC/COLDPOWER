@@ -19,7 +19,7 @@ export function AdminTooltip({ label, children }: { label: string; children: Rea
       >
         {children}
       </span>
-      {visible ? <span id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 z-40 mb-2 w-64 -translate-x-1/2 rounded-md bg-[#173654] px-3 py-2 text-xs leading-relaxed text-white shadow-lg">{label}</span> : null}
+      {visible ? <span id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 z-40 mb-2 w-64 -translate-x-1/2 rounded-md bg-slate-900 px-3 py-2 text-xs leading-relaxed text-white shadow-lg">{label}</span> : null}
     </span>
   );
 }

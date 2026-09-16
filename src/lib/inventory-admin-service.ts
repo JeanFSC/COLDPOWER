@@ -293,6 +293,8 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
     reservationRows,
     minimumRows,
     importRows,
+    activeReservationsRow,
+    totalMovementsRow,
   ] = await Promise.all([
     db
       .select({ total: count(inventoryBalances.id) })
@@ -512,6 +514,11 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
       .from(inventoryImportBatches)
       .orderBy(desc(inventoryImportBatches.createdAt), desc(inventoryImportBatches.id))
       .limit(8),
+    db
+      .select({ total: count(inventoryReservations.id) })
+      .from(inventoryReservations)
+      .where(eq(inventoryReservations.status, "ACTIVE")),
+    db.select({ total: count(inventoryMovements.id) }).from(inventoryMovements),
   ]);
 
   const totalItems = toNumber(totalRows[0]?.total);
@@ -574,6 +581,8 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
       balancesWithoutMinimum: toNumber(summary?.balancesWithoutMinimum),
       stockUnknownProducts: unknownProductCount,
       activeLocations: facetLocations.length,
+      activeReservations: toNumber(activeReservationsRow[0]?.total),
+      totalMovements: toNumber(totalMovementsRow[0]?.total),
     },
     facets: {
       locations: facetLocations,

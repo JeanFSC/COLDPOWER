@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
 import {
   AlertTriangle,
+  ArrowDownToLine,
   ArrowLeftRight,
+  ArrowUpFromLine,
   Boxes,
   Check,
   ChevronLeft,
@@ -85,6 +87,8 @@ type InventoryAdminPageData = {
     balancesWithoutMinimum: number;
     stockUnknownProducts: number;
     activeLocations: number;
+    activeReservations: number;
+    totalMovements: number;
   };
   facets: {
     locations: Array<{ id: string; code: string; name: string; type: string }>;
@@ -215,7 +219,7 @@ const movementTypes: Array<{ value: InventoryMovementType; label: string }> = [
   { value: "RETURN_OUT", label: "Devolución enviada" },
 ];
 
-const panel = "rounded-xl border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
+const panel = "rounded-xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
 
 function number(value: number) {
   return new Intl.NumberFormat("es-PE").format(value);
@@ -231,19 +235,19 @@ function dateTime(value: string | null) {
 function statusClass(status: keyof typeof inventoryStatusLabels) {
   switch (status) {
     case "CRITICO":
-      return "border-[#ffd1d1] bg-[#fff2f2] text-[#c94040]";
+      return "border-rose-200 bg-rose-50 text-rose-600";
     case "AGOTADO":
-      return "border-[#ffc1c1] bg-[#ffe8e8] text-[#b42318]";
+      return "border-rose-300 bg-rose-50 text-rose-700";
     case "SIN_MINIMO":
-      return "border-[#dce6ee] bg-[#f5f8fa] text-[#667d94]";
+      return "border-slate-200 bg-slate-50 text-slate-500";
     case "SIN_SALDO":
-      return "border-[#dce6ee] bg-[#f5f8fa] text-[#667d94]";
+      return "border-slate-200 bg-slate-50 text-slate-500";
     case "BAJO":
-      return "border-[#ffe0ae] bg-[#fff7e8] text-[#a15c00]";
+      return "border-amber-200 bg-amber-50 text-amber-700";
     case "RESERVADO":
-      return "border-[#ddd2ff] bg-[#f2eeff] text-[#8057e8]";
+      return "border-purple-200 bg-purple-50 text-purple-600";
     default:
-      return "border-[#b8e6d1] bg-[#e8f8ef] text-[#13895a]";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 }
 
@@ -276,16 +280,16 @@ const importStatusLabels: Record<string, string> = {
 };
 
 function transferStatusClass(status: string) {
-  if (status === "RECEIVED") return "border-[#b8e6d1] bg-[#e8f8ef] text-[#13895a]";
-  if (status === "CANCELLED") return "border-[#dce6ee] bg-[#f5f8fa] text-[#667d94]";
-  if (status === "IN_TRANSIT") return "border-[#c9dcff] bg-[#eef4ff] text-[#2277ee]";
-  return "border-[#ffe0ae] bg-[#fff7e8] text-[#a15c00]";
+  if (status === "RECEIVED") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "CANCELLED") return "border-slate-200 bg-slate-50 text-slate-500";
+  if (status === "IN_TRANSIT") return "border-blue-200 bg-blue-50 text-blue-600";
+  return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
 function reservationStatusClass(status: string) {
-  if (status === "ACTIVE") return "border-[#c9dcff] bg-[#eef4ff] text-[#2277ee]";
-  if (status === "EXPIRED") return "border-[#ffe0ae] bg-[#fff7e8] text-[#a15c00]";
-  return "border-[#dce6ee] bg-[#f5f8fa] text-[#667d94]";
+  if (status === "ACTIVE") return "border-blue-200 bg-blue-50 text-blue-600";
+  if (status === "EXPIRED") return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-slate-200 bg-slate-50 text-slate-500";
 }
 
 function messageFromResponse(payload: unknown) {
@@ -371,11 +375,11 @@ function ProductPicker({
 
   return (
     <div className="relative">
-      <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+      <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
         Producto
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8aa0b6]"
+            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
           />
           <input
@@ -395,7 +399,7 @@ function ProductPicker({
                 ? "Buscar por SKU o nombre…"
                 : "Selecciona un local primero"
             }
-            className="h-10 w-full rounded-lg border border-[#dce6ee] bg-white pl-9 pr-3 text-[11px] font-semibold text-[#304b66] outline-none placeholder:text-[#a1afbd] focus:border-[#2277ee] disabled:cursor-not-allowed disabled:bg-[#f5f8fa]"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-[11px] font-semibold text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400 disabled:cursor-not-allowed disabled:bg-slate-50"
             aria-label="Buscar producto de inventario"
             role="combobox"
             aria-expanded={open}
@@ -414,18 +418,18 @@ function ProductPicker({
           <div
             id="inventory-product-options"
             role="listbox"
-            className="absolute left-0 right-0 top-[62px] z-20 max-h-56 overflow-y-auto rounded-lg border border-[#dce6ee] bg-white p-1 shadow-[0_12px_28px_rgba(16,42,67,0.14)]"
+            className="absolute left-0 right-0 top-[62px] z-20 max-h-56 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-[0_12px_28px_rgba(16,42,67,0.14)]"
           >
             {loading ? (
-              <p className="px-3 py-3 text-[10px] text-[#8296a9]">Buscando referencias…</p>
+              <p className="px-3 py-3 text-[10px] text-slate-400">Buscando referencias…</p>
             ) : null}
             {!loading && requireLocation && !locationId ? (
-              <p className="px-3 py-3 text-[10px] text-[#8296a9]">
+              <p className="px-3 py-3 text-[10px] text-slate-400">
                 Selecciona un local para consultar referencias.
               </p>
             ) : null}
             {!loading && (locationId || !requireLocation) && !options.length ? (
-              <p className="px-3 py-3 text-[10px] text-[#8296a9]">
+              <p className="px-3 py-3 text-[10px] text-slate-400">
                 No encontramos referencias con esa búsqueda.
               </p>
             ) : null}
@@ -441,16 +445,16 @@ function ProductPicker({
                     setQuery(`${option.sku} · ${option.name}`);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left hover:bg-[#f4f8fb]"
+                  className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left hover:bg-slate-50"
                 >
                   <span className="min-w-0">
-                    <strong className="block truncate font-mono text-[10px] text-[#304b66]">
+                    <strong className="block truncate font-mono text-[10px] text-slate-700">
                       {option.sku}
                     </strong>
-                    <span className="block truncate text-[10px] text-[#71869c]">{option.name}</span>
+                    <span className="block truncate text-[10px] text-slate-500">{option.name}</span>
                   </span>
                   <span
-                    className={`shrink-0 text-[9px] font-black ${option.available > 0 ? "text-[#13895a]" : "text-[#a1afbd]"}`}
+                    className={`shrink-0 text-[9px] font-black ${option.available > 0 ? "text-emerald-700" : "text-slate-400"}`}
                   >
                     {number(option.available)} disp.
                   </span>
@@ -555,7 +559,7 @@ function GlobalMovementsDrawer({
       onClose={onClose}
     >
       <div className="grid gap-4">
-        <div className="grid gap-2 rounded-xl border border-[#edf2f6] bg-[#fbfcfd] p-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-3">
           <ProductPicker
             requireLocation={false}
             value={product}
@@ -564,7 +568,7 @@ function GlobalMovementsDrawer({
               resetPage();
             }}
           />
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Local
             <select
               value={locationId}
@@ -572,7 +576,7 @@ function GlobalMovementsDrawer({
                 setLocationId(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
             >
               <option value="">Todos los locales</option>
               {locations.map((location) => (
@@ -582,7 +586,7 @@ function GlobalMovementsDrawer({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Tipo de movimiento
             <select
               value={type}
@@ -590,7 +594,7 @@ function GlobalMovementsDrawer({
                 setType(event.target.value as InventoryMovementType | "");
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
             >
               <option value="">Todos los tipos</option>
               {movementTypes.map((entry) => (
@@ -600,7 +604,7 @@ function GlobalMovementsDrawer({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Usuario
             <input
               value={actorQuery}
@@ -609,10 +613,10 @@ function GlobalMovementsDrawer({
                 resetPage();
               }}
               placeholder="Nombre o correo"
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Desde
             <input
               type="date"
@@ -621,10 +625,10 @@ function GlobalMovementsDrawer({
                 setDateFrom(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Hasta
             <input
               type="date"
@@ -633,18 +637,18 @@ function GlobalMovementsDrawer({
                 setDateTo(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
         </div>
         {loading ? (
-          <div className="rounded-lg border border-dashed border-[#dce6ee] px-4 py-10 text-center text-[10px] text-[#8296a9]">
+          <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center text-[10px] text-slate-400">
             Cargando movimientos…
           </div>
         ) : null}
         {error ? (
           <div
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {error}
@@ -655,48 +659,48 @@ function GlobalMovementsDrawer({
             {payload?.items.map((movement) => (
               <article
                 key={movement.id}
-                className="grid gap-2 rounded-lg border border-[#edf2f6] bg-white p-3 lg:grid-cols-[minmax(170px,1.3fr)_minmax(145px,1fr)_110px_minmax(130px,0.9fr)]"
+                className="grid gap-2 rounded-lg border border-slate-100 bg-white p-3 lg:grid-cols-[minmax(170px,1.3fr)_minmax(145px,1fr)_110px_minmax(130px,0.9fr)]"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-[#e8f1ff] px-1.5 py-1 text-[8px] font-extrabold text-[#2277ee]">
+                    <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[8px] font-extrabold text-blue-600">
                       {movement.label}
                     </span>
-                    <span className="font-mono text-[8px] text-[#8296a9]">{movement.sku}</span>
+                    <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
                   </div>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
                     {movement.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {movement.locationCode} · {movement.locationName}
                   </p>
                 </div>
-                <div className="text-[9px] text-[#71869c]">
+                <div className="text-[9px] text-slate-500">
                   <p>
-                    <span className="font-extrabold text-[#526b84]">Referencia:</span>{" "}
+                    <span className="font-extrabold text-slate-600">Referencia:</span>{" "}
                     {movement.referenceLabel}
                   </p>
                   <p className="mt-1">
-                    <span className="font-extrabold text-[#526b84]">Usuario:</span>{" "}
+                    <span className="font-extrabold text-slate-600">Usuario:</span>{" "}
                     {movement.actorName || "Sistema"}
                   </p>
                   {movement.reason ? <p className="mt-1 truncate">{movement.reason}</p> : null}
                 </div>
                 <div className="text-[10px] font-black">
-                  <span className="block text-[#13895a]">
+                  <span className="block text-emerald-700">
                     {movement.entry ? `+${number(movement.entry)}` : "—"}
                   </span>
-                  <span className="mt-1 block text-[#c94040]">
+                  <span className="mt-1 block text-rose-600">
                     {movement.exit ? `-${number(movement.exit)}` : "—"}
                   </span>
                   {movement.reservedDelta ? (
-                    <span className="mt-1 block text-[#8057e8]">
+                    <span className="mt-1 block text-purple-600">
                       Res. {movement.reservedDelta > 0 ? "+" : ""}
                       {number(movement.reservedDelta)}
                     </span>
                   ) : null}
                 </div>
-                <div className="text-[9px] text-[#8296a9] lg:text-right">
+                <div className="text-[9px] text-slate-400 lg:text-right">
                   <p>
                     Disp. {number(movement.availableBefore)} → {number(movement.availableAfter)}
                   </p>
@@ -707,7 +711,7 @@ function GlobalMovementsDrawer({
             {!payload?.items.length ? (
               <OperationEmpty text="No hay movimientos para los filtros seleccionados." />
             ) : null}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf2f6] pt-3 text-[9px] font-semibold text-[#8296a9]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[9px] font-semibold text-slate-400">
               <span>
                 {payload
                   ? `Mostrando ${payload.totalItems ? (payload.page - 1) * payload.pageSize + 1 : 0}–${Math.min(payload.page * payload.pageSize, payload.totalItems)} de ${number(payload.totalItems)}`
@@ -718,7 +722,7 @@ function GlobalMovementsDrawer({
                   type="button"
                   disabled={!payload || payload.page <= 1}
                   onClick={() => goToPage(Math.max(1, (payload?.page ?? 1) - 1))}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#dce6ee] disabled:opacity-35"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 disabled:opacity-35"
                   aria-label="Página anterior"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -730,7 +734,7 @@ function GlobalMovementsDrawer({
                   type="button"
                   disabled={!payload || payload.page >= payload.totalPages}
                   onClick={() => goToPage((payload?.page ?? 1) + 1)}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#dce6ee] disabled:opacity-35"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 disabled:opacity-35"
                   aria-label="Página siguiente"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -757,23 +761,23 @@ function DialogFrame({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-[#102a43]/35 p-0 sm:items-center sm:p-5"
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-900/35 p-0 sm:items-center sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="inventory-dialog-title"
     >
       <div className="flex max-h-[92vh] w-full max-w-[620px] flex-col overflow-hidden rounded-t-2xl bg-white shadow-[0_20px_60px_rgba(16,42,67,0.26)] sm:rounded-2xl">
-        <div className="flex items-start gap-3 border-b border-[#edf2f6] px-5 py-4">
+        <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
           <div className="min-w-0 flex-1">
-            <h2 id="inventory-dialog-title" className="text-[16px] font-black text-[#102a43]">
+            <h2 id="inventory-dialog-title" className="text-[16px] font-black text-slate-900">
               {title}
             </h2>
-            <p className="mt-1 text-[10px] leading-4 text-[#71869c]">{description}</p>
+            <p className="mt-1 text-[10px] leading-4 text-slate-500">{description}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#71869c] hover:bg-[#f4f7fa]"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50"
             aria-label="Cerrar diálogo"
           >
             <X className="h-4 w-4" />
@@ -842,7 +846,7 @@ function AdjustmentDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -851,7 +855,7 @@ function AdjustmentDialog({
                 setLocationId(event.target.value);
                 setProduct(null);
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="">Selecciona un local</option>
               {locations.map((location) => (
@@ -861,13 +865,13 @@ function AdjustmentDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Tipo de movimiento
             <select
               required
               value={type}
               onChange={(event) => setType(event.target.value as InventoryMovementType)}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               {movementTypes.map((entry) => (
                 <option key={entry.value} value={entry.value}>
@@ -879,7 +883,7 @@ function AdjustmentDialog({
         </div>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Cantidad
             <input
               required
@@ -888,19 +892,19 @@ function AdjustmentDialog({
               type="number"
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
-              className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <div className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] px-3 py-2.5 text-[10px] text-[#71869c]">
-            <span className="block font-extrabold text-[#526b84]">Disponible consultado</span>
-            <strong className="mt-1 block text-[15px] text-[#102a43]">
+          <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 text-[10px] text-slate-500">
+            <span className="block font-extrabold text-slate-600">Disponible consultado</span>
+            <strong className="mt-1 block text-[15px] text-slate-900">
               {product ? number(product.available) : "—"}
             </strong>
           </div>
         </div>
         {manual ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+            <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
               Motivo
               <input
                 required
@@ -908,10 +912,10 @@ function AdjustmentDialog({
                 onChange={(event) => setReason(event.target.value)}
                 maxLength={240}
                 placeholder="Ej. Conteo cíclico"
-                className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+                className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
               />
             </label>
-            <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+            <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
               Notas
               <textarea
                 required
@@ -920,13 +924,13 @@ function AdjustmentDialog({
                 maxLength={500}
                 rows={2}
                 placeholder="Detalle para auditoría"
-                className="rounded-lg border border-[#dce6ee] px-3 py-2 text-[11px] font-semibold text-[#304b66]"
+                className="rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-700"
               />
             </label>
           </div>
         ) : null}
-        <div className="rounded-lg border border-[#dce6ee] bg-[#f7fafc] p-3 text-[10px] leading-5 text-[#71869c]">
-          <p className="font-extrabold text-[#304b66]">Vista previa</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+          <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
               ? `${inventoryMovementLabels[type]} · ${product.sku} · ${quantity || "0"} unidades en ${locations.find((location) => location.id === locationId)?.name ?? "el local seleccionado"}.`
@@ -935,7 +939,7 @@ function AdjustmentDialog({
         </div>
         {outputBlocked ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             La salida supera el disponible; no puede dejar el reservado por encima del físico.
@@ -943,17 +947,17 @@ function AdjustmentDialog({
         ) : null}
         {message ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="flex flex-wrap justify-end gap-2 border-t border-[#edf2f6] pt-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -967,7 +971,7 @@ function AdjustmentDialog({
               !Number.isInteger(quantityNumber) ||
               quantityNumber < 1
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1039,7 +1043,7 @@ function TransferDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Origen
             <select
               required
@@ -1048,7 +1052,7 @@ function TransferDialog({
                 setSourceLocationId(event.target.value);
                 setLines([{ product: null, quantity: "" }]);
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="">Selecciona origen</option>
               {locations.map((location) => (
@@ -1058,13 +1062,13 @@ function TransferDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Destino
             <select
               required
               value={destinationLocationId}
               onChange={(event) => setDestinationLocationId(event.target.value)}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="">Selecciona destino</option>
               {locations
@@ -1079,12 +1083,12 @@ function TransferDialog({
         </div>
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black text-[#304b66]">Referencias a trasladar</p>
+            <p className="text-[10px] font-black text-slate-700">Referencias a trasladar</p>
             <button
               type="button"
               onClick={() => setLines((current) => [...current, { product: null, quantity: "" }])}
               disabled={!sourceLocationId}
-              className="inline-flex items-center gap-1 rounded-md border border-[#dce6ee] px-2.5 py-1.5 text-[9px] font-extrabold text-[#2277ee] disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-[9px] font-extrabold text-blue-600 disabled:opacity-40"
             >
               <Plus className="h-3 w-3" />
               Agregar línea
@@ -1093,7 +1097,7 @@ function TransferDialog({
           {lines.map((line, index) => (
             <div
               key={index}
-              className="grid gap-2 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3 sm:grid-cols-[minmax(0,1fr)_110px_32px]"
+              className="grid gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 sm:grid-cols-[minmax(0,1fr)_110px_32px]"
             >
               <ProductPicker
                 locationId={sourceLocationId}
@@ -1106,7 +1110,7 @@ function TransferDialog({
                   )
                 }
               />
-              <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+              <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
                 Cantidad
                 <input
                   required
@@ -1121,7 +1125,7 @@ function TransferDialog({
                       ),
                     )
                   }
-                  className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+                  className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
                 />
               </label>
               <button
@@ -1130,20 +1134,20 @@ function TransferDialog({
                 onClick={() =>
                   setLines((current) => current.filter((_, entryIndex) => entryIndex !== index))
                 }
-                className="mt-5 inline-flex h-8 w-8 items-center justify-center rounded-md text-[#8296a9] hover:bg-white hover:text-[#c94040] disabled:opacity-30"
+                className="mt-5 inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-rose-600 disabled:opacity-30"
                 aria-label="Quitar referencia"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
               {line.product && Number(line.quantity) > line.product.available ? (
-                <p className="text-[9px] font-bold text-[#c94040] sm:col-span-3">
+                <p className="text-[9px] font-bold text-rose-600 sm:col-span-3">
                   Disponible en origen: {number(line.product.available)} unidades.
                 </p>
               ) : null}
             </div>
           ))}
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
           Notas del traslado
           <textarea
             value={notes}
@@ -1151,19 +1155,19 @@ function TransferDialog({
             maxLength={500}
             rows={2}
             placeholder="Referencia operativa o motivo"
-            className="rounded-lg border border-[#dce6ee] px-3 py-2 text-[11px] font-semibold text-[#304b66]"
+            className="rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-700"
           />
         </label>
         {message ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="rounded-lg border border-[#dce6ee] bg-[#f7fafc] p-3 text-[10px] leading-5 text-[#71869c]">
-          <p className="font-extrabold text-[#304b66]">Vista previa</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+          <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {lines
               .filter((line) => line.product)
@@ -1171,11 +1175,11 @@ function TransferDialog({
               .join("  /  ") || "Sin referencias seleccionadas."}
           </p>
         </div>
-        <div className="flex flex-wrap justify-end gap-2 border-t border-[#edf2f6] pt-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1188,7 +1192,7 @@ function TransferDialog({
               sourceLocationId === destinationLocationId ||
               invalidLines
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1260,7 +1264,7 @@ function ReservationDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -1269,7 +1273,7 @@ function ReservationDialog({
                 setLocationId(event.target.value);
                 setProduct(null);
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="">Selecciona un local</option>
               {locations.map((location) => (
@@ -1279,13 +1283,13 @@ function ReservationDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Tipo de referencia
             <select
               required
               value={referenceType}
               onChange={(event) => setReferenceType(event.target.value as typeof referenceType)}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="order">Pedido</option>
               <option value="quote">Cotización</option>
@@ -1294,7 +1298,7 @@ function ReservationDialog({
             </select>
           </label>
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
           {manual ? "Referencia (opcional)" : "Código de referencia"}
           <input
             value={referenceId}
@@ -1303,12 +1307,12 @@ function ReservationDialog({
               manual ? "Ej. conteo físico" : "Código del pedido, cotización u oportunidad"
             }
             maxLength={120}
-            className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+            className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
           />
         </label>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Cantidad
             <input
               required
@@ -1317,21 +1321,21 @@ function ReservationDialog({
               type="number"
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
-              className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Expira el (opcional)
             <input
               type="datetime-local"
               value={expiresAt}
               onChange={(event) => setExpiresAt(event.target.value)}
-              className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
         </div>
         {manual ? (
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Motivo de reserva manual
             <textarea
               required
@@ -1340,12 +1344,12 @@ function ReservationDialog({
               maxLength={240}
               rows={2}
               placeholder="Ej. compromiso comercial, conteo o apartamiento"
-              className="rounded-lg border border-[#dce6ee] px-3 py-2 text-[11px] font-semibold text-[#304b66]"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-700"
             />
           </label>
         ) : null}
-        <div className="rounded-lg border border-[#dce6ee] bg-[#f7fafc] p-3 text-[10px] leading-5 text-[#71869c]">
-          <p className="font-extrabold text-[#304b66]">Vista previa</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+          <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
               ? `Disponible actual ${number(product.available)} · reserva ${quantity || "0"} · disponible después ${number(Math.max(0, product.available - (Number.isInteger(quantityNumber) ? quantityNumber : 0)))}.`
@@ -1354,7 +1358,7 @@ function ReservationDialog({
         </div>
         {outputBlocked ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             La reserva supera el disponible actual.
@@ -1362,17 +1366,17 @@ function ReservationDialog({
         ) : null}
         {message ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="flex flex-wrap justify-end gap-2 border-t border-[#edf2f6] pt-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1387,7 +1391,7 @@ function ReservationDialog({
               quantityNumber < 1 ||
               (manual && !reason.trim())
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1445,7 +1449,7 @@ function MinimumDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -1454,7 +1458,7 @@ function MinimumDialog({
                 setLocationId(event.target.value);
                 setProduct(null);
               }}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="">Selecciona un local</option>
               {locations.map((location) => (
@@ -1464,7 +1468,7 @@ function MinimumDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Mínimo
             <input
               required
@@ -1474,13 +1478,13 @@ function MinimumDialog({
               value={minimumStock}
               onChange={(event) => setMinimumStock(event.target.value)}
               placeholder="0"
-              className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
         </div>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
-        <div className="rounded-lg border border-[#dce6ee] bg-[#f7fafc] p-3 text-[10px] leading-5 text-[#71869c]">
-          <p className="font-extrabold text-[#304b66]">Vista previa</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+          <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
               ? `${product.sku} quedará en alerta cuando su disponible sea menor o igual a ${minimumStock || "0"}.`
@@ -1489,17 +1493,17 @@ function MinimumDialog({
         </div>
         {message ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="flex flex-wrap justify-end gap-2 border-t border-[#edf2f6] pt-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1512,7 +1516,7 @@ function MinimumDialog({
               !Number.isInteger(Number(minimumStock)) ||
               Number(minimumStock) < 0
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1575,7 +1579,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
   const exportHref = `/api/admin/inventario/kardex/export?productId=${encodeURIComponent(item.productId)}&locationId=${encodeURIComponent(item.locationId)}`;
   return (
     <div
-      className="fixed inset-0 z-[65] bg-[#102a43]/25"
+      className="fixed inset-0 z-[65] bg-slate-900/25"
       role="dialog"
       aria-modal="true"
       aria-labelledby="kardex-title"
@@ -1587,22 +1591,22 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
         aria-label="Cerrar Kardex"
       />
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-[720px] flex-col bg-white shadow-[-16px_0_42px_rgba(16,42,67,0.18)]">
-        <div className="flex items-start gap-3 border-b border-[#edf2f6] px-5 py-4">
+        <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">
+            <p className="font-mono text-[9px] font-extrabold text-blue-600">
               {item.sku} · {item.locationCode}
             </p>
-            <h2 id="kardex-title" className="mt-1 truncate text-[16px] font-black text-[#102a43]">
+            <h2 id="kardex-title" className="mt-1 truncate text-[16px] font-black text-slate-900">
               Kardex de {item.productName}
             </h2>
-            <p className="mt-1 text-[10px] text-[#71869c]">
+            <p className="mt-1 text-[10px] text-slate-500">
               {item.locationName} · disponible actual {number(item.available)}
             </p>
           </div>
           <div className="flex items-center gap-1">
             <a
               href={exportHref}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dce6ee] px-2.5 text-[9px] font-extrabold text-[#2277ee] hover:border-[#a6c5e0]"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[9px] font-extrabold text-blue-600 hover:border-blue-300"
             >
               <Download className="h-3 w-3" />
               CSV
@@ -1610,7 +1614,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#71869c] hover:bg-[#f4f7fa]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50"
               aria-label="Cerrar Kardex"
             >
               <X className="h-4 w-4" />
@@ -1619,27 +1623,27 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
         </div>
         <div className="min-h-0 flex-1 overflow-auto p-5">
           {error ? (
-            <p className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] p-3 text-[10px] font-bold text-[#c94040]">
+            <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-[10px] font-bold text-rose-600">
               {error}
             </p>
           ) : null}
           {!payload && !error ? (
-            <div className="flex items-center gap-2 text-[10px] text-[#71869c]">
+            <div className="flex items-center gap-2 text-[10px] text-slate-500">
               <RefreshCw className="h-4 w-4 animate-spin" />
               Cargando movimientos persistidos…
             </div>
           ) : null}
           {payload ? (
             <>
-              <div className="mb-4 flex items-center justify-between rounded-lg border border-[#edf2f6] bg-[#fbfcfd] px-3 py-2 text-[10px] text-[#71869c]">
+              <div className="mb-4 flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
                 <span>{number(payload.totalItems)} movimientos históricos</span>
-                <span className="font-extrabold text-[#304b66]">
+                <span className="font-extrabold text-slate-700">
                   Página {payload.page} de {payload.totalPages} · {payload.pageSize} por página
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px] text-left">
-                  <thead className="border-b border-[#e9eff4] text-[8px] font-extrabold uppercase tracking-[0.07em] text-[#7d91a5]">
+                  <thead className="border-b border-slate-100 text-[8px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
                     <tr>
                       <th className="px-2 py-2">Movimiento</th>
                       <th className="px-2 py-2">Entrada</th>
@@ -1655,26 +1659,26 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     {payload.items.map((movement) => (
                       <tr
                         key={movement.id}
-                        className="border-b border-[#f0f4f7] align-top text-[9px] text-[#526b84]"
+                        className="border-b border-slate-100 align-top text-[9px] text-slate-600"
                       >
                         <td className="px-2 py-3">
-                          <strong className="block text-[10px] text-[#304b66]">
+                          <strong className="block text-[10px] text-slate-700">
                             {movement.label}
                           </strong>
-                          <span className="mt-1 block text-[#8296a9]">
+                          <span className="mt-1 block text-slate-400">
                             {dateTime(movement.createdAt)}
                           </span>
                           {movement.reason ? (
                             <span className="mt-1 block">Motivo: {movement.reason}</span>
                           ) : null}
                           {movement.notes ? (
-                            <span className="mt-1 block text-[#8296a9]">{movement.notes}</span>
+                            <span className="mt-1 block text-slate-400">{movement.notes}</span>
                           ) : null}
                         </td>
-                        <td className="px-2 py-3 font-black text-[#13895a]">
+                        <td className="px-2 py-3 font-black text-emerald-700">
                           {movement.entry ? `+${number(movement.entry)}` : "—"}
                         </td>
-                        <td className="px-2 py-3 font-black text-[#c94040]">
+                        <td className="px-2 py-3 font-black text-rose-600">
                           {movement.exit ? `-${number(movement.exit)}` : "—"}
                         </td>
                         <td className="px-2 py-3">
@@ -1682,20 +1686,20 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                             ? `+${movement.reservedDelta}`
                             : movement.reservedDelta || "—"}
                         </td>
-                        <td className="px-2 py-3 font-semibold text-[#526b84]">
+                        <td className="px-2 py-3 font-semibold text-slate-600">
                           {number(movement.previousOnHand)}
                         </td>
-                        <td className="px-2 py-3 font-black text-[#304b66]">
+                        <td className="px-2 py-3 font-black text-slate-700">
                           {number(movement.resultingOnHand)}
                         </td>
-                        <td className="px-2 py-3 font-black text-[#304b66]">
+                        <td className="px-2 py-3 font-black text-slate-700">
                           {number(movement.availableAfter)}
                         </td>
                         <td className="px-2 py-3">
-                          <span className="block font-semibold text-[#304b66]">
+                          <span className="block font-semibold text-slate-700">
                             {movement.actorName || "Sistema"}
                           </span>
-                          <span className="mt-1 block text-[#8296a9]">
+                          <span className="mt-1 block text-slate-400">
                             {movement.referenceLabel}
                           </span>
                         </td>
@@ -1704,13 +1708,13 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                   </tbody>
                 </table>
                 {!payload.items.length ? (
-                  <p className="py-8 text-center text-[10px] text-[#8296a9]">
+                  <p className="py-8 text-center text-[10px] text-slate-400">
                     No hay movimientos para este producto y local.
                   </p>
                 ) : null}
               </div>
-              <div className="mt-4 flex items-center justify-between border-t border-[#edf2f6] pt-3">
-                <span className="text-[9px] text-[#8296a9]">
+              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                <span className="text-[9px] text-slate-400">
                   Página {payload.page} de {payload.totalPages}
                 </span>
                 <span className="flex gap-1">
@@ -1718,7 +1722,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     type="button"
                     disabled={payload.page <= 1}
                     onClick={() => setPage((current) => Math.max(1, current - 1))}
-                    className="rounded-md border border-[#dce6ee] px-2 py-1 text-[9px] font-extrabold text-[#526b84] disabled:opacity-35"
+                    className="rounded-md border border-slate-200 px-2 py-1 text-[9px] font-extrabold text-slate-600 disabled:opacity-35"
                   >
                     Anterior
                   </button>
@@ -1726,7 +1730,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     type="button"
                     disabled={payload.page >= payload.totalPages}
                     onClick={() => setPage((current) => Math.min(payload.totalPages, current + 1))}
-                    className="rounded-md border border-[#dce6ee] px-2 py-1 text-[9px] font-extrabold text-[#526b84] disabled:opacity-35"
+                    className="rounded-md border border-slate-200 px-2 py-1 text-[9px] font-extrabold text-slate-600 disabled:opacity-35"
                   >
                     Siguiente
                   </button>
@@ -1735,8 +1739,8 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
             </>
           ) : null}
         </div>
-        <div className="border-t border-[#edf2f6] px-5 py-3">
-          <p className="text-[9px] text-[#8296a9]">
+        <div className="border-t border-slate-100 px-5 py-3">
+          <p className="text-[9px] text-slate-400">
             El Kardex es inmutable y se consulta desde los movimientos persistidos.
           </p>
         </div>
@@ -1801,7 +1805,7 @@ function InventoryOperationsTabs({
   return (
     <section id="inventory-operations" className={`${panel} scroll-mt-4 overflow-hidden`}>
       <div
-        className="flex items-center gap-2 overflow-x-auto border-b border-[#edf2f6] px-3 pt-2"
+        className="flex items-center gap-2 overflow-x-auto border-b border-slate-100 px-3 pt-2"
         role="tablist"
         aria-label="Operaciones de inventario"
       >
@@ -1816,11 +1820,11 @@ function InventoryOperationsTabs({
               setPending(null);
               setMessage("");
             }}
-            className={`shrink-0 border-b-2 px-3 py-2.5 text-[10px] font-extrabold transition ${tab === entry.id ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#8296a9] hover:text-[#526b84]"}`}
+            className={`shrink-0 border-b-2 px-3 py-2.5 text-[10px] font-extrabold transition ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
           >
             {entry.label}
             <span
-              className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[8px] ${tab === entry.id ? "bg-[#e8f1ff] text-[#2277ee]" : "bg-[#f3f6f8] text-[#8296a9]"}`}
+              className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[8px] ${tab === entry.id ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"}`}
             >
               {number(entry.count)}
             </span>
@@ -1829,7 +1833,7 @@ function InventoryOperationsTabs({
       </div>
       {pending ? (
         <div
-          className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#ffe0ae] bg-[#fffaf1] px-3 py-3 text-[10px] text-[#6b542f]"
+          className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-[10px] text-amber-800"
           role="alertdialog"
           aria-label="Confirmar operación"
         >
@@ -1838,7 +1842,7 @@ function InventoryOperationsTabs({
             <button
               type="button"
               onClick={() => setPending(null)}
-              className="rounded-md border border-[#ead8b9] bg-white px-3 py-1.5 font-extrabold text-[#6b542f]"
+              className="rounded-md border border-amber-200 bg-white px-3 py-1.5 font-extrabold text-amber-800"
             >
               Cancelar
             </button>
@@ -1846,7 +1850,7 @@ function InventoryOperationsTabs({
               type="button"
               onClick={() => void execute()}
               disabled={Boolean(busyId)}
-              className="rounded-md bg-[#102a43] px-3 py-1.5 font-extrabold text-white disabled:opacity-50"
+              className="rounded-md bg-slate-900 px-3 py-1.5 font-extrabold text-white disabled:opacity-50"
             >
               {busyId ? "Procesando…" : "Confirmar"}
             </button>
@@ -1855,21 +1859,21 @@ function InventoryOperationsTabs({
       ) : null}
       {message ? (
         <p
-          className="mx-4 mt-4 rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+          className="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
           role="alert"
         >
           {message}
         </p>
       ) : null}
       {permissions.canKardex && tab === "movements" ? (
-        <div className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-[#dce6ee] bg-[#fbfcfd] px-3 py-2.5">
-          <span className="text-[9px] text-[#71869c]">
+        <div className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+          <span className="text-[9px] text-slate-500">
             Consulta el historial completo con filtros y paginación.
           </span>
           <button
             type="button"
             onClick={() => setGlobalMovementsOpen(true)}
-            className="inline-flex h-8 shrink-0 items-center gap-2 rounded-md border border-[#c9dcff] bg-white px-2.5 text-[9px] font-extrabold text-[#2277ee]"
+            className="inline-flex h-8 shrink-0 items-center gap-2 rounded-md border border-blue-200 bg-white px-2.5 text-[9px] font-extrabold text-blue-600"
           >
             <FileClock className="h-3.5 w-3.5" />
             Movimientos globales
@@ -1882,48 +1886,48 @@ function InventoryOperationsTabs({
             {data.operations.movements.map((movement) => (
               <div
                 key={movement.id}
-                className="grid gap-2 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3 lg:grid-cols-[minmax(180px,1.3fr)_minmax(180px,1fr)_90px_120px]"
+                className="grid gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.3fr)_minmax(180px,1fr)_90px_120px]"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-[#e8f1ff] px-1.5 py-1 text-[8px] font-extrabold text-[#2277ee]">
+                    <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[8px] font-extrabold text-blue-600">
                       {movement.label}
                     </span>
-                    <span className="font-mono text-[8px] text-[#8296a9]">{movement.sku}</span>
+                    <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
                   </div>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
                     {movement.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {movement.locationCode} · {movement.locationName}
                   </p>
                 </div>
-                <div className="text-[9px] text-[#71869c]">
+                <div className="text-[9px] text-slate-500">
                   <p>
-                    <span className="font-extrabold text-[#526b84]">Referencia:</span>{" "}
+                    <span className="font-extrabold text-slate-600">Referencia:</span>{" "}
                     {movement.referenceLabel}
                   </p>
                   <p className="mt-1">
-                    <span className="font-extrabold text-[#526b84]">Actor:</span>{" "}
+                    <span className="font-extrabold text-slate-600">Actor:</span>{" "}
                     {movement.actorName || "Sistema"}
                   </p>
                   {movement.reason ? <p className="mt-1 truncate">{movement.reason}</p> : null}
                 </div>
                 <div className="text-[10px] font-black">
-                  <span className="block text-[#13895a]">
+                  <span className="block text-emerald-700">
                     {movement.entry ? `+${number(movement.entry)}` : "—"}
                   </span>
-                  <span className="mt-1 block text-[#c94040]">
+                  <span className="mt-1 block text-rose-600">
                     {movement.exit ? `-${number(movement.exit)}` : "—"}
                   </span>
                   {movement.reservedDelta ? (
-                    <span className="mt-1 block text-[#8057e8]">
+                    <span className="mt-1 block text-purple-600">
                       Res. {movement.reservedDelta > 0 ? "+" : ""}
                       {number(movement.reservedDelta)}
                     </span>
                   ) : null}
                 </div>
-                <div className="text-[9px] text-[#8296a9] lg:text-right">
+                <div className="text-[9px] text-slate-400 lg:text-right">
                   {dateTime(movement.createdAt)}
                 </div>
               </div>
@@ -1938,20 +1942,20 @@ function InventoryOperationsTabs({
             {data.operations.transfers.map((transfer) => (
               <div
                 key={transfer.id}
-                className="grid gap-3 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(190px,1fr)_90px_minmax(180px,1fr)]"
+                className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(190px,1fr)_90px_minmax(180px,1fr)]"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">
+                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
                     {transfer.id}
                   </p>
-                  <p className="mt-1 text-[10px] font-extrabold text-[#304b66]">
+                  <p className="mt-1 text-[10px] font-extrabold text-slate-700">
                     {transfer.sourceCode} → {transfer.destinationCode}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {transfer.sourceName} → {transfer.destinationName}
                   </p>
                 </div>
-                <div className="text-[9px] text-[#71869c]">
+                <div className="text-[9px] text-slate-500">
                   <p>
                     {number(transfer.itemCount)} referencias · {number(transfer.units)} unidades
                   </p>
@@ -1968,7 +1972,7 @@ function InventoryOperationsTabs({
                   </span>
                 </div>
                 <div className="flex flex-wrap items-start justify-between gap-2 lg:justify-end">
-                  <span className="text-[9px] text-[#8296a9]">{dateTime(transfer.updatedAt)}</span>
+                  <span className="text-[9px] text-slate-400">{dateTime(transfer.updatedAt)}</span>
                   {permissions.canTransfer ? (
                     <div className="flex flex-wrap justify-end gap-1">
                       {transfer.status === "DRAFT" ? (
@@ -1984,7 +1988,7 @@ function InventoryOperationsTabs({
                                 }),
                             )
                           }
-                          className="rounded-md border border-[#c9dcff] px-2 py-1.5 text-[8px] font-extrabold text-[#2277ee]"
+                          className="rounded-md border border-blue-200 px-2 py-1.5 text-[8px] font-extrabold text-blue-600"
                         >
                           Solicitar
                         </button>
@@ -2002,7 +2006,7 @@ function InventoryOperationsTabs({
                                 }),
                             )
                           }
-                          className="rounded-md bg-[#2277ee] px-2 py-1.5 text-[8px] font-extrabold text-white"
+                          className="rounded-md bg-blue-600 px-2 py-1.5 text-[8px] font-extrabold text-white"
                         >
                           Enviar
                         </button>
@@ -2021,7 +2025,7 @@ function InventoryOperationsTabs({
                                 ),
                             )
                           }
-                          className="rounded-md bg-[#159263] px-2 py-1.5 text-[8px] font-extrabold text-white"
+                          className="rounded-md bg-emerald-600 px-2 py-1.5 text-[8px] font-extrabold text-white"
                         >
                           Registrar recepción
                         </button>
@@ -2041,7 +2045,7 @@ function InventoryOperationsTabs({
                                 }),
                             )
                           }
-                          className="rounded-md border border-[#ffd1d1] px-2 py-1.5 text-[8px] font-extrabold text-[#c94040]"
+                          className="rounded-md border border-rose-200 px-2 py-1.5 text-[8px] font-extrabold text-rose-600"
                         >
                           Cancelar
                         </button>
@@ -2061,23 +2065,23 @@ function InventoryOperationsTabs({
             {data.operations.reservations.map((reservation) => (
               <div
                 key={reservation.id}
-                className="grid gap-3 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_90px_minmax(180px,1fr)]"
+                className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_90px_minmax(180px,1fr)]"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">
+                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
                     {reservation.sku}
                   </p>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
                     {reservation.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {reservation.locationCode} · {reservation.locationName} ·{" "}
                     {number(reservation.quantity)} unidades
                   </p>
                 </div>
-                <div className="text-[9px] text-[#71869c]">
+                <div className="text-[9px] text-slate-500">
                   <p>
-                    <span className="font-extrabold text-[#526b84]">
+                    <span className="font-extrabold text-slate-600">
                       {reservationReferenceLabels[reservation.referenceType || ""] || "Referencia"}:
                     </span>{" "}
                     {reservation.referenceId || "Sin código"}
@@ -2093,7 +2097,7 @@ function InventoryOperationsTabs({
                   </span>
                 </div>
                 <div className="flex flex-wrap items-start justify-between gap-2 lg:justify-end">
-                  <span className="text-[9px] text-[#8296a9]">
+                  <span className="text-[9px] text-slate-400">
                     {reservation.createdByName || "Sistema"} · {dateTime(reservation.createdAt)}
                   </span>
                   {permissions.canReserve && reservation.status === "ACTIVE" ? (
@@ -2111,7 +2115,7 @@ function InventoryOperationsTabs({
                               ),
                           )
                         }
-                        className="rounded-md border border-[#dce6ee] px-2 py-1.5 text-[8px] font-extrabold text-[#526b84]"
+                        className="rounded-md border border-slate-200 px-2 py-1.5 text-[8px] font-extrabold text-slate-600"
                       >
                         Liberar
                       </button>
@@ -2128,7 +2132,7 @@ function InventoryOperationsTabs({
                               ),
                           )
                         }
-                        className="rounded-md bg-[#102a43] px-2 py-1.5 text-[8px] font-extrabold text-white"
+                        className="rounded-md bg-slate-900 px-2 py-1.5 text-[8px] font-extrabold text-white"
                       >
                         Consumir
                       </button>
@@ -2147,27 +2151,27 @@ function InventoryOperationsTabs({
             {data.operations.minimums.map((minimum) => (
               <div
                 key={minimum.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
               >
                 <div className="min-w-0">
-                  <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">
+                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
                     {minimum.sku}
                   </p>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
                     {minimum.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {minimum.locationCode} · {minimum.locationName}
                   </p>
                 </div>
                 <div className="flex items-center gap-4 text-right text-[9px]">
                   <span>
-                    <small className="block text-[#8296a9]">Disponible</small>
-                    <b className="text-[#159263]">{number(minimum.available)}</b>
+                    <small className="block text-slate-400">Disponible</small>
+                    <b className="text-emerald-600">{number(minimum.available)}</b>
                   </span>
                   <span>
-                    <small className="block text-[#8296a9]">Mínimo</small>
-                    <b className="text-[#526b84]">
+                    <small className="block text-slate-400">Mínimo</small>
+                    <b className="text-slate-600">
                       {minimum.minimumStock === null ? "—" : number(minimum.minimumStock)}
                     </b>
                   </span>
@@ -2182,7 +2186,7 @@ function InventoryOperationsTabs({
             {!data.operations.minimums.length ? (
               <OperationEmpty text="No hay mínimos configurados; NULL significa sin mínimo." />
             ) : (
-              <p className="pt-1 text-[9px] text-[#8296a9]">
+              <p className="pt-1 text-[9px] text-slate-400">
                 Un mínimo de 0 es válido y no equivale a NULL (sin mínimo).
               </p>
             )}
@@ -2193,20 +2197,20 @@ function InventoryOperationsTabs({
             {data.operations.imports.map((batch) => (
               <div
                 key={batch.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">{batch.id}</p>
-                  <p className="mt-1 text-[10px] font-extrabold text-[#304b66]">
+                  <p className="font-mono text-[9px] font-extrabold text-blue-600">{batch.id}</p>
+                  <p className="mt-1 text-[10px] font-extrabold text-slate-700">
                     {batch.filename || batch.source}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     {number(batch.rowsRead)} filas · {number(batch.matched)} coincidentes ·{" "}
                     {number(batch.unmatched)} sin SKU · {number(batch.ambiguous)} ambiguas
                   </p>
                 </div>
-                <div className="text-right text-[9px] text-[#8296a9]">
-                  <span className="inline-flex rounded-md border border-[#dce6ee] bg-white px-2 py-1 font-extrabold text-[#526b84]">
+                <div className="text-right text-[9px] text-slate-400">
+                  <span className="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 font-extrabold text-slate-600">
                     {importStatusLabels[batch.status] || batch.status}
                   </span>
                   <p className="mt-1">{dateTime(batch.completedAt || batch.createdAt)}</p>
@@ -2231,9 +2235,9 @@ function InventoryOperationsTabs({
 
 function OperationEmpty({ text }: { text: string }) {
   return (
-    <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-[#dce6ee] px-4 py-8 text-center">
-      <Truck className="h-5 w-5 text-[#b4c1cd]" />
-      <p className="text-[10px] font-extrabold text-[#526b84]">{text}</p>
+    <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center">
+      <Truck className="h-5 w-5 text-slate-300" />
+      <p className="text-[10px] font-extrabold text-slate-600">{text}</p>
     </div>
   );
 }
@@ -2334,27 +2338,27 @@ function Filters({
   return (
     <form onSubmit={submit} className={panel + " p-3"}>
       <div className="flex flex-wrap items-end gap-2">
-        <label className="min-w-[220px] flex-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="min-w-[220px] flex-1 text-[10px] font-extrabold text-slate-600">
           Buscar SKU, nombre o atributo
           <div className="relative mt-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8aa0b6]"
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
             <input
               defaultValue={filters.query ?? ""}
               name="query"
               placeholder="SKU, modelo, refrigerante, voltaje…"
-              className="h-10 w-full rounded-lg border border-[#dce6ee] pl-9 pr-3 text-[11px] font-semibold text-[#304b66] outline-none placeholder:text-[#a1afbd] focus:border-[#2277ee]"
+              className="h-10 w-full rounded-lg border border-slate-200 pl-9 pr-3 text-[11px] font-semibold text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400"
             />
           </div>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
           Local
           <select
             name="locationId"
             defaultValue={filters.locationId ?? ""}
-            className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
           >
             <option value="">Todos los locales</option>
             {data.facets.locations.map((location) => (
@@ -2364,12 +2368,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
           Categoría
           <select
             name="categoryId"
             defaultValue={filters.categoryId ?? ""}
-            className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
           >
             <option value="">Todas las categorías</option>
             {data.facets.categories.map((category) => (
@@ -2379,12 +2383,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
           Familia
           <select
             name="familyId"
             defaultValue={filters.familyId ?? ""}
-            className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
           >
             <option value="">Todas las familias</option>
             {data.facets.families.map((family) => (
@@ -2394,12 +2398,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
           Marca
           <select
             name="brandId"
             defaultValue={filters.brandId ?? ""}
-            className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
           >
             <option value="">Todas las marcas</option>
             {data.facets.brands.map((brand) => (
@@ -2409,12 +2413,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[130px] gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid min-w-[130px] gap-1 text-[10px] font-extrabold text-slate-600">
           Estado
           <select
             name="status"
             defaultValue={filters.status ?? ""}
-            className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
           >
             <option value="">Todos los estados</option>
             {data.facets.statuses.map((status) => (
@@ -2429,12 +2433,12 @@ function Filters({
           onClick={() => setAdvancedOpen((value) => !value)}
           aria-expanded={advancedOpen}
           aria-controls="inventory-advanced-filters"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84]"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           Más filtros
           {advancedCount ? (
-            <span className="rounded-full bg-[#e8f1ff] px-1.5 py-0.5 text-[8px] text-[#2277ee]">
+            <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[8px] text-blue-600">
               {advancedCount}
             </span>
           ) : null}
@@ -2442,7 +2446,7 @@ function Filters({
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#2277ee] px-3.5 text-[10px] font-extrabold text-white disabled:opacity-60"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white disabled:opacity-60"
         >
           <Filter className="h-3.5 w-3.5" />
           {isPending ? "Aplicando…" : "Aplicar"}
@@ -2450,7 +2454,7 @@ function Filters({
         <button
           type="button"
           onClick={() => startTransition(() => router.push("/admin/inventario"))}
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#526b84]"
+          className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-3 text-[10px] font-extrabold text-slate-600"
         >
           Limpiar
         </button>
@@ -2458,35 +2462,35 @@ function Filters({
       {advancedOpen ? (
         <div
           id="inventory-advanced-filters"
-          className="mt-3 grid gap-2 border-t border-[#edf2f6] pt-3 sm:grid-cols-2 lg:grid-cols-5"
+          className="mt-3 grid gap-2 border-t border-slate-100 pt-3 sm:grid-cols-2 lg:grid-cols-5"
         >
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Reservas
             <select
               name="hasReservations"
               defaultValue={
                 filters.hasReservations === undefined ? "" : String(filters.hasReservations)
               }
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
             >
               <option value="">Con o sin reservas</option>
               <option value="true">Con reservas</option>
               <option value="false">Sin reservas</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Mínimo configurado
             <select
               name="hasMinimum"
               defaultValue={filters.hasMinimum === undefined ? "" : String(filters.hasMinimum)}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
             >
               <option value="">Con o sin mínimo</option>
               <option value="true">Con mínimo</option>
               <option value="false">Sin mínimo</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Disponible mínimo
             <input
               name="minAvailable"
@@ -2495,41 +2499,41 @@ function Filters({
               step="1"
               defaultValue={filters.minAvailable ?? ""}
               placeholder="Ej. 5"
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Actualizado desde
             <input
               name="updatedFrom"
               type="date"
               defaultValue={filters.updatedFrom ?? ""}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Actualizado hasta
             <input
               name="updatedTo"
               type="date"
               defaultValue={filters.updatedTo ?? ""}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-semibold text-[#526b84]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
             />
           </label>
         </div>
       ) : null}
       {activeFilters.length ? (
         <div
-          className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-[#edf2f6] pt-3"
+          className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3"
           aria-label="Filtros activos"
         >
-          <span className="mr-1 text-[9px] font-extrabold text-[#8296a9]">Filtros activos</span>
+          <span className="mr-1 text-[9px] font-extrabold text-slate-400">Filtros activos</span>
           {activeFilters.map((filter) => (
             <button
               key={filter.key}
               type="button"
               onClick={() => clearFilter(filter.key)}
-              className="inline-flex items-center gap-1 rounded-full border border-[#c9dcff] bg-[#f4f8ff] px-2.5 py-1 text-[9px] font-extrabold text-[#2277ee]"
+              className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[9px] font-extrabold text-blue-600"
               aria-label={"Quitar " + filter.label}
             >
               {filter.label}
@@ -2567,7 +2571,7 @@ function Pagination({
     ),
   );
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf2f6] px-4 py-3 text-[9px] font-semibold text-[#8296a9]">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[9px] font-semibold text-slate-400">
       <span>
         Mostrando {data.totalItems ? (data.page - 1) * data.pageSize + 1 : 0}–
         {Math.min(data.page * data.pageSize, data.totalItems)} de {number(data.totalItems)} saldos
@@ -2577,7 +2581,7 @@ function Pagination({
           type="button"
           disabled={data.page <= 1}
           onClick={() => router.push(href(data.page - 1))}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#dce6ee] text-[#526b84] disabled:opacity-35"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 disabled:opacity-35"
           aria-label="Página anterior"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
@@ -2588,7 +2592,7 @@ function Pagination({
             key={page}
             onClick={() => router.push(href(page))}
             aria-current={page === data.page ? "page" : undefined}
-            className={`inline-flex h-7 w-7 items-center justify-center rounded-md text-[9px] font-extrabold ${page === data.page ? "bg-[#2277ee] text-white" : "border border-[#dce6ee] text-[#526b84]"}`}
+            className={`inline-flex h-7 w-7 items-center justify-center rounded-md text-[9px] font-extrabold ${page === data.page ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-600"}`}
           >
             {page}
           </button>
@@ -2597,7 +2601,7 @@ function Pagination({
           type="button"
           disabled={data.page >= data.totalPages}
           onClick={() => router.push(href(data.page + 1))}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#dce6ee] text-[#526b84] disabled:opacity-35"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 disabled:opacity-35"
           aria-label="Página siguiente"
         >
           <ChevronRight className="h-3.5 w-3.5" />
@@ -2606,7 +2610,7 @@ function Pagination({
           aria-label="Saldos por página"
           value={String(data.pageSize)}
           onChange={(event) => router.push(href(1, Number(event.target.value)))}
-          className="ml-2 h-7 rounded-md border border-[#dce6ee] bg-white px-2 text-[9px] font-extrabold text-[#526b84]"
+          className="ml-2 h-7 rounded-md border border-slate-200 bg-white px-2 text-[9px] font-extrabold text-slate-600"
         >
           {inventoryPageSizes.map((size) => (
             <option key={size} value={size}>
@@ -2663,13 +2667,13 @@ export function InventoryAdminWorkspace({
     <div className="space-y-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#2277ee]">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
             Operaciones · inventario
           </p>
-          <h1 className="mt-1 text-[25px] font-black tracking-[-0.03em] text-[#102a43] sm:text-[29px]">
+          <h1 className="mt-1 text-[25px] font-black tracking-[-0.03em] text-slate-900 sm:text-[29px]">
             Gestión de inventario
           </h1>
-          <p className="mt-2 max-w-2xl text-[11px] leading-5 text-[#71869c]">
+          <p className="mt-2 max-w-2xl text-[11px] leading-5 text-slate-500">
             Saldos físicos, reservas y movimientos por local. El catálogo no se interpreta como
             stock.
           </p>
@@ -2679,7 +2683,7 @@ export function InventoryAdminWorkspace({
             type="button"
             onClick={() => startRefresh(() => router.refresh())}
             disabled={isRefreshing}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84] hover:border-[#b8cde0]"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600 hover:border-blue-200"
           >
             {" "}
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -2688,7 +2692,7 @@ export function InventoryAdminWorkspace({
           <a
             href={exportHref}
             download
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84] hover:border-[#b8cde0]"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600 hover:border-blue-200"
           >
             <Download className="h-3.5 w-3.5" />
             Exportar
@@ -2697,7 +2701,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("reservation")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
             >
               <ShieldCheck className="h-3.5 w-3.5" />
               Reservar
@@ -2707,7 +2711,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("minimum")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Mínimos
@@ -2717,7 +2721,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("transfer")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3 text-[10px] font-extrabold text-[#526b84]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
             >
               <ArrowLeftRight className="h-3.5 w-3.5" />
               Transferir stock
@@ -2727,7 +2731,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("adjustment")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#f58b20] px-3.5 text-[10px] font-extrabold text-white shadow-[0_6px_14px_rgba(245,139,32,0.2)] hover:bg-[#df7810]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-amber-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_6px_14px_rgba(245,139,32,0.2)] hover:bg-amber-600"
             >
               <Plus className="h-3.5 w-3.5" />
               Ajustar inventario
@@ -2735,27 +2739,13 @@ export function InventoryAdminWorkspace({
           ) : null}
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <MetricCard
           icon={Boxes}
           label="Referencias con saldo"
           value={number(data.summary.referencesWithBalance)}
-          note="Producto · local"
+          note="Catálogos activos"
           tone="blue"
-        />
-        <MetricCard
-          icon={Package}
-          label="Disponible"
-          value={number(data.summary.availableUnits)}
-          note={`${number(data.summary.onHandUnits)} físico · ${number(data.summary.reservedUnits)} reservado`}
-          tone="green"
-        />
-        <MetricCard
-          icon={AlertTriangle}
-          label="Saldos críticos"
-          value={number(data.summary.criticalBalances)}
-          note="Con mínimo configurado"
-          tone="red"
         />
         <MetricCard
           icon={MapPin}
@@ -2765,35 +2755,52 @@ export function InventoryAdminWorkspace({
           tone="orange"
         />
         <MetricCard
-          icon={CircleAlert}
-          label="Alertas abiertas"
-          value={number(
-            data.alerts.counts.critical +
-              data.alerts.counts.outOfStock +
-              data.alerts.counts.expiringReservations,
-          )}
-          note={`${number(data.alerts.counts.pendingTransfers)} traslados pendientes`}
+          icon={Package}
+          label="Balances registrados"
+          value={number(data.totalItems)}
+          note="En el sistema"
+          tone="green"
+        />
+        <MetricCard
+          icon={FileClock}
+          label="Kardex persistente"
+          value={number(data.summary.totalMovements)}
+          note="Trazabilidad completa"
           tone="purple"
+        />
+        <MetricCard
+          icon={ShieldCheck}
+          label="Reservas activas"
+          value={number(data.summary.activeReservations)}
+          note="Stock comprometido"
+          tone="blue"
+        />
+        <MetricCard
+          icon={AlertTriangle}
+          label="Saldos críticos"
+          value={number(data.summary.criticalBalances)}
+          note="Requieren atención"
+          tone="red"
         />
       </div>
       <Filters filters={filters} data={data} />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_292px]">
         <section className={`${panel} min-w-0 overflow-hidden`}>
-          <div className="flex flex-wrap items-center gap-3 border-b border-[#edf2f6] px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3">
             <div>
-              <h2 className="text-[13px] font-black text-[#304b66]">Saldos por referencia</h2>
-              <p className="mt-1 text-[9px] text-[#8296a9]">
+              <h2 className="text-[13px] font-black text-slate-700">Saldos por referencia</h2>
+              <p className="mt-1 text-[9px] text-slate-400">
                 Disponible = físico − reservado · actualizado desde PostgreSQL
               </p>
             </div>
-            <div className="ml-auto flex items-center gap-2 text-[9px] font-extrabold text-[#8296a9]">
+            <div className="ml-auto flex items-center gap-2 text-[9px] font-extrabold text-slate-400">
               <FileClock className="h-3.5 w-3.5" />
               {dateTime(data.fetchedAt)}
             </div>
           </div>
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[980px] text-left">
-              <thead className="border-b border-[#e9eff4] bg-[#fbfcfd] text-[8px] font-extrabold uppercase tracking-[0.07em] text-[#7d91a5]">
+              <thead className="border-b border-slate-100 bg-slate-50 text-[8px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
                 <tr>
                   <th className="px-4 py-3">SKU</th>
                   <th className="px-3 py-3">Producto</th>
@@ -2860,6 +2867,7 @@ export function InventoryAdminWorkspace({
           <Pagination data={data} filters={filters} />
         </section>
         <aside className="grid content-start gap-4">
+          <MovementsRail movements={data.operations.movements} />
           <LocationRail locations={activeLocations} />
           <AlertRail alerts={data.alerts} />
         </aside>
@@ -2945,11 +2953,11 @@ function MetricCard({
   tone: "blue" | "green" | "red" | "orange" | "purple";
 }) {
   const styles = {
-    blue: ["bg-[#e8f1ff]", "text-[#2277ee]"],
-    green: ["bg-[#e4f7ef]", "text-[#159263]"],
-    red: ["bg-[#ffe8e8]", "text-[#ed4b4b]"],
-    orange: ["bg-[#fff0e0]", "text-[#f58b20]"],
-    purple: ["bg-[#eee9ff]", "text-[#8057e8]"],
+    blue: ["bg-blue-50", "text-blue-600"],
+    green: ["bg-emerald-50", "text-emerald-600"],
+    red: ["bg-rose-50", "text-rose-500"],
+    orange: ["bg-amber-50", "text-amber-600"],
+    purple: ["bg-purple-50", "text-purple-600"],
   }[tone];
   return (
     <div className={`${panel} flex items-start gap-3 p-4`}>
@@ -2959,13 +2967,13 @@ function MetricCard({
         <Icon className="h-[17px] w-[17px]" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#8296a9]">
+        <p className="truncate text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
           {label}
         </p>
-        <strong className="mt-1 block text-[22px] font-black tracking-[-0.04em] text-[#102a43]">
+        <strong className="mt-1 block text-[22px] font-black tracking-[-0.04em] text-slate-900">
           {value}
         </strong>
-        <p className="mt-1 truncate text-[9px] text-[#8296a9]">{note}</p>
+        <p className="mt-1 truncate text-[9px] text-slate-400">{note}</p>
       </div>
     </div>
   );
@@ -2995,7 +3003,7 @@ function RowActionMenu({ actions }: { actions: RowActions }) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#dce6ee] text-[13px] font-black tracking-[0.12em] text-[#526b84] hover:border-[#a6c5e0]"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-[13px] font-black tracking-[0.12em] text-slate-600 hover:border-blue-300"
         aria-label="Más acciones"
         aria-expanded={open}
       >
@@ -3009,7 +3017,7 @@ function RowActionMenu({ actions }: { actions: RowActions }) {
             onClick={() => setOpen(false)}
             aria-label="Cerrar acciones"
           />
-          <div className="absolute right-0 top-9 z-20 min-w-[180px] rounded-lg border border-[#dce6ee] bg-white p-1 text-left shadow-[0_12px_28px_rgba(16,42,67,0.14)]">
+          <div className="absolute right-0 top-9 z-20 min-w-[180px] rounded-lg border border-slate-200 bg-white p-1 text-left shadow-[0_12px_28px_rgba(16,42,67,0.14)]">
             {entries.map((entry) => (
               <button
                 key={entry.label}
@@ -3018,7 +3026,7 @@ function RowActionMenu({ actions }: { actions: RowActions }) {
                   setOpen(false);
                   entry.action();
                 }}
-                className="block w-full rounded-md px-3 py-2 text-[9px] font-extrabold text-[#526b84] hover:bg-[#f4f8fb]"
+                className="block w-full rounded-md px-3 py-2 text-[9px] font-extrabold text-slate-600 hover:bg-slate-50"
               >
                 {entry.label}
               </button>
@@ -3036,12 +3044,12 @@ function inventoryProductOption(item: InventoryItem): ProductOption {
 
 function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActions }) {
   return (
-    <tr className="border-b border-[#f0f4f7] text-[10px] transition hover:bg-[#fbfdff]">
+    <tr className="border-b border-slate-100 text-[10px] transition hover:bg-slate-50">
       <td className="px-4 py-3 align-middle">
         <button
           type="button"
           onClick={actions.onOpen}
-          className="font-mono text-[10px] font-extrabold text-[#2277ee]"
+          className="font-mono text-[10px] font-extrabold text-blue-600"
         >
           {item.sku}
         </button>
@@ -3052,7 +3060,7 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
           onClick={actions.onOpen}
           className="flex w-full items-center gap-2.5 text-left"
         >
-          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-[#edf2f6] bg-[#f7f9fb]">
+          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
             <Image
               src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
               alt=""
@@ -3063,41 +3071,41 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
             />
           </span>
           <span className="min-w-0">
-            <strong className="block truncate text-[10px] font-extrabold text-[#304b66]">
+            <strong className="block truncate text-[10px] font-extrabold text-slate-700">
               {item.productName}
             </strong>
-            <span className="mt-1 block truncate text-[9px] text-[#8296a9]">{item.familyName}</span>
+            <span className="mt-1 block truncate text-[9px] text-slate-400">{item.familyName}</span>
           </span>
         </button>
       </td>
       <td className="px-3 py-3">
         <button type="button" onClick={actions.onOpen} className="text-left">
-          <span className="block text-[10px] font-extrabold text-[#304b66]">
+          <span className="block text-[10px] font-extrabold text-slate-700">
             {item.locationCode}
           </span>
-          <span className="mt-1 block text-[9px] text-[#8296a9]">{item.locationName}</span>
+          <span className="mt-1 block text-[9px] text-slate-400">{item.locationName}</span>
         </button>
       </td>
       <td
-        className="px-3 py-3 text-right font-semibold text-[#304b66]"
+        className="px-3 py-3 text-right font-semibold text-slate-700"
         title="Unidades físicamente registradas"
       >
         {number(item.onHand)}
       </td>
       <td
-        className="px-3 py-3 text-right font-semibold text-[#526b84]"
+        className="px-3 py-3 text-right font-semibold text-slate-600"
         title="Unidades comprometidas en reservas"
       >
         {number(item.reserved)}
       </td>
       <td
-        className={`px-3 py-3 text-right text-[11px] font-black ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-[#c94040]" : "text-[#159263]"}`}
+        className={`px-3 py-3 text-right text-[11px] font-black ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-600" : "text-emerald-600"}`}
         title="Disponible = físico − reservado"
       >
         {number(item.available)}
       </td>
       <td
-        className="px-3 py-3 text-right font-semibold text-[#526b84]"
+        className="px-3 py-3 text-right font-semibold text-slate-600"
         title={item.minimumStock === null ? "Sin mínimo configurado" : "Mínimo de alerta"}
       >
         {item.minimumStock === null ? "Sin mínimo" : number(item.minimumStock)}
@@ -3110,10 +3118,10 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
         </span>
       </td>
       <td className="max-w-[150px] px-3 py-3">
-        <span className="block truncate text-[9px] font-extrabold text-[#526b84]">
+        <span className="block truncate text-[9px] font-extrabold text-slate-600">
           {item.lastMovementLabel || "Sin movimiento"}
         </span>
-        <span className="mt-1 block truncate text-[8px] text-[#8296a9]">
+        <span className="mt-1 block truncate text-[8px] text-slate-400">
           {dateTime(item.lastMovementAt)}
         </span>
       </td>
@@ -3126,12 +3134,12 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
 
 function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowActions }) {
   return (
-    <article className="rounded-xl border border-[#edf2f6] bg-[#fbfcfd] p-3">
+    <article className="rounded-xl border border-slate-100 bg-slate-50 p-3">
       <div className="flex items-start gap-2.5">
         <button
           type="button"
           onClick={actions.onOpen}
-          className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-[#edf2f6] bg-white"
+          className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-white"
         >
           <Image
             src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
@@ -3143,8 +3151,8 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           />
         </button>
         <button type="button" onClick={actions.onOpen} className="min-w-0 flex-1 text-left">
-          <p className="truncate text-[10px] font-extrabold text-[#304b66]">{item.productName}</p>
-          <p className="mt-1 font-mono text-[9px] text-[#8296a9]">
+          <p className="truncate text-[10px] font-extrabold text-slate-700">{item.productName}</p>
+          <p className="mt-1 font-mono text-[9px] text-slate-400">
             {item.sku} · {item.locationCode}
           </p>
         </button>
@@ -3154,26 +3162,26 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           {inventoryStatusLabels[item.status]}
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-[#edf2f6] pt-3 text-center">
+      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-slate-100 pt-3 text-center">
         <div>
-          <span className="block text-[8px] text-[#8296a9]">Físico</span>
-          <strong className="text-[11px] text-[#304b66]">{number(item.onHand)}</strong>
+          <span className="block text-[8px] text-slate-400">Físico</span>
+          <strong className="text-[11px] text-slate-700">{number(item.onHand)}</strong>
         </div>
         <div>
-          <span className="block text-[8px] text-[#8296a9]">Reservado</span>
-          <strong className="text-[11px] text-[#526b84]">{number(item.reserved)}</strong>
+          <span className="block text-[8px] text-slate-400">Reservado</span>
+          <strong className="text-[11px] text-slate-600">{number(item.reserved)}</strong>
         </div>
         <div>
-          <span className="block text-[8px] text-[#8296a9]">Disponible</span>
+          <span className="block text-[8px] text-slate-400">Disponible</span>
           <strong
-            className={`text-[11px] ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-[#c94040]" : "text-[#159263]"}`}
+            className={`text-[11px] ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-600" : "text-emerald-600"}`}
           >
             {number(item.available)}
           </strong>
         </div>
         <div>
-          <span className="block text-[8px] text-[#8296a9]">Mínimo</span>
-          <strong className="text-[11px] text-[#526b84]">
+          <span className="block text-[8px] text-slate-400">Mínimo</span>
+          <strong className="text-[11px] text-slate-600">
             {item.minimumStock === null ? "—" : number(item.minimumStock)}
           </strong>
         </div>
@@ -3182,7 +3190,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
         <button
           type="button"
           onClick={actions.onOpen}
-          className="h-8 flex-1 rounded-lg border border-[#dce6ee] text-[9px] font-extrabold text-[#526b84]"
+          className="h-8 flex-1 rounded-lg border border-slate-200 text-[9px] font-extrabold text-slate-600"
         >
           Ver detalle
         </button>
@@ -3190,7 +3198,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           <button
             type="button"
             onClick={actions.onKardex}
-            className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-[#dce6ee] text-[9px] font-extrabold text-[#2277ee]"
+            className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 text-[9px] font-extrabold text-blue-600"
           >
             <FileClock className="h-3 w-3" />
             Kardex
@@ -3223,7 +3231,7 @@ function InventoryDetailDrawer({
   );
   return (
     <div
-      className="fixed inset-0 z-[60] bg-[#102a43]/25"
+      className="fixed inset-0 z-[60] bg-slate-900/25"
       role="dialog"
       aria-modal="true"
       aria-labelledby="inventory-detail-title"
@@ -3235,8 +3243,8 @@ function InventoryDetailDrawer({
         aria-label="Cerrar detalle de inventario"
       />
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-[560px] flex-col bg-white shadow-[-16px_0_42px_rgba(16,42,67,0.18)]">
-        <div className="flex items-start gap-3 border-b border-[#edf2f6] px-5 py-4">
-          <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#edf2f6] bg-[#f7f9fb]">
+        <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
+          <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
             <Image
               src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
               alt=""
@@ -3247,28 +3255,28 @@ function InventoryDetailDrawer({
             />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] font-extrabold text-[#2277ee]">{item.sku}</p>
+            <p className="font-mono text-[9px] font-extrabold text-blue-600">{item.sku}</p>
             <h2
               id="inventory-detail-title"
-              className="mt-1 truncate text-[16px] font-black text-[#102a43]"
+              className="mt-1 truncate text-[16px] font-black text-slate-900"
             >
               {item.productName}
             </h2>
-            <p className="mt-1 text-[10px] text-[#71869c]">
+            <p className="mt-1 text-[10px] text-slate-500">
               {item.locationCode} · {item.locationName}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#71869c] hover:bg-[#f4f7fa]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50"
             aria-label="Cerrar detalle"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         <div
-          className="flex gap-1 overflow-x-auto border-b border-[#edf2f6] px-3 pt-2"
+          className="flex gap-1 overflow-x-auto border-b border-slate-100 px-3 pt-2"
           role="tablist"
           aria-label="Detalle de inventario"
         >
@@ -3287,7 +3295,7 @@ function InventoryDetailDrawer({
               role="tab"
               aria-selected={tab === entry.id}
               onClick={() => setTab(entry.id)}
-              className={`shrink-0 border-b-2 px-2.5 py-2.5 text-[9px] font-extrabold ${tab === entry.id ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#8296a9]"}`}
+              className={`shrink-0 border-b-2 px-2.5 py-2.5 text-[9px] font-extrabold ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
             >
               {entry.label}
             </button>
@@ -3303,16 +3311,16 @@ function InventoryDetailDrawer({
                   ["Disponible", number(item.available)],
                   ["Mínimo", item.minimumStock === null ? "Sin mínimo" : number(item.minimumStock)],
                 ].map(([label, value]) => (
-                  <div key={label} className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3">
-                    <span className="block text-[9px] text-[#8296a9]">{label}</span>
-                    <strong className="mt-1 block text-[15px] font-black text-[#304b66]">
+                  <div key={label} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                    <span className="block text-[9px] text-slate-400">{label}</span>
+                    <strong className="mt-1 block text-[15px] font-black text-slate-700">
                       {value}
                     </strong>
                   </div>
                 ))}
               </div>
-              <div className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-4">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#8296a9]">
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                   Estado actual
                 </p>
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -3321,15 +3329,15 @@ function InventoryDetailDrawer({
                   >
                     {inventoryStatusLabels[item.status]}
                   </span>
-                  <span className="text-[9px] text-[#8296a9]">
+                  <span className="text-[9px] text-slate-400">
                     Último movimiento: {dateTime(item.lastMovementAt)}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-black text-[#304b66]">Actividad reciente</p>
+                <p className="text-[10px] font-black text-slate-700">Actividad reciente</p>
                 {movements.slice(0, 3).map((movement) => (
-                  <p key={movement.id} className="mt-2 text-[9px] text-[#71869c]">
+                  <p key={movement.id} className="mt-2 text-[9px] text-slate-500">
                     {movement.label} ·{" "}
                     {movement.entry
                       ? `+${number(movement.entry)}`
@@ -3340,7 +3348,7 @@ function InventoryDetailDrawer({
                   </p>
                 ))}
                 {!movements.length ? (
-                  <p className="mt-2 text-[9px] text-[#8296a9]">
+                  <p className="mt-2 text-[9px] text-slate-400">
                     Sin movimientos recientes en el panel.
                   </p>
                 ) : null}
@@ -3349,7 +3357,7 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "kardex" ? (
             <div className="grid gap-3">
-              <p className="text-[10px] leading-5 text-[#71869c]">
+              <p className="text-[10px] leading-5 text-slate-500">
                 Consulta el Kardex inmutable por producto y local, con stock anterior/posterior,
                 disponible, actor y referencia.
               </p>
@@ -3357,7 +3365,7 @@ function InventoryDetailDrawer({
                 <button
                   type="button"
                   onClick={onKardex}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white"
                 >
                   <FileClock className="h-3.5 w-3.5" />
                   Abrir Kardex completo
@@ -3370,7 +3378,7 @@ function InventoryDetailDrawer({
               {reservations.map((reservation) => (
                 <div
                   key={reservation.id}
-                  className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3"
+                  className="rounded-lg border border-slate-100 bg-slate-50 p-3"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -3378,13 +3386,13 @@ function InventoryDetailDrawer({
                     >
                       {reservationStatusLabels[reservation.status] || "Estado"}
                     </span>
-                    <b className="text-[11px] text-[#304b66]">{number(reservation.quantity)} u.</b>
+                    <b className="text-[11px] text-slate-700">{number(reservation.quantity)} u.</b>
                   </div>
-                  <p className="mt-2 text-[9px] text-[#71869c]">
+                  <p className="mt-2 text-[9px] text-slate-500">
                     {reservationReferenceLabels[reservation.referenceType || ""] || "Referencia"} ·{" "}
                     {reservation.referenceId || "Sin código"}
                   </p>
-                  <p className="mt-1 text-[9px] text-[#8296a9]">
+                  <p className="mt-1 text-[9px] text-slate-400">
                     Expira: {dateTime(reservation.expiresAt)}
                     {reservation.reason ? ` · ${reservation.reason}` : ""}
                   </p>
@@ -3397,7 +3405,7 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "transfers" ? (
             <div className="grid gap-3">
-              <p className="text-[10px] leading-5 text-[#71869c]">
+              <p className="text-[10px] leading-5 text-slate-500">
                 Los traslados se muestran en el panel operativo y se procesan como movimientos
                 atómicos por referencia.
               </p>
@@ -3405,10 +3413,10 @@ function InventoryDetailDrawer({
                 data.operations.transfers.slice(0, 5).map((transfer) => (
                   <div
                     key={transfer.id}
-                    className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3"
+                    className="rounded-lg border border-slate-100 bg-slate-50 p-3"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[9px] font-extrabold text-[#2277ee]">
+                      <span className="font-mono text-[9px] font-extrabold text-blue-600">
                         {transfer.id}
                       </span>
                       <span
@@ -3417,7 +3425,7 @@ function InventoryDetailDrawer({
                         {transferStatusLabels[transfer.status] || "Estado"}
                       </span>
                     </div>
-                    <p className="mt-1 text-[9px] text-[#71869c]">
+                    <p className="mt-1 text-[9px] text-slate-500">
                       {transfer.sourceCode} → {transfer.destinationCode} · {number(transfer.units)}{" "}
                       unidades
                     </p>
@@ -3430,18 +3438,18 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "configuration" ? (
             <div className="grid gap-3">
-              <div className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-4">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#8296a9]">
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                   Mínimo de alerta
                 </p>
-                <strong className="mt-1 block text-[20px] font-black text-[#304b66]">
+                <strong className="mt-1 block text-[20px] font-black text-slate-700">
                   {item.minimumStock === null ? "Sin mínimo" : number(item.minimumStock)}
                 </strong>
-                <p className="mt-2 text-[9px] leading-5 text-[#71869c]">
+                <p className="mt-2 text-[9px] leading-5 text-slate-500">
                   Un mínimo 0 es válido; NULL significa que no existe umbral configurado.
                 </p>
               </div>
-              <p className="text-[9px] text-[#8296a9]">
+              <p className="text-[9px] text-slate-400">
                 La edición se realiza desde “Configurar mínimo” y no toca el físico ni el reservado.
               </p>
             </div>
@@ -3455,9 +3463,9 @@ function InventoryDetailDrawer({
 function EmptyInventory() {
   return (
     <div className="grid justify-items-center gap-2 px-4 py-12 text-center">
-      <Package className="h-7 w-7 text-[#b4c1cd]" />
-      <p className="text-[11px] font-extrabold text-[#526b84]">No hay saldos para estos filtros</p>
-      <p className="max-w-xs text-[10px] leading-5 text-[#8296a9]">
+      <Package className="h-7 w-7 text-slate-300" />
+      <p className="text-[11px] font-extrabold text-slate-600">No hay saldos para estos filtros</p>
+      <p className="max-w-xs text-[10px] leading-5 text-slate-400">
         Los productos sin saldo siguen siendo desconocidos; no se convierten automáticamente en
         stock cero.
       </p>
@@ -3493,7 +3501,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Código
             <input
               required
@@ -3501,16 +3509,16 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
               placeholder="ALM-LIM"
-              className="h-10 rounded-lg border border-[#dce6ee] px-3 font-mono text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 px-3 font-mono text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
             Tipo
             <select
               required
               value={type}
               onChange={(event) => setType(event.target.value)}
-              className="h-10 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66]"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700"
             >
               <option value="WAREHOUSE">Almacén</option>
               <option value="STORE">Tienda</option>
@@ -3518,7 +3526,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
             </select>
           </label>
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
           Nombre
           <input
             required
@@ -3526,38 +3534,38 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Almacén Lima"
-            className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+            className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
           />
         </label>
-        <label className="grid gap-1 text-[10px] font-extrabold text-[#526b84]">
+        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
           Dirección (opcional)
           <input
             maxLength={240}
             value={address}
             onChange={(event) => setAddress(event.target.value)}
-            className="h-10 rounded-lg border border-[#dce6ee] px-3 text-[11px] font-semibold text-[#304b66]"
+            className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
           />
         </label>
         {message ? (
           <p
-            className="rounded-lg border border-[#ffd1d1] bg-[#fff2f2] px-3 py-2 text-[10px] font-bold text-[#c94040]"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="flex justify-end gap-2 border-t border-[#edf2f6] pt-4">
+        <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#526b84]"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={busy || !code.trim() || !name.trim()}
-            className="h-10 rounded-lg bg-[#102a43] px-4 text-[10px] font-extrabold text-white disabled:opacity-45"
+            className="h-10 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:opacity-45"
           >
             {busy ? "Creando…" : "Crear local"}
           </button>
@@ -3567,49 +3575,111 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
   );
 }
 
+function MovementsRail({
+  movements,
+}: {
+  movements: InventoryAdminPageData["operations"]["movements"];
+}) {
+  return (
+    <section className={`${panel} overflow-hidden`}>
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <FileClock className="h-4 w-4 text-blue-600" />
+          <h2 className="text-[12px] font-black text-slate-700">Movimientos recientes</h2>
+        </div>
+        <a href="#inventory-operations" className="text-[8px] font-extrabold text-blue-600">
+          Ver todos
+        </a>
+      </div>
+      <div className="grid gap-2 p-3">
+        {movements.slice(0, 5).map((movement) => {
+          const delta = movement.entry - movement.exit;
+          const positive = delta > 0;
+          const negative = delta < 0;
+          return (
+            <div
+              key={movement.id}
+              className="flex items-start gap-2.5 rounded-lg border border-slate-100 p-2.5"
+            >
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${positive ? "bg-emerald-50 text-emerald-600" : negative ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"}`}
+              >
+                {positive ? (
+                  <ArrowDownToLine className="h-3 w-3" />
+                ) : negative ? (
+                  <ArrowUpFromLine className="h-3 w-3" />
+                ) : (
+                  <RefreshCw className="h-3 w-3" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[10px] font-bold text-slate-700">{movement.label}</p>
+                <p className="mt-0.5 truncate text-[8.5px] text-slate-400">
+                  {movement.sku} · {movement.productName}
+                </p>
+                <p className="mt-0.5 text-[8px] text-slate-400">{dateTime(movement.createdAt)}</p>
+              </div>
+              <strong
+                className={`shrink-0 text-[10px] ${positive ? "text-emerald-600" : negative ? "text-rose-600" : "text-slate-600"}`}
+              >
+                {delta > 0 ? "+" : ""}
+                {number(delta)} uds
+              </strong>
+            </div>
+          );
+        })}
+        {!movements.length ? (
+          <p className="p-3 text-center text-[10px] text-slate-400">
+            Sin movimientos registrados.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
 function LocationRail({ locations }: { locations: LocationSummary[] }) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   return (
     <section className={`${panel} overflow-hidden`}>
-      <div className="border-b border-[#edf2f6] px-4 py-3">
+      <div className="border-b border-slate-100 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-[#f58b20]" />
-            <h2 className="text-[12px] font-black text-[#304b66]">Resumen por local</h2>
+            <MapPin className="h-4 w-4 text-amber-600" />
+            <h2 className="text-[12px] font-black text-slate-700">Resumen por local</h2>
           </div>
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="rounded-md border border-[#dce6ee] px-2 py-1 text-[8px] font-extrabold text-[#2277ee]"
+            className="rounded-md border border-slate-200 px-2 py-1 text-[8px] font-extrabold text-blue-600"
           >
             Gestionar
           </button>
         </div>
-        <p className="mt-1 text-[9px] text-[#8296a9]">Capacidad comprometida y disponible</p>
+        <p className="mt-1 text-[9px] text-slate-400">Capacidad comprometida y disponible</p>
       </div>
       <div className="grid gap-2 p-3">
         {locations.map((location) => (
-          <div key={location.id} className="rounded-lg border border-[#edf2f6] p-3">
+          <div key={location.id} className="rounded-lg border border-slate-100 p-3">
             <div className="flex items-center justify-between gap-2">
-              <strong className="truncate text-[10px] text-[#304b66]">{location.name}</strong>
-              <span className="font-mono text-[9px] font-extrabold text-[#8296a9]">
+              <strong className="truncate text-[10px] text-slate-700">{location.name}</strong>
+              <span className="font-mono text-[9px] font-extrabold text-slate-400">
                 {location.code}
               </span>
             </div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-center">
               <div>
-                <span className="block text-[8px] text-[#8296a9]">Disp.</span>
-                <b className="text-[11px] text-[#159263]">{number(location.availableUnits)}</b>
+                <span className="block text-[8px] text-slate-400">Disp.</span>
+                <b className="text-[11px] text-emerald-600">{number(location.availableUnits)}</b>
               </div>
               <div>
-                <span className="block text-[8px] text-[#8296a9]">Reserv.</span>
-                <b className="text-[11px] text-[#526b84]">{number(location.reservedUnits)}</b>
+                <span className="block text-[8px] text-slate-400">Reserv.</span>
+                <b className="text-[11px] text-slate-600">{number(location.reservedUnits)}</b>
               </div>
               <div>
-                <span className="block text-[8px] text-[#8296a9]">Críticos</span>
+                <span className="block text-[8px] text-slate-400">Críticos</span>
                 <b
-                  className={`text-[11px] ${location.criticalBalances ? "text-[#c94040]" : "text-[#526b84]"}`}
+                  className={`text-[11px] ${location.criticalBalances ? "text-rose-600" : "text-slate-600"}`}
                 >
                   {number(location.criticalBalances)}
                 </b>
@@ -3619,11 +3689,11 @@ function LocationRail({ locations }: { locations: LocationSummary[] }) {
         ))}
         {!locations.length ? (
           <div className="grid gap-2 p-3 text-center">
-            <p className="text-[10px] text-[#8296a9]">Aún no hay locales activos registrados.</p>
+            <p className="text-[10px] text-slate-400">Aún no hay locales activos registrados.</p>
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="mx-auto rounded-md bg-[#102a43] px-3 py-2 text-[9px] font-extrabold text-white"
+              className="mx-auto rounded-md bg-slate-900 px-3 py-2 text-[9px] font-extrabold text-white"
             >
               Crear local
             </button>
@@ -3646,24 +3716,24 @@ function LocationRail({ locations }: { locations: LocationSummary[] }) {
 function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
   return (
     <section className={`${panel} overflow-hidden`}>
-      <div className="border-b border-[#edf2f6] px-4 py-3">
+      <div className="border-b border-slate-100 px-4 py-3">
         <div className="flex items-center gap-2">
-          <CircleAlert className="h-4 w-4 text-[#ed4b4b]" />
-          <h2 className="text-[12px] font-black text-[#304b66]">Alertas de atención</h2>
+          <CircleAlert className="h-4 w-4 text-rose-500" />
+          <h2 className="text-[12px] font-black text-slate-700">Alertas de atención</h2>
         </div>
-        <p className="mt-1 text-[9px] text-[#8296a9]">
+        <p className="mt-1 text-[9px] text-slate-400">
           Sin inventar disponibilidad para referencias desconocidas
         </p>
       </div>
       <div className="grid gap-2 p-3">
         {alerts.items.map((alert) => (
-          <div key={alert.id} className="rounded-lg border border-[#ffdada] bg-[#fff9f9] p-3">
+          <div key={alert.id} className="rounded-lg border border-rose-200 bg-rose-50 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate font-mono text-[9px] font-extrabold text-[#304b66]">
+                <p className="truncate font-mono text-[9px] font-extrabold text-slate-700">
                   {alert.sku}
                 </p>
-                <p className="mt-1 truncate text-[10px] font-bold text-[#526b84]">
+                <p className="mt-1 truncate text-[10px] font-bold text-slate-600">
                   {alert.productName}
                 </p>
               </div>
@@ -3673,7 +3743,7 @@ function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
                 {inventoryStatusLabels[alert.status]}
               </span>
             </div>
-            <p className="mt-2 text-[9px] text-[#8296a9]">
+            <p className="mt-2 text-[9px] text-slate-400">
               {alert.locationName} · {number(alert.available)} disponibles
               {alert.minimumStock === null
                 ? " · sin mínimo"
@@ -3683,20 +3753,20 @@ function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
         ))}
         {!alerts.items.length ? (
           <div className="grid justify-items-center gap-2 p-4 text-center">
-            <Check className="h-5 w-5 text-[#159263]" />
-            <p className="text-[10px] font-extrabold text-[#526b84]">Sin alertas de saldo</p>
+            <Check className="h-5 w-5 text-emerald-600" />
+            <p className="text-[10px] font-extrabold text-slate-600">Sin alertas de saldo</p>
           </div>
         ) : null}
-        <div className="grid grid-cols-2 gap-2 border-t border-[#edf2f6] pt-3 text-center">
+        <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-center">
           <div>
-            <span className="block text-[8px] text-[#8296a9]">Reservas por expirar</span>
-            <b className="text-[12px] text-[#a15c00]">
+            <span className="block text-[8px] text-slate-400">Reservas por expirar</span>
+            <b className="text-[12px] text-amber-700">
               {number(alerts.counts.expiringReservations)}
             </b>
           </div>
           <div>
-            <span className="block text-[8px] text-[#8296a9]">Traslados pendientes</span>
-            <b className="text-[12px] text-[#2277ee]">{number(alerts.counts.pendingTransfers)}</b>
+            <span className="block text-[8px] text-slate-400">Traslados pendientes</span>
+            <b className="text-[12px] text-blue-600">{number(alerts.counts.pendingTransfers)}</b>
           </div>
         </div>
       </div>

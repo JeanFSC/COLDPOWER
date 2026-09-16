@@ -76,21 +76,21 @@ type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type OperationsSnapshot = Awaited<ReturnType<typeof getOperationsWorkspace>>;
 
 const panel =
-  "min-w-0 rounded-[14px] border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
-const muted = "text-[#748aa0]";
+  "min-w-0 rounded-[14px] border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
+const muted = "text-slate-500";
 const tone = {
-  blue: { ink: "text-[#2277ee]", bg: "bg-[#e8f1ff]", line: "blue" as const },
-  orange: { ink: "text-[#f58b20]", bg: "bg-[#fff0df]", line: "orange" as const },
-  green: { ink: "text-[#159263]", bg: "bg-[#e4f7ef]", line: "green" as const },
-  red: { ink: "text-[#ed4b4b]", bg: "bg-[#ffe7e7]", line: "red" as const },
-  purple: { ink: "text-[#8057e8]", bg: "bg-[#eee9ff]", line: "purple" as const },
+  blue: { ink: "text-blue-600", bg: "bg-blue-50", line: "blue" as const },
+  orange: { ink: "text-amber-600", bg: "bg-amber-50", line: "orange" as const },
+  green: { ink: "text-emerald-600", bg: "bg-emerald-50", line: "green" as const },
+  red: { ink: "text-rose-500", bg: "bg-rose-50", line: "red" as const },
+  purple: { ink: "text-purple-600", bg: "bg-purple-50", line: "purple" as const },
 };
 const sellerAvatarTones = [
-  "bg-[#e7f0ff] text-[#2277ee]",
-  "bg-[#e2f6ed] text-[#159263]",
-  "bg-[#fff0df] text-[#f08b20]",
-  "bg-[#ffe8e8] text-[#ed5353]",
-  "bg-[#eee9ff] text-[#8057e8]",
+  "bg-blue-50 text-blue-600",
+  "bg-emerald-50 text-emerald-600",
+  "bg-amber-50 text-amber-600",
+  "bg-rose-50 text-rose-500",
+  "bg-purple-50 text-purple-600",
 ];
 
 function sellerInitials(name: string) {
@@ -100,10 +100,10 @@ function sellerInitials(name: string) {
 }
 
 function actionPriority(item: { id: string; count: number }) {
-  if (item.count === 0) return { label: "Bajo", icon: CheckCircle2, iconBg: "bg-[#e4f7ef]", iconInk: "text-[#159263]", badge: "bg-[#d7f3e5] text-[#16824f]" };
-  if (item.id === "orders-to-confirm" || item.id === "quotes-to-follow-up") return { label: "Alta", icon: item.id === "orders-to-confirm" ? PackageCheck : FileText, iconBg: "bg-[#ffe7e7]", iconInk: "text-[#ed5353]", badge: "bg-[#ffe1e1] text-[#c94343]" };
-  if (item.id === "overdue-followups" || item.id === "payments-to-verify") return { label: "Media", icon: item.id === "overdue-followups" ? Clock3 : ShoppingCart, iconBg: "bg-[#fff0df]", iconInk: "text-[#f08b20]", badge: "bg-[#ffedd4] text-[#a96b1b]" };
-  return { label: "Media", icon: Package, iconBg: "bg-[#fff0df]", iconInk: "text-[#f08b20]", badge: "bg-[#ffedd4] text-[#a96b1b]" };
+  if (item.count === 0) return { label: "Bajo", icon: CheckCircle2, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", badge: "bg-emerald-50 text-emerald-700" };
+  if (item.id === "orders-to-confirm" || item.id === "quotes-to-follow-up") return { label: "Alta", icon: item.id === "orders-to-confirm" ? PackageCheck : FileText, iconBg: "bg-rose-50", iconInk: "text-rose-500", badge: "bg-rose-50 text-rose-700" };
+  if (item.id === "overdue-followups" || item.id === "payments-to-verify") return { label: "Media", icon: item.id === "overdue-followups" ? Clock3 : ShoppingCart, iconBg: "bg-amber-50", iconInk: "text-amber-600", badge: "bg-amber-50 text-amber-700" };
+  return { label: "Media", icon: Package, iconBg: "bg-amber-50", iconInk: "text-amber-600", badge: "bg-amber-50 text-amber-700" };
 }
 
 function money(value: number | null | undefined, currency: string | null | undefined) {
@@ -157,7 +157,7 @@ function Delta({
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Info;
   return (
     <span
-      className={`mt-2 inline-flex items-center gap-1 text-[11px] font-bold ${isGood ? "text-[#159263]" : isBad ? "text-[#ed4b4b]" : muted}`}
+      className={`mt-2 inline-flex items-center gap-1 text-[11px] font-bold ${isGood ? "text-emerald-600" : isBad ? "text-rose-500" : muted}`}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {Math.abs(value).toFixed(1)}
@@ -180,11 +180,11 @@ function T2PageHeader({
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="flex min-w-0 items-start gap-3">
-        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#e8f1ff] text-[#2277ee]">
+        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-blue-50 text-blue-600">
           <Icon className="h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h1 className="font-display text-[26px] font-black tracking-[-0.035em] text-[#102a43] sm:text-[29px]">
+          <h1 className="font-display text-[26px] font-black tracking-[-0.035em] text-slate-900 sm:text-[29px]">
             {title}
           </h1>
           <p className={`mt-1 text-[12px] font-semibold ${muted}`}>{description}</p>
@@ -212,7 +212,7 @@ function Action({
   form?: string;
   type?: "button" | "submit";
 }) {
-  const className = `inline-flex h-10 items-center justify-center gap-2 rounded-lg px-3.5 text-[11px] font-extrabold transition ${primary ? "bg-[#2277ee] text-white shadow-[0_5px_12px_rgba(34,119,238,0.16)] hover:bg-[#1764d2]" : "border border-[#dce6ee] bg-white text-[#304b66] hover:border-[#2277ee] hover:text-[#2277ee]"}`;
+  const className = `inline-flex h-10 items-center justify-center gap-2 rounded-lg px-3.5 text-[11px] font-extrabold transition ${primary ? "bg-blue-600 text-white shadow-[0_5px_12px_rgba(34,119,238,0.16)] hover:bg-blue-700" : "border border-slate-200 bg-white text-slate-700 hover:border-blue-400 hover:text-blue-600"}`;
   return href ? (
     <a className={className} href={href} download={download}>
       {Icon ? <Icon className="h-4 w-4" aria-hidden="true" /> : null}
@@ -252,7 +252,7 @@ function Metric({
         </span>
         <div className="min-w-0">
           <p className={`text-[9px] font-semibold leading-4 ${muted}`}>{label}</p>
-          <p className="mt-0.5 font-display text-[18px] font-black tracking-[-0.025em] text-[#102a43]">
+          <p className="mt-0.5 font-display text-[18px] font-black tracking-[-0.025em] text-slate-900">
             {value}
           </p>
           {note ? <div className={`mt-0.5 text-[9px] font-bold ${colors.ink}`}>{note}</div> : null}
@@ -264,11 +264,11 @@ function Metric({
 }
 
 const toneBarColor: Record<keyof typeof tone, string> = {
-  blue: "bg-[#2277ee]",
-  orange: "bg-[#f58b20]",
-  green: "bg-[#159263]",
-  red: "bg-[#ed5353]",
-  purple: "bg-[#8057e8]",
+  blue: "bg-blue-600",
+  orange: "bg-amber-600",
+  green: "bg-emerald-600",
+  red: "bg-rose-500",
+  purple: "bg-purple-600",
 };
 
 // Dashboard-exclusive hero KPI card. Deliberately separate from Metric (shared across every
@@ -307,14 +307,14 @@ function DashboardHeroMetric({
         </span>
         <div className="min-w-0">
           <p className={`text-[12px] font-semibold leading-4 ${muted}`}>{label}</p>
-          <p className="mt-1 font-display text-[26px] font-black tracking-[-0.025em] text-[#102a43]">
+          <p className="mt-1 font-display text-[26px] font-black tracking-[-0.025em] text-slate-900">
             {value}
           </p>
           {note ? <div className={`mt-1.5 text-[11px] font-bold ${colors.ink}`}>{note}</div> : null}
         </div>
       </div>
       {progress !== undefined ? (
-        <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-[#eef2f6]" role="img" aria-label={`${label}: ${Math.round(progress)}%`}>
+        <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-50" role="img" aria-label={`${label}: ${Math.round(progress)}%`}>
           <span className={`block h-full rounded-full ${toneBarColor[color]}`} style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} />
         </div>
       ) : (
@@ -325,7 +325,7 @@ function DashboardHeroMetric({
             ariaLabel={sparklineAvailable ? `Tendencia diaria de ${label.toLowerCase()}` : `${label}: sin serie diaria disponible`}
             className="mt-3 block h-11 w-full"
           />
-          {!sparklineAvailable ? <p className="mt-1 text-[9px] font-semibold text-[#a5b6c5]">Sin serie diaria disponible</p> : null}
+          {!sparklineAvailable ? <p className="mt-1 text-[9px] font-semibold text-slate-400">Sin serie diaria disponible</p> : null}
         </>
       )}
     </article>
@@ -349,7 +349,7 @@ function Panel({
     <section className={`${panel} p-4 sm:p-5 ${className}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-[14px] font-extrabold text-[#102a43]">{title}</h2>
+          <h2 className="text-[14px] font-extrabold text-slate-900">{title}</h2>
           {subtitle ? (
             <p className={`mt-1 text-[10px] font-semibold ${muted}`}>{subtitle}</p>
           ) : null}
@@ -371,9 +371,9 @@ function Empty({
   icon?: LucideIcon;
 }) {
   return (
-    <div className="flex min-h-[150px] flex-col items-center justify-center rounded-xl border border-dashed border-[#d7e3eb] bg-[#fbfcfd] px-5 text-center">
-      <Icon className="h-7 w-7 text-[#9db0c1]" aria-hidden="true" />
-      <p className="mt-3 text-[11px] font-extrabold text-[#304b66]">{title}</p>
+    <div className="flex min-h-[150px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-5 text-center">
+      <Icon className="h-7 w-7 text-slate-400" aria-hidden="true" />
+      <p className="mt-3 text-[11px] font-extrabold text-slate-700">{title}</p>
       <p className={`mt-1 max-w-sm text-[10px] font-semibold leading-5 ${muted}`}>{description}</p>
     </div>
   );
@@ -381,11 +381,11 @@ function Empty({
 
 function statusClass(value: string) {
   if (/critical|alta|failed|retras|cancel|error|vencid/i.test(value))
-    return "bg-[#ffe7e7] text-[#c43333]";
-  if (/partial|media|review|pend|draft|program/i.test(value)) return "bg-[#fff0df] text-[#9a5c16]";
+    return "bg-rose-50 text-rose-700";
+  if (/partial|media|review|pend|draft|program/i.test(value)) return "bg-amber-50 text-amber-800";
   if (/received|success|active|resolved|baja|published|connected|ready/i.test(value))
-    return "bg-[#e4f7ef] text-[#15784e]";
-  return "bg-[#e8f1ff] text-[#2568bf]";
+    return "bg-emerald-50 text-emerald-700";
+  return "bg-blue-50 text-blue-700";
 }
 
 function Pill({ children }: { children: ReactNode }) {
@@ -466,10 +466,10 @@ function PaymentMethodsPanel({ data }: { data: DashboardData }) {
     return { row, index, segment, offset: (priorAmount / total) * circumference };
   });
   return (
-    <section className="min-w-0 rounded-[10px] border border-[#e2eaf1] bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
+    <section className="min-w-0 rounded-[10px] border border-slate-200 bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="truncate text-[15px] font-extrabold leading-5 text-[#102a43]">Métodos de pago</h2>
-        <span className="truncate text-[11px] font-semibold leading-4 text-[#748aa0]">Participación en ventas</span>
+        <h2 className="truncate text-[15px] font-extrabold leading-5 text-slate-900">Métodos de pago</h2>
+        <span className="truncate text-[11px] font-semibold leading-4 text-slate-500">Participación en ventas</span>
       </div>
       {total > 0 ? (
         <div className="mt-4 flex min-w-0 items-center gap-5">
@@ -492,7 +492,7 @@ function PaymentMethodsPanel({ data }: { data: DashboardData }) {
               ))}
             </svg>
             <span className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white text-center">
-              <strong className="text-[17px] font-black leading-5 text-[#102a43]">{money(total, data.currency)}</strong>
+              <strong className="text-[17px] font-black leading-5 text-slate-900">{money(total, data.currency)}</strong>
               <span className={`mt-0.5 text-[10px] font-semibold leading-4 ${muted}`}>Total cobrado</span>
             </span>
           </div>
@@ -501,15 +501,15 @@ function PaymentMethodsPanel({ data }: { data: DashboardData }) {
               <div key={`${row.method}-${index}`} className="flex min-w-0 items-center gap-2 text-[12px]">
                 <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: colors[index] ?? colors.at(-1) }} />
                 <span className={`min-w-0 flex-1 truncate font-semibold ${muted}`}>{paymentMethodLabel(row.method)}</span>
-                <strong className="shrink-0 text-[12px] text-[#304b66]">{((row.amount / total) * 100).toFixed(1)}%</strong>
+                <strong className="shrink-0 text-[12px] text-slate-700">{((row.amount / total) * 100).toFixed(1)}%</strong>
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="mt-3 rounded-[9px] border border-dashed border-[#d7e3eb] bg-[#fbfcfd] px-3 py-6 text-center">
-          <CircleDollarSign className="mx-auto h-7 w-7 text-[#9db0c1]" aria-hidden="true" />
-          <p className="mt-2 text-[11px] font-extrabold text-[#304b66]">Sin pagos confirmados</p>
+        <div className="mt-3 rounded-[9px] border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center">
+          <CircleDollarSign className="mx-auto h-7 w-7 text-slate-400" aria-hidden="true" />
+          <p className="mt-2 text-[11px] font-extrabold text-slate-700">Sin pagos confirmados</p>
         </div>
       )}
     </section>
@@ -523,11 +523,11 @@ function dashboardActivityInitials(name: string) {
 
 function dashboardActivityTone(activity: DashboardData["recentActivity"][number]) {
   const value = `${activity.entityType} ${activity.entityLabel}`.toLowerCase();
-  if (value.includes("cotiz")) return { avatar: "bg-[#fff0df] text-[#f08b20]", badge: "bg-[#fff6ec] text-[#f08b20]" };
-  if (value.includes("pedido") || value.includes("venta")) return { avatar: "bg-[#e0f7ee] text-[#159263]", badge: "bg-[#eafaf3] text-[#159263]" };
-  if (value.includes("invent") || value.includes("stock")) return { avatar: "bg-[#e4f7f2] text-[#159263]", badge: "bg-[#eafaf3] text-[#159263]" };
-  if (value.includes("cliente") || value.includes("customer")) return { avatar: "bg-[#eee8ff] text-[#8057e8]", badge: "bg-[#f4f0ff] text-[#8057e8]" };
-  return { avatar: "bg-[#e8f1ff] text-[#2277ee]", badge: "bg-[#edf4ff] text-[#2277ee]" };
+  if (value.includes("cotiz")) return { avatar: "bg-amber-50 text-amber-600", badge: "bg-amber-50 text-amber-600" };
+  if (value.includes("pedido") || value.includes("venta")) return { avatar: "bg-emerald-50 text-emerald-600", badge: "bg-emerald-50 text-emerald-600" };
+  if (value.includes("invent") || value.includes("stock")) return { avatar: "bg-emerald-50 text-emerald-600", badge: "bg-emerald-50 text-emerald-600" };
+  if (value.includes("cliente") || value.includes("customer")) return { avatar: "bg-purple-50 text-purple-600", badge: "bg-purple-50 text-purple-600" };
+  return { avatar: "bg-blue-50 text-blue-600", badge: "bg-blue-50 text-blue-600" };
 }
 
 function dashboardActivityModule(activity: DashboardData["recentActivity"][number]) {
@@ -566,14 +566,14 @@ function dashboardActivityHref(activity: DashboardData["recentActivity"][number]
 function RecentActivityPanel({ data }: { data: DashboardData }) {
   const rows = data.recentActivity.slice(0, 5);
   return (
-    <section className="min-w-0 rounded-[10px] border border-[#e2eaf1] bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
+    <section className="min-w-0 rounded-[10px] border border-slate-200 bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="truncate text-[15px] font-extrabold leading-5 text-[#102a43]">Actividad reciente</h2>
-        <Link href="/admin/auditoria" className="shrink-0 text-[11px] font-extrabold text-[#2277ee]">Ver todas <ChevronRight className="inline h-3 w-3" /></Link>
+        <h2 className="truncate text-[15px] font-extrabold leading-5 text-slate-900">Actividad reciente</h2>
+        <Link href="/admin/auditoria" className="shrink-0 text-[11px] font-extrabold text-blue-600">Ver todas <ChevronRight className="inline h-3 w-3" /></Link>
       </div>
       <div className="mt-3 overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid grid-cols-[28px_96px_minmax(140px,1fr)_96px_minmax(110px,1fr)_60px] items-center gap-2 border-b border-[#edf2f6] pb-2 text-[10px] font-extrabold uppercase tracking-[0.03em] text-[#91a3b3]">
+          <div className="grid grid-cols-[28px_96px_minmax(140px,1fr)_96px_minmax(110px,1fr)_60px] items-center gap-2 border-b border-slate-100 pb-2 text-[10px] font-extrabold uppercase tracking-[0.03em] text-slate-400">
             <span />
             <span>Usuario</span>
             <span>Acción</span>
@@ -584,35 +584,35 @@ function RecentActivityPanel({ data }: { data: DashboardData }) {
           {rows.length ? rows.map((event) => {
             const visual = dashboardActivityTone(event);
             return (
-              <Link key={event.id} href={dashboardActivityHref(event)} className="grid min-h-[36px] grid-cols-[28px_96px_minmax(140px,1fr)_96px_minmax(110px,1fr)_60px] items-center gap-2 border-b border-[#f1f4f7] py-1.5 last:border-0 hover:bg-[#fbfdff]">
+              <Link key={event.id} href={dashboardActivityHref(event)} className="grid min-h-[36px] grid-cols-[28px_96px_minmax(140px,1fr)_96px_minmax(110px,1fr)_60px] items-center gap-2 border-b border-slate-100 py-1.5 last:border-0 hover:bg-slate-50">
                 <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-extrabold ${visual.avatar}`} aria-hidden="true">{dashboardActivityInitials(event.actorName)}</span>
-                <span className="truncate text-[11px] font-semibold text-[#526b84]" title={event.actorName}>{event.actorName}</span>
-                <span className="truncate text-[11px] font-extrabold text-[#304b66]" title={event.actionLabel}>{event.actionLabel}</span>
+                <span className="truncate text-[11px] font-semibold text-slate-600" title={event.actorName}>{event.actorName}</span>
+                <span className="truncate text-[11px] font-extrabold text-slate-700" title={event.actionLabel}>{event.actionLabel}</span>
                 <span className={`w-fit truncate rounded-full px-1.5 py-0.5 text-[9px] font-extrabold ${visual.badge}`}>{dashboardActivityModule(event)}</span>
-                <span className="truncate text-[11px] font-semibold text-[#526b84]" title={event.entityId}>{event.entityId}</span>
-                <time className="truncate text-right text-[10px] font-semibold text-[#748aa0]">{dashboardActivityTime(event.createdAt)}</time>
+                <span className="truncate text-[11px] font-semibold text-slate-600" title={event.entityId}>{event.entityId}</span>
+                <time className="truncate text-right text-[10px] font-semibold text-slate-500">{dashboardActivityTime(event.createdAt)}</time>
               </Link>
             );
-          }) : <div className="py-6 text-center text-[11px] font-semibold text-[#748aa0]">Sin actividad registrada</div>}
+          }) : <div className="py-6 text-center text-[11px] font-semibold text-slate-500">Sin actividad registrada</div>}
         </div>
       </div>
     </section>
   );
 }
 
-function CompactOperationalMetric({ label, value, note, icon: Icon, toneClass = "bg-[#e8f1ff] text-[#2277ee]", invert = false }: { label: string; value: string; note: string; icon: LucideIcon; toneClass?: string; invert?: boolean }) {
+function CompactOperationalMetric({ label, value, note, icon: Icon, toneClass = "bg-blue-50 text-blue-600", invert = false }: { label: string; value: string; note: string; icon: LucideIcon; toneClass?: string; invert?: boolean }) {
   const rising = note.startsWith("+");
   const falling = note.startsWith("-");
   const positive = invert ? falling : rising;
   const negative = invert ? rising : falling;
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[9px] border border-[#e8eef3] bg-[#fbfcfd] px-3.5 py-3">
+    <div className="flex min-w-0 items-center gap-3 rounded-[9px] border border-slate-100 bg-slate-50 px-3.5 py-3">
       <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${toneClass}`}><Icon className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" /></span>
       <span className="min-w-0">
-        <span className="block truncate text-[11px] font-semibold leading-4 text-[#748aa0]">{label}</span>
+        <span className="block truncate text-[11px] font-semibold leading-4 text-slate-500">{label}</span>
         <span className="mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <strong className="truncate text-[16px] font-black leading-5 text-[#102a43]">{value}</strong>
-          <span className={`truncate text-[10px] font-extrabold ${positive ? "text-[#159263]" : negative ? "text-[#ed4b4b]" : "text-[#748aa0]"}`}>{note}</span>
+          <strong className="truncate text-[16px] font-black leading-5 text-slate-900">{value}</strong>
+          <span className={`truncate text-[10px] font-extrabold ${positive ? "text-emerald-600" : negative ? "text-rose-500" : "text-slate-500"}`}>{note}</span>
         </span>
       </span>
     </div>
@@ -627,10 +627,10 @@ function OperationalSummaryPanel({ data }: { data: DashboardData }) {
       ? "Sin base comparable"
       : `${averageTicket - data.previousAverageTicket >= 0 ? "+" : ""}${(((averageTicket - data.previousAverageTicket) / data.previousAverageTicket) * 100).toFixed(1)}% vs. anterior`;
   return (
-    <section className="min-w-0 rounded-[10px] border border-[#e2eaf1] bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
+    <section className="min-w-0 rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
       <div className="flex items-baseline gap-2">
-        <h2 className="truncate text-[16px] font-extrabold leading-5 text-[#102a43]">Resumen operativo</h2>
-        <span className="truncate text-[12px] font-semibold leading-4 text-[#748aa0]">Indicadores clave del período</span>
+        <h2 className="truncate text-[16px] font-extrabold leading-5 text-slate-900">Resumen operativo</h2>
+        <span className="truncate text-[12px] font-semibold leading-4 text-slate-500">Indicadores clave del período</span>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <CompactOperationalMetric
@@ -644,15 +644,15 @@ function OperationalSummaryPanel({ data }: { data: DashboardData }) {
           value={data.fillRate === null ? "N/D" : `${(data.fillRate * 100).toFixed(1)}%`}
           note={data.fillRate === null ? "Sin unidades pedidas" : "Histórico"}
           icon={PackageCheck}
-          toneClass="bg-[#e4f7ef] text-[#159263]"
+          toneClass="bg-emerald-50 text-emerald-600"
         />
-        <CompactOperationalMetric label="Ticket promedio" value={money(averageTicket, data.currency)} note={ticketNote} icon={Tag} toneClass="bg-[#eee9ff] text-[#8057e8]" />
+        <CompactOperationalMetric label="Ticket promedio" value={money(averageTicket, data.currency)} note={ticketNote} icon={Tag} toneClass="bg-purple-50 text-purple-600" />
         <CompactOperationalMetric
           label="Tiempo de preparación"
           value={data.avgPrepDays === null ? "N/D" : `${data.avgPrepDays.toFixed(1)} días`}
           note={data.avgPrepDays === null ? "Sin pedidos preparados" : "Histórico"}
           icon={Clock3}
-          toneClass="bg-[#fff0df] text-[#f08b20]"
+          toneClass="bg-amber-50 text-amber-600"
         />
       </div>
     </section>
@@ -827,7 +827,7 @@ export function Tanda2Dashboard({
           <Link
             key={label}
             href={href}
-            className={`${panel} flex min-h-[92px] items-center gap-3.5 p-4 transition hover:-translate-y-0.5 hover:border-[#b9d2eb]`}
+            className={`${panel} flex min-h-[92px] items-center gap-3.5 p-4 transition hover:-translate-y-0.5 hover:border-blue-200`}
           >
             <span
               className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${tone[color].bg} ${tone[color].ink}`}
@@ -841,35 +841,35 @@ export function Tanda2Dashboard({
               </strong>
               {comparison ? <Delta current={comparison.current} previous={comparison.previous} invert={invertComparison} /> : null}
             </span>
-            <ChevronRight className="ml-auto h-5 w-5 shrink-0 self-start text-[#a5b6c5]" aria-hidden="true" />
+            <ChevronRight className="ml-auto h-5 w-5 shrink-0 self-start text-slate-400" aria-hidden="true" />
           </Link>
         ))}
       </div>
 
       <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="flex min-w-0 flex-col rounded-[10px] border border-[#e2eaf1] bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
+        <section className="flex min-w-0 flex-col rounded-[10px] border border-slate-200 bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-[15px] font-extrabold leading-5 text-[#102a43]">Evolución de ventas y margen</h2>
+                <h2 className="text-[15px] font-extrabold leading-5 text-slate-900">Evolución de ventas y margen</h2>
                 <AdminTooltip label="Ventas netas confirmadas por día, comparadas con el mismo punto del período anterior. El margen bruto (%) solo se traza en días con ventas confirmadas y costo completo — por eso la línea verde no cubre todo el período.">
-                  <Info className="h-3.5 w-3.5 text-[#9aabba]" aria-hidden="true" />
+                  <Info className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
                 </AdminTooltip>
               </div>
-              <p className="mt-1 text-[11px] font-semibold leading-4 text-[#748aa0]">Ventas netas, período anterior y margen bruto</p>
+              <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">Ventas netas, período anterior y margen bruto</p>
               <span className="sr-only">{currencyNote(data)} · zona horaria America/Lima</span>
             </div>
-            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3.5 gap-y-1.5 text-[11px] font-semibold text-[#71869c]">
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3.5 gap-y-1.5 text-[11px] font-semibold text-slate-500">
               <span className="inline-flex items-center gap-1.5">
-                <i className="h-2 w-2 rounded-full border-2 border-[#2277ee] bg-white" />
+                <i className="h-2 w-2 rounded-full border-2 border-blue-600 bg-white" />
                 Ventas actuales
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <i className="h-1.5 w-1.5 rounded-full border-[1.5px] border-[#94c2ff] bg-white" />
+                <i className="h-1.5 w-1.5 rounded-full border-[1.5px] border-blue-300 bg-white" />
                 Ventas período anterior
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <i className="h-2 w-2 rounded-full bg-[#159263]" />
+                <i className="h-2 w-2 rounded-full bg-emerald-600" />
                 Margen bruto (%)
               </span>
               <DashboardGranularitySelect compact filters={data.filters} value={data.granularity} />
@@ -904,13 +904,13 @@ export function Tanda2Dashboard({
             )}
           </div>
         </section>
-        <section className="flex min-w-0 flex-col rounded-[10px] border border-[#e2eaf1] bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
+        <section className="flex min-w-0 flex-col rounded-[10px] border border-slate-200 bg-white p-4 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-5">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="text-[15px] font-extrabold leading-5 text-[#102a43]">Estado del negocio</h2>
-              <p className="mt-1 text-[11px] font-semibold leading-4 text-[#748aa0]">Tareas que requieren tu atención</p>
+              <h2 className="text-[15px] font-extrabold leading-5 text-slate-900">Estado del negocio</h2>
+              <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">Tareas que requieren tu atención</p>
             </div>
-            <Link href="/admin/operaciones" className="shrink-0 text-[11px] font-extrabold text-[#2277ee]">
+            <Link href="/admin/operaciones" className="shrink-0 text-[11px] font-extrabold text-blue-600">
               Ver todas <ChevronRight className="inline h-3 w-3" />
             </Link>
           </div>
@@ -919,17 +919,17 @@ export function Tanda2Dashboard({
               const priority = actionPriority(item);
               const Icon = priority.icon;
               return (
-                <Link key={item.id} href={item.href} className="flex min-h-[44px] items-center gap-2.5 py-2 transition hover:bg-[#fbfdff]">
+                <Link key={item.id} href={item.href} className="flex min-h-[44px] items-center gap-2.5 py-2 transition hover:bg-slate-50">
                   <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${priority.iconBg} ${priority.iconInk}`}>
                     <Icon className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[12px] font-extrabold leading-4 text-[#304b66]">{item.label}</span>
+                    <span className="block truncate text-[12px] font-extrabold leading-4 text-slate-700">{item.label}</span>
                     <span className={`block text-[10px] font-semibold leading-4 ${muted}`}>{item.count > 0 ? "Requiere atención" : "Sin pendientes"}</span>
                   </span>
-                  <strong className="w-7 shrink-0 text-right text-[16px] font-black leading-5 text-[#102a43]">{item.count}</strong>
+                  <strong className="w-7 shrink-0 text-right text-[16px] font-black leading-5 text-slate-900">{item.count}</strong>
                   <span className={`inline-flex w-14 shrink-0 items-center justify-center rounded-full px-1.5 py-1 text-[9px] font-extrabold leading-4 ${priority.badge}`}>{priority.label}</span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#9eb1c2]" aria-hidden="true" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
                 </Link>
               );
             })}
@@ -949,13 +949,13 @@ export function Tanda2Dashboard({
             {data.currencyBreakdown.map((item) => (
               <div
                 key={item.currency}
-                className="rounded-xl border border-[#edf2f6] bg-[#fbfcfd] p-3"
+                className="rounded-xl border border-slate-100 bg-slate-50 p-3"
               >
-                <span className="text-[10px] font-extrabold text-[#71869c]">{item.currency}</span>
-                <strong className="mt-1 block text-[18px] font-black text-[#102a43]">
+                <span className="text-[10px] font-extrabold text-slate-500">{item.currency}</span>
+                <strong className="mt-1 block text-[18px] font-black text-slate-900">
                   {money(item.sales, item.currency)}
                 </strong>
-                <span className="mt-1 block text-[9px] font-semibold text-[#71869c]">
+                <span className="mt-1 block text-[9px] font-semibold text-slate-500">
                   {number(item.salesCount)} ventas confirmadas
                 </span>
               </div>
@@ -964,32 +964,32 @@ export function Tanda2Dashboard({
         </Panel>
       ) : null}
 
-      <section className="min-w-0 rounded-[10px] border border-[#e2eaf1] bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
+      <section className="min-w-0 rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-baseline gap-2.5">
-            <h2 className="shrink-0 text-[16px] font-extrabold leading-5 text-[#102a43]">Pipeline comercial</h2>
-            <p className="truncate text-[12px] font-semibold leading-4 text-[#748aa0]">Oportunidades activas por macroetapa</p>
+            <h2 className="shrink-0 text-[16px] font-extrabold leading-5 text-slate-900">Pipeline comercial</h2>
+            <p className="truncate text-[12px] font-semibold leading-4 text-slate-500">Oportunidades activas por macroetapa</p>
           </div>
-          <div className="flex shrink-0 items-center gap-3 text-[12px] font-semibold text-[#71869c]">
-            <span className="hidden sm:inline">Total: <strong className="text-[#304b66]">{number(data.pipelineActiveTotal.count)} oportunidades</strong> <span className="px-1">|</span> <strong className="text-[#304b66]">{money(data.pipelineActiveTotal.amount, data.currency)}</strong></span>
-            <Link href="/admin/crm" className="text-[12px] font-extrabold text-[#2277ee]">Ver pipeline <ChevronRight className="inline h-3.5 w-3.5" /></Link>
+          <div className="flex shrink-0 items-center gap-3 text-[12px] font-semibold text-slate-500">
+            <span className="hidden sm:inline">Total: <strong className="text-slate-700">{number(data.pipelineActiveTotal.count)} oportunidades</strong> <span className="px-1">|</span> <strong className="text-slate-700">{money(data.pipelineActiveTotal.amount, data.currency)}</strong></span>
+            <Link href="/admin/crm" className="text-[12px] font-extrabold text-blue-600">Ver pipeline <ChevronRight className="inline h-3.5 w-3.5" /></Link>
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-5">
           {data.pipelineMacroSummary.map((stage, index) => {
             const visual = [
-              { icon: Target, bg: "bg-[#e8f1ff]", ink: "text-[#2277ee]", surface: "bg-[#f4f8ff]", bar: "bg-[#2277ee]" },
-              { icon: FileText, bg: "bg-[#e4f7ef]", ink: "text-[#29a1d8]", surface: "bg-[#f3fbfc]", bar: "bg-[#29a1d8]" },
-              { icon: Clock3, bg: "bg-[#e4f7ef]", ink: "text-[#159263]", surface: "bg-[#f2fbf6]", bar: "bg-[#159263]" },
-              { icon: Workflow, bg: "bg-[#fff0df]", ink: "text-[#f08b20]", surface: "bg-[#fff9f0]", bar: "bg-[#f08b20]" },
-              { icon: CheckCircle2, bg: "bg-[#eee9ff]", ink: "text-[#8057e8]", surface: "bg-[#faf5ff]", bar: "bg-[#8057e8]" },
-            ][index] ?? { icon: Target, bg: "bg-[#e8f1ff]", ink: "text-[#2277ee]", surface: "bg-[#f4f8ff]", bar: "bg-[#2277ee]" };
+              { icon: Target, bg: "bg-blue-50", ink: "text-blue-600", surface: "bg-blue-50", bar: "bg-blue-600" },
+              { icon: FileText, bg: "bg-emerald-50", ink: "text-sky-500", surface: "bg-blue-50", bar: "bg-sky-500" },
+              { icon: Clock3, bg: "bg-emerald-50", ink: "text-emerald-600", surface: "bg-emerald-50", bar: "bg-emerald-600" },
+              { icon: Workflow, bg: "bg-amber-50", ink: "text-amber-600", surface: "bg-amber-50", bar: "bg-amber-600" },
+              { icon: CheckCircle2, bg: "bg-purple-50", ink: "text-purple-600", surface: "bg-purple-50", bar: "bg-purple-600" },
+            ][index] ?? { icon: Target, bg: "bg-blue-50", ink: "text-blue-600", surface: "bg-blue-50", bar: "bg-blue-600" };
             const Icon = visual.icon;
             return (
               <Link
                 key={stage.macroStage}
                 href={`/admin/crm?view=pipeline&stage=${encodeURIComponent(stage.stages.join(","))}`}
-                className={`min-h-[96px] rounded-[10px] border border-[#e8eef3] p-3.5 transition hover:border-[#b9d2eb] ${visual.surface}`}
+                className={`min-h-[96px] rounded-[10px] border border-slate-100 p-3.5 transition hover:border-blue-200 ${visual.surface}`}
               >
                 <div className="flex min-w-0 items-start gap-2.5">
                   <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${visual.bg} ${visual.ink}`}>
@@ -997,10 +997,10 @@ export function Tanda2Dashboard({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
-                      <strong className="truncate text-[13px] font-extrabold leading-4 text-[#304b66]">{stage.macroStageLabel}</strong>
-                      <span className="shrink-0 text-[17px] font-black leading-5 text-[#304b66]">{(stage.share * 100).toFixed(0)}%</span>
+                      <strong className="truncate text-[13px] font-extrabold leading-4 text-slate-700">{stage.macroStageLabel}</strong>
+                      <span className="shrink-0 text-[17px] font-black leading-5 text-slate-700">{(stage.share * 100).toFixed(0)}%</span>
                     </div>
-                    <div className="mt-1 truncate text-[11px] font-semibold leading-4 text-[#71869c]">{stage.count} <span className="px-0.5">|</span> {money(stage.amount, data.currency)}</div>
+                    <div className="mt-1 truncate text-[11px] font-semibold leading-4 text-slate-500">{stage.count} <span className="px-0.5">|</span> {money(stage.amount, data.currency)}</div>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/80">
                       <span className={`block h-full rounded-full ${visual.bar}`} style={{ width: `${Math.min(100, Math.max(0, stage.share * 100))}%` }} />
                     </div>
@@ -1030,27 +1030,27 @@ export function Tanda2Dashboard({
 }
 
 const productChipTones = [
-  "bg-[#e7f0ff] text-[#2277ee]",
-  "bg-[#e2f6ed] text-[#159263]",
-  "bg-[#fff0df] text-[#f08b20]",
-  "bg-[#ffe8e8] text-[#ed5353]",
-  "bg-[#eee9ff] text-[#8057e8]",
+  "bg-blue-50 text-blue-600",
+  "bg-emerald-50 text-emerald-600",
+  "bg-amber-50 text-amber-600",
+  "bg-rose-50 text-rose-500",
+  "bg-purple-50 text-purple-600",
 ];
 
 function TopProductsPanel({ data }: { data: DashboardData }) {
   const rows = data.topProducts.slice(0, 5);
   return (
-    <section className="min-w-0 self-start rounded-[10px] border border-[#e2eaf1] bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
+    <section className="min-w-0 self-start rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-baseline gap-2">
-          <h2 className="truncate text-[16px] font-extrabold leading-5 text-[#102a43]">Top productos por ventas</h2>
+          <h2 className="truncate text-[16px] font-extrabold leading-5 text-slate-900">Top productos por ventas</h2>
           <span className="sr-only">Ingresos confirmados</span>
         </div>
-        <Link href="/admin/catalogo" className="shrink-0 text-[12px] font-extrabold text-[#2277ee]">Ver todas <ChevronRight className="inline h-3.5 w-3.5" /></Link>
+        <Link href="/admin/catalogo" className="shrink-0 text-[12px] font-extrabold text-blue-600">Ver todas <ChevronRight className="inline h-3.5 w-3.5" /></Link>
       </div>
       {rows.length ? (
         <>
-          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_62px_84px_70px] items-center gap-2.5 border-b border-[#edf2f6] pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-[#91a3b3]">
+          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_62px_84px_70px] items-center gap-2.5 border-b border-slate-100 pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-slate-400">
             <span>#</span><span>Producto</span><span className="text-center">Unidades</span><span>Ingreso</span><span>Tendencia</span>
           </div>
           <div className="divide-y divide-[#f1f4f7]">
@@ -1058,11 +1058,11 @@ function TopProductsPanel({ data }: { data: DashboardData }) {
               const trend = row.trendPercent;
               const TrendIcon = trend === null ? null : trend >= 0 ? ArrowUpRight : ArrowDownRight;
               return (
-                <Link key={row.id} href={`/admin/catalogo?query=${encodeURIComponent(row.sku)}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_62px_84px_70px] items-center gap-2.5 py-3 transition hover:bg-[#fbfdff]">
-                  <span className="text-center text-[12px] font-black text-[#8195aa]">{index + 1}</span>
+                <Link key={row.id} href={`/admin/catalogo?query=${encodeURIComponent(row.sku)}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_62px_84px_70px] items-center gap-2.5 py-3 transition hover:bg-slate-50">
+                  <span className="text-center text-[12px] font-black text-slate-400">{index + 1}</span>
                   <span className="flex min-w-0 items-center gap-2.5">
                     {row.primaryImageUrl ? (
-                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[9px] border border-[#e8eef3] bg-white">
+                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[9px] border border-slate-100 bg-white">
                         <Image src={row.primaryImageUrl} alt="" width={36} height={36} className="h-9 w-9 object-contain" unoptimized={row.primaryImageUrl.startsWith("/api/")} />
                       </span>
                     ) : (
@@ -1070,11 +1070,11 @@ function TopProductsPanel({ data }: { data: DashboardData }) {
                         <Package className="h-[22px] w-[22px]" strokeWidth={1.8} aria-hidden="true" />
                       </span>
                     )}
-                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-[#304b66]" title={`${row.name} · ${row.sku}`}>{row.name}</span>
+                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-slate-700" title={`${row.name} · ${row.sku}`}>{row.name}</span>
                   </span>
-                  <span className="truncate text-center text-[12px] font-semibold leading-4 text-[#526b84]">{number(row.units)}</span>
-                  <span className="truncate text-[12px] font-semibold leading-4 text-[#526b84]">{money(row.revenue, data.currency)}</span>
-                  <span className={`flex min-w-0 items-center ${trend === null ? "w-16" : "gap-1 text-[12px] font-extrabold"} ${trend === null ? "text-[#8195aa]" : trend >= 0 ? "text-[#159263]" : "text-[#ed5353]"}`} title={trend === null ? "Sin período anterior comparable" : "Variación vs. período anterior"}>
+                  <span className="truncate text-center text-[12px] font-semibold leading-4 text-slate-600">{number(row.units)}</span>
+                  <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{money(row.revenue, data.currency)}</span>
+                  <span className={`flex min-w-0 items-center ${trend === null ? "w-16" : "gap-1 text-[12px] font-extrabold"} ${trend === null ? "text-slate-400" : trend >= 0 ? "text-emerald-600" : "text-rose-500"}`} title={trend === null ? "Sin período anterior comparable" : "Variación vs. período anterior"}>
                     {TrendIcon ? <><TrendIcon className="h-4 w-4 shrink-0" aria-hidden="true" />{Math.abs(trend ?? 0).toFixed(0)}%</> : <AdminSparkline tone="blue" data={row.trend} ariaLabel={`Tendencia de ingresos de ${row.name}`} className="mt-0 block h-5 w-full" />}
                   </span>
                 </Link>
@@ -1096,34 +1096,34 @@ function customerInitials(name: string) {
 function TopCustomersPanel({ data }: { data: DashboardData }) {
   const rows = data.topCustomers.slice(0, 5);
   return (
-    <section className="min-w-0 self-start rounded-[10px] border border-[#e2eaf1] bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
+    <section className="min-w-0 self-start rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-baseline gap-2">
-          <h2 className="truncate text-[16px] font-extrabold leading-5 text-[#102a43]">Top clientes</h2>
-          <span className="truncate text-[12px] font-semibold leading-4 text-[#748aa0]">Ventas confirmadas</span>
+          <h2 className="truncate text-[16px] font-extrabold leading-5 text-slate-900">Top clientes</h2>
+          <span className="truncate text-[12px] font-semibold leading-4 text-slate-500">Ventas confirmadas</span>
         </div>
-        <Link href="/admin/clientes" className="shrink-0 text-[12px] font-extrabold text-[#2277ee]">Ver todos <ChevronRight className="inline h-3.5 w-3.5" /></Link>
+        <Link href="/admin/clientes" className="shrink-0 text-[12px] font-extrabold text-blue-600">Ver todos <ChevronRight className="inline h-3.5 w-3.5" /></Link>
       </div>
       {rows.length ? (
         <>
-          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 border-b border-[#edf2f6] pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-[#91a3b3]">
+          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 border-b border-slate-100 pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-slate-400">
             <span>#</span><span>Cliente</span><span>Ventas</span><span>Monto</span><span>Última compra</span>
           </div>
           <div className="divide-y divide-[#f1f4f7]">
             {rows.map((row, index) => {
               const content = (
                 <>
-                  <span className="text-center text-[12px] font-black text-[#8195aa]">{index + 1}</span>
+                  <span className="text-center text-[12px] font-black text-slate-400">{index + 1}</span>
                   <span className="flex min-w-0 items-center gap-2.5">
                     <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${sellerAvatarTones[index % sellerAvatarTones.length]}`} aria-hidden="true">{customerInitials(row.name)}</span>
-                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-[#304b66]" title={row.name}>{row.name}</span>
+                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-slate-700" title={row.name}>{row.name}</span>
                   </span>
-                  <span className="truncate text-[12px] font-semibold leading-4 text-[#526b84]">{number(row.orders)}</span>
-                  <span className="truncate text-[12px] font-semibold leading-4 text-[#526b84]">{money(row.revenue, data.currency)}</span>
-                  <span className="truncate text-[12px] font-semibold leading-4 text-[#526b84]">{dateLabel(row.lastPurchase)}</span>
+                  <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{number(row.orders)}</span>
+                  <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{money(row.revenue, data.currency)}</span>
+                  <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{dateLabel(row.lastPurchase)}</span>
                 </>
               );
-              return row.id ? <Link key={row.id} href={`/admin/clientes?query=${encodeURIComponent(row.name)}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 py-3 transition hover:bg-[#fbfdff]">{content}</Link> : <div key={`${row.name}-${index}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 py-3">{content}</div>;
+              return row.id ? <Link key={row.id} href={`/admin/clientes?query=${encodeURIComponent(row.name)}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 py-3 transition hover:bg-slate-50">{content}</Link> : <div key={`${row.name}-${index}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_58px_82px_82px] items-center gap-2.5 py-3">{content}</div>;
             })}
           </div>
         </>
@@ -1135,18 +1135,18 @@ function TopCustomersPanel({ data }: { data: DashboardData }) {
 function TopSellersPanel({ data }: { data: DashboardData }) {
   const rows = data.topSellers.slice(0, 5);
   return (
-    <section className="min-w-0 self-start rounded-[10px] border border-[#e2eaf1] bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
+    <section className="min-w-0 self-start rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-baseline gap-2">
-          <h2 className="truncate text-[16px] font-extrabold leading-5 text-[#102a43]">Vendedores</h2>
-          <span className="truncate text-[12px] font-semibold leading-4 text-[#748aa0]">Por ventas netas del periodo</span>
+          <h2 className="truncate text-[16px] font-extrabold leading-5 text-slate-900">Vendedores</h2>
+          <span className="truncate text-[12px] font-semibold leading-4 text-slate-500">Por ventas netas del periodo</span>
           <span className="sr-only">Top vendedores</span>
         </div>
-        <Link href="/admin/ventas" className="shrink-0 text-[12px] font-extrabold text-[#2277ee]">Ver todos <ChevronRight className="inline h-3.5 w-3.5" /></Link>
+        <Link href="/admin/ventas" className="shrink-0 text-[12px] font-extrabold text-blue-600">Ver todos <ChevronRight className="inline h-3.5 w-3.5" /></Link>
       </div>
       {rows.length ? (
         <>
-          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 border-b border-[#edf2f6] pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-[#91a3b3]">
+          <div className="mt-4 grid grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 border-b border-slate-100 pb-2.5 text-[11px] font-extrabold uppercase tracking-[0.03em] text-slate-400">
             <span>#</span><span>Vendedor</span><span>Ventas</span><span className="text-center">Cotizaciones</span><span>Conversión</span>
           </div>
           <div className="divide-y divide-[#f1f4f7]">
@@ -1155,22 +1155,22 @@ function TopSellersPanel({ data }: { data: DashboardData }) {
               const href = row.id ? `/admin/ventas?sellerId=${encodeURIComponent(row.id)}` : undefined;
               const content = (
                 <>
-                  <span className="text-center text-[12px] font-black text-[#8195aa]">{index + 1}</span>
+                  <span className="text-center text-[12px] font-black text-slate-400">{index + 1}</span>
                   <span className="flex min-w-0 items-center gap-2.5">
                     <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${sellerAvatarTones[index % sellerAvatarTones.length]}`} aria-hidden="true">{sellerInitials(row.name)}</span>
-                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-[#304b66]" title={row.name}>{row.name}</span>
+                    <span className="min-w-0 truncate text-[13px] font-extrabold leading-4 text-slate-700" title={row.name}>{row.name}</span>
                   </span>
-                  <span className="truncate text-[12px] font-semibold leading-4 text-[#526b84]">{money(row.revenue, data.currency)}</span>
-                  <span className="truncate text-center text-[12px] font-semibold leading-4 text-[#526b84]">{number(row.quotes)}</span>
+                  <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{money(row.revenue, data.currency)}</span>
+                  <span className="truncate text-center text-[12px] font-semibold leading-4 text-slate-600">{number(row.quotes)}</span>
                   <span className="flex min-w-0 items-center gap-1.5" title={conversion === null ? "Sin denominador comparable" : "Conversión canónica de cotizaciones"}>
-                    <span className={`w-10 shrink-0 text-[12px] font-extrabold ${conversion === null ? "text-[#8195aa]" : "text-[#304b66]"}`}>{conversion === null ? "N/D" : `${conversion.toFixed(1)}%`}</span>
-                    <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#e8eef4]" aria-hidden="true">
-                      <span className="block h-full rounded-full bg-[#2277ee]" style={{ width: conversion === null ? "0%" : `${Math.min(100, Math.max(0, conversion))}%` }} />
+                    <span className={`w-10 shrink-0 text-[12px] font-extrabold ${conversion === null ? "text-slate-400" : "text-slate-700"}`}>{conversion === null ? "N/D" : `${conversion.toFixed(1)}%`}</span>
+                    <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-50" aria-hidden="true">
+                      <span className="block h-full rounded-full bg-blue-600" style={{ width: conversion === null ? "0%" : `${Math.min(100, Math.max(0, conversion))}%` }} />
                     </span>
                   </span>
                 </>
               );
-              return href ? <Link key={row.id} href={href} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 py-3 transition hover:bg-[#fbfdff]">{content}</Link> : <div key={`${row.name}-${index}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 py-3">{content}</div>;
+              return href ? <Link key={row.id} href={href} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 py-3 transition hover:bg-slate-50">{content}</Link> : <div key={`${row.name}-${index}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_74px_90px_100px] items-center gap-2.5 py-3">{content}</div>;
             })}
           </div>
         </>
@@ -1198,11 +1198,11 @@ function DataTablePanel({
         {rows.length ? (
           <table className="w-full min-w-[430px] text-left">
             <thead>
-              <tr className="border-b border-[#edf2f6]">
+              <tr className="border-b border-slate-100">
                 {headers.map((header) => (
                   <th
                     key={header}
-                    className="px-2 py-2 text-[9px] font-extrabold uppercase tracking-[0.05em] text-[#91a3b3]"
+                    className="px-2 py-2 text-[9px] font-extrabold uppercase tracking-[0.05em] text-slate-400"
                   >
                     {header}
                   </th>
@@ -1211,11 +1211,11 @@ function DataTablePanel({
             </thead>
             <tbody>
               {rows.slice(0, 5).map((row, index) => (
-                <tr key={`${title}-${index}`} className="border-b border-[#f1f4f7] last:border-0">
+                <tr key={`${title}-${index}`} className="border-b border-slate-100 last:border-0">
                   {row.map((cell, cellIndex) => (
                     <td
                       key={`${index}-${cellIndex}`}
-                      className={`px-2 py-2.5 text-[10px] ${cellIndex === 0 ? "font-extrabold text-[#304b66]" : "font-semibold text-[#526b84]"}`}
+                      className={`px-2 py-2.5 text-[10px] ${cellIndex === 0 ? "font-extrabold text-slate-700" : "font-semibold text-slate-600"}`}
                     >
                       {cell}
                     </td>
@@ -1248,12 +1248,12 @@ function MiniValue({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-xl border border-[#edf2f6] bg-[#fbfcfd] p-3">
+    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
       <div className="flex items-center gap-2">
-        <Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" />
+        <Icon className="h-4 w-4 text-blue-600" aria-hidden="true" />
         <span className={`text-[10px] font-semibold ${muted}`}>{label}</span>
       </div>
-      <strong className="mt-2 block text-[16px] font-black text-[#102a43]">{value}</strong>
+      <strong className="mt-2 block text-[16px] font-black text-slate-900">{value}</strong>
       <span className={`mt-1 block text-[9px] font-semibold ${muted}`}>{note}</span>
     </div>
   );
@@ -1320,16 +1320,16 @@ export function Tanda2Operations({
       </T2PageHeader>
       <Panel title="Filtros operativos" subtitle="El alcance se conserva en la URL.">
         <form id="operations-filters" method="get" className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Módulo
-            <select name="queue" defaultValue={selectedQueue ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="queue" defaultValue={selectedQueue ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               {queues.map((queue) => <option key={queue} value={queue}>{queueLabels[queue]}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Período
-            <select name="range" defaultValue={currentFilters.range} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="range" defaultValue={currentFilters.range} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="today">Hoy</option>
               <option value="yesterday">Ayer</option>
               <option value="week">Últimos 7 días</option>
@@ -1338,31 +1338,31 @@ export function Tanda2Operations({
               <option value="custom">Personalizado</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Desde
-            <input type="date" name="from" defaultValue={currentFilters.from ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]" />
+            <input type="date" name="from" defaultValue={currentFilters.from ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700" />
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Hasta
-            <input type="date" name="to" defaultValue={currentFilters.to ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]" />
+            <input type="date" name="to" defaultValue={currentFilters.to ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700" />
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Local
-            <select name="locationId" defaultValue={currentFilters.locationId ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="locationId" defaultValue={currentFilters.locationId ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               {operationsFilterOptions.locations.map((location) => <option key={location.id} value={location.id}>{location.label}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Vendedor
-            <select name="sellerId" defaultValue={currentFilters.sellerId ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="sellerId" defaultValue={currentFilters.sellerId ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               {operationsFilterOptions.sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.label}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Estado
-            <select name="status" defaultValue={currentFilters.status ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="status" defaultValue={currentFilters.status ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               {[
                 ["NEW", "Nuevo"], ["DRAFT", "Borrador"], ["SENT", "Enviada"], ["FOLLOW_UP", "Seguimiento"], ["ACCEPTED", "Aceptada"],
@@ -1370,25 +1370,25 @@ export function Tanda2Operations({
               ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Equipo
-            <select name="team" defaultValue={currentFilters.team ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="team" defaultValue={currentFilters.team ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               <option value="VENTAS">Ventas</option>
               <option value="OPERACIONES">Operaciones</option>
               <option value="ALMACEN">Almacén</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Responsable
-            <select name="assigneeId" defaultValue={currentFilters.assigneeId ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="assigneeId" defaultValue={currentFilters.assigneeId ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               {operationsFilterOptions.sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.label}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             Urgencia
-            <select name="urgency" defaultValue={currentFilters.urgency ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="urgency" defaultValue={currentFilters.urgency ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todas</option>
               <option value="LOW">Baja</option>
               <option value="NORMAL">Normal</option>
@@ -1397,9 +1397,9 @@ export function Tanda2Operations({
               <option value="CRITICAL">Crítica</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]">
+          <label className="grid gap-1 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400">
             SLA
-            <select name="sla" defaultValue={currentFilters.sla ?? ""} className="h-9 rounded-lg border border-[#dce6ee] bg-white px-2 text-[10px] font-bold normal-case text-[#304b66]">
+            <select name="sla" defaultValue={currentFilters.sla ?? ""} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold normal-case text-slate-700">
               <option value="">Todos</option>
               <option value="NO_POLICY">Sin política</option>
               <option value="ON_TRACK">En tiempo</option>
@@ -1407,17 +1407,17 @@ export function Tanda2Operations({
               <option value="OVERDUE">Vencido</option>
             </select>
           </label>
-          <div className="flex items-end text-[9px] font-semibold leading-4 text-[#91a3b3] xl:col-span-2">
+          <div className="flex items-end text-[9px] font-semibold leading-4 text-slate-400 xl:col-span-2">
             Los filtros se aplican por dominio de origen; las combinaciones incompatibles explican su alcance.
           </div>
           <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4 xl:col-span-8">
-            <button type="submit" className="rounded-full bg-[#2277ee] px-4 py-2 text-[10px] font-extrabold text-white">Aplicar filtros</button>
-            <Link href="/admin/operaciones" className="rounded-full border border-[#dce6ee] px-4 py-2 text-[10px] font-extrabold text-[#526b84]">Limpiar</Link>
+            <button type="submit" className="rounded-full bg-blue-600 px-4 py-2 text-[10px] font-extrabold text-white">Aplicar filtros</button>
+            <Link href="/admin/operaciones" className="rounded-full border border-slate-200 px-4 py-2 text-[10px] font-extrabold text-slate-600">Limpiar</Link>
           </div>
         </form>
       </Panel>
       {unsupportedFilters.length ? (
-        <div className="rounded-xl border border-[#f5d8b1] bg-[#fff8ed] px-4 py-3 text-[10px] font-semibold leading-5 text-[#8a5b20]" role="status">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[10px] font-semibold leading-5 text-amber-800" role="status">
           <strong>Alcance parcial:</strong> {unsupportedFilters.join(" ")} Las colas no compatibles se muestran como no aplicables, no como ausencia de datos.
         </div>
       ) : null}
@@ -1466,15 +1466,15 @@ export function Tanda2Operations({
             </Action>
           }
         >
-          <div className="mt-3 flex min-w-max gap-1 border-b border-[#edf2f6]">
+          <div className="mt-3 flex min-w-max gap-1 border-b border-slate-100">
             {queues.map((queue) => (
               <Link
                 key={queue}
                 href={`/admin/operaciones?queue=${queue}&range=${range}`}
-                className={`inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-[10px] font-extrabold ${queue === selected ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#71869c]"}`}
+                className={`inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-[10px] font-extrabold ${queue === selected ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500"}`}
               >
                 {queueLabels[queue]}
-                <span className="rounded-full bg-[#edf2f6] px-1.5 py-0.5 text-[9px]">
+                <span className="rounded-full bg-slate-50 px-1.5 py-0.5 text-[9px]">
                   {snapshot?.queueTotals[queue] ?? 0}
                 </span>
               </Link>
@@ -1484,7 +1484,7 @@ export function Tanda2Operations({
             {rows.length ? (
               <table className="w-full min-w-[1000px] text-left">
                 <thead>
-                  <tr className="border-b border-[#edf2f6]">
+                  <tr className="border-b border-slate-100">
                     {[
                       "Referencia",
                       "Tarea / contexto",
@@ -1497,7 +1497,7 @@ export function Tanda2Operations({
                     ].map((header) => (
                       <th
                         key={header}
-                        className="px-2 py-2 text-[9px] font-extrabold uppercase tracking-[0.04em] text-[#91a3b3]"
+                        className="px-2 py-2 text-[9px] font-extrabold uppercase tracking-[0.04em] text-slate-400"
                       >
                         {header}
                       </th>
@@ -1514,13 +1514,13 @@ export function Tanda2Operations({
                     return (
                       <tr
                         key={String(row.id ?? index)}
-                        className="border-b border-[#f1f4f7] last:border-0"
+                        className="border-b border-slate-100 last:border-0"
                       >
-                        <td className="px-2 py-3 text-[10px] font-extrabold text-[#2277ee]">
+                        <td className="px-2 py-3 text-[10px] font-extrabold text-blue-600">
                           {String(row.code ?? row.sku ?? row.id ?? "N/D")}
                         </td>
                         <td className="px-2 py-3">
-                          <span className="block max-w-[210px] truncate text-[10px] font-extrabold text-[#304b66]">
+                          <span className="block max-w-[210px] truncate text-[10px] font-extrabold text-slate-700">
                             {String(row.title ?? row.product ?? row.customer ?? "Tarea operativa")}
                           </span>
                           <span
@@ -1532,27 +1532,27 @@ export function Tanda2Operations({
                         <td className="px-2 py-3">
                           <Pill>{String(row.priority ?? "NORMAL")}</Pill>
                         </td>
-                        <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                        <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                           {row.ageDays != null
                             ? `${String(row.ageDays)} d · edad`
                             : row.due
                               ? String(row.due)
                               : "N/D · sin política SLA"}
                         </td>
-                        <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                        <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                           {String(row.seller ?? "Sin asignar")}
                         </td>
-                        <td className="px-2 py-3 text-[10px] font-semibold uppercase text-[#526b84]">
+                        <td className="px-2 py-3 text-[10px] font-semibold uppercase text-slate-600">
                           {String(row.workItemTeam ?? "N/D")}
                         </td>
-                        <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                        <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                           {row.workItemAssigneeId ? "Asignada" : "Sin asignar"}
                         </td>
                         <td className="px-2 py-3">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <a
                               href={href}
-                              className="inline-flex items-center gap-1 rounded-md border border-[#dce6ee] px-2 py-1.5 text-[9px] font-extrabold text-[#304b66] hover:border-[#2277ee] hover:text-[#2277ee]"
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1.5 text-[9px] font-extrabold text-slate-700 hover:border-blue-400 hover:text-blue-600"
                             >
                               {actionLabel}
                               <ChevronRight className="h-3 w-3" />
@@ -1583,7 +1583,7 @@ export function Tanda2Operations({
             )}
           </div>
           <div
-            className={`mt-3 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[10px] font-semibold ${muted}`}
+            className={`mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[10px] font-semibold ${muted}`}
           >
             <span>Mostrando {rows.slice(0, 10).length} registros</span>
             <span>
@@ -1595,17 +1595,17 @@ export function Tanda2Operations({
           <Panel
             title="Alertas operativas"
             action={
-              <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-[#2277ee]">
+              <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
                 Ver todas
               </Link>
             }
           >
             <div className="mt-3 divide-y divide-[#edf2f6]">
               {[
-                ["Vencidas", metrics?.overdueTasks, "text-[#ed4b4b]"],
-                ["Pedidos bloqueados", snapshot?.operationalSignals.blockedOrders, "text-[#ed4b4b]"],
-                ["Stock crítico", metrics?.criticalStock, "text-[#f08b20]"],
-                ["Seguimientos", metrics?.overdueTasks, "text-[#8057e8]"],
+                ["Vencidas", metrics?.overdueTasks, "text-rose-500"],
+                ["Pedidos bloqueados", snapshot?.operationalSignals.blockedOrders, "text-rose-500"],
+                ["Stock crítico", metrics?.criticalStock, "text-amber-600"],
+                ["Seguimientos", metrics?.overdueTasks, "text-purple-600"],
               ].map(([label, value, ink]) => (
                 <Link
                   href={`/admin/operaciones?queue=${label === "Stock crítico" ? "inventoryAlerts" : label === "Seguimientos" ? "followUps" : "orders"}`}
@@ -1613,11 +1613,11 @@ export function Tanda2Operations({
                   className="flex items-center gap-2.5 py-3 first:pt-0 last:pb-0"
                 >
                   <AlertCircle className={`h-4 w-4 ${ink}`} aria-hidden="true" />
-                  <span className="flex-1 text-[10px] font-extrabold text-[#304b66]">{label}</span>
-                  <strong className="text-[14px] font-black text-[#102a43]">
+                  <span className="flex-1 text-[10px] font-extrabold text-slate-700">{label}</span>
+                  <strong className="text-[14px] font-black text-slate-900">
                     {value === null ? "N/D" : number(Number(value))}
                   </strong>
-                  <ChevronRight className="h-3.5 w-3.5 text-[#a5b6c5]" />
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                 </Link>
               ))}
             </div>
@@ -1631,30 +1631,30 @@ export function Tanda2Operations({
                     className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 py-3 first:pt-0 last:pb-0"
                   >
                     <div className="min-w-0">
-                      <span className="block truncate text-[10px] font-extrabold text-[#304b66]">
+                      <span className="block truncate text-[10px] font-extrabold text-slate-700">
                         {item.assigneeName}
                       </span>
-                      <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.04em] text-[#91a3b3]">
+                      <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.04em] text-slate-400">
                         {item.team}
                       </span>
                     </div>
                     <div className="text-right">
-                      <strong className="block text-[13px] font-black text-[#102a43]">
+                      <strong className="block text-[13px] font-black text-slate-900">
                         {number(item.active)}
                       </strong>
-                      <span className="text-[8px] font-bold text-[#91a3b3]">activas</span>
+                      <span className="text-[8px] font-bold text-slate-400">activas</span>
                     </div>
                     <div className="text-right">
-                      <strong className="block text-[13px] font-black text-[#ed4b4b]">
+                      <strong className="block text-[13px] font-black text-rose-500">
                         {number(item.overdue)}
                       </strong>
-                      <span className="text-[8px] font-bold text-[#91a3b3]">vencidas</span>
+                      <span className="text-[8px] font-bold text-slate-400">vencidas</span>
                     </div>
                     <div className="text-right">
-                      <strong className="block text-[13px] font-black text-[#f08b20]">
+                      <strong className="block text-[13px] font-black text-amber-600">
                         {number(item.blockers)}
                       </strong>
-                      <span className="text-[8px] font-bold text-[#91a3b3]">bloqueos</span>
+                      <span className="text-[8px] font-bold text-slate-400">bloqueos</span>
                     </div>
                   </div>
                 ))}
@@ -2046,12 +2046,12 @@ export function Tanda2Purchases({
             name="query"
             defaultValue={filters?.query ?? ""}
             placeholder="Buscar OC, proveedor o SKU"
-            className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px] sm:col-span-2"
+            className="h-9 rounded-lg border border-slate-200 px-3 text-[10px] sm:col-span-2"
           />
           <select
             name="status"
             defaultValue={filters?.status ?? ""}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           >
             <option value="">Todos los estados</option>
             <option value="DRAFT">Borrador</option>
@@ -2063,7 +2063,7 @@ export function Tanda2Purchases({
           <select
             name="supplierId"
             defaultValue={filters?.supplierId ?? ""}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           >
             <option value="">Todos los proveedores</option>
             {suppliers.map((supplier) => (
@@ -2075,7 +2075,7 @@ export function Tanda2Purchases({
           <select
             name="locationId"
             defaultValue={filters?.locationId ?? ""}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           >
             <option value="">Todos los locales</option>
             {locations.map((location) => (
@@ -2087,7 +2087,7 @@ export function Tanda2Purchases({
           <select
             name="currency"
             defaultValue={filters?.currency ?? ""}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           >
             <option value="">Todas las monedas</option>
             <option value="PEN">PEN</option>
@@ -2098,33 +2098,33 @@ export function Tanda2Purchases({
             name="createdFrom"
             defaultValue={filters?.createdFrom ?? ""}
             aria-label="Creada desde"
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           />
           <input
             type="date"
             name="createdTo"
             defaultValue={filters?.createdTo ?? ""}
             aria-label="Creada hasta"
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           />
           <input
             type="date"
             name="expectedFrom"
             defaultValue={filters?.expectedFrom ?? ""}
             aria-label="Entrega esperada desde"
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           />
           <input
             type="date"
             name="expectedTo"
             defaultValue={filters?.expectedTo ?? ""}
             aria-label="Entrega esperada hasta"
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           />
           <select
             name="attention"
             defaultValue={filters?.attention ?? ""}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[10px]"
           >
             <option value="">Atención</option>
             <option value="DELAYED">Retrasada</option>
@@ -2135,13 +2135,13 @@ export function Tanda2Purchases({
           <div className="flex gap-2 sm:col-span-2 lg:col-span-4 xl:col-span-8">
             <button
               type="submit"
-              className="rounded-full bg-[#2277ee] px-4 py-2 text-[10px] font-extrabold text-white"
+              className="rounded-full bg-blue-600 px-4 py-2 text-[10px] font-extrabold text-white"
             >
               Filtrar
             </button>
             <Link
               href="/admin/compras"
-              className="rounded-full border border-[#dce6ee] px-4 py-2 text-[10px] font-extrabold text-[#526b84]"
+              className="rounded-full border border-slate-200 px-4 py-2 text-[10px] font-extrabold text-slate-600"
             >
               Limpiar
             </Link>
@@ -2162,7 +2162,7 @@ export function Tanda2Purchases({
             {purchases.length ? (
               <table className="w-full min-w-[1040px] text-left">
                 <thead>
-                  <tr className="border-b border-[#edf2f6]">
+                  <tr className="border-b border-slate-100">
                     {[
                       "OC",
                       "Proveedor",
@@ -2177,7 +2177,7 @@ export function Tanda2Purchases({
                     ].map((header) => (
                       <th
                         key={header}
-                        className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                        className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                       >
                         {header}
                       </th>
@@ -2186,38 +2186,38 @@ export function Tanda2Purchases({
                 </thead>
                 <tbody>
                   {purchases.map((purchase) => (
-                    <tr key={purchase.id} className="border-b border-[#f1f4f7] last:border-0">
-                      <td className="px-2 py-3 text-[10px] font-extrabold text-[#2277ee]">
+                    <tr key={purchase.id} className="border-b border-slate-100 last:border-0">
+                      <td className="px-2 py-3 text-[10px] font-extrabold text-blue-600">
                         {purchase.code}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">
+                      <td className="px-2 py-3 text-[10px] font-extrabold text-slate-700">
                         {supplierById.get(purchase.supplierId) ?? "N/D"}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {locationById.get(purchase.locationId) ?? "N/D"}
                       </td>
-                      <td className="whitespace-nowrap px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="whitespace-nowrap px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {dateLabel(purchase.createdAt)}
                       </td>
-                      <td className="whitespace-nowrap px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="whitespace-nowrap px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {dateLabel(purchase.expectedDeliveryAt)}
                       </td>
                       <td className="px-2 py-3">
                         <Pill>{purchase.status}</Pill>
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {purchase.currency}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">
+                      <td className="px-2 py-3 text-[10px] font-extrabold text-slate-700">
                         {money(Number(purchase.subtotal), purchase.currency)}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {attentionFor(purchase)}
                       </td>
                       <td className="px-2 py-3">
                         <Link
                           href={`/admin/compras?purchaseId=${encodeURIComponent(purchase.id)}`}
-                          className="text-[10px] font-extrabold text-[#2277ee]"
+                          className="text-[10px] font-extrabold text-blue-600"
                         >
                           Abrir
                         </Link>
@@ -2241,7 +2241,7 @@ export function Tanda2Purchases({
                 const next = new URLSearchParams(queryString ?? "");
                 next.set("page", String(Math.min(pagination.totalPages, pagination.page + 1)));
                 return (
-                  <div className="mt-3 flex items-center justify-between border-t border-[#edf2f6] pt-3 text-[10px] font-semibold text-[#71869c]">
+                  <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[10px] font-semibold text-slate-500">
                     <span>
                       {pagination.totalItems} órdenes · página {pagination.page} de{" "}
                       {pagination.totalPages}
@@ -2251,7 +2251,7 @@ export function Tanda2Purchases({
                         className={
                           pagination.page <= 1
                             ? "pointer-events-none opacity-40"
-                            : "font-extrabold text-[#2277ee]"
+                            : "font-extrabold text-blue-600"
                         }
                         href={`/admin/compras?${previous.toString()}`}
                       >
@@ -2261,7 +2261,7 @@ export function Tanda2Purchases({
                         className={
                           pagination.page >= pagination.totalPages
                             ? "pointer-events-none opacity-40"
-                            : "font-extrabold text-[#2277ee]"
+                            : "font-extrabold text-blue-600"
                         }
                         href={`/admin/compras?${next.toString()}`}
                       >
@@ -2279,7 +2279,7 @@ export function Tanda2Purchases({
             action={
               <Link
                 href="/admin/compras?requestStatus=SUBMITTED"
-                className="text-[10px] font-extrabold text-[#2277ee]"
+                className="text-[10px] font-extrabold text-blue-600"
               >
                 Ver pendientes
               </Link>
@@ -2291,13 +2291,13 @@ export function Tanda2Purchases({
                   <Link
                     href={`/admin/compras?requestId=${encodeURIComponent(request.id)}`}
                     key={request.id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-[#edf2f6] px-3 py-2.5 hover:border-[#2277ee]"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2.5 hover:border-blue-400"
                   >
                     <span className="min-w-0">
-                      <strong className="block truncate text-[10px] text-[#304b66]">
+                      <strong className="block truncate text-[10px] text-slate-700">
                         {request.code}
                       </strong>
-                      <small className="mt-1 block text-[9px] font-semibold text-[#8195aa]">
+                      <small className="mt-1 block text-[9px] font-semibold text-slate-400">
                         {locationById.get(request.locationId) ?? "N/D"} · {request.itemCount} líneas
                       </small>
                     </span>
@@ -2319,7 +2319,7 @@ export function Tanda2Purchases({
               subtitle={`${selectedRequest.request.source} · ${selectedRequest.request.status}`}
             >
               <div className="mt-3 space-y-3">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-[#71869c]">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
                   <Pill>{selectedRequest.request.status}</Pill>
                   <span>{locationById.get(selectedRequest.request.locationId ?? "") ?? "N/D"}</span>
                   <span>{dateLabel(selectedRequest.request.createdAt)}</span>
@@ -2327,11 +2327,11 @@ export function Tanda2Purchases({
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[360px] text-left">
                     <thead>
-                      <tr className="border-b border-[#edf2f6]">
+                      <tr className="border-b border-slate-100">
                         {["SKU", "Producto", "Cantidad"].map((header) => (
                           <th
                             key={header}
-                            className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                            className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                           >
                             {header}
                           </th>
@@ -2340,14 +2340,14 @@ export function Tanda2Purchases({
                     </thead>
                     <tbody>
                       {selectedRequest.items.map((item) => (
-                        <tr key={item.id} className="border-b border-[#f1f4f7] last:border-0">
-                          <td className="px-2 py-2 text-[10px] font-mono text-[#526b84]">
+                        <tr key={item.id} className="border-b border-slate-100 last:border-0">
+                          <td className="px-2 py-2 text-[10px] font-mono text-slate-600">
                             {item.skuSnapshot}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-extrabold text-[#304b66]">
+                          <td className="px-2 py-2 text-[10px] font-extrabold text-slate-700">
                             {item.productNameSnapshot}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-semibold text-[#526b84]">
+                          <td className="px-2 py-2 text-[10px] font-semibold text-slate-600">
                             {number(item.quantityRequested)}
                           </td>
                         </tr>
@@ -2356,12 +2356,12 @@ export function Tanda2Purchases({
                   </table>
                 </div>
                 {selectedRequest.request.notes ? (
-                  <p className="text-[10px] font-semibold leading-5 text-[#71869c]">
+                  <p className="text-[10px] font-semibold leading-5 text-slate-500">
                     {selectedRequest.request.notes}
                   </p>
                 ) : null}
                 {selectedRequest.request.rejectionReason ? (
-                  <p className="rounded-lg border border-[#f1c5c5] bg-[#fff7f7] px-3 py-2 text-[10px] font-semibold text-[#c43333]">
+                  <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-semibold text-rose-700">
                     Motivo de rechazo: {selectedRequest.request.rejectionReason}
                   </p>
                 ) : null}
@@ -2384,7 +2384,7 @@ export function Tanda2Purchases({
               subtitle={`${selectedPurchase.supplierName} · ${selectedPurchase.purchase.status}`}
             >
               <div className="mt-3 space-y-3">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-[#71869c]">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
                   <Pill>{selectedPurchase.purchase.status}</Pill>
                   <span>{selectedPurchase.locationName}</span>
                   <span>{dateLabel(selectedPurchase.purchase.issuedAt)}</span>
@@ -2393,11 +2393,11 @@ export function Tanda2Purchases({
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[480px] text-left">
                     <thead>
-                      <tr className="border-b border-[#edf2f6]">
+                      <tr className="border-b border-slate-100">
                         {["SKU", "Producto", "Pedido", "Recibido", "Pendiente"].map((header) => (
                           <th
                             key={header}
-                            className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                            className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                           >
                             {header}
                           </th>
@@ -2406,20 +2406,20 @@ export function Tanda2Purchases({
                     </thead>
                     <tbody>
                       {selectedPurchase.items.map((item) => (
-                        <tr key={item.id} className="border-b border-[#f1f4f7] last:border-0">
-                          <td className="px-2 py-2 font-mono text-[10px] text-[#526b84]">
+                        <tr key={item.id} className="border-b border-slate-100 last:border-0">
+                          <td className="px-2 py-2 font-mono text-[10px] text-slate-600">
                             {item.skuSnapshot}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-extrabold text-[#304b66]">
+                          <td className="px-2 py-2 text-[10px] font-extrabold text-slate-700">
                             {item.productNameSnapshot}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-semibold text-[#526b84]">
+                          <td className="px-2 py-2 text-[10px] font-semibold text-slate-600">
                             {number(item.quantityOrdered)}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-semibold text-[#526b84]">
+                          <td className="px-2 py-2 text-[10px] font-semibold text-slate-600">
                             {number(item.quantityReceived)}
                           </td>
-                          <td className="px-2 py-2 text-[10px] font-extrabold text-[#304b66]">
+                          <td className="px-2 py-2 text-[10px] font-extrabold text-slate-700">
                             {number(Math.max(0, item.quantityOrdered - item.quantityReceived))}
                           </td>
                         </tr>
@@ -2428,17 +2428,17 @@ export function Tanda2Purchases({
                   </table>
                 </div>
                 {selectedPurchase.purchase.notes ? (
-                  <p className="text-[10px] font-semibold leading-5 text-[#71869c]">
+                  <p className="text-[10px] font-semibold leading-5 text-slate-500">
                     {selectedPurchase.purchase.notes}
                   </p>
                 ) : null}
                 {selectedPurchase.purchase.cancellationReason ? (
-                  <p className="rounded-lg border border-[#f1c5c5] bg-[#fff7f7] px-3 py-2 text-[10px] font-semibold text-[#c43333]">
+                  <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-semibold text-rose-700">
                     Motivo de cancelación: {selectedPurchase.purchase.cancellationReason}
                   </p>
                 ) : null}
                 {selectedPurchase.receipts.length ? (
-                  <p className="text-[10px] font-semibold text-[#71869c]">
+                  <p className="text-[10px] font-semibold text-slate-500">
                     Recepciones:{" "}
                     {selectedPurchase.receipts.map((receipt) => receipt.code).join(" · ")}
                   </p>
@@ -2456,13 +2456,13 @@ export function Tanda2Purchases({
                 <Link
                   key={supplier.id}
                   href={`/admin/compras/proveedores/${encodeURIComponent(supplier.id)}`}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-[#edf2f6] px-3 py-2.5 hover:border-[#2277ee]"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2.5 hover:border-blue-400"
                 >
                   <span className="min-w-0">
-                    <strong className="block truncate text-[10px] text-[#304b66]">
+                    <strong className="block truncate text-[10px] text-slate-700">
                       {supplier.name}
                     </strong>
-                    <small className="mt-1 block text-[9px] font-semibold text-[#8195aa]">
+                    <small className="mt-1 block text-[9px] font-semibold text-slate-400">
                       {supplier.currency}
                     </small>
                   </span>
@@ -2491,7 +2491,7 @@ export function Tanda2Purchases({
         <div id="purchase-tools">
           <Panel title="Flujo de compras">
             <details open>
-              <summary className="cursor-pointer text-[11px] font-extrabold text-[#2277ee]">
+              <summary className="cursor-pointer text-[11px] font-extrabold text-blue-600">
                 Abrir controles reales
               </summary>
               <div className="mt-4">{controls}</div>
@@ -2524,6 +2524,12 @@ export function Tanda2Cms({
   const published = pages.filter((page) => page.status === "PUBLISHED").length;
   const drafts = pages.filter((page) => page.status === "DRAFT").length;
   const scheduledPages = pages.filter((page) => page.status === "SCHEDULED");
+  const typeCounts = [
+    { key: "PAGE", label: "Páginas" },
+    { key: "BANNER", label: "Banners" },
+    { key: "BLOCK", label: "Bloques" },
+    { key: "LANDING", label: "Landings" },
+  ].map((type) => ({ ...type, count: pages.filter((page) => page.contentType === type.key).length }));
   return (
     <div className="space-y-4">
       <T2PageHeader
@@ -2569,16 +2575,27 @@ export function Tanda2Cms({
       </div>
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.9fr)_315px]">
         <Panel title="Contenido del sitio" subtitle="Páginas y bloques persistidos">
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {typeCounts.map((type) => (
+              <span
+                key={type.key}
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-extrabold text-slate-600"
+              >
+                {type.label}
+                <span className="rounded-full bg-white px-1.5 text-slate-900">{type.count}</span>
+              </span>
+            ))}
+          </div>
           <div className="mt-3 overflow-x-auto">
             {pages.length ? (
               <table className="w-full min-w-[520px] text-left">
                 <thead>
-                  <tr className="border-b border-[#edf2f6]">
+                  <tr className="border-b border-slate-100">
                     {["Página", "Tipo", "Slug", "Estado", "Versión", "Actualizado"].map(
                       (header) => (
                         <th
                           key={header}
-                          className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                          className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                         >
                           {header}
                         </th>
@@ -2588,23 +2605,23 @@ export function Tanda2Cms({
                 </thead>
                 <tbody>
                   {pages.slice(0, 10).map((page) => (
-                    <tr key={page.id} className="border-b border-[#f1f4f7] last:border-0">
-                      <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">
+                    <tr key={page.id} className="border-b border-slate-100 last:border-0">
+                      <td className="px-2 py-3 text-[10px] font-extrabold text-slate-700">
                         {page.title}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {page.contentType ?? "N/D"}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-mono text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-mono text-slate-600">
                         /{page.slug}
                       </td>
                       <td className="px-2 py-3">
                         <Pill>{page.status}</Pill>
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         v{page.version}
                       </td>
-                      <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                      <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                         {dateLabel(page.updatedAt)}
                       </td>
                     </tr>
@@ -2635,12 +2652,12 @@ export function Tanda2Cms({
                   <Link
                     href={`/api/admin/cms/${page.slug}`}
                     key={page.id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-[#edf2f6] px-3 py-2.5 hover:border-[#2277ee]"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2.5 hover:border-blue-400"
                   >
-                    <span className="truncate text-[10px] font-extrabold text-[#304b66]">
+                    <span className="truncate text-[10px] font-extrabold text-slate-700">
                       {page.title}
                     </span>
-                    <span className="shrink-0 text-[9px] font-semibold text-[#8195aa]">
+                    <span className="shrink-0 text-[9px] font-semibold text-slate-400">
                       {dateLabel(page.scheduledAt)}
                     </span>
                   </Link>
@@ -2665,7 +2682,7 @@ export function Tanda2Cms({
         <div id="cms-tools">
           <Panel title="Editor y biblioteca multimedia">
             <details open>
-              <summary className="cursor-pointer text-[11px] font-extrabold text-[#2277ee]">
+              <summary className="cursor-pointer text-[11px] font-extrabold text-blue-600">
                 Abrir herramientas editoriales
               </summary>
               <div className="mt-4">{controls}</div>
@@ -2699,12 +2716,12 @@ function PermissionMatrix() {
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[620px] text-left">
           <thead>
-            <tr className="border-b border-[#edf2f6]">
-              <th className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]">Rol</th>
+            <tr className="border-b border-slate-100">
+              <th className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400">Rol</th>
               {permissionMatrixColumns.map((column) => (
                 <th
                   key={column.permission}
-                  className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                  className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                 >
                   {column.label}
                 </th>
@@ -2715,13 +2732,13 @@ function PermissionMatrix() {
             {permissionMatrixRoles.map(({ role, label }) => {
               const granted = permissionsForRole(role);
               return (
-                <tr key={role} className="border-b border-[#f1f4f7] last:border-0">
-                  <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">{label}</td>
+                <tr key={role} className="border-b border-slate-100 last:border-0">
+                  <td className="px-2 py-3 text-[10px] font-extrabold text-slate-700">{label}</td>
                   {permissionMatrixColumns.map((column) => (
                     <td key={column.permission} className="px-2 py-3 text-[10px] font-extrabold">
                       <span
                         className={
-                          granted.includes(column.permission) ? "text-[#159263]" : "text-[#a5b6c5"
+                          granted.includes(column.permission) ? "text-emerald-600" : "text-[#a5b6c5"
                         }
                       >
                         {granted.includes(column.permission) ? "Concedido" : "—"}
@@ -2863,12 +2880,12 @@ export function Tanda2Users({
           {rows.length ? (
             <table className="w-full min-w-[850px] text-left">
               <thead>
-                <tr className="border-b border-[#edf2f6]">
+                <tr className="border-b border-slate-100">
                   {["Usuario", "Correo", "Rol", "Estado", "Último acceso", "Clerk", "Acciones"].map(
                     (header) => (
                       <th
                         key={header}
-                        className="px-2 py-2 text-[9px] font-extrabold uppercase text-[#91a3b3]"
+                        className="px-2 py-2 text-[9px] font-extrabold uppercase text-slate-400"
                       >
                         {header}
                       </th>
@@ -2878,11 +2895,11 @@ export function Tanda2Users({
               </thead>
               <tbody>
                 {rows.slice(0, 12).map((row) => (
-                  <tr key={row.id} className={`border-b border-[#f1f4f7] last:border-0 ${selectedId === row.id ? "bg-[#f5faff]" : ""}`}>
-                    <td className="px-2 py-3 text-[10px] font-extrabold text-[#304b66]">
+                  <tr key={row.id} className={`border-b border-slate-100 last:border-0 ${selectedId === row.id ? "bg-blue-50" : ""}`}>
+                    <td className="px-2 py-3 text-[10px] font-extrabold text-slate-700">
                       {row.name}
                     </td>
-                    <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                    <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                       {row.email}
                     </td>
                     <td className="px-2 py-3">
@@ -2891,17 +2908,17 @@ export function Tanda2Users({
                     <td className="px-2 py-3">
                       <Pill>{row.status}</Pill>
                     </td>
-                    <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
+                    <td className="px-2 py-3 text-[10px] font-semibold text-slate-600">
                       {row.lastAccess}
                     </td>
-                    <td className="px-2 py-3 text-[9px] font-semibold text-[#526b84]">
+                    <td className="px-2 py-3 text-[9px] font-semibold text-slate-600">
                       {row.sync ?? "N/D"}
                     </td>
                     <td className="px-2 py-3">
                       <Link
                         href={`/admin/usuarios?userId=${encodeURIComponent(row.id)}`}
                         aria-current={selectedId === row.id ? "page" : undefined}
-                        className="text-[10px] font-extrabold text-[#2277ee]"
+                        className="text-[10px] font-extrabold text-blue-600"
                       >
                         Ver detalle
                       </Link>
@@ -2918,7 +2935,7 @@ export function Tanda2Users({
             />
           )}
         </div>
-        <div className={`mt-3 border-t border-[#edf2f6] pt-3 text-[10px] font-semibold ${muted}`}>
+        <div className={`mt-3 border-t border-slate-100 pt-3 text-[10px] font-semibold ${muted}`}>
           Página {pagination?.page ?? 1} de {pagination?.totalPages ?? 1}
         </div>
       </Panel>
@@ -2926,7 +2943,7 @@ export function Tanda2Users({
         <Panel
           title={`Detalle de ${detail.user.name || detail.user.email}`}
           subtitle={`${detail.user.email} · ${detail.user.role}`}
-          action={<Link href="/admin/usuarios" className="text-[10px] font-extrabold text-[#2277ee]">Cerrar detalle</Link>}
+          action={<Link href="/admin/usuarios" className="text-[10px] font-extrabold text-blue-600">Cerrar detalle</Link>}
         >
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MiniValue label="Estado" value={detail.user.status} note="Estado local persistido" icon={CheckCircle2} />
@@ -2935,19 +2952,19 @@ export function Tanda2Users({
             <MiniValue label="Alta" value={detail.user.createdAt.toLocaleDateString("es-PE")} note={`Actualizado ${detail.user.updatedAt.toLocaleDateString("es-PE")}`} icon={FileText} />
           </div>
           <div className="mt-3 grid gap-3 xl:grid-cols-2">
-            <section className="rounded-lg border border-[#e2eaf1] bg-[#fbfcfd] p-3" aria-labelledby="user-invitation-title">
-              <h3 id="user-invitation-title" className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#91a3b3]">Invitación</h3>
-              <p className="mt-2 text-[11px] font-bold text-[#304b66]">{detail.invitation ? `${detail.invitation.status} · creada ${detail.invitation.createdAt.toLocaleDateString("es-PE")}` : "No hay invitación pendiente asociada."}</p>
-              {detail.invitation ? <p className="mt-1 text-[10px] font-semibold text-[#71869c]">Actualizada {detail.invitation.updatedAt.toLocaleDateString("es-PE")}</p> : null}
+            <section className="rounded-lg border border-slate-200 bg-slate-50 p-3" aria-labelledby="user-invitation-title">
+              <h3 id="user-invitation-title" className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Invitación</h3>
+              <p className="mt-2 text-[11px] font-bold text-slate-700">{detail.invitation ? `${detail.invitation.status} · creada ${detail.invitation.createdAt.toLocaleDateString("es-PE")}` : "No hay invitación pendiente asociada."}</p>
+              {detail.invitation ? <p className="mt-1 text-[10px] font-semibold text-slate-500">Actualizada {detail.invitation.updatedAt.toLocaleDateString("es-PE")}</p> : null}
             </section>
-            <section className="rounded-lg border border-[#e2eaf1] bg-[#fbfcfd] p-3" aria-labelledby="user-history-title">
-              <h3 id="user-history-title" className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#91a3b3]">Actividad de acceso</h3>
-              {detail.history.length ? <ul className="mt-2 space-y-2">{detail.history.slice(0, 8).map((event) => <li key={event.id} className="flex items-start justify-between gap-3 text-[10px]"><span className="font-extrabold text-[#304b66]">{event.action}</span><span className="shrink-0 font-semibold text-[#71869c]">{event.createdAt.toLocaleString("es-PE")}</span></li>)}</ul> : <p className="mt-2 text-[10px] font-semibold text-[#71869c]">No hay eventos de auditoría para este usuario.</p>}
+            <section className="rounded-lg border border-slate-200 bg-slate-50 p-3" aria-labelledby="user-history-title">
+              <h3 id="user-history-title" className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Actividad de acceso</h3>
+              {detail.history.length ? <ul className="mt-2 space-y-2">{detail.history.slice(0, 8).map((event) => <li key={event.id} className="flex items-start justify-between gap-3 text-[10px]"><span className="font-extrabold text-slate-700">{event.action}</span><span className="shrink-0 font-semibold text-slate-500">{event.createdAt.toLocaleString("es-PE")}</span></li>)}</ul> : <p className="mt-2 text-[10px] font-semibold text-slate-500">No hay eventos de auditoría para este usuario.</p>}
             </section>
           </div>
         </Panel>
       ) : detailError ? (
-        <div className="rounded-xl border border-[#f0c7c7] bg-[#fff7f7] p-4 text-[11px] font-semibold text-[#a33a3a]" role="alert">{detailError}</div>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-[11px] font-semibold text-rose-800" role="alert">{detailError}</div>
       ) : null}
       <div id="permission-matrix">
         <PermissionMatrix />
@@ -2955,7 +2972,7 @@ export function Tanda2Users({
       {controls ? (
         <Panel title="Invitaciones y permisos">
           <details id="user-management-controls" open>
-            <summary className="cursor-pointer text-[11px] font-extrabold text-[#2277ee]">
+            <summary className="cursor-pointer text-[11px] font-extrabold text-blue-600">
               Abrir gestión de accesos
             </summary>
             <div className="mt-4">{controls}</div>
@@ -2967,26 +2984,26 @@ export function Tanda2Users({
 }
 
 const integrationStatusLabels: Record<string, { label: string; bg: string; ink: string }> = {
-  CONNECTED: { label: "Conectado", bg: "bg-[#e4f7ef]", ink: "text-[#159263]" },
-  TESTING: { label: "En prueba", bg: "bg-[#fff0df]", ink: "text-[#f08b20]" },
-  DISCONNECTED: { label: "Desconectado", bg: "bg-[#ffe7e7]", ink: "text-[#ed4b4b]" },
-  NOT_CONFIGURED: { label: "No configurado", bg: "bg-[#f1f4f7]", ink: "text-[#8296a9]" },
+  CONNECTED: { label: "Conectado", bg: "bg-emerald-50", ink: "text-emerald-600" },
+  TESTING: { label: "En prueba", bg: "bg-amber-50", ink: "text-amber-600" },
+  DISCONNECTED: { label: "Desconectado", bg: "bg-rose-50", ink: "text-rose-500" },
+  NOT_CONFIGURED: { label: "No configurado", bg: "bg-slate-50", ink: "text-slate-400" },
 };
 
 const INTEGRATION_DISPLAY_ORDER = ["sunat", "whatsapp", "email_smtp", "payment_gateway", "external_api"];
 const integrationIcons: Record<string, { icon: LucideIcon; bg: string; ink: string }> = {
-  sunat: { icon: ShieldCheck, bg: "bg-[#e8f1ff]", ink: "text-[#2277ee]" },
-  whatsapp: { icon: MessageCircle, bg: "bg-[#e4f7ef]", ink: "text-[#159263]" },
-  email_smtp: { icon: Mail, bg: "bg-[#e8f1ff]", ink: "text-[#2277ee]" },
-  payment_gateway: { icon: CreditCard, bg: "bg-[#ffe7ee]", ink: "text-[#e0538c]" },
-  external_api: { icon: Globe, bg: "bg-[#eee9ff]", ink: "text-[#8057e8]" },
+  sunat: { icon: ShieldCheck, bg: "bg-blue-50", ink: "text-blue-600" },
+  whatsapp: { icon: MessageCircle, bg: "bg-emerald-50", ink: "text-emerald-600" },
+  email_smtp: { icon: Mail, bg: "bg-blue-50", ink: "text-blue-600" },
+  payment_gateway: { icon: CreditCard, bg: "bg-rose-50", ink: "text-pink-600" },
+  external_api: { icon: Globe, bg: "bg-purple-50", ink: "text-purple-600" },
 };
 
 const policyIcons: Record<string, { icon: LucideIcon; bg: string; ink: string }> = {
-  "/admin/precios": { icon: Tag, bg: "bg-[#fff0df]", ink: "text-[#f08b20]" },
-  "/admin/inventario": { icon: Package, bg: "bg-[#e4f7ef]", ink: "text-[#159263]" },
-  "/admin/pedidos": { icon: ShoppingCart, bg: "bg-[#e8f1ff]", ink: "text-[#2277ee]" },
-  "/admin/clientes": { icon: UsersRound, bg: "bg-[#eee9ff]", ink: "text-[#8057e8]" },
+  "/admin/precios": { icon: Tag, bg: "bg-amber-50", ink: "text-amber-600" },
+  "/admin/inventario": { icon: Package, bg: "bg-emerald-50", ink: "text-emerald-600" },
+  "/admin/pedidos": { icon: ShoppingCart, bg: "bg-blue-50", ink: "text-blue-600" },
+  "/admin/clientes": { icon: UsersRound, bg: "bg-purple-50", ink: "text-purple-600" },
 };
 
 const locationTypeLabels: Record<string, string> = { STORE: "Tienda", WAREHOUSE: "Almacén", STORE_WAREHOUSE: "Tienda y almacén" };
@@ -3087,7 +3104,7 @@ export function Tanda2Settings({
           sparkline={summary?.contactMethods != null && previousContactMethods != null ? [previousContactMethods, summary.contactMethods] : undefined}
         />
       </div>
-      <nav aria-label="Secciones de configuración" className="flex gap-1 overflow-x-auto rounded-xl border border-[#e2eaf1] bg-white p-1 shadow-[0_1px_3px_rgba(16,42,67,0.035)]">
+      <nav aria-label="Secciones de configuración" className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-[0_1px_3px_rgba(16,42,67,0.035)]">
         {[
           ["Empresa", "#company-general"],
           ["Locales", "#company-addresses"],
@@ -3099,7 +3116,7 @@ export function Tanda2Settings({
           <Link
             key={href}
             href={href}
-            className={`shrink-0 border-b-2 px-3 py-2 text-[10px] font-extrabold transition ${index === 0 ? "border-[#2277ee] text-[#2277ee]" : "border-transparent text-[#6e8498] hover:text-[#2277ee]"}`}
+            className={`shrink-0 border-b-2 px-3 py-2 text-[10px] font-extrabold transition ${index === 0 ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-blue-600"}`}
           >
             {label}
           </Link>
@@ -3115,10 +3132,10 @@ export function Tanda2Settings({
         >
           {locations.length ? (
             <>
-              <div className="mt-3 overflow-x-auto rounded-lg border border-[#e2eaf1]">
+              <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200">
                 <table className="w-full min-w-[620px] border-collapse text-left text-[11px]">
                   <thead>
-                    <tr className="border-b border-[#e2eaf1] bg-[#f7fafc] text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#8296a9]">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                       <th className="px-3 py-2">Código</th>
                       <th className="px-3 py-2">Nombre</th>
                       <th className="px-3 py-2">Tipo</th>
@@ -3130,14 +3147,14 @@ export function Tanda2Settings({
                   </thead>
                   <tbody>
                     {locations.map((location) => (
-                      <tr key={location.id} className="border-b border-[#eef2f6] last:border-0">
-                        <td className="px-3 py-2 font-mono text-[10px] font-bold text-[#304b66]">{location.code}</td>
-                        <td className="px-3 py-2 font-semibold text-[#304b66]">{location.name}</td>
-                        <td className="px-3 py-2 text-[#71869c]">{locationTypeLabels[location.type] ?? location.type}</td>
-                        <td className="px-3 py-2 text-[#71869c]">{location.address ?? "N/D"}</td>
-                        <td className="px-3 py-2 text-[#71869c]">{location.city ?? "N/D"}</td>
+                      <tr key={location.id} className="border-b border-slate-100 last:border-0">
+                        <td className="px-3 py-2 font-mono text-[10px] font-bold text-slate-700">{location.code}</td>
+                        <td className="px-3 py-2 font-semibold text-slate-700">{location.name}</td>
+                        <td className="px-3 py-2 text-slate-500">{locationTypeLabels[location.type] ?? location.type}</td>
+                        <td className="px-3 py-2 text-slate-500">{location.address ?? "N/D"}</td>
+                        <td className="px-3 py-2 text-slate-500">{location.city ?? "N/D"}</td>
                         <td className="px-3 py-2">
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold ${location.active ? "bg-[#e4f7ef] text-[#159263]" : "bg-[#f1f4f7] text-[#8296a9]"}`}>{location.active ? "Activo" : "Inactivo"}</span>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold ${location.active ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-400"}`}>{location.active ? "Activo" : "Inactivo"}</span>
                         </td>
                         <td className="px-3 py-2 text-right"><LocationRowMenu /></td>
                       </tr>
@@ -3147,7 +3164,7 @@ export function Tanda2Settings({
               </div>
               <div className="mt-2.5 flex items-center justify-between gap-3">
                 <span className={`text-[10px] font-semibold ${muted}`}>Mostrando {locations.length} de {locationsTotal} locales</span>
-                <Link href="/admin/inventario" className="text-[10px] font-extrabold text-[#2277ee] hover:underline">Ver todos los locales →</Link>
+                <Link href="/admin/inventario" className="text-[10px] font-extrabold text-blue-600 hover:underline">Ver todos los locales →</Link>
               </div>
             </>
           ) : (
@@ -3163,7 +3180,7 @@ export function Tanda2Settings({
             title="Estado de integraciones"
             subtitle="Conecta ColdPower con otras herramientas."
             action={
-              <Link href="#company-integrations" className="shrink-0 text-[11px] font-extrabold text-[#2277ee]">
+              <Link href="#company-integrations" className="shrink-0 text-[11px] font-extrabold text-blue-600">
                 Gestionar integraciones <ChevronRight className="inline h-3 w-3" />
               </Link>
             }
@@ -3172,14 +3189,14 @@ export function Tanda2Settings({
               <ul className="mt-3 grid gap-2">
                 {orderedIntegrations.map((integration) => {
                   const status = integrationStatusLabels[integration.lastCheckedStatus] ?? integrationStatusLabels.NOT_CONFIGURED;
-                  const iconInfo = integrationIcons[integration.key] ?? { icon: Workflow, bg: "bg-[#f1f4f7]", ink: "text-[#8296a9]" };
+                  const iconInfo = integrationIcons[integration.key] ?? { icon: Workflow, bg: "bg-slate-50", ink: "text-slate-400" };
                   return (
-                    <li key={integration.id} className="flex items-center gap-2.5 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-2.5">
+                    <li key={integration.id} className="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5">
                       <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconInfo.bg} ${iconInfo.ink}`}>
                         <iconInfo.icon className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[11px] font-extrabold text-[#304b66]">{integration.label}</p>
+                        <p className="truncate text-[11px] font-extrabold text-slate-700">{integration.label}</p>
                         <p className={`mt-0.5 truncate text-[9px] font-semibold ${muted}`}>{integration.description ?? integration.category}</p>
                       </div>
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold ${status.bg} ${status.ink}`}>{status.label}</span>
@@ -3204,10 +3221,10 @@ export function Tanda2Settings({
               const iconInfo = policyIcons[item.href];
               return (
                 <li key={item.href}>
-                  <Link href={item.href} className="flex items-center gap-2.5 rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-2.5 transition hover:border-[#b9d2eb]">
+                  <Link href={item.href} className="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5 transition hover:border-blue-200">
                     <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconInfo.bg} ${iconInfo.ink}`}><iconInfo.icon className="h-4 w-4" aria-hidden="true" /></span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[11px] font-extrabold text-[#304b66]">{item.label}</span>
+                      <span className="block text-[11px] font-extrabold text-slate-700">{item.label}</span>
                       <span className={`block truncate text-[9px] font-semibold ${muted}`}>{item.description}</span>
                     </span>
                   </Link>
@@ -3397,18 +3414,18 @@ export function Tanda2Home({
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-2.5 rounded-xl border border-[#edf2f6] p-3 transition hover:border-[#b9d2eb]"
+                className="flex items-center gap-2.5 rounded-xl border border-slate-100 p-3 transition hover:border-blue-200"
               >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2277ee]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                   <Icon className="h-4 w-4" aria-hidden="true" />
                 </span>
                 <span>
-                  <strong className="block text-[10px] text-[#304b66]">{label}</strong>
+                  <strong className="block text-[10px] text-slate-700">{label}</strong>
                   <span className={`mt-0.5 block text-[9px] font-semibold ${muted}`}>
                     Abrir módulo
                   </span>
                 </span>
-                <ChevronRight className="ml-auto h-3.5 w-3.5 text-[#a5b6c5]" />
+                <ChevronRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
               </Link>
             ))}
           </div>
@@ -3425,9 +3442,9 @@ export function Tanda2Home({
                 href={href}
                 className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0"
               >
-                <Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" />
-                <span className="flex-1 text-[10px] font-extrabold text-[#304b66]">{label}</span>
-                <ChevronRight className="h-3.5 w-3.5 text-[#a5b6c5]" />
+                <Icon className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                <span className="flex-1 text-[10px] font-extrabold text-slate-700">{label}</span>
+                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
               </Link>
             ))}
           </div>
@@ -3440,7 +3457,7 @@ export function Tanda2Home({
           key={widgetId}
           title="Pendientes"
           action={
-            <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-[#2277ee]">
+            <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
               Ver todos
             </Link>
           }
@@ -3456,11 +3473,11 @@ export function Tanda2Home({
                 )}
                 className="flex items-center gap-2 py-2.5 first:pt-0"
               >
-                <AlertCircle className="h-4 w-4 shrink-0 text-[#f08b20]" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-slate-700">
                   {String(item.title ?? item.product ?? item.customer ?? "Tarea operativa")}
                 </span>
-                <ChevronRight className="h-3.5 w-3.5 text-[#a5b6c5]" />
+                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
               </Link>
             ))}
             {!queueItems.length ? (
@@ -3550,8 +3567,8 @@ export function Tanda2Home({
                   href={item.href}
                   className="flex items-center gap-3 py-2.5 first:pt-0"
                 >
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-[#2277ee]" />
-                  <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-[#304b66]">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                  <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-slate-700">
                     {item.label}
                   </span>
                   <span className={`shrink-0 text-[9px] font-semibold ${muted}`}>
@@ -3572,13 +3589,13 @@ export function Tanda2Home({
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <Panel title="Experiencia en todos tus dispositivos" subtitle="La operación se adapta al tamaño de tu pantalla">
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div className="flex items-start gap-3 rounded-xl border border-[#edf2f6] p-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2277ee]"><LayoutDashboard className="h-4 w-4" aria-hidden="true" /></span>
-              <div><strong className="block text-[10px] font-extrabold text-[#304b66]">Escritorio</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Usa el menú lateral y las tablas completas para revisar más información de una vez.</p></div>
+            <div className="flex items-start gap-3 rounded-xl border border-slate-100 p-3">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600"><LayoutDashboard className="h-4 w-4" aria-hidden="true" /></span>
+              <div><strong className="block text-[10px] font-extrabold text-slate-700">Escritorio</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Usa el menú lateral y las tablas completas para revisar más información de una vez.</p></div>
             </div>
-            <div className="flex items-start gap-3 rounded-xl border border-[#edf2f6] p-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e4f7ef] text-[#159263]"><Smartphone className="h-4 w-4" aria-hidden="true" /></span>
-              <div><strong className="block text-[10px] font-extrabold text-[#304b66]">Móvil</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Consulta pendientes y ejecuta acciones esenciales desde una vista compacta.</p></div>
+            <div className="flex items-start gap-3 rounded-xl border border-slate-100 p-3">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><Smartphone className="h-4 w-4" aria-hidden="true" /></span>
+              <div><strong className="block text-[10px] font-extrabold text-slate-700">Móvil</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Consulta pendientes y ejecuta acciones esenciales desde una vista compacta.</p></div>
             </div>
           </div>
         </Panel>
@@ -3589,9 +3606,9 @@ export function Tanda2Home({
               ["Crea una cotización", "/admin/cotizaciones"],
               ["Confirma disponibilidad", "/admin/inventario"],
               ["Consulta la trazabilidad", "/admin/auditoria"],
-            ].map(([label, href], index) => <li key={href}><Link href={href} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 text-[10px] font-extrabold text-[#304b66] transition hover:bg-[#f5f9fc] hover:text-[#2277ee]"><span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#eff4f8] text-[9px] font-black text-[#607894]">{index + 1}</span><span className="flex-1">{label}</span><ChevronRight className="h-3.5 w-3.5 text-[#a5b6c5]" aria-hidden="true" /></Link></li>)}
+            ].map(([label, href], index) => <li key={href}><Link href={href} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 text-[10px] font-extrabold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600"><span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-50 text-[9px] font-black text-slate-500">{index + 1}</span><span className="flex-1">{label}</span><ChevronRight className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" /></Link></li>)}
           </ol>
-          <p className={`mt-3 flex items-center gap-1.5 text-[10px] font-semibold ${muted}`}><CircleHelp className="h-3.5 w-3.5 text-[#2277ee]" aria-hidden="true" />Los permisos de tu rol determinan las acciones disponibles.</p>
+          <p className={`mt-3 flex items-center gap-1.5 text-[10px] font-semibold ${muted}`}><CircleHelp className="h-3.5 w-3.5 text-blue-600" aria-hidden="true" />Los permisos de tu rol determinan las acciones disponibles.</p>
         </Panel>
       </div>
     </div>
