@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // X-Frame-Options: DENY applies to every route unconditionally,
+        // including /admin/*. This must never be relaxed site-wide — a prior
+        // version of this config omitted DENY globally whenever the CMS
+        // iframe preview flag was on, which also disabled clickjacking
+        // protection for the authenticated admin panel.
         source: "/(.*)",
         headers: [
           {
@@ -22,20 +27,35 @@ const nextConfig: NextConfig = {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
-          ...(!allowIframePreview
-            ? [
-                {
-                  key: "X-Frame-Options",
-                  value: "DENY",
-                },
-              ]
-            : []),
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
         ],
       },
+      ...(allowIframePreview
+        ? [
+            {
+              // Only the public homepage itself may be framed, and only by
+              // our own origin (the admin CMS "Vista previa del sitio"
+              // iframe). CSP frame-ancestors takes precedence over the
+              // X-Frame-Options: DENY set above when both are present, so
+              // this scoped exception doesn't weaken protection anywhere
+              // else, including /admin/*.
+              source: "/",
+              headers: [
+                {
+                  key: "Content-Security-Policy",
+                  value: "frame-ancestors 'self'",
+                },
+              ],
+            },
+          ]
+        : []),
     ];
   },
 };

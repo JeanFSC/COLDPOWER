@@ -1,6 +1,7 @@
 import {
   opportunityOrigins,
   opportunityStages,
+  type ActivityType,
   type OpportunityOrigin,
   type OpportunityStage,
 } from "@/lib/crm-validation";
@@ -227,6 +228,17 @@ export type PipelineFollowUpItem = {
   overdue: boolean;
 };
 
+export type PipelineActivityItem = {
+  id: string;
+  type: ActivityType;
+  subject: string;
+  createdAt: Date;
+  actorName: string;
+  opportunityId: string;
+  opportunityCode: string;
+  customerName: string;
+};
+
 export type PipelineBoardResponse = {
   scope: { timezone: "America/Lima"; canManage: boolean; canExport: boolean };
   metrics: {
@@ -242,6 +254,7 @@ export type PipelineBoardResponse = {
   };
   lanes: PipelineLane[];
   followUps: PipelineFollowUpItem[];
+  recentActivity: PipelineActivityItem[];
   closed: PipelineCard[];
   facets: {
     stages: OpportunityStage[];

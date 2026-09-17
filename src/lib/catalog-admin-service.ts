@@ -329,10 +329,21 @@ async function getCatalogMetricTrends(queues: CatalogQueueMetrics) {
   const db = getDb();
   const today = isoDate(new Date());
   const periodDays = 7;
-  await db
-    .insert(catalogMetricSnapshots)
-    .values({ snapshotDate: today, ...queues })
-    .onConflictDoUpdate({ target: catalogMetricSnapshots.snapshotDate, set: { ...queues } });
+  // This ran an UPSERT on every single GET of /admin/catalogo — every staff
+  // page view rewrote today's row with the same shape of data. Skipping the
+  // write once today's snapshot already exists turns N writes/day into 1
+  // write + N cheap indexed reads, without changing what the trend chart shows.
+  const [existingToday] = await db
+    .select({ snapshotDate: catalogMetricSnapshots.snapshotDate })
+    .from(catalogMetricSnapshots)
+    .where(eq(catalogMetricSnapshots.snapshotDate, today))
+    .limit(1);
+  if (!existingToday) {
+    await db
+      .insert(catalogMetricSnapshots)
+      .values({ snapshotDate: today, ...queues })
+      .onConflictDoUpdate({ target: catalogMetricSnapshots.snapshotDate, set: { ...queues } });
+  }
   const snapshots = await db
     .select()
     .from(catalogMetricSnapshots)

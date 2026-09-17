@@ -2,6 +2,7 @@
 import { getDb } from "@/db";
 import { count, sum } from "drizzle-orm";
 import { auditLogs, inventoryBalances, locations, products, productPrices } from "@/db/schema";
+import { publicConditions } from "@/lib/catalog-repository";
 import { customers, opportunities, opportunityStageHistory } from "@/db/crm-schema";
 import { orderIncidents, orderItems, orderStatusHistory, orders, paymentAttempts, paymentRefunds, payments, paymentStatusHistory, saleItems, sales } from "@/db/sales-schema";
 import { consumeInventoryReservationInTransaction, notifyInventoryState, releaseInventoryReservationInTransaction, reserveInventoryBatchInTransaction, type InventoryReservationInput } from "@/lib/inventory";
@@ -19,10 +20,11 @@ function audit(actor: Actor, action: string, entityType: string, entityId: strin
 
 type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; unitPrice: string; currency: string; lineTotal: string };
 type CommercialLine = ResolvedLine & { baseLineTotal: string; discountAmount: string; promotionIds: string[] };
-async function resolveLines(tx: Transaction, input: CheckoutInput) {
+async function resolveLines(tx: Transaction, input: CheckoutInput, options: { enforcePublicSellability?: boolean } = {}) {
   const quantities = new Map<string, number>();
   for (const item of input.items) quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
-  const productRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName }).from(products).where(inArray(products.id, [...quantities.keys()]))
+  const sellabilityConditions = options.enforcePublicSellability === false ? [] : publicConditions();
+  const productRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName }).from(products).where(and(inArray(products.id, [...quantities.keys()]), ...sellabilityConditions))
   if (productRows.length !== quantities.size) throw new Error("Uno o más productos ya no están disponibles en el catálogo.");
   const now = new Date();
   const prices = await tx.select().from(productPrices).where(and(inArray(productPrices.productId, [...quantities.keys()]), eq(productPrices.priceType, "RETAIL"), eq(productPrices.active, true), lte(productPrices.validFrom, now), or(isNull(productPrices.validUntil), gt(productPrices.validUntil, now)))).orderBy(desc(productPrices.validFrom));
@@ -64,13 +66,13 @@ async function findOrCreateCustomer(tx: Transaction, input: CheckoutInput, actor
   return created;
 }
 
-export async function createCheckoutOrder(input: CheckoutInput, actor: Actor, options: { customerId?: string; channel?: string | null; origin?: "WEB" | "WHATSAPP" | "TELEFONO" | "LOCAL" | "REFERIDO" | "CLIENTE_RECURRENTE" | "OTRO" } = {}) {
+export async function createCheckoutOrder(input: CheckoutInput, actor: Actor, options: { customerId?: string; channel?: string | null; origin?: "WEB" | "WHATSAPP" | "TELEFONO" | "LOCAL" | "REFERIDO" | "CLIENTE_RECURRENTE" | "OTRO"; enforcePublicSellability?: boolean } = {}) {
   const result = await getDb().transaction(async (tx) => {
     const [existing] = await tx.select().from(orders).where(eq(orders.idempotencyKey, input.idempotencyKey)).limit(1);
     if (existing) return { order: existing, idempotent: true, reservations: [] };
     const [location] = await tx.select().from(locations).where(and(eq(locations.id, input.locationId), eq(locations.active, true))).limit(1);
   if (!location) throw new Error("El local seleccionado no está activo o no existe.");
-    const baseLines = await resolveLines(tx, input);
+    const baseLines = await resolveLines(tx, input, { enforcePublicSellability: options.enforcePublicSellability });
     const lines = await applyCheckoutPromotions(tx, baseLines, input.idempotencyKey);
     const balances = await tx.select({ productId: inventoryBalances.productId, available: inventoryBalances.onHand, reserved: inventoryBalances.reserved }).from(inventoryBalances).where(and(eq(inventoryBalances.locationId, input.locationId), inArray(inventoryBalances.productId, lines.map((line) => line.productId)))).for("update");
     const balanceByProduct = new Map(balances.map((balance) => [balance.productId, balance]));
@@ -115,7 +117,14 @@ export async function createDirectSale(input: { customerId: string; locationId: 
     phone: customer.phone,
     email: customer.email,
     idempotencyKey: input.idempotencyKey,
-  }, actor, { customerId: customer.id, channel: input.channel?.trim().slice(0, 80) || "DIRECT", origin: "LOCAL" });
+  }, actor, {
+    customerId: customer.id,
+    channel: input.channel?.trim().slice(0, 80) || "DIRECT",
+    origin: "LOCAL",
+    // Staff selling directly (phone/local orders) can sell any active product,
+    // not just ones already cleared for the public storefront.
+    enforcePublicSellability: false,
+  });
 }
 export async function listOrders() { return getDb().select().from(orders).orderBy(desc(orders.createdAt)).limit(500); }
 export async function listOrdersPage(requestedPage = 1, requestedPageSize = 25) {

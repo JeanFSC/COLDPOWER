@@ -1,10 +1,8 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, FileText, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const pages = ["home", "nosotros", "contacto", "footer"] as const;
-type PageSlug = (typeof pages)[number];
 type ContentType = "PAGE" | "BANNER" | "LANDING" | "BLOCK";
 type BlockType = "hero" | "banner" | "text" | "contact" | "links" | "promo";
 type BlockStatus = "draft" | "published";
@@ -18,6 +16,7 @@ type Block = {
   fields: Record<string, string>;
   links: LinkItem[];
 };
+type CmsPageSummary = { slug: string; title: string };
 
 const blockLabels: Record<BlockType, string> = {
   hero: "Hero",
@@ -124,8 +123,15 @@ function payloadFor(block: Block) {
   return payload;
 }
 
-export function CmsPageEditor() {
-  const [slug, setSlug] = useState<PageSlug>("home");
+export function CmsPageEditor({ pages: pageOptions = [] }: { pages?: CmsPageSummary[] }) {
+  const fallbackSlugs: CmsPageSummary[] = [
+    { slug: "home", title: "home" },
+    { slug: "nosotros", title: "nosotros" },
+    { slug: "contacto", title: "contacto" },
+    { slug: "footer", title: "footer" },
+  ];
+  const slugOptions = pageOptions.length ? pageOptions : fallbackSlugs;
+  const [slug, setSlug] = useState(slugOptions[0]?.slug ?? "home");
   const [title, setTitle] = useState("");
   const [contentType, setContentType] = useState<ContentType>("PAGE");
   const [pageStatus, setPageStatus] = useState("DRAFT");
@@ -135,7 +141,7 @@ export function CmsPageEditor() {
   const [messageKind, setMessageKind] = useState<"error" | "success">("success");
   const [busy, setBusy] = useState(false);
   const [loadedAt, setLoadedAt] = useState<unknown>(null);
-  async function load(nextSlug: PageSlug) {
+  async function load(nextSlug: string) {
     const response = await fetch(`/api/admin/cms/${nextSlug}`, { cache: "no-store" });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -169,7 +175,7 @@ export function CmsPageEditor() {
         ? new Date(data.cms.page.scheduledAt).toISOString().slice(0, 16)
         : "",
     );
-    setBlocks((data.cms?.blocks ?? []).map(toBlock));
+    setBlocks((data.cms?.blocks ?? []).map(toBlock).sort((a, b) => a.order - b.order));
     setLoadedAt(data.cms?.page?.updatedAt ?? null);
   }
   useEffect(() => {
@@ -210,6 +216,15 @@ export function CmsPageEditor() {
         .filter((_, currentIndex) => currentIndex !== index)
         .map((item, order) => ({ ...item, order })),
     );
+  }
+  function moveBlock(index: number, direction: -1 | 1) {
+    setBlocks((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next.map((item, order) => ({ ...item, order }));
+    });
   }
   function updateField(index: number, key: string, value: string) {
     setBlocks((current) =>
@@ -298,14 +313,16 @@ export function CmsPageEditor() {
     }
   }
   return (
-    <section className="mt-6 rounded-md border border-border bg-white p-5">
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-blue-600">CMS</p>
-          <h1 className="mt-1 font-display text-2xl font-black text-slate-900">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-blue-600">
+            Editor visual de bloques
+          </p>
+          <h1 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
             Contenido administrable
           </h1>
-          <p className="mt-2 text-sm text-gray-text">
+          <p className="mt-1 max-w-xl text-xs text-slate-500">
             Edita bloques con campos estructurados. El contenido publicado es el único visible en la
             web.
           </p>
@@ -315,7 +332,7 @@ export function CmsPageEditor() {
             href={`/api/admin/cms/${slug}/preview`}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-slate-900"
+            className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
           >
             Previsualizar datos
           </a>
@@ -323,7 +340,7 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("DRAFT")}
             disabled={busy}
-            className="rounded-md border border-border px-3 py-2 text-xs font-bold text-slate-900 disabled:opacity-50"
+            className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
           >
             Guardar borrador
           </button>
@@ -331,7 +348,7 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("PUBLISHED")}
             disabled={busy}
-            className="rounded-md bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+            className="inline-flex h-9 items-center rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
           >
             Publicar
           </button>
@@ -339,42 +356,45 @@ export function CmsPageEditor() {
             type="button"
             onClick={() => void save("ARCHIVED")}
             disabled={busy}
-            className="rounded-md border border-rose-600 px-3 py-2 text-xs font-bold text-rose-600 disabled:opacity-50"
+            className="inline-flex h-9 items-center rounded-lg border border-rose-200 px-3 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
           >
             Archivar
           </button>
         </div>
       </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)_140px_220px]">
-        <label className="grid gap-1 text-xs font-bold text-gray-text">
-          Sección
-          <select
-            value={slug}
-            onChange={(event) => setSlug(event.target.value as PageSlug)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
-          >
-            {pages.map((page) => (
-              <option key={page} value={page}>
-                {page}
-              </option>
-            ))}
-          </select>
+      <div className="mt-5 grid gap-3 sm:grid-cols-[200px_minmax(0,1fr)_150px_240px]">
+        <label className="grid gap-1 text-[11px] font-semibold text-slate-500">
+          Página
+          <div className="relative">
+            <select
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+              className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-8 text-sm font-medium text-slate-900 outline-none focus:border-blue-400"
+            >
+              {slugOptions.map((page) => (
+                <option key={page.slug} value={page.slug}>
+                  {page.title || page.slug}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          </div>
         </label>
-        <label className="grid gap-1 text-xs font-bold text-gray-text">
+        <label className="grid gap-1 text-[11px] font-semibold text-slate-500">
           Título interno
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none focus:border-blue-400"
             placeholder="Sin título editorial"
           />
         </label>
-        <label className="grid gap-1 text-xs font-bold text-gray-text">
+        <label className="grid gap-1 text-[11px] font-semibold text-slate-500">
           Tipo de contenido
           <select
             value={contentType}
             onChange={(event) => setContentType(event.target.value as ContentType)}
-            className="h-10 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none focus:border-blue-400"
           >
             {Object.entries(contentTypeLabels).map(([value, label]) => (
               <option key={value} value={value}>
@@ -384,7 +404,7 @@ export function CmsPageEditor() {
           </select>
         </label>
         <div className="grid gap-1">
-          <label htmlFor="cms-schedule" className="text-xs font-bold text-gray-text">
+          <label htmlFor="cms-schedule" className="text-[11px] font-semibold text-slate-500">
             Programar publicación
           </label>
           <div className="flex gap-2">
@@ -393,45 +413,71 @@ export function CmsPageEditor() {
               type="datetime-local"
               value={scheduleAt}
               onChange={(event) => setScheduleAt(event.target.value)}
-              className="h-10 min-w-0 flex-1 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
+              className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none focus:border-blue-400"
             />
             <button
               type="button"
               onClick={() => void save("SCHEDULED")}
               disabled={busy || !scheduleAt}
-              className="rounded-md border border-blue-600 px-2 text-[10px] font-bold text-blue-600 disabled:opacity-50"
+              className="rounded-lg border border-blue-200 px-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
             >
               Programar
             </button>
           </div>
         </div>
       </div>
-      <p className="mt-2 text-[11px] text-gray-text">
+      <p className="mt-2 text-[11px] font-medium text-slate-400">
         Estado: {pageStatus} · Última actualización: {formatDate(loadedAt)}
       </p>
       <div className="mt-5 grid gap-3">
+        {!blocks.length ? (
+          <div className="rounded-lg border border-dashed border-slate-200 px-5 py-10 text-center text-xs font-semibold text-slate-400">
+            <FileText className="mx-auto mb-2 h-5 w-5 text-slate-300" aria-hidden="true" />
+            Esta página todavía no tiene bloques.
+          </div>
+        ) : null}
         {blocks.map((block, index) => (
           <article
             key={`${block.key}-${index}`}
-            className="rounded-md border border-border bg-background p-4"
+            className="rounded-lg border border-slate-200 bg-slate-50/60 p-4"
           >
-            <div className="grid gap-3 sm:grid-cols-[1fr_160px_120px_auto]">
-              <label className="grid gap-1 text-[10px] font-bold text-gray-text">
+            <div className="grid gap-3 sm:grid-cols-[auto_1fr_160px_120px_auto]">
+              <div className="flex items-end gap-1 pb-0.5">
+                <button
+                  type="button"
+                  onClick={() => moveBlock(index, -1)}
+                  disabled={index === 0}
+                  aria-label="Subir bloque"
+                  className="inline-flex h-9 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30"
+                >
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveBlock(index, 1)}
+                  disabled={index === blocks.length - 1}
+                  aria-label="Bajar bloque"
+                  className="inline-flex h-9 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30"
+                >
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+              </div>
+              <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                 Clave
                 <input
                   aria-label="Clave del bloque"
                   value={block.key}
                   onChange={(event) => updateBlock(index, { key: event.target.value })}
-                  className="h-9 rounded-md border border-border bg-white px-2 text-sm"
+                  className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none focus:border-blue-400"
                 />
               </label>
-              <label className="grid gap-1 text-[10px] font-bold text-gray-text">
+              <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                 Tipo
                 <select
                   aria-label="Tipo del bloque"
                   value={block.type}
                   onChange={(event) => changeType(index, event.target.value as BlockType)}
-                  className="h-9 rounded-md border border-border bg-white px-2 text-xs"
+                  className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-900 outline-none focus:border-blue-400"
                 >
                   {Object.entries(blockLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -440,7 +486,7 @@ export function CmsPageEditor() {
                   ))}
                 </select>
               </label>
-              <label className="grid gap-1 text-[10px] font-bold text-gray-text">
+              <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                 Estado
                 <select
                   aria-label="Estado del bloque"
@@ -448,7 +494,7 @@ export function CmsPageEditor() {
                   onChange={(event) =>
                     updateBlock(index, { status: event.target.value as BlockStatus })
                   }
-                  className="h-9 rounded-md border border-border bg-white px-2 text-xs"
+                  className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-900 outline-none focus:border-blue-400"
                 >
                   <option value="draft">Borrador</option>
                   <option value="published">Publicado</option>
@@ -457,7 +503,7 @@ export function CmsPageEditor() {
               <button
                 type="button"
                 onClick={() => removeBlock(index)}
-                className="inline-flex h-9 items-center justify-center gap-1 self-end text-xs font-bold text-rose-600"
+                className="inline-flex h-9 items-center justify-center gap-1 self-end rounded-lg px-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Quitar
@@ -467,7 +513,7 @@ export function CmsPageEditor() {
               {Object.entries(block.fields).map(([key, value]) => (
                 <label
                   key={key}
-                  className={`grid gap-1 text-xs font-bold text-gray-text ${key === "body" ? "sm:col-span-2" : ""}`}
+                  className={`grid gap-1 text-[11px] font-semibold text-slate-500 ${key === "body" ? "sm:col-span-2" : ""}`}
                 >
                   {fieldLabels[key] ?? key}
                   {key === "body" ? (
@@ -475,26 +521,26 @@ export function CmsPageEditor() {
                       value={value}
                       onChange={(event) => updateField(index, key, event.target.value)}
                       rows={5}
-                      className="rounded-md border border-border bg-white px-3 py-2 text-sm font-normal text-slate-900"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-400"
                     />
                   ) : (
                     <input
                       value={value}
                       onChange={(event) => updateField(index, key, event.target.value)}
-                      className="h-9 rounded-md border border-border bg-white px-2 text-sm font-normal text-slate-900"
+                      className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none focus:border-blue-400"
                     />
                   )}
                 </label>
               ))}
             </div>
             {block.type === "links" ? (
-              <div className="mt-4 rounded-md border border-border bg-white p-3">
+              <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold text-slate-900">Enlaces del bloque</p>
+                  <p className="text-xs font-bold text-slate-900">Enlaces del bloque</p>
                   <button
                     type="button"
                     onClick={() => addLink(index)}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     Agregar enlace
@@ -513,7 +559,7 @@ export function CmsPageEditor() {
                           updateLink(index, linkIndex, "label", event.target.value)
                         }
                         placeholder="Etiqueta"
-                        className="h-9 rounded-md border border-border px-2 text-sm"
+                        className="h-9 rounded-lg border border-slate-200 px-2.5 text-sm outline-none focus:border-blue-400"
                       />
                       <input
                         aria-label={`Destino del enlace ${linkIndex + 1}`}
@@ -522,12 +568,12 @@ export function CmsPageEditor() {
                           updateLink(index, linkIndex, "href", event.target.value)
                         }
                         placeholder="/ruta-o-url"
-                        className="h-9 rounded-md border border-border px-2 text-sm"
+                        className="h-9 rounded-lg border border-slate-200 px-2.5 text-sm outline-none focus:border-blue-400"
                       />
                       <button
                         type="button"
                         onClick={() => removeLink(index, linkIndex)}
-                        className="text-xs font-bold text-rose-600"
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-700"
                       >
                         Quitar
                       </button>
@@ -535,7 +581,7 @@ export function CmsPageEditor() {
                   ))}
                 </div>
                 {!block.links.length ? (
-                  <p className="mt-2 text-xs text-gray-text">No hay enlaces agregados.</p>
+                  <p className="mt-2 text-xs text-slate-400">No hay enlaces agregados.</p>
                 ) : null}
               </div>
             ) : null}
@@ -545,14 +591,14 @@ export function CmsPageEditor() {
       <button
         type="button"
         onClick={addBlock}
-        className="mt-4 inline-flex items-center gap-1 rounded-md border border-blue-600 px-3 py-2 text-xs font-bold text-blue-600"
+        className="mt-4 inline-flex items-center gap-1 rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         Agregar bloque
       </button>
       {message ? (
         <p
-          className="mt-3 text-xs text-gray-text"
+          className={`mt-3 text-xs font-medium ${messageKind === "error" ? "text-rose-600" : "text-slate-500"}`}
           role={messageKind === "error" ? "alert" : "status"}
           aria-live={messageKind === "error" ? "assertive" : "polite"}
         >

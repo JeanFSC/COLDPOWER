@@ -33,7 +33,7 @@ import {
   type OperationsQueue,
 } from "@/lib/operations-contract";
 import { getOperationsPaymentReviewCount } from "@/lib/operations-payment-signals";
-import { upsertOperationsWorkItem } from "@/lib/operations-work-items-service";
+import { upsertOperationsWorkItemsBatch } from "@/lib/operations-work-items-service";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 
 type OperationalAction = { label: string; href: string; permission?: string };
@@ -826,80 +826,82 @@ export async function getOperationsWorkspace(
     ["FOLLOW_UP", followUpProjection.items],
     ["INVENTORY", inventoryProjection.items],
   ] as const;
+  // Build every row's projection in memory first (no DB calls), then sync all
+  // of them in a single batched upsert instead of one round trip per row —
+  // this used to fire up to 5,000 concurrent queries (5 queues x up to 1,000
+  // rows each) on a single page load of /admin/operaciones.
   const workItemRefs = new Map<
     string,
     { id: string; assigneeId: string | null; team: string | null }
   >();
-  await Promise.all(
-    projected.flatMap(([sourceType, rows]) =>
-      rows.map(async (row) => {
-        const current = row as Record<string, unknown>;
-        const sourceId =
+  const projections = projected.flatMap(([sourceType, rows]) =>
+    rows.map((row) => {
+      const current = row as Record<string, unknown>;
+      const sourceId =
+        sourceType === "INVENTORY"
+          ? `${String(current.id ?? "")}:${String(current.locationId ?? "")}`
+          : String(current.id ?? "");
+      const actions = Array.isArray(current.actions) ? current.actions : [];
+      const dueAtValue = current.due ?? current.followUp ?? null;
+      const dueAt = dueAtValue ? new Date(String(dueAtValue)) : null;
+      const priority = String(current.priority ?? current.severity ?? "").toUpperCase();
+      return {
+        workType:
+          sourceType === "FOLLOW_UP"
+            ? "Seguimiento"
+            : sourceType === "INVENTORY"
+              ? "Alerta de inventario"
+              : sourceType === "ORDER"
+                ? "Pedido"
+                : sourceType === "QUOTE"
+                  ? "Cotización"
+                  : "Oportunidad",
+        sourceType,
+        sourceId,
+        reference: String(current.code ?? current.sku ?? current.id ?? ""),
+        title: String(
+          current.title ?? current.product ?? current.customer ?? "Trabajo operativo",
+        ),
+        customer: current.customer == null ? null : String(current.customer),
+        location: current.location == null ? null : String(current.location),
+        urgency:
+          priority === "CRITICAL" || String(current.severity ?? "").toUpperCase() === "NO_STOCK"
+            ? "CRITICAL"
+            : priority === "HIGH" || current.overdue
+              ? "HIGH"
+              : priority === "MEDIUM"
+                ? "MEDIUM"
+                : "NORMAL",
+        dueAt: dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : null,
+        blocker:
+          String(current.severity ?? "").toUpperCase() === "NO_STOCK" || priority === "CRITICAL",
+        nextAction: current.nextAction == null ? null : String(current.nextAction),
+        sourceOwnerId: current.ownerId == null ? null : String(current.ownerId),
+        team:
           sourceType === "INVENTORY"
-            ? `${String(current.id ?? "")}:${String(current.locationId ?? "")}`
-            : String(current.id ?? "");
-        const actions = Array.isArray(current.actions) ? current.actions : [];
-        const dueAtValue = current.due ?? current.followUp ?? null;
-        const dueAt = dueAtValue ? new Date(String(dueAtValue)) : null;
-        const priority = String(current.priority ?? current.severity ?? "").toUpperCase();
-        const workItem = await upsertOperationsWorkItem({
-          workType:
-            sourceType === "FOLLOW_UP"
-              ? "Seguimiento"
-              : sourceType === "INVENTORY"
-                ? "Alerta de inventario"
-                : sourceType === "ORDER"
-                  ? "Pedido"
-                  : sourceType === "QUOTE"
-                    ? "Cotización"
-                    : "Oportunidad",
-          sourceType,
-          sourceId,
-          reference: String(current.code ?? current.sku ?? current.id ?? ""),
-          title: String(
-            current.title ?? current.product ?? current.customer ?? "Trabajo operativo",
-          ),
-          customer: current.customer == null ? null : String(current.customer),
-          location: current.location == null ? null : String(current.location),
-          urgency:
-            priority === "CRITICAL" || String(current.severity ?? "").toUpperCase() === "NO_STOCK"
-              ? "CRITICAL"
-              : priority === "HIGH" || current.overdue
-                ? "HIGH"
-                : priority === "MEDIUM"
-                  ? "MEDIUM"
-                  : "NORMAL",
-          dueAt: dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : null,
-          blocker:
-            String(current.severity ?? "").toUpperCase() === "NO_STOCK" || priority === "CRITICAL",
-          nextAction: current.nextAction == null ? null : String(current.nextAction),
-          sourceOwnerId: current.ownerId == null ? null : String(current.ownerId),
-          team:
-            sourceType === "INVENTORY"
-              ? "ALMACEN"
-              : sourceType === "FOLLOW_UP" || sourceType === "QUOTE" || sourceType === "OPPORTUNITY"
-                ? "VENTAS"
-                : "OPERACIONES",
-          allowedActions: actions.flatMap((action) =>
-            action &&
-            typeof action === "object" &&
-            typeof (action as { label?: unknown }).label === "string"
-              ? [(action as { label: string }).label]
-              : [],
-          ),
-          sourceUpdatedAt: current.date ? new Date(String(current.date)) : new Date(),
-        });
-        current.workItemId = workItem.id;
-        current.workItemAssigneeId = workItem.assigneeId;
-        workItemRefs.set(`${sourceType}:${sourceId}`, {
-          id: workItem.id,
-          assigneeId: workItem.assigneeId,
-          team: workItem.team,
-        });
-        return workItem;
-      }),
-    ),
+            ? "ALMACEN"
+            : sourceType === "FOLLOW_UP" || sourceType === "QUOTE" || sourceType === "OPPORTUNITY"
+              ? "VENTAS"
+              : "OPERACIONES",
+        allowedActions: actions.flatMap((action) =>
+          action &&
+          typeof action === "object" &&
+          typeof (action as { label?: unknown }).label === "string"
+            ? [(action as { label: string }).label]
+            : [],
+        ),
+        sourceUpdatedAt: current.date ? new Date(String(current.date)) : new Date(),
+      } as const;
+    }),
   );
+  const workItems = await upsertOperationsWorkItemsBatch(projections);
+  for (const workItem of workItems) {
+    workItemRefs.set(`${workItem.sourceType}:${workItem.sourceId}`, {
+      id: workItem.id,
+      assigneeId: workItem.assigneeId,
+      team: workItem.team,
+    });
+  }
   const attachWorkItems = (sourceType: string, rows: Array<Record<string, unknown>>) =>
     rows.map((row) => {
       const sourceId =

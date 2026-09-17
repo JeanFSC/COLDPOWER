@@ -1344,31 +1344,6 @@
 .alertDetail > svg {
   flex-shrink: 0;
 }
-@media (min-width: 1280px) {
-  :global(body:has([data-operations-center]) aside.fixed) {
-    width: 205px;
-  }
-  :global(body:has([data-operations-center]) aside.fixed + div) {
-    padding-left: 205px;
-  }
-  :global(body:has([data-operations-center]) aside.fixed > div:first-child) {
-    height: 60px;
-  }
-  :global(body:has([data-operations-center]) header.sticky) {
-    height: 60px;
-  }
-  :global(body:has([data-operations-center]) .admin-shell main) {
-    padding: 21px 22px;
-  }
-  :global(body:has([data-operations-center]) aside.fixed nav a) {
-    font-size: 12px;
-    font-weight: 400;
-    min-height: 31px;
-  }
-  :global(body:has([data-operations-center]) aside.fixed nav) {
-    padding: 15px 10px;
-  }
-}
 @media (max-width: 1450px) {
   .heading {
     align-items: flex-start;

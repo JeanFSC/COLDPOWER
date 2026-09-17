@@ -116,13 +116,13 @@ type NewForm = {
   items: NewItem[];
 };
 
-const laneTone: Record<string, { border: string; dot: string; wash: string }> = {
-  NEW: { border: "border-blue-600", dot: "bg-blue-600", wash: "bg-blue-50" },
-  CONTACTED: { border: "border-blue-400", dot: "bg-blue-400", wash: "bg-blue-50" },
-  QUOTING: { border: "border-purple-400", dot: "bg-purple-400", wash: "bg-purple-50" },
-  FOLLOW_UP: { border: "border-amber-300", dot: "bg-amber-400", wash: "bg-amber-50" },
-  NEGOTIATION: { border: "border-amber-600", dot: "bg-amber-600", wash: "bg-amber-50" },
-  WON: { border: "border-emerald-500", dot: "bg-emerald-500", wash: "bg-emerald-50" },
+const laneTone: Record<string, { border: string; dot: string; wash: string; chipText: string }> = {
+  NEW: { border: "border-blue-600", dot: "bg-blue-600", wash: "bg-blue-50", chipText: "text-blue-700" },
+  CONTACTED: { border: "border-blue-400", dot: "bg-blue-400", wash: "bg-blue-50", chipText: "text-blue-600" },
+  QUOTING: { border: "border-purple-400", dot: "bg-purple-400", wash: "bg-purple-50", chipText: "text-purple-600" },
+  FOLLOW_UP: { border: "border-amber-300", dot: "bg-amber-400", wash: "bg-amber-50", chipText: "text-amber-700" },
+  NEGOTIATION: { border: "border-amber-600", dot: "bg-amber-600", wash: "bg-amber-50", chipText: "text-amber-700" },
+  WON: { border: "border-emerald-500", dot: "bg-emerald-500", wash: "bg-emerald-50", chipText: "text-emerald-600" },
 };
 
 const initialForm: NewForm = {
@@ -145,10 +145,14 @@ function dateValue(value: BoardDate) {
 function dateLabel(value: BoardDate, withTime = false) {
   const date = dateValue(value);
   if (!date || Number.isNaN(date.getTime())) return "Sin fecha";
-  return new Intl.DateTimeFormat(
+  const formatted = new Intl.DateTimeFormat(
     "es-PE",
     withTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" },
   ).format(date);
+  // Node's ICU data and browser ICU data disagree on which whitespace
+  // character precedes "a. m."/"p. m.", which breaks SSR hydration even
+  // though the text looks identical. Normalize to a plain space.
+  return formatted.replace(/[  ]/g, " ");
 }
 function money(value: string | number | null | undefined, currency?: string | null) {
   if (value == null || value === "") return "Sin monto";
@@ -183,7 +187,7 @@ function MetricCard({
   value: React.ReactNode;
   helper: React.ReactNode;
   icon: React.ReactNode;
-  tone?: "blue" | "orange" | "green" | "purple";
+  tone?: "blue" | "orange" | "green" | "purple" | "red";
   tooltip?: string;
   onClick?: () => void;
 }) {
@@ -192,6 +196,7 @@ function MetricCard({
     orange: "bg-amber-50 text-amber-600",
     green: "bg-emerald-50 text-emerald-500",
     purple: "bg-purple-50 text-purple-600",
+    red: "bg-rose-50 text-rose-600",
   };
   return (
     <article
@@ -231,9 +236,48 @@ function MetricCard({
   );
 }
 
+function SummaryRow({
+  icon,
+  tone,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  tone: "blue" | "orange" | "green" | "purple" | "red";
+  label: string;
+  value: string;
+}) {
+  const tones = {
+    blue: "bg-blue-50 text-blue-600",
+    orange: "bg-amber-50 text-amber-600",
+    green: "bg-emerald-50 text-emerald-500",
+    purple: "bg-purple-50 text-purple-600",
+    red: "bg-rose-50 text-rose-600",
+  };
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${tones[tone]}`}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-slate-500">{label}</span>
+      <span className="shrink-0 text-[12px] font-black text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+const activityTypeIcon: Record<string, React.ReactNode> = {
+  CALL: <Phone className="h-3.5 w-3.5" />,
+  WHATSAPP: <MessageCircle className="h-3.5 w-3.5" />,
+  EMAIL: <Mail className="h-3.5 w-3.5" />,
+  MEETING: <UsersRound className="h-3.5 w-3.5" />,
+  TASK: <Check className="h-3.5 w-3.5" />,
+  NOTE: <CircleHelp className="h-3.5 w-3.5" />,
+};
+
 function Card({
   card,
   canManage,
+  tone,
   onOpen,
   onMove,
   onDragStart,
@@ -241,6 +285,7 @@ function Card({
 }: {
   card: PipelineCard;
   canManage: boolean;
+  tone: { border: string; dot: string; wash: string; chipText: string };
   onOpen: (id: string) => void;
   onMove: (card: PipelineCard, stage: OpportunityStage) => void;
   onDragStart: (event: DragEvent<HTMLElement>, card: PipelineCard) => void;
@@ -275,7 +320,7 @@ function Card({
       draggable={canManage}
       onDragStart={(event) => onDragStart(event, card)}
       onDragEnd={onDragEnd}
-      className={`group rounded-xl border bg-white p-3.5 shadow-[0_3px_10px_rgba(16,42,67,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,42,67,0.1)] ${card.overdue ? "border-rose-200" : "border-slate-200"}`}
+      className={`group relative rounded-xl border bg-white p-3.5 shadow-[0_3px_10px_rgba(16,42,67,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,42,67,0.1)] ${card.overdue ? "border-rose-200" : "border-slate-200"}`}
     >
       <div className="flex items-start justify-between gap-2">
         <button type="button" onClick={() => onOpen(card.id)} className="min-w-0 text-left">
@@ -336,15 +381,23 @@ function Card({
             : `Aging ${relativeAge(card.agingDays)}`}
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
-        <span className="min-w-0 truncate text-[10px] font-semibold text-slate-400">
-          {card.nextAction ?? "Sin próxima acción"}
+      {card.nextAction ? (
+        <div
+          className={`mt-3 flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[10px] font-bold ${tone.wash} ${tone.chipText}`}
+        >
+          <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+          <span className="min-w-0 truncate">{card.nextAction}</span>
           {card.followUpAt && !card.overdue ? (
-            <span className="ml-1 font-bold text-slate-700">
-              · {dateLabel(card.followUpAt, true)}
-            </span>
+            <span className="ml-auto shrink-0 opacity-80">{dateLabel(card.followUpAt, true)}</span>
           ) : null}
-        </span>
+        </div>
+      ) : null}
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+        {!card.nextAction ? (
+          <span className="min-w-0 truncate text-[10px] font-semibold text-slate-400">
+            Sin próxima acción
+          </span>
+        ) : null}
         {canManage ? (
           <label className="sr-only" htmlFor={`stage-${card.id}`}>
             Cambiar etapa de {card.customerName}
@@ -355,7 +408,7 @@ function Card({
             id={`stage-${card.id}`}
             value={card.stage}
             onChange={(event) => onMove(card, event.target.value as OpportunityStage)}
-            className="max-w-[112px] rounded-md border border-slate-200 bg-white px-1.5 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-400"
+            className="ml-auto max-w-[112px] rounded-md border border-slate-200 bg-white px-1.5 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-400"
           >
             <option value={card.stage}>{pipelineStageLabels[card.stage]}</option>
             {stageChoices
@@ -1172,7 +1225,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <MetricCard
           label="Oportunidades activas"
           value={board.metrics.activeOpportunities}
@@ -1208,6 +1261,14 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
           icon={<Check className="h-4 w-4" />}
           tone="green"
           onClick={() => updateQuery({ view: "closed" })}
+        />
+        <MetricCard
+          label="Negocios estancados"
+          value={board.metrics.stale}
+          helper="Sin contacto reciente"
+          icon={<AlertCircle className="h-4 w-4" />}
+          tone="red"
+          onClick={() => updateQuery({ view: null })}
         />
       </div>
       <div className="rounded-xl border border-slate-100 bg-white px-4 pt-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:px-5">
@@ -1538,6 +1599,7 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                           key={card.id}
                           card={card}
                           canManage={board.scope.canManage}
+                          tone={tone}
                           onOpen={openDetail}
                           onMove={requestMove}
                           onDragStart={onDragStart}
@@ -1564,6 +1626,151 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
                   </section>
                 );
               })}
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-slate-700">
+                Resumen del pipeline
+              </h2>
+              <div className="mt-3 space-y-3">
+                <SummaryRow
+                  icon={<UsersRound className="h-3.5 w-3.5" />}
+                  tone="blue"
+                  label="Oportunidades activas"
+                  value={String(board.metrics.activeOpportunities)}
+                />
+                <SummaryRow
+                  icon={<Tag className="h-3.5 w-3.5" />}
+                  tone="purple"
+                  label="Valor del pipeline"
+                  value={amountList(board.metrics.amountByCurrency)}
+                />
+                <SummaryRow
+                  icon={<AlertCircle className="h-3.5 w-3.5" />}
+                  tone="orange"
+                  label="Seguimientos vencidos"
+                  value={String(board.metrics.overdueFollowUps)}
+                />
+                <SummaryRow
+                  icon={<Check className="h-3.5 w-3.5" />}
+                  tone="green"
+                  label="Tasa de cierre"
+                  value={
+                    board.metrics.closeRate == null ? "N/D" : `${board.metrics.closeRate.toFixed(1)}%`
+                  }
+                />
+                <SummaryRow
+                  icon={<AlertCircle className="h-3.5 w-3.5" />}
+                  tone="red"
+                  label="Negocios estancados"
+                  value={String(board.metrics.stale)}
+                />
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-slate-700">
+                Valor por etapa
+              </h2>
+              <div className="mt-4 flex h-32 items-end gap-3">
+                {(() => {
+                  const laneValue = (lane: (typeof board.lanes)[number]) =>
+                    lane.amountByCurrency.find((amount) => amount.currency === "PEN")?.amount ??
+                    lane.amountByCurrency[0]?.amount ??
+                    0;
+                  const maxValue = Math.max(1, ...board.lanes.map(laneValue));
+                  return board.lanes.map((lane) => {
+                    const tone = laneTone[lane.key] ?? laneTone.NEW;
+                    const value = laneValue(lane);
+                    return (
+                      <div key={lane.key} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+                        <span className="text-[10px] font-black text-slate-700">
+                          {value ? money(value, "PEN") : "—"}
+                        </span>
+                        <div
+                          className={`w-full max-w-[28px] rounded-t-md ${tone.dot}`}
+                          style={{ height: `${Math.max(4, (value / maxValue) * 100)}%` }}
+                        />
+                        <span className="max-w-[64px] truncate text-[10px] font-bold text-slate-500">
+                          {lane.label}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-slate-700">
+                Seguimiento comercial
+              </h2>
+              <div className="mt-3 space-y-3">
+                {board.recentActivity.length ? (
+                  board.recentActivity.map((activity) => (
+                    <button
+                      type="button"
+                      key={activity.id}
+                      onClick={() => openDetail(activity.opportunityId)}
+                      className="flex w-full items-start gap-2.5 text-left"
+                    >
+                      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                        {activityTypeIcon[activity.type] ?? <CircleHelp className="h-3.5 w-3.5" />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[11px] font-bold text-slate-800">
+                          {activity.subject}
+                        </span>
+                        <span className="block truncate text-[10px] font-semibold text-slate-400">
+                          {activity.customerName}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right text-[10px] font-semibold text-slate-400">
+                        <span className="block">{dateLabel(activity.createdAt, true)}</span>
+                        <span className="block">{activity.actorName}</span>
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-[11px] font-semibold text-slate-400">
+                    Sin actividad reciente registrada.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-[0_2px_8px_rgba(16,42,67,0.04)] sm:p-5">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.08em] text-slate-700">
+                Tareas pendientes
+              </h2>
+              <div className="mt-3 space-y-3">
+                {board.followUps.length ? (
+                  board.followUps.slice(0, 5).map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => openDetail(item.opportunityId)}
+                      className="flex w-full items-start justify-between gap-2 text-left"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-[11px] font-bold text-slate-800">
+                          {item.title}
+                        </span>
+                        <span className="block truncate text-[10px] font-semibold text-slate-400">
+                          {item.customerName}
+                        </span>
+                      </span>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ${item.overdue ? "bg-rose-50 text-rose-600" : "bg-slate-50 text-slate-500"}`}
+                      >
+                        {dateLabel(item.dueAt, true)}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-[11px] font-semibold text-slate-400">
+                    Todo al día. No tienes seguimientos pendientes.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </>
@@ -2139,10 +2346,22 @@ function FollowupsView({
     </div>
   );
 }
+const closedStageBadge: Record<string, { label: string; className: string }> = {
+  CLOSED: { label: "✓ Cerrada", className: "bg-emerald-100 text-emerald-700" },
+  LOST: { label: "† Perdida", className: "bg-rose-50 text-rose-600" },
+  CANCELLED: { label: "— Cancelada", className: "bg-slate-100 text-slate-500" },
+  NO_RESPONSE: { label: "… Sin respuesta", className: "bg-amber-50 text-amber-700" },
+};
+
 function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: string) => void }) {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {cards.map((card) => (
+      {cards.map((card) => {
+        const badge = closedStageBadge[card.stage] ?? {
+          label: pipelineStageLabels[card.stage],
+          className: "bg-slate-50 text-slate-500",
+        };
+        return (
         <button
           type="button"
           key={card.id}
@@ -2151,8 +2370,8 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
         >
           <div className="flex justify-between gap-2">
             <p className="text-sm font-black text-slate-900">{card.customerName}</p>
-            <span className="rounded-full bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-500">
-              {pipelineStageLabels[card.stage]}
+            <span className={`rounded-full px-2 py-1 text-[10px] font-black ${badge.className}`}>
+              {badge.label}
             </span>
           </div>
           <p className="mt-1 text-xs font-semibold text-slate-500">
@@ -2165,7 +2384,8 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
             {card.nextAction ?? "Sin motivo registrado"}
           </p>
         </button>
-      ))}
+        );
+      })}
       {!cards.length ? (
         <EmptyState text="No hay oportunidades cerradas con estos filtros." />
       ) : null}

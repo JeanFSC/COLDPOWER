@@ -227,10 +227,39 @@ function number(value: number) {
 
 function dateTime(value: string | null) {
   if (!value) return "Sin registro";
-  return new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short" }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat("es-PE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Lima",
+  }).format(new Date(value));
 }
+
+const movementIcons: Record<string, typeof ArrowDownToLine> = {
+  OPENING_BALANCE: Boxes,
+  PURCHASE_RECEIPT: Truck,
+  SALE: ArrowUpFromLine,
+  ADJUSTMENT_IN: RefreshCw,
+  ADJUSTMENT_OUT: RefreshCw,
+  TRANSFER_IN: ArrowLeftRight,
+  TRANSFER_OUT: ArrowLeftRight,
+  RETURN_IN: Package,
+  RETURN_OUT: Package,
+  RESERVATION: ShieldCheck,
+  RESERVATION_RELEASE: Check,
+};
+const movementBadgeColors: Record<string, string> = {
+  OPENING_BALANCE: "bg-slate-100 text-slate-600",
+  PURCHASE_RECEIPT: "bg-sky-50 text-sky-600",
+  SALE: "bg-rose-50 text-rose-600",
+  ADJUSTMENT_IN: "bg-emerald-50 text-emerald-600",
+  ADJUSTMENT_OUT: "bg-rose-50 text-rose-600",
+  TRANSFER_IN: "bg-amber-50 text-amber-600",
+  TRANSFER_OUT: "bg-amber-50 text-amber-600",
+  RETURN_IN: "bg-violet-50 text-violet-600",
+  RETURN_OUT: "bg-violet-50 text-violet-600",
+  RESERVATION: "bg-indigo-50 text-indigo-600",
+  RESERVATION_RELEASE: "bg-teal-50 text-teal-600",
+};
 
 function statusClass(status: keyof typeof inventoryStatusLabels) {
   switch (status) {
@@ -1883,55 +1912,62 @@ function InventoryOperationsTabs({
       <div className="p-4" role="tabpanel">
         {tab === "movements" ? (
           <div className="grid gap-2">
-            {data.operations.movements.map((movement) => (
-              <div
-                key={movement.id}
-                className="grid gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.3fr)_minmax(180px,1fr)_90px_120px]"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[8px] font-extrabold text-blue-600">
-                      {movement.label}
-                    </span>
-                    <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
+            {data.operations.movements.map((movement) => {
+              const netDelta = movement.entry - movement.exit;
+              const MovementIcon = movementIcons[movement.type] ?? RefreshCw;
+              const badgeColor = movementBadgeColors[movement.type] ?? "bg-blue-50 text-blue-600";
+              const amountColor =
+                netDelta > 0 ? "text-emerald-600" : netDelta < 0 ? "text-rose-600" : "text-slate-500";
+              return (
+                <div
+                  key={movement.id}
+                  className="flex items-start gap-3 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-slate-200"
+                >
+                  <span
+                    className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${badgeColor}`}
+                  >
+                    <MovementIcon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-[10px] font-extrabold text-slate-700">
+                        {movement.label}
+                      </span>
+                      <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
+                    </div>
+                    <p className="mt-0.5 truncate text-[10.5px] font-extrabold text-slate-700">
+                      {movement.productName}
+                    </p>
+                    <p className="mt-1 truncate text-[9px] text-slate-400">
+                      {movement.locationCode} · {movement.locationName}
+                      {movement.referenceLabel ? ` · ${movement.referenceLabel}` : ""}
+                      {movement.actorName ? ` · ${movement.actorName}` : " · Sistema"}
+                    </p>
+                    {movement.reason ? (
+                      <p className="mt-1 truncate text-[8.5px] italic text-slate-400">
+                        {movement.reason}
+                      </p>
+                    ) : null}
                   </div>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
-                    {movement.productName}
-                  </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
-                    {movement.locationCode} · {movement.locationName}
-                  </p>
+                  <div className="shrink-0 text-right">
+                    <p className={`text-[12px] font-black ${amountColor}`}>
+                      {netDelta > 0 ? "+" : ""}
+                      {number(netDelta)}
+                      <span className="ml-0.5 text-[8px] font-bold text-slate-400">uds</span>
+                    </p>
+                    {movement.reservedDelta ? (
+                      <p className="mt-1 text-[8px] font-extrabold text-purple-600">
+                        Reserva {movement.reservedDelta > 0 ? "+" : ""}
+                        {number(movement.reservedDelta)}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-[8.5px] text-slate-400">
+                      {dateTime(movement.createdAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-[9px] text-slate-500">
-                  <p>
-                    <span className="font-extrabold text-slate-600">Referencia:</span>{" "}
-                    {movement.referenceLabel}
-                  </p>
-                  <p className="mt-1">
-                    <span className="font-extrabold text-slate-600">Actor:</span>{" "}
-                    {movement.actorName || "Sistema"}
-                  </p>
-                  {movement.reason ? <p className="mt-1 truncate">{movement.reason}</p> : null}
-                </div>
-                <div className="text-[10px] font-black">
-                  <span className="block text-emerald-700">
-                    {movement.entry ? `+${number(movement.entry)}` : "—"}
-                  </span>
-                  <span className="mt-1 block text-rose-600">
-                    {movement.exit ? `-${number(movement.exit)}` : "—"}
-                  </span>
-                  {movement.reservedDelta ? (
-                    <span className="mt-1 block text-purple-600">
-                      Res. {movement.reservedDelta > 0 ? "+" : ""}
-                      {number(movement.reservedDelta)}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="text-[9px] text-slate-400 lg:text-right">
-                  {dateTime(movement.createdAt)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {!data.operations.movements.length ? (
               <OperationEmpty text="No hay movimientos recientes persistidos." />
             ) : null}
@@ -3596,21 +3632,17 @@ function MovementsRail({
           const delta = movement.entry - movement.exit;
           const positive = delta > 0;
           const negative = delta < 0;
+          const MovementIcon = movementIcons[movement.type] ?? RefreshCw;
+          const badgeColor = movementBadgeColors[movement.type] ?? "bg-blue-50 text-blue-600";
           return (
             <div
               key={movement.id}
               className="flex items-start gap-2.5 rounded-lg border border-slate-100 p-2.5"
             >
               <span
-                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${positive ? "bg-emerald-50 text-emerald-600" : negative ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"}`}
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${badgeColor}`}
               >
-                {positive ? (
-                  <ArrowDownToLine className="h-3 w-3" />
-                ) : negative ? (
-                  <ArrowUpFromLine className="h-3 w-3" />
-                ) : (
-                  <RefreshCw className="h-3 w-3" />
-                )}
+                <MovementIcon className="h-3 w-3" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[10px] font-bold text-slate-700">{movement.label}</p>

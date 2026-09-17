@@ -120,6 +120,15 @@ export async function listCmsPages() {
     .limit(100);
 }
 
+export async function countActiveCmsBlocks() {
+  const db = getDb();
+  const [row] = await db
+    .select({ total: count() })
+    .from(cmsBlocks)
+    .where(eq(cmsBlocks.status, "PUBLISHED"));
+  return row?.total ?? 0;
+}
+
 async function ensureMediaReferences(
   tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0],
   blocks: ValidatedCmsBlock[],

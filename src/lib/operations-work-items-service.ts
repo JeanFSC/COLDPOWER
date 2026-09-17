@@ -95,6 +95,44 @@ export async function upsertOperationsWorkItem(input: WorkItemProjection) {
   return row;
 }
 
+// Batched equivalent of calling upsertOperationsWorkItem once per projected row.
+// The read path (getOperationsWorkspace) used to `await` one upsert per source
+// row inside a Promise.all — up to ~5,000 individual round trips per page load
+// (5 queues x up to 1,000 rows), which saturated the Neon connection pool.
+// A single multi-row INSERT ... ON CONFLICT DO UPDATE keeps identical semantics
+// (same columns kept in sync, assigneeId/status never touched here) in one round trip.
+export async function upsertOperationsWorkItemsBatch(inputs: WorkItemProjection[]) {
+  if (!inputs.length) return [];
+  const rows = inputs.map((input) => ({
+    id: `work-item-${input.sourceType.toLowerCase()}-${input.sourceId}`,
+    ...itemValues(input),
+  }));
+  const excluded = <T extends string>(column: T) => sql.raw(`excluded.${column}`);
+  return getDb()
+    .insert(operationsWorkItems)
+    .values(rows)
+    .onConflictDoUpdate({
+      target: [operationsWorkItems.sourceType, operationsWorkItems.sourceId],
+      set: {
+        workType: excluded("work_type"),
+        reference: excluded("reference"),
+        title: excluded("title"),
+        customer: excluded("customer"),
+        location: excluded("location"),
+        urgency: excluded("urgency"),
+        dueAt: excluded("due_at"),
+        blocker: excluded("blocker"),
+        nextAction: excluded("next_action"),
+        sourceOwnerId: excluded("source_owner_id"),
+        team: excluded("team"),
+        allowedActions: excluded("allowed_actions"),
+        sourceUpdatedAt: excluded("source_updated_at"),
+        updatedAt: excluded("updated_at"),
+      },
+    })
+    .returning();
+}
+
 export async function listOperationsWorkItems(
   options: {
     status?: WorkItemStatus;

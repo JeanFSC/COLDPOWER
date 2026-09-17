@@ -87,7 +87,10 @@ export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePa
     db.selectDistinct({ value: quotes.customerType }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where).orderBy(quotes.customerType),
     db.selectDistinct({ value: quotes.currency }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where).orderBy(quotes.currency),
     db.selectDistinct({ id: seller.id, name: seller.name, email: seller.email }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).innerJoin(seller, eq(seller.id, sql`coalesce(${opportunities.assignedSellerId}, ${quotes.assignedSellerId})`)).where(where).orderBy(asc(seller.name), asc(seller.email)),
-    db.select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil }).from(quotes),
+    // NOTE: intentionally only quotes/customerQuoteLinks/customers/opportunities joined —
+    // matches the same `where` scope as the other summary queries above so status
+    // counts reflect the filtered set, not every quote ever created.
+    db.select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where),
   ]);
   const itemRows = rows.length ? await db.select({ quoteId: quoteItems.quoteId, sku: quoteItems.skuSnapshot, name: quoteItems.productNameSnapshot, quantity: quoteItems.quantity }).from(quoteItems).where(inArray(quoteItems.quoteId, rows.map((row) => row.quote.id))).orderBy(asc(quoteItems.createdAt)) : [];
   const itemMap = quoteItemPreviewMap(itemRows);

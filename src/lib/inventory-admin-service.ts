@@ -187,8 +187,8 @@ function movementReference(referenceType: string | null, referenceId: string | n
           ? "Reserva"
           : referenceType === "purchase"
             ? "Compra"
-            : "Referencia";
-  return `${label} ${referenceId}`;
+            : null;
+  return label ? `${label} ${referenceId}` : referenceId;
 }
 
 const lastMovementAt = sql<Date | null>`(

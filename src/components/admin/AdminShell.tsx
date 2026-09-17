@@ -135,6 +135,11 @@ export function AdminShell({
     role === "VENTAS" ||
     role === "ALMACEN" ||
     role === "COMPRAS";
+  // Every admin module shares identical shell dimensions (sidebar, header,
+  // main padding) regardless of route — the Operations Center used to get a
+  // denser shell via a page-specific override, but that made the sidebar and
+  // topbar visibly change size when navigating between modules. Removed so
+  // the shell is dimensionally identical everywhere.
   const sidebarWidth = compactSidebar ? "w-[190px]" : "w-[198px]";
   const contentOffset = compactSidebar ? "xl:pl-[190px]" : "xl:pl-[198px]";
   useEffect(() => {
@@ -374,7 +379,9 @@ export function AdminShell({
             </section>
           </div>
         ) : null}
-        <main className="mx-auto min-w-0 w-full max-w-none px-4 py-6 sm:px-6 xl:px-5 xl:py-5">
+        <main
+          className="mx-auto min-w-0 w-full max-w-none px-4 py-6 sm:px-6 xl:px-5 xl:py-5"
+        >
           {children}
         </main>
       </div>

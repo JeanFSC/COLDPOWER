@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
+import { can } from "@/lib/roles";
 import { getProductAnalytics } from "@/lib/product-analytics";
 import { ProductCommercialEditor } from "@/components/admin/ProductCommercialEditor";
 
@@ -16,7 +17,9 @@ export default async function ProductAnalyticsPage({
   params: Promise<{ id: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requirePermission("catalog.product.edit");
+  const actor = await requirePermission("catalog.product.edit");
+  const canViewCost = can(actor.role, "pricing.cost.view");
+  const canViewMargin = can(actor.role, "pricing.margin.view");
   const { id } = await params;
   const query = (await searchParams) ?? {};
   const value = (key: string) => {
@@ -25,7 +28,19 @@ export default async function ProductAnalyticsPage({
   };
   const from = parseDate(value("from"));
   const to = parseDate(value("to"));
-  const data = await getProductAnalytics(id, { from, to });
+  const rawData = await getProductAnalytics(id, { from, to });
+  // Cost/wholesale/margin are financial data that catalog.product.edit alone
+  // does not authorize (e.g. VENTAS has catalog.product.edit but not
+  // pricing.cost.view/pricing.margin.view) — strip them server-side so they
+  // never reach the RSC payload for a role that shouldn't see them.
+  const data = rawData
+    ? {
+        ...rawData,
+        cost: canViewCost ? rawData.cost : null,
+        wholesalePrice: canViewCost ? rawData.wholesalePrice : null,
+        margin: canViewMargin ? rawData.margin : null,
+      }
+    : rawData;
   if (!data)
     return (
       <div className="rounded-md border border-danger/25 bg-danger/5 p-6 text-sm text-gray-text">

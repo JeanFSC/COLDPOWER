@@ -76,9 +76,22 @@ function rowValue(row: SourceRow, field: keyof typeof aliases) {
 function splitArray(value: string) { return value.split(/[,;|]/).map((item) => item.trim()).filter(Boolean); }
 function slugify(value: string) { return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 180); }
 
+// The canonical workbook (see AGENTS.md/README.md) carries audit sheets
+// alongside the real product data; the only sheet ever allowed to feed the
+// public catalog is IMPORT_PRODUCTOS. Picking "the first sheet" is unsafe if
+// the workbook gets reordered or an audit sheet is ever placed first.
+const CANONICAL_SHEET_NAME = "IMPORT_PRODUCTOS";
 function parseFile(data: ArrayBuffer) {
   const workbook = XLSX.read(Buffer.from(data), { type: "buffer", cellDates: false });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const canonicalSheetName = workbook.SheetNames.find(
+    (name) => name.trim().toUpperCase() === CANONICAL_SHEET_NAME,
+  );
+  const sheetName = canonicalSheetName ?? (workbook.SheetNames.length === 1 ? workbook.SheetNames[0] : undefined);
+  if (!sheetName)
+    throw new Error(
+      `CATALOG_IMPORT_MISSING_SHEET: el archivo debe tener una hoja llamada "${CANONICAL_SHEET_NAME}" (encontradas: ${workbook.SheetNames.join(", ")}).`,
+    );
+  const sheet = workbook.Sheets[sheetName];
   if (!sheet) throw new Error("CATALOG_IMPORT_EMPTY");
   return XLSX.utils.sheet_to_json<SourceRow>(sheet, { defval: null, raw: false });
 }

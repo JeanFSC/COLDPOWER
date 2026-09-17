@@ -1,4 +1,4 @@
-import { and, eq, inArray, sum } from "drizzle-orm";
+import { and, eq, inArray, sql, sum } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory } from "@/db/sales-schema";
@@ -19,21 +19,30 @@ export class PaymentDomainError extends Error {
 export async function createProviderPayment(input: { orderId: string; returnUrl?: string; idempotencyKey?: string }) {
   const db = getDb();
   const key = input.idempotencyKey ?? `provider-${input.orderId}`;
-  const [existingAttempt] = await db.select().from(paymentAttempts).where(eq(paymentAttempts.idempotencyKey, key)).limit(1);
-  if (existingAttempt) {
-    const [existingPayment] = await db.select().from(payments).where(eq(payments.id, existingAttempt.paymentId)).limit(1);
-    if (existingPayment) return { payment: existingPayment, checkoutUrl: null, idempotent: true };
-  }
-  const [order] = await db.select().from(orders).where(eq(orders.id, input.orderId)).limit(1);
-  if (!order) throw new PaymentDomainError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404);
-  if (["CANCELLED", "DELIVERED"].includes(order.status)) throw new PaymentDomainError("PAYMENT_NOT_ALLOWED", "El pedido no admite un nuevo pago.", 409);
-  let created: PaymentCreateResult;
-  try { created = await getPaymentProvider().createPayment({ orderId: order.id, amount: order.total, currency: order.currency, returnUrl: input.returnUrl }); } catch (error) {
-    const unconfigured = error instanceof Error && error.message === "PAYMENT_PROVIDER_NOT_CONFIGURED";
-    throw new PaymentDomainError(unconfigured ? "PAYMENT_PROVIDER_NOT_CONFIGURED" : "PAYMENT_PROVIDER_CREATE_FAILED", error instanceof Error ? error.message : "No se pudo crear el pago en el proveedor.", unconfigured ? 503 : 502);
-  }
-  if (!created.provider || !created.providerReference || !created.checkoutUrl) throw new PaymentDomainError("PAYMENT_PROVIDER_INVALID_RESPONSE", "El proveedor devolvió una respuesta de pago incompleta.", 502);
+  // Two concurrent requests with the same idempotencyKey used to both pass
+  // this pre-check (neither had inserted yet) and both call the external
+  // payment provider before either had persisted a paymentAttempts row —
+  // meaning two live provider charges/intents could be created for one
+  // logical request. An advisory lock on orderId, held for the whole
+  // operation (including the provider call), forces the second caller to
+  // wait until the first has committed its attempt, so it correctly finds
+  // the existing attempt below instead of calling the provider again.
   return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${input.orderId}))`);
+    const [existingAttempt] = await tx.select().from(paymentAttempts).where(eq(paymentAttempts.idempotencyKey, key)).limit(1);
+    if (existingAttempt) {
+      const [existingPayment] = await tx.select().from(payments).where(eq(payments.id, existingAttempt.paymentId)).limit(1);
+      if (existingPayment) return { payment: existingPayment, checkoutUrl: null, idempotent: true };
+    }
+    const [order] = await tx.select().from(orders).where(eq(orders.id, input.orderId)).limit(1);
+    if (!order) throw new PaymentDomainError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404);
+    if (["CANCELLED", "DELIVERED"].includes(order.status)) throw new PaymentDomainError("PAYMENT_NOT_ALLOWED", "El pedido no admite un nuevo pago.", 409);
+    let created: PaymentCreateResult;
+    try { created = await getPaymentProvider().createPayment({ orderId: order.id, amount: order.total, currency: order.currency, returnUrl: input.returnUrl }); } catch (error) {
+      const unconfigured = error instanceof Error && error.message === "PAYMENT_PROVIDER_NOT_CONFIGURED";
+      throw new PaymentDomainError(unconfigured ? "PAYMENT_PROVIDER_NOT_CONFIGURED" : "PAYMENT_PROVIDER_CREATE_FAILED", error instanceof Error ? error.message : "No se pudo crear el pago en el proveedor.", unconfigured ? 503 : 502);
+    }
+    if (!created.provider || !created.providerReference || !created.checkoutUrl) throw new PaymentDomainError("PAYMENT_PROVIDER_INVALID_RESPONSE", "El proveedor devolvió una respuesta de pago incompleta.", 502);
     const [payment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).for("update").limit(1);
     if (payment?.providerReference === created.providerReference) return { payment, checkoutUrl: created.checkoutUrl, idempotent: true };
     if (payment && (payment.status === "CONFIRMED" || payment.status === "APPROVED")) throw new PaymentDomainError("PAYMENT_ALREADY_CONFIRMED", "El pedido ya tiene un pago confirmado.", 409);

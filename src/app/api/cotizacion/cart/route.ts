@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -6,6 +6,7 @@ import { getDb } from "@/db";
 import { products, quoteCarts, type QuoteCartItem } from "@/db/schema";
 import { isAuthConfigured } from "@/lib/env";
 import { parseStoredCart } from "@/lib/cart";
+import { publicConditions } from "@/lib/catalog-repository";
 
 const sessionCookieName = "coldpower-quote-session";
 const sessionTtlMs = 1000 * 60 * 60 * 24 * 30;
@@ -109,7 +110,7 @@ async function sanitizeItems(value: unknown): Promise<QuoteCartItem[]> {
   const parsed = parseStoredCart(JSON.stringify(Array.isArray(value) ? value : []));
   if (parsed.length === 0) return [];
   const db = getDb();
-  const validRows = await db.select({ id: products.id }).from(products).where(inArray(products.id, parsed.map((item) => item.productId)));
+  const validRows = await db.select({ id: products.id }).from(products).where(and(inArray(products.id, parsed.map((item) => item.productId)), ...publicConditions()));
   const validProductIds = new Set(validRows.map((row) => row.id));
   return parsed.filter((item) => validProductIds.has(item.productId));
 }

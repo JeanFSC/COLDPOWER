@@ -458,12 +458,38 @@ export async function getPipelineBoard(
     .innerJoin(customers, eq(opportunities.customerId, customers.id))
     .where(metricsWhere)
     .groupBy(opportunities.currency);
-  const [stageRows, currencyRows, alerts, followUps, sellerFacets, originFacets, currencyFacets] =
-    await Promise.all([
+  const recentActivityRowsPromise = db
+    .select({
+      id: crmActivities.id,
+      type: crmActivities.type,
+      subject: crmActivities.subject,
+      createdAt: crmActivities.createdAt,
+      performedBy: crmActivities.performedBy,
+      opportunityId: opportunities.id,
+      opportunityCode: opportunities.code,
+      customerName: customers.name,
+    })
+    .from(crmActivities)
+    .innerJoin(opportunities, eq(crmActivities.opportunityId, opportunities.id))
+    .innerJoin(customers, eq(opportunities.customerId, customers.id))
+    .where(baseWhere)
+    .orderBy(desc(crmActivities.createdAt))
+    .limit(6);
+  const [
+    stageRows,
+    currencyRows,
+    alerts,
+    followUps,
+    recentActivityRows,
+    sellerFacets,
+    originFacets,
+    currencyFacets,
+  ] = await Promise.all([
       stageRowsPromise,
       currencyRowsPromise,
       countAlerts(db, filters),
       loadFollowUps(db, filters, now),
+      recentActivityRowsPromise,
       db
         .selectDistinct({ id: users.id, name: users.name, email: users.email })
         .from(users)
@@ -483,6 +509,26 @@ export async function getPipelineBoard(
         .orderBy(asc(opportunities.currency)),
     ]);
   const stageMetrics = buildStageMetrics(stageRows);
+  const activityActorIds = [
+    ...new Set(recentActivityRows.map((row) => row.performedBy).filter((value): value is string => Boolean(value))),
+  ];
+  const activityActorRows = activityActorIds.length
+    ? await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(inArray(users.id, activityActorIds))
+    : [];
+  const activityActorNames = new Map(activityActorRows.map((actor) => [actor.id, actor.name ?? actor.email]));
+  const recentActivity = recentActivityRows.map((row) => ({
+    id: row.id,
+    type: row.type,
+    subject: row.subject,
+    createdAt: row.createdAt,
+    actorName: row.performedBy ? (activityActorNames.get(row.performedBy) ?? "Usuario del equipo") : "Sistema",
+    opportunityId: row.opportunityId,
+    opportunityCode: row.opportunityCode,
+    customerName: row.customerName,
+  }));
   const lanes: PipelineLane[] = await Promise.all(
     opportunityLaneDefinitions.map(async (definition) => {
       const stages = [...definition.stages] as OpportunityStage[];
@@ -558,6 +604,7 @@ export async function getPipelineBoard(
     },
     lanes,
     followUps,
+    recentActivity,
     closed,
     facets: {
       stages: stageMetrics.filter((row) => row.count > 0).map((row) => row.stage),

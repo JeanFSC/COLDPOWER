@@ -270,15 +270,24 @@ export async function seedVisualYearData() {
     for (const row of balanceCandidates) {
       if (!recentMovementProductIds.has(row.productId) && !balanceByProduct.has(row.productId)) balanceByProduct.set(row.productId, row);
     }
-    const visualMovementRows = [...balanceByProduct.values()].map((row) => {
+    const inboundMovementTypes = ["ADJUSTMENT_IN", "TRANSFER_IN", "PURCHASE_RECEIPT", "RETURN_IN"] as const;
+    const outboundMovementTypes = ["ADJUSTMENT_OUT", "TRANSFER_OUT", "RETURN_OUT"] as const;
+    const movementSpreadMinutes = 14 * 24 * 60;
+    const visualMovementRows = [...balanceByProduct.values()].map((row, index) => {
       const hasStock = row.onHand > 0;
+      const type = hasStock
+        ? inboundMovementTypes[index % inboundMovementTypes.length]
+        : outboundMovementTypes[index % outboundMovementTypes.length];
+      const quantity = hasStock ? Math.max(1, Math.min(1 + (index % 5), row.onHand)) : 1 + (index % 5);
+      const previousOnHand = hasStock ? row.onHand - quantity : row.onHand + quantity;
+      const minutesAgo = (index * 47) % movementSpreadMinutes;
       return {
         id: id(fixture, "movement", `${row.productId}-${row.locationId}`), productId: row.productId, locationId: row.locationId,
-        type: hasStock ? "ADJUSTMENT_IN" : "ADJUSTMENT_OUT", quantity: 1,
-        previousOnHand: hasStock ? row.onHand - 1 : 1, resultingOnHand: row.onHand,
+        type, quantity,
+        previousOnHand, resultingOnHand: row.onHand,
         previousReserved: row.reserved, resultingReserved: row.reserved,
         referenceType: "DEV_VISUAL_YEAR", referenceId: fixture, reason: "Movimiento de prueba para validación visual del inventario.",
-        notes: "Traza aditiva; no modifica el saldo persistido.", performedBy: actor.id, idempotencyKey: id(fixture, "movement-key", `${row.productId}-${row.locationId}`), createdAt: new Date(),
+        notes: "Traza aditiva; no modifica el saldo persistido.", performedBy: actor.id, idempotencyKey: id(fixture, "movement-key", `${row.productId}-${row.locationId}`), createdAt: new Date(Date.now() - minutesAgo * 60 * 1000),
       };
     });
 

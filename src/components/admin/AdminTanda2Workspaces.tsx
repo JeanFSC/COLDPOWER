@@ -2506,10 +2506,12 @@ export function Tanda2Purchases({
 export function Tanda2Cms({
   controls,
   assetsCount,
+  activeBlocksCount,
   pages = [],
 }: {
   controls?: ReactNode;
   assetsCount?: number;
+  activeBlocksCount?: number;
   pages?: Array<{
     id: string;
     title: string;
@@ -2547,9 +2549,16 @@ export function Tanda2Cms({
           Publicar
         </Action>
       </T2PageHeader>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-7">
         <Metric label="Publicados" value={number(published)} icon={CheckCircle2} color="green" />
         <Metric label="Borradores" value={number(drafts)} icon={FileText} color="orange" />
+        <Metric
+          label="Bloques activos"
+          value={number(activeBlocksCount ?? 0)}
+          note="Publicados, todas las páginas"
+          icon={LayoutDashboard}
+          color="blue"
+        />
         <Metric
           label="Programados"
           value={number(scheduledPages.length)}
@@ -2637,12 +2646,15 @@ export function Tanda2Cms({
             )}
           </div>
         </Panel>
-        <Panel title="Vista previa" subtitle="Renderer real, sin borradores públicos">
-          <Empty
-            title="Selecciona una página para previsualizar"
-            description="La vista previa segura está disponible desde el editor editorial."
-            icon={ImageIcon}
-          />
+        <Panel title="Vista previa del sitio" subtitle="Renderer real, sin borradores públicos">
+          <div className="mt-3 overflow-hidden rounded-lg border border-slate-200">
+            <iframe
+              src="/"
+              title="Vista previa del sitio público"
+              className="h-[420px] w-full bg-white"
+              loading="lazy"
+            />
+          </div>
         </Panel>
         <div className="grid content-start gap-3">
           <Panel title="Calendario de publicaciones">

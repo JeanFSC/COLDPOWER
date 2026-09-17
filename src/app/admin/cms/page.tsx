@@ -5,7 +5,7 @@ import { MediaLibrary } from "@/components/admin/MediaLibrary";
 import { MediaSlotAssociator } from "@/components/admin/MediaSlotAssociator";
 import { requirePermission } from "@/lib/auth";
 import { listMediaAssets } from "@/lib/media-repository";
-import { listCmsPages } from "@/lib/cms-repository";
+import { countActiveCmsBlocks, listCmsPages } from "@/lib/cms-repository";
 
 export const metadata: Metadata = { title: "CMS y multimedia | Panel admin ColdPower", description: "Contenido editorial y biblioteca multimedia gobernados." };
 
@@ -13,6 +13,24 @@ export default async function AdminCmsPage() {
   await requirePermission("cms.view");
   let assets: Awaited<ReturnType<typeof listMediaAssets>> = [];
   let pages: Awaited<ReturnType<typeof listCmsPages>> = [];
-  try { [assets, pages] = await Promise.all([listMediaAssets(), listCmsPages()]); } catch (error) { console.error("ColdPower: no se pudo cargar el contenido editorial", error); }
-  return <Tanda2Cms pages={pages} assetsCount={assets.length} controls={<div id="cms-controls" className="space-y-4"><CmsPageEditor /><MediaLibrary /><MediaSlotAssociator assets={assets} /></div>} />;
+  let activeBlocks = 0;
+  try {
+    [assets, pages, activeBlocks] = await Promise.all([listMediaAssets(), listCmsPages(), countActiveCmsBlocks()]);
+  } catch (error) {
+    console.error("ColdPower: no se pudo cargar el contenido editorial", error);
+  }
+  return (
+    <Tanda2Cms
+      pages={pages}
+      assetsCount={assets.length}
+      activeBlocksCount={activeBlocks}
+      controls={
+        <div id="cms-controls" className="space-y-4">
+          <CmsPageEditor pages={pages} />
+          <MediaLibrary />
+          <MediaSlotAssociator assets={assets} />
+        </div>
+      }
+    />
+  );
 }

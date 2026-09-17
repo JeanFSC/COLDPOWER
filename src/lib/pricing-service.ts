@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, priceHistory, productPrices, products } from "@/db/schema";
 import { normalizePriceDetails } from "@/lib/pricing-validation";
@@ -91,6 +91,12 @@ function assertPricePermission(actor: PricingActor, priceType: string) {
 }
 
 async function assertNoOverlap(tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0], productId: string, priceType: "COST" | "RETAIL" | "WHOLESALE" | "MINIMUM" | "SPECIAL", window: PriceWindow, excludeId?: string) {
+  // Serialize concurrent price mutations for the same (productId, priceType)
+  // via a transaction-scoped advisory lock before reading existing windows.
+  // A plain SELECT here (even with FOR UPDATE) can't prevent two concurrent
+  // transactions from both seeing "no overlap" when there are zero existing
+  // rows to lock — the advisory lock closes that gap without a schema change.
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${productId}), hashtext(${priceType}))`);
   const rows = await tx.select({ id: productPrices.id, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil }).from(productPrices).where(and(eq(productPrices.productId, productId), eq(productPrices.priceType, priceType), eq(productPrices.active, true))).orderBy(desc(productPrices.validFrom));
   if (rows.some((row) => row.id !== excludeId && isPriceWindowOverlapping({ validFrom: row.validFrom, validUntil: row.validUntil }, window))) throw new Error("PRICE_WINDOW_OVERLAP");
 }
