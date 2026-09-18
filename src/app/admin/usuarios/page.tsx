@@ -38,8 +38,10 @@ export default async function AdminUsuariosPage({
   let invitations: Awaited<ReturnType<typeof listStaffInvitations>> = { items: [], totalItems: 0 };
   let loadError = false;
   try {
-    pendingInvitations = await getPendingInvitationsCount();
-    invitations = await listStaffInvitations(query.get("query") ?? undefined);
+    [pendingInvitations, invitations] = await Promise.all([
+      getPendingInvitationsCount(),
+      listStaffInvitations(query.get("query") ?? undefined),
+    ]);
   } catch (error) {
     console.error("ColdPower: Clerk no respondió para usuarios e invitaciones", error);
     loadError = true;

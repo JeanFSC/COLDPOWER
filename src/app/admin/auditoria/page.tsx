@@ -50,21 +50,22 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
   baseParams.delete("tab");
   const baseQuery = baseParams.toString();
 
-  let page = emptyPage;
-  let loadError = false;
-  try {
-    page = await getAuditPage(parseAuditFilters(query));
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar la auditoría", error);
-    loadError = true;
-  }
+  const [pageResult, selectedResult, savedFilters] = await Promise.all([
+    getAuditPage(parseAuditFilters(query)).catch((error) => {
+      console.error("ColdPower: no se pudo cargar la auditoría", error);
+      return null;
+    }),
+    eventId ? getAuditDetail(eventId).catch(() => null) : Promise.resolve(null),
+    listSavedAuditFilters(actor.userId).catch(() => []),
+  ]);
+  const page = pageResult ?? emptyPage;
+  const loadError = pageResult === null;
 
-  let selected = eventId ? await getAuditDetail(eventId).catch(() => null) : null;
+  let selected = selectedResult;
   if (selected && !canViewSensitive) selected = { ...selected, before: null, after: null };
 
   const relatedEvents = selected ? await getRelatedAuditEvents(selected).catch(() => []) : [];
   const diff = selected && canViewSensitive ? diffAuditSnapshots(selected.before, selected.after) : [];
-  const savedFilters = await listSavedAuditFilters(actor.userId).catch(() => []);
 
   const exportHref = `/api/admin/auditoria/export${query.toString() ? `?${query.toString()}` : ""}`;
 

@@ -219,6 +219,49 @@ function catalogSelection() {
   };
 }
 
+// Narrower than catalogSelection(): only the columns calculateCatalogQuality() (and the
+// media/price/stock alert counts around it) actually reads. This runs unfiltered over the
+// whole catalog on every /admin/catalogo load — cutting ~15 unused columns (sku, slug,
+// featured, *Id/*Slug foreign keys, publicationStatus, reviewReason, canonicalProductId,
+// normalizationConfidence, sourcePage/sourceRow, updatedAt) trims what Postgres has to
+// serialize and Node has to deserialize for all ~1,348 rows, with zero change to which rows
+// match or how quality is scored.
+function qualityScanSelection() {
+  return {
+    id: products.id,
+    name: products.commercialName,
+    normalizedName: products.normalizedName,
+    originalName: products.originalName,
+    commercialName: products.commercialName,
+    category: categories.name,
+    family: families.name,
+    brand: brands.name,
+    productType: products.productType,
+    requiresReview: products.requiresReview,
+    possibleDuplicate: products.possibleDuplicate,
+    duplicateDecision: products.duplicateDecision,
+    editorialDescription: products.editorialDescription,
+    originalReferenceCode: products.originalReferenceCode,
+    modelCode: products.modelCode,
+    application: products.application,
+    compatibilityBrands: products.compatibilityBrands,
+    voltage: products.voltage,
+    power: products.power,
+    frequency: products.frequency,
+    rpm: products.rpm,
+    amperage: products.amperage,
+    capacitance: products.capacitance,
+    refrigerant: products.refrigerant,
+    horsepower: products.horsepower,
+    temperature: products.temperature,
+    dimensions: products.dimensions,
+    length: products.length,
+    connectionSize: products.connectionSize,
+    unitOfMeasure: products.unitOfMeasure,
+    sourceStatus: products.status,
+  };
+}
+
 function sortOrder(filters: CatalogApiFilters) {
   const descending = filters.direction === "desc";
   const term = (column: Parameters<typeof asc>[0]) => (descending ? desc(column) : asc(column));
@@ -504,7 +547,7 @@ export async function getAdminCatalogPage(filters: CatalogApiFilters = {}) {
       .groupBy(brands.id, brands.name)
       .orderBy(desc(count(products.id)), asc(brands.name)),
     db
-      .select(catalogSelection())
+      .select(qualityScanSelection())
       .from(products)
       .innerJoin(categories, effectiveCategoryJoin())
       .innerJoin(families, effectiveFamilyJoin())
@@ -630,9 +673,10 @@ export async function getAdminCatalogPage(filters: CatalogApiFilters = {}) {
     confidenceLevels,
   ] = facetRows;
   const queues = {
-    totalProducts: Number(
-      (await db.select({ count: count(products.id) }).from(products))[0]?.count ?? 0,
-    ),
+    // statusRows already groups every product by publicationStatus (unconditional), so
+    // summing it gives the exact same total as a separate COUNT(*) query — one less
+    // sequential round trip after the main Promise.all on every catalog page load.
+    totalProducts: statusRows.reduce((sum, row) => sum + Number(row.count), 0),
     publishedProducts: Number(statusRows.find((row) => row.status === "published")?.count ?? 0),
     draftProducts: Number(statusRows.find((row) => row.status === "draft")?.count ?? 0),
     hiddenProducts: Number(statusRows.find((row) => row.status === "hidden")?.count ?? 0),

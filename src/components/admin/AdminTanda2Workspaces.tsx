@@ -10,7 +10,6 @@ import {
   ClipboardList,
   ChevronRight,
   CircleDollarSign,
-  CircleHelp,
   Clock3,
   CreditCard,
   Download,
@@ -19,9 +18,11 @@ import {
   Filter,
   Gauge,
   Globe,
+  GraduationCap,
   Home,
   Image as ImageIcon,
   Info,
+  Keyboard,
   LayoutDashboard,
   Mail,
   MessageCircle,
@@ -34,8 +35,10 @@ import {
   ShieldCheck,
   ShoppingCart,
   Smartphone,
+  Star,
   Tag,
   Target,
+  Truck,
   UsersRound,
   Workflow,
   type LucideIcon,
@@ -68,11 +71,12 @@ import {
   type DashboardFilters,
   type DashboardRange,
 } from "@/lib/dashboard-contract";
-import { getOperationsDashboard } from "@/lib/operations-dashboard";
+import { getHomeActivitySummary, getOperationsDashboard } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import type { OperationsFilters } from "@/lib/operations-contract";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
+type HomeActivitySummary = Awaited<ReturnType<typeof getHomeActivitySummary>>;
 type OperationsSnapshot = Awaited<ReturnType<typeof getOperationsWorkspace>>;
 
 const panel =
@@ -914,7 +918,7 @@ export function Tanda2Dashboard({
               Ver todas <ChevronRight className="inline h-3 w-3" />
             </Link>
           </div>
-          <div className="mt-2 flex flex-1 flex-col justify-center divide-y divide-[#edf2f6]">
+          <div className="mt-2 flex flex-1 flex-col justify-center divide-y divide-slate-100">
             {data.pendingActions.slice(0, 5).map((item) => {
               const priority = actionPriority(item);
               const Icon = priority.icon;
@@ -1600,7 +1604,7 @@ export function Tanda2Operations({
               </Link>
             }
           >
-            <div className="mt-3 divide-y divide-[#edf2f6]">
+            <div className="mt-3 divide-y divide-slate-100">
               {[
                 ["Vencidas", metrics?.overdueTasks, "text-rose-500"],
                 ["Pedidos bloqueados", snapshot?.operationalSignals.blockedOrders, "text-rose-500"],
@@ -1624,7 +1628,7 @@ export function Tanda2Operations({
           </Panel>
           <Panel title="Carga por equipo" subtitle="Conteos operativos, no calificación">
             {snapshot?.teamLoad?.length ? (
-              <div className="mt-3 divide-y divide-[#edf2f6]">
+              <div className="mt-3 divide-y divide-slate-100">
                 {snapshot.teamLoad.map((item) => (
                   <div
                     key={`${item.team}-${item.assigneeId ?? "unassigned"}`}
@@ -3264,7 +3268,7 @@ export function Tanda2Home({
   preferences,
   recentItems = [],
 }: {
-  data: DashboardData | null;
+  data: HomeActivitySummary | null;
   snapshot: OperationsSnapshot | null;
   actorName?: string | null;
   role: AppRole;
@@ -3408,7 +3412,6 @@ export function Tanda2Home({
     { id: "attention", label: "Pendientes" },
     { id: "frequent", label: "Módulos frecuentes" },
     { id: "quick-actions", label: "Accesos rápidos" },
-    { id: "agenda", label: "Agenda" },
   ];
   const widgetIds = new Set(widgetOptions.map((option) => option.id));
   const widgetOrder = (preferences?.widgetOrder ?? []).filter((id) => widgetIds.has(id));
@@ -3447,7 +3450,7 @@ export function Tanda2Home({
     if (widgetId === "quick-actions") {
       return (
         <Panel key={widgetId} title="Accesos rápidos" subtitle="Atajos para tareas comunes">
-          <div className="mt-3 divide-y divide-[#edf2f6]">
+          <div className="mt-3 divide-y divide-slate-100">
             {permittedQuickActions.map(({ id, label, href, Icon }) => (
               <Link
                 key={id}
@@ -3463,61 +3466,41 @@ export function Tanda2Home({
         </Panel>
       );
     }
-    if (widgetId === "attention") {
-      return (
-        <Panel
-          key={widgetId}
-          title="Pendientes"
-          action={
-            <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
-              Ver todos
-            </Link>
-          }
-        >
-          <div className="mt-3 divide-y divide-[#edf2f6]">
-            {queueItems.map((item, index) => (
-              <Link
-                key={`${String(item.id ?? "item")}-${index}`}
-                href={String(
-                  (Array.isArray(item.actions)
-                    ? (item.actions as Array<{ href?: string }>).find((action) => action.href)?.href
-                    : undefined) ?? "/admin/operaciones",
-                )}
-                className="flex items-center gap-2 py-2.5 first:pt-0"
-              >
-                <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-slate-700">
-                  {String(item.title ?? item.product ?? item.customer ?? "Tarea operativa")}
-                </span>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-              </Link>
-            ))}
-            {!queueItems.length ? (
-              <Empty
-                title="No tienes pendientes para hoy."
-                description="La agenda se actualizará con tareas y seguimientos reales."
-                icon={CheckCircle2}
-              />
-            ) : null}
-          </div>
-        </Panel>
-      );
-    }
     return (
-      <Panel key="agenda" title="Agenda" subtitle="Hoy + próximos 7 días">
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <MiniValue
-            label="Tareas"
-            value={number(taskCount)}
-            note="Cola operativa actual"
-            icon={Workflow}
-          />
-          <MiniValue
-            label="Seguimientos"
-            value={number(snapshot?.metrics.overdueTasks)}
-            note="Vencidos dentro del alcance"
-            icon={Clock3}
-          />
+      <Panel
+        key={widgetId}
+        title="Pendientes"
+        action={
+          <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
+            Ver todos
+          </Link>
+        }
+      >
+        <div className="mt-3 divide-y divide-slate-100">
+          {queueItems.map((item, index) => (
+            <Link
+              key={`${String(item.id ?? "item")}-${index}`}
+              href={String(
+                (Array.isArray(item.actions)
+                  ? (item.actions as Array<{ href?: string }>).find((action) => action.href)?.href
+                  : undefined) ?? "/admin/operaciones",
+              )}
+              className="flex items-center gap-2 py-2.5 first:pt-0"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-slate-700">
+                {String(item.title ?? item.product ?? item.customer ?? "Tarea operativa")}
+              </span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+            </Link>
+          ))}
+          {!queueItems.length ? (
+            <Empty
+              title="No tienes pendientes para hoy."
+              description="La agenda se actualizará con tareas y seguimientos reales."
+              icon={CheckCircle2}
+            />
+          ) : null}
         </div>
       </Panel>
     );
@@ -3529,6 +3512,10 @@ export function Tanda2Home({
         title={`¡Bienvenido, ${displayName}! 👋`}
         description="Esto es lo que requiere tu atención hoy."
       >
+        <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-[10px] font-extrabold text-slate-600">
+          <CalendarDays className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
+          {new Intl.DateTimeFormat("es-PE", { day: "numeric", month: "long", year: "numeric" }).format(new Date())}
+        </span>
         <AdminHomePersonalizer
           favorites={preferences?.favorites ?? []}
           quickActions={preferences?.quickActions ?? []}
@@ -3564,64 +3551,138 @@ export function Tanda2Home({
       </div>
       <div className="grid gap-3 xl:grid-cols-2">
         <Panel
-          title="Actividad reciente"
+          title="Actividad del equipo"
           subtitle={
-            recentItems.length
-              ? `${recentItems.length} accesos persistidos`
-              : "Eventos relevantes para tu trabajo"
+            data?.recentActivity.length
+              ? `${data.recentActivity.length} eventos en el alcance de hoy`
+              : "Últimas acciones registradas en la plataforma"
           }
         >
-          {recentItems.length ? (
-            <div className="mt-3 divide-y divide-[#edf2f6]">
-              {recentItems.slice(0, 5).map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="flex items-center gap-3 py-2.5 first:pt-0"
-                >
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
-                  <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold text-slate-700">
-                    {item.label}
+          {data?.recentActivity.length ? (
+            <div className="mt-3 divide-y divide-slate-100">
+              {data.recentActivity.slice(0, 5).map((entry) => (
+                <div key={entry.id} className="flex items-center gap-3 py-2.5 first:pt-0">
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[9px] font-black text-blue-600">
+                    {entry.actorName.slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[10px] font-extrabold text-slate-700">
+                      <strong className="font-black">{entry.actorName}</strong> {entry.actionLabel.toLowerCase()}
+                    </span>
+                    <span className={`block truncate text-[9px] font-semibold ${muted}`}>{entry.entityLabel}</span>
                   </span>
                   <span className={`shrink-0 text-[9px] font-semibold ${muted}`}>
-                    {dateLabel(item.visitedAt)}
+                    {dateLabel(entry.createdAt)}
                   </span>
-                </Link>
+                </div>
               ))}
             </div>
           ) : (
             <Empty
-              title="Sin accesos recientes"
-              description="Tus módulos visitados aparecerán aquí."
+              title="Sin actividad reciente"
+              description="Las acciones del equipo aparecerán aquí."
               icon={FileClock}
             />
           )}
         </Panel>
-      </div>
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <Panel title="Experiencia en todos tus dispositivos" subtitle="La operación se adapta al tamaño de tu pantalla">
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div className="flex items-start gap-3 rounded-xl border border-slate-100 p-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600"><LayoutDashboard className="h-4 w-4" aria-hidden="true" /></span>
-              <div><strong className="block text-[10px] font-extrabold text-slate-700">Escritorio</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Usa el menú lateral y las tablas completas para revisar más información de una vez.</p></div>
-            </div>
-            <div className="flex items-start gap-3 rounded-xl border border-slate-100 p-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><Smartphone className="h-4 w-4" aria-hidden="true" /></span>
-              <div><strong className="block text-[10px] font-extrabold text-slate-700">Móvil</strong><p className={`mt-1 text-[9px] font-semibold leading-4 ${muted}`}>Consulta pendientes y ejecuta acciones esenciales desde una vista compacta.</p></div>
-            </div>
+        <Panel
+          title="Resumen operativo de hoy"
+          subtitle="Monitorea el trabajo pendiente y el estado del día"
+          action={
+            <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
+              Ver detalle
+            </Link>
+          }
+        >
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <MiniValue
+              label="Pedidos activos"
+              value={number(data?.orders.total)}
+              note="Sin entregar ni cancelar"
+              icon={Truck}
+            />
+            <MiniValue
+              label="Pagos por verificar"
+              value={number(data?.pendingPayments)}
+              note="Requieren revisión"
+              icon={CreditCard}
+            />
+            <MiniValue
+              label="Tareas del equipo"
+              value={number(taskCount)}
+              note="Cola operativa actual"
+              icon={UsersRound}
+            />
           </div>
         </Panel>
-        <Panel title="Guía rápida" subtitle="Rutas recomendadas para empezar">
-          <ol className="mt-3 grid gap-2">
-            {[
-              ["Revisa tus pendientes", "/admin/operaciones"],
-              ["Crea una cotización", "/admin/cotizaciones"],
-              ["Confirma disponibilidad", "/admin/inventario"],
-              ["Consulta la trazabilidad", "/admin/auditoria"],
-            ].map(([label, href], index) => <li key={href}><Link href={href} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 text-[10px] font-extrabold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600"><span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-50 text-[9px] font-black text-slate-500">{index + 1}</span><span className="flex-1">{label}</span><ChevronRight className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" /></Link></li>)}
-          </ol>
-          <p className={`mt-3 flex items-center gap-1.5 text-[10px] font-semibold ${muted}`}><CircleHelp className="h-3.5 w-3.5 text-blue-600" aria-hidden="true" />Los permisos de tu rol determinan las acciones disponibles.</p>
-        </Panel>
+      </div>
+      <Panel
+        title="Mis accesos recientes"
+        subtitle={
+          recentItems.length
+            ? `${recentItems.length} accesos persistidos`
+            : "Tus módulos visitados aparecerán aquí"
+        }
+      >
+        {recentItems.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            {recentItems.slice(0, 5).map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="flex items-center gap-2 rounded-lg border border-slate-100 px-2.5 py-2 transition hover:border-blue-200"
+              >
+                <span className="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[10px] font-extrabold text-slate-700">
+                    {item.label}
+                  </span>
+                  <span className={`block truncate text-[9px] font-semibold ${muted}`}>
+                    {dateLabel(item.visitedAt)}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Empty
+            title="Sin accesos recientes"
+            description="Tus módulos visitados aparecerán aquí."
+            icon={FileClock}
+          />
+        )}
+      </Panel>
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="lg:w-56 lg:shrink-0">
+          <h3 className="text-[11px] font-black text-slate-900">Saca más provecho de ColdPower</h3>
+          <p className={`mt-1 text-[10px] font-semibold ${muted}`}>Herramientas y recursos para ser más productivo.</p>
+        </div>
+        <div className="grid flex-1 gap-3 sm:grid-cols-3">
+          {[
+            { label: "Revisa tus pendientes", note: "Tareas y seguimientos de hoy", href: "/admin/operaciones", Icon: GraduationCap },
+            { label: "Crea una cotización", note: "Genera una cotización para un cliente", href: "/admin/cotizaciones", Icon: Star },
+            { label: "Confirma disponibilidad", note: "Consulta stock antes de ofertar", href: "/admin/inventario", Icon: Keyboard },
+          ].map(({ label, note, href, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-start gap-2.5 rounded-xl border border-slate-100 p-3 transition hover:border-blue-200"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+              <span>
+                <strong className="block text-[10px] text-slate-700">{label}</strong>
+                <span className={`mt-0.5 block text-[9px] font-semibold ${muted}`}>{note}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+        <Link
+          href="/admin/operaciones"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-blue-700"
+        >
+          Ver guía completa
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
       </div>
     </div>
   );

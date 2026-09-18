@@ -36,40 +36,35 @@ export default async function OperationsWorkspacePage({
   if (!query.has("queue")) query.set("queue", "quotes");
   if (!query.has("range")) query.set("range", "all");
   const filters = parseOperationsFilters(query);
-  let operationsFilterOptions: {
-    locations: Array<{ id: string; label: string }>;
-    sellers: Array<{ id: string; label: string }>;
-  } = { locations: [], sellers: [] };
-  try {
-    const db = getDb();
-    const [locationRows, sellerRows] = await Promise.all([
-      db
-        .select({ id: locations.id, name: locations.name })
-        .from(locations)
-        .where(eq(locations.active, true))
-        .orderBy(locations.name),
-      db
-        .select({ id: users.id, name: users.name, email: users.email })
-        .from(users)
-        .where(eq(users.status, "ACTIVE"))
-        .orderBy(users.name),
-    ]);
-    operationsFilterOptions = {
-      locations: locationRows.map((row) => ({ id: row.id, label: row.name })),
-      sellers: sellerRows.map((row) => ({ id: row.id, label: row.name ?? row.email ?? row.id })),
-    };
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error);
-  }
-  let snapshot: Awaited<ReturnType<typeof getOperationsWorkspace>> | null = null;
-  try {
-    snapshot = await getOperationsWorkspace(filters, {
-      allowedPermissions: permissionsForRole(actor.role),
-      summaryScope: "header",
-    });
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar el centro operativo", error);
-  }
+  const comparisonPeriods = getOperationsComparisonPeriods(filters);
+  const hasCustomRange = Boolean(filters.fromAt && filters.toAt);
+  const db = getDb();
+  const allowedPermissions = permissionsForRole(actor.role);
+  // Only the KPI/comparison reads pass summaryScope: "header" — they read nothing but
+  // .metrics/.operationalSignals/.teamLoad, so getOperationsWorkspace short-circuits the
+  // expensive queue-loading/upsert path for them. The main snapshot below renders the
+  // actual work-item queues and must run the full path (no summaryScope).
+  const headerOptions = { allowedPermissions, summaryScope: "header" as const };
+
+  // These seven fetches don't depend on each other's results (only on filters/
+  // comparisonPeriods, both derived synchronously above), so they used to pay four
+  // sequential Neon round trips for no reason. One Promise.all instead of four waves.
+  const [locationRows, sellerRows, snapshot, currentKpisResult, previousKpis, currentDay, previousDay] = await Promise.all([
+    db.select({ id: locations.id, name: locations.name }).from(locations).where(eq(locations.active, true)).orderBy(locations.name)
+      .catch((error) => { console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error); return []; }),
+    db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.status, "ACTIVE")).orderBy(users.name)
+      .catch((error) => { console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error); return []; }),
+    getOperationsWorkspace(filters, { allowedPermissions })
+      .catch((error) => { console.error("ColdPower: no se pudo cargar el centro operativo", error); return null; }),
+    hasCustomRange ? Promise.resolve(null) : getOperationsWorkspace(comparisonPeriods.current, headerOptions),
+    getOperationsWorkspace(comparisonPeriods.previous, headerOptions),
+    getOperationsDaySummary({ ...filters, assigneeId: undefined }),
+    getOperationsDaySummary({ ...filters, assigneeId: undefined }, -1),
+  ]);
+  const operationsFilterOptions = {
+    locations: locationRows.map((row) => ({ id: row.id, label: row.name })),
+    sellers: sellerRows.map((row) => ({ id: row.id, label: row.name ?? row.email ?? row.id })),
+  };
   if (!snapshot) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
@@ -77,23 +72,7 @@ export default async function OperationsWorkspacePage({
       </div>
     );
   }
-
-  const comparisonPeriods = getOperationsComparisonPeriods(filters);
-  const currentKpis =
-    filters.fromAt && filters.toAt
-      ? snapshot
-      : await getOperationsWorkspace(comparisonPeriods.current, {
-          allowedPermissions: permissionsForRole(actor.role),
-          summaryScope: "header",
-        });
-  const [previousKpis, currentDay, previousDay] = await Promise.all([
-    getOperationsWorkspace(comparisonPeriods.previous, {
-      allowedPermissions: permissionsForRole(actor.role),
-      summaryScope: "header",
-    }),
-    getOperationsDaySummary({ ...filters, assigneeId: undefined }),
-    getOperationsDaySummary({ ...filters, assigneeId: undefined }, -1),
-  ]);
+  const currentKpis = currentKpisResult ?? snapshot;
 
   return (
     <OperationsCenter

@@ -775,6 +775,38 @@ export async function getOperationsWorkspace(
   options: { allowedPermissions?: Iterable<string>; summaryScope?: "header" } = {},
 ): Promise<OperationsWorkspace> {
   const selectedQueue = filters.queue;
+  // "header" callers (KPI/comparison reads on /admin/operaciones) only ever consume
+  // .metrics/.operationalSignals/.teamLoad — never .queues. The full path below still
+  // loads and upserts every queue's items (up to 1,000 rows x 5 queues) just to compute
+  // those three fields, which was the dominant cost when this ran 2-3x per page load.
+  if (options.summaryScope === "header") {
+    const [metrics, teamLoad] = await Promise.all([
+      loadMetrics({
+        range: filters.range,
+        fromAt: filters.fromAt,
+        toAt: filters.toAt,
+        team: filters.team,
+        page: 1,
+        pageSize: 10,
+      }),
+      loadTeamLoad(filters),
+    ]);
+    const emptyTotals: Record<OperationsQueue, number> = {
+      quotes: 0,
+      opportunities: 0,
+      orders: 0,
+      followUps: 0,
+      inventoryAlerts: 0,
+    };
+    return {
+      metrics: metrics.metrics,
+      operationalSignals: metrics.operationalSignals,
+      teamLoad,
+      queueTotals: emptyTotals,
+      queues: { quotes: [], opportunities: [], orders: [], followUps: [], inventoryAlerts: [] },
+      ...pagination(0, filters),
+    };
+  }
   const [metrics, quoteResult, opportunityResult, orderResult, followUpResult, inventoryResult] =
     await Promise.all([
       loadMetrics(

@@ -641,6 +641,41 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     recentActivity: recentActivityView,
   };
 }
+
+// Inicio only ever reads orders.total, pendingPayments, pendingApprovalsCount and
+// recentActivity from getOperationsDashboard's ~37-query result — running the full
+// dashboard (sales series, pipeline, top products/customers, seller stats, category/user
+// summary...) to read 4 fields was the single biggest cost on every module switch back to
+// Inicio. This runs only the 3-4 queries those fields actually need.
+export async function getHomeActivitySummary(filters: DashboardFilters = {}, actor?: DashboardActor) {
+  void actor;
+  const db = getDb();
+  const now = new Date();
+  const range = resolveWindow(filters, now);
+  const productScope = conditionList(productConditions(filters), filters.productId ? eq(products.id, filters.productId) : undefined);
+  const [ordersByStatus, pendingPaymentsRows, pendingApprovalsRows, recentActivityRows] = await Promise.all([
+    db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, undefined, filters.currency))).groupBy(orders.status),
+    db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(inArray(payments.status, ["PENDING", "UNDER_REVIEW"]), sql`${dashboardNetForOrder} > 0 and (${dashboardNetForOrder} < ${orders.total} - 0.005 or ${dashboardNetForOrder} > ${orders.total} + 0.005)`), ...orderConditions(db, filters, undefined, filters.currency))),
+    db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
+    db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(128),
+  ]);
+  const activeOrderCount = ordersByStatus.filter((row) => isActiveOrderStatus(row.status)).reduce((sum, row) => sum + Number(row.count), 0);
+  const activityProductIds = recentActivityRows.filter((row) => row.entityType === "product").map((row) => row.entityId);
+  const activityProducts = activityProductIds.length
+    ? await db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})` }).from(products).where(inArray(products.id, activityProductIds))
+    : [];
+  const activityProductLabels = new Map(activityProducts.map((row) => [row.id, row.name]));
+  const recentActivity = recentActivityRows
+    .map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? "Actualización registrada", entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? "Registro"), actorName: row.actorName || "Sistema" }))
+    .filter((row, index, rows) => index === rows.findIndex((candidate) => candidate.actionLabel === row.actionLabel && candidate.entityType === row.entityType && candidate.entityLabel === row.entityLabel && candidate.actorName === row.actorName));
+  return {
+    orders: { total: activeOrderCount },
+    pendingPayments: Number(pendingPaymentsRows[0]?.count ?? 0),
+    pendingApprovalsCount: Number(pendingApprovalsRows[0]?.count ?? 0),
+    recentActivity,
+  };
+}
+
 export async function listReportOptions() {
   const db = getDb();
   // Locations/categories/families/brands are non-sensitive reference lists

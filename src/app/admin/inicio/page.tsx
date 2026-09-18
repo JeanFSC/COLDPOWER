@@ -5,7 +5,7 @@ import { users } from "@/db/schema";
 import { Tanda2Home } from "@/components/admin/AdminTanda2Workspaces";
 import { getUnreadNotificationCount } from "@/lib/notifications-service";
 import { requireAdmin } from "@/lib/auth";
-import { getOperationsDashboard } from "@/lib/operations-dashboard";
+import { getHomeActivitySummary } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import { can, permissionsForRole } from "@/lib/roles";
 import { getWorkspacePreferences, listRecentAdminItems } from "@/lib/admin-workspace-service";
@@ -20,7 +20,7 @@ export default async function AdminHomePage() {
   const [profileResult, unreadResult, dashboardResult, workspaceResult, preferencesResult, recentResult] = await Promise.allSettled([
     getDb().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, actor.userId)).limit(1),
     getUnreadNotificationCount(actor.userId),
-    can(actor.role, "dashboard.view") ? getOperationsDashboard({ range: "today" }, actor) : Promise.resolve(null),
+    can(actor.role, "dashboard.view") ? getHomeActivitySummary({ range: "today" }, actor) : Promise.resolve(null),
     can(actor.role, "operations.view") ? getOperationsWorkspace({ range: "today", sellerId: actor.userId, page: 1, pageSize: 10 }, { allowedPermissions: permissionsForRole(actor.role) }) : Promise.resolve(null),
     getWorkspacePreferences(actor.userId, actor.role),
     listRecentAdminItems(actor.userId),
