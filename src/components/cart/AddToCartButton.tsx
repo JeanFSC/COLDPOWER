@@ -1,53 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ShoppingCart } from "lucide-react";
+import { Check, LoaderCircle, ShoppingCart, Tag } from "lucide-react";
 import { Button } from "@/components/shared/Button";
-import { useCart } from "@/components/cart/CartProvider";
+import { useShoppingCart } from "@/components/shopping-cart/ShoppingCartProvider";
 
 type AddToCartButtonProps = {
   productId: string;
+  // Only products with an active retail price can be bought; the rest are quote-only.
+  purchasable: boolean;
   label?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
 };
 
-export function AddToCartButton({
-  productId,
-  label = "Agregar",
-  size = "sm",
-  className,
-}: AddToCartButtonProps) {
-  const { addItem } = useCart();
-  const [wasAdded, setWasAdded] = useState(false);
+export function AddToCartButton({ productId, purchasable, label = "Agregar al carrito", size = "sm", className }: AddToCartButtonProps) {
+  const { addItem, pendingProductId } = useShoppingCart();
+  const [feedback, setFeedback] = useState<"idle" | "added" | "failed">("idle");
+  const pending = pendingProductId === productId;
 
   useEffect(() => {
-    if (!wasAdded) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => setWasAdded(false), 1400);
+    if (feedback === "idle") return;
+    const timeout = window.setTimeout(() => setFeedback("idle"), 1600);
     return () => window.clearTimeout(timeout);
-  }, [wasAdded]);
+  }, [feedback]);
+
+  if (!purchasable) {
+    return (
+      <Button type="button" variant="outline" size={size} className={className} disabled title="Este producto no tiene precio publicado. Solicítalo por cotización.">
+        <Tag className="h-4 w-4" aria-hidden="true" />
+        Solo cotizable
+      </Button>
+    );
+  }
 
   return (
     <Button
       type="button"
-      variant={wasAdded ? "secondary" : "primary"}
+      variant={feedback === "added" ? "secondary" : "primary"}
       size={size}
       className={className}
-      onClick={() => {
-        addItem(productId);
-        setWasAdded(true);
-      }}
+      disabled={pending}
       aria-live="polite"
+      onClick={async () => setFeedback((await addItem(productId)) ? "added" : "failed")}
     >
-      {wasAdded ? (
-        <Check className="h-4 w-4" aria-hidden="true" />
-      ) : (
-        <ShoppingCart className="h-4 w-4" aria-hidden="true" />
-      )}
-      {wasAdded ? "Agregado" : label}
+      {pending ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : feedback === "added" ? <Check className="h-4 w-4" aria-hidden="true" /> : <ShoppingCart className="h-4 w-4" aria-hidden="true" />}
+      {pending ? "Agregando…" : feedback === "added" ? "En el carrito" : feedback === "failed" ? "No se pudo agregar" : label}
     </Button>
   );
 }

@@ -55,6 +55,8 @@ export type OrderListItem = {
   id: string; code: string; customerId: string; customerName: string; customerPhone: string; customerEmail: string | null;
   sellerId: string | null; sellerName: string | null; sellerEmail: string | null; locationName: string | null;
   saleId: string; quoteId: string | null; quoteTrackingCode: string | null;
+  // Set for online (storefront) purchases: the buyer's account.
+  userId: string | null;
   lineCount: number; reservationCount: number; totalQuantity: number; pickedQuantity: number; openIncidentCount: number;
   paymentStatus: string | null; expectedAmount: string; netReceivedAmount: string; paymentReconciliation: ReconciliationState;
   attention: OrderAttention; status: string; deliveryMethod: string; locationId: string; deliveryAddress: string | null;

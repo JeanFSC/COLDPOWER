@@ -3,6 +3,7 @@ import { AdminShell, type AdminNavItem } from "@/components/admin/AdminShell";
 import { can, type AppRole, type Permission } from "@/lib/roles";
 import { requireAdmin } from "@/lib/auth";
 import { getUnreadNotificationCount } from "@/lib/notifications-service";
+import { isHiddenAdminHref } from "@/lib/hidden-admin-modules";
 
 type RoleNavItem = AdminNavItem & { permission: Permission };
 
@@ -98,6 +99,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       ? managementLinks
       : operationsLinks;
   const links = source
+    .filter(({ href }) => !isHiddenAdminHref(href))
     .filter(({ permission, icon }) => {
       const canOpenHome = icon === "home" && (can(role, "operations.view") || can(role, "dashboard.view") || can(role, "reports.view"));
       return (can(role, permission) || canOpenHome) && !(role === "GERENCIA" && (icon === "users" || icon === "audit"));

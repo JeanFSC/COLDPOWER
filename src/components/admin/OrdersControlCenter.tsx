@@ -339,7 +339,7 @@ function OrderRow({
         <button onClick={() => onOpen(item.id)} className="text-left font-semibold text-blue-600 hover:underline">
           {item.code}
           <span className="mt-0.5 block text-[10.5px] font-normal text-slate-400">
-            {item.quoteTrackingCode ?? "Venta directa"}
+            {item.quoteTrackingCode ?? (item.userId ? "Compra web" : "Venta directa")}
           </span>
         </button>
       </td>
@@ -552,6 +552,7 @@ function OrderDrawer({
   const [tab, setTab] = useState("Resumen");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [trackingNotice, setTrackingNotice] = useState<string | null>(null);
   const [receivedBy, setReceivedBy] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [incident, setIncident] = useState({
@@ -616,6 +617,7 @@ function OrderDrawer({
     if (status === "CANCELLED" && !cancelReason.trim()) return;
     setBusy(true);
     setNotice(null);
+    setTrackingNotice(null);
     try {
       const response = await fetch(`/api/admin/pedidos/${encodeURIComponent(orderId)}`, {
         method: "PATCH",
@@ -632,6 +634,24 @@ function OrderDrawer({
       await refresh();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "No se pudo actualizar el pedido.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function advanceTracking() {
+    if (!orderId) return;
+    setBusy(true);
+    setNotice(null);
+    setTrackingNotice(null);
+    try {
+      const response = await fetch(`/api/admin/pedidos/${encodeURIComponent(orderId)}/envio/avanzar`, { method: "POST" });
+      const data = await read(response);
+      if (!response.ok) throw new Error(apiMessage(data, "No se pudo avanzar el seguimiento."));
+      const event = (data as { event?: { description?: string } }).event;
+      setTrackingNotice(event?.description ? `Seguimiento: ${event.description}` : "Seguimiento actualizado.");
+      await refresh();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "No se pudo avanzar el seguimiento.");
     } finally {
       setBusy(false);
     }
@@ -884,6 +904,11 @@ function OrderDrawer({
                       </button>
                     ))
                   : null}
+                {canManage && ["IN_TRANSIT", "SHIPPED"].includes(String(order?.status)) ? (
+                  <button type="button" disabled={busy} onClick={() => void advanceTracking()} className={secondaryButtonClass} title="Registra el siguiente evento del transportista (solo con el transportista de prueba)">
+                    Avanzar seguimiento
+                  </button>
+                ) : null}
                 {canPaymentsView ? (
                   <Link href="/admin/pagos" className={secondaryButtonClass}>
                     Gestionar pago
@@ -1015,6 +1040,11 @@ function OrderDrawer({
               ) : null}
             </div>
           )}
+          {trackingNotice ? (
+            <p role="status" className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
+              {trackingNotice}
+            </p>
+          ) : null}
           {notice ? (
             <p role="alert" className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
               {notice}

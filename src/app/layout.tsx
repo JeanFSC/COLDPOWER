@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { TopBar } from "@/components/layout/TopBar";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { ShoppingCartProvider } from "@/components/shopping-cart/ShoppingCartProvider";
 import { PreviewBanner } from "@/components/shared/PreviewBanner";
 import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 import { coldPowerClerkLocalization } from "@/components/auth/clerkAppearance";
@@ -55,6 +56,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   ]);
   const body = (
     <CartProvider>
+      <ShoppingCartProvider>
       <CompareProvider>
         <AppChrome
           publicBefore={
@@ -75,6 +77,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </AppChrome>
         <CompareBar />
       </CompareProvider>
+      </ShoppingCartProvider>
     </CartProvider>
   );
   return (

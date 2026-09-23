@@ -1,7 +1,7 @@
-import { and, asc, eq, inArray, lt, ne, or } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, products, quotes, users } from "@/db/schema";
-import { crmActivities, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityItems, opportunityStageHistory } from "@/db/crm-schema";
+import { crmActivities, crmAttachments, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityItems, opportunityStageHistory } from "@/db/crm-schema";
 import { assertOpportunityTransition, contactActivityTypes, type ActivityType, type CustomerType, type OpportunityCurrency, type OpportunityItemInput, type OpportunityOrigin, type OpportunityStage, type TaskStatus } from "@/lib/crm-validation";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { activeCommercialStages, postSaleOpportunityStages, sellerRoleCodes } from "@/lib/opportunity-stage-config";
@@ -353,6 +353,163 @@ export async function ensureLeadFromQuote(quoteId: string, actorId: string | nul
     const link = (await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId, opportunityId }).returning())[0];
     await tx.insert(auditLogs).values({ id: id("audit"), actorId: actorId, actorRole: "system", action: "crm.lead_created_from_quote", entityType: "quote", entityId: quoteId, before: null, after: { customer, opportunity, link }, metadata: null });
     return link;
+  });
+}
+
+export type PublicContactLeadInput = {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  message: string;
+  requestId: string;
+  attachment?: {
+    id: string;
+    originalFilename: string;
+    storageKey: string;
+    mimeType: string;
+    byteSize: number;
+    contentHash: string;
+  };
+};
+
+export async function createPublicContactLead(input: PublicContactLeadInput) {
+  const actor: Actor = { userId: "public-contact", role: "PUBLIC" };
+  return getDb().transaction(async (tx) => {
+    const [existingActivity] = await tx
+      .select({ id: crmActivities.id, customerId: crmActivities.customerId, opportunityId: crmActivities.opportunityId })
+      .from(crmActivities)
+      .where(eq(crmActivities.idempotencyKey, input.requestId))
+      .limit(1);
+    if (existingActivity) return { idempotent: true as const, ...existingActivity, attachment: null };
+
+    const phoneDigits = input.phone.replace(/\D/g, "");
+    const [existingCustomer] = await tx
+      .select()
+      .from(customers)
+      .where(
+        or(
+          ilike(customers.email, input.email),
+          sql`regexp_replace(coalesce(${customers.phone}, ''), '[^0-9]', '', 'g') = ${phoneDigits}`,
+        ),
+      )
+      .orderBy(asc(customers.updatedAt))
+      .limit(1);
+    const now = new Date();
+    const customer = existingCustomer
+      ? (
+          await tx
+            .update(customers)
+            .set({
+              name: existingCustomer.name || input.name,
+              legalName: existingCustomer.legalName || input.company || null,
+              phone: existingCustomer.phone || input.phone,
+              whatsapp: existingCustomer.whatsapp || input.phone,
+              email: existingCustomer.email || input.email,
+              contactPreference: existingCustomer.contactPreference || "WEB",
+              lastActivityAt: now,
+              updatedAt: now,
+            })
+            .where(eq(customers.id, existingCustomer.id))
+            .returning()
+        )[0] ?? existingCustomer
+      : (
+          await tx
+            .insert(customers)
+            .values({
+              id: id("customer"),
+              name: input.name,
+              legalName: input.company || null,
+              phone: input.phone,
+              whatsapp: input.phone,
+              email: input.email,
+              contactPreference: "WEB",
+              customerType: input.company ? "EMPRESA" : "CONSUMIDOR",
+              status: "PROSPECT",
+              lastActivityAt: now,
+              createdAt: now,
+              updatedAt: now,
+            })
+            .returning()
+        )[0];
+
+    const opportunityId = id("opportunity");
+    const opportunity = (
+      await tx
+        .insert(opportunities)
+        .values({
+          id: opportunityId,
+          code: `OP-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+          customerId: customer.id,
+          title: "Consulta desde página Contacto",
+          origin: "WEB",
+          stage: "NEW",
+          createdBy: actor.userId,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
+    )[0];
+    await tx.insert(opportunityStageHistory).values({
+      id: id("opportunity-stage"),
+      opportunityId: opportunity.id,
+      fromStage: null,
+      toStage: "NEW",
+      changedBy: actor.userId,
+      note: "Lead recibido desde la página Contacto",
+    });
+
+    const activity = (
+      await tx
+        .insert(crmActivities)
+        .values({
+          id: id("activity"),
+          customerId: customer.id,
+          opportunityId: opportunity.id,
+          type: "NOTE",
+          subject: "Consulta recibida desde página Contacto",
+          body: [
+            input.company ? `Empresa: ${input.company}` : "Empresa: No indicada",
+            `Correo: ${input.email}`,
+            `Teléfono: ${input.phone}`,
+            `Mensaje: ${input.message}`,
+          ].join("\n"),
+          occurredAt: now,
+          performedBy: actor.userId,
+          idempotencyKey: input.requestId,
+          createdAt: now,
+        })
+        .returning()
+    )[0];
+
+    const attachment = input.attachment
+      ? (
+          await tx
+            .insert(crmAttachments)
+            .values({
+              id: input.attachment.id,
+              customerId: customer.id,
+              opportunityId: opportunity.id,
+              activityId: activity.id,
+              originalFilename: input.attachment.originalFilename,
+              storageKey: input.attachment.storageKey,
+              mimeType: input.attachment.mimeType,
+              byteSize: input.attachment.byteSize,
+              contentHash: input.attachment.contentHash,
+            })
+            .returning()
+        )[0]
+      : null;
+
+    await tx.insert(auditLogs).values(
+      audit(actor, "public.contact_submitted", "opportunity", opportunity.id, null, {
+        customerId: customer.id,
+        activityId: activity.id,
+        attachmentId: attachment?.id ?? null,
+        source: "CONTACT_PAGE",
+      }),
+    );
+    return { idempotent: false as const, customerId: customer.id, opportunityId: opportunity.id, activityId: activity.id, assignedSellerId: customer.assignedSellerId, attachment };
   });
 }
 

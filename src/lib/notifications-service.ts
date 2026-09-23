@@ -10,7 +10,7 @@ import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
 export class NotificationInvalidFilterError extends Error { constructor() { super("NOTIFICATION_INVALID_FILTER"); this.name = "NotificationInvalidFilterError"; } }
 type Actor = { userId: string | null; role?: string | null };
-export type NotificationInput = { type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null };
+export type NotificationInput = { type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; recipientIds?: string[] };
 
 const typeAliases: Record<string, string> = { PRODUCT_OUT_OF_STOCK: "INVENTORY_CRITICAL", STOCK_MINIMUM: "INVENTORY_LOW", TRANSFER_APPROVAL_PENDING: "TRANSFER_UPDATED" };
 const targetRoles: Record<string, string[]> = { QUOTE_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], LEAD_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], PAYMENT_APPROVED: ["GERENCIA", "OPERACIONES_VENTAS", "SUPERADMIN"], PAYMENT_FAILED: ["GERENCIA", "OPERACIONES_VENTAS", "SUPERADMIN"], ORDER_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], ORDER_READY: ["OPERACIONES_VENTAS", "ALMACEN", "SUPERADMIN"], SALE_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], INVENTORY_LOW: ["ALMACEN", "COMPRAS", "GERENCIA", "SUPERADMIN"], INVENTORY_CRITICAL: ["ALMACEN", "GERENCIA", "SUPERADMIN"], FOLLOW_UP_OVERDUE: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], TRANSFER_UPDATED: ["ALMACEN", "GERENCIA", "SUPERADMIN"] };
@@ -98,7 +98,19 @@ async function dispatchConfiguredRule(input: NotificationInput, normalized: Retu
   }
 }
 export async function notifyStaff(input: NotificationInput) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); const rows = await createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized }))); await dispatchConfiguredRule(input, normalized); return rows; }
-export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: string }) { const normalized = normalizeInput(input); const staff = await staffIds(normalized.type); if (!staff.length) { await dispatchConfiguredRule(input, normalized); return []; } const rows = await createNotifications(staff.map(({ id }) => ({ recipientId: id, ...normalized }))); await dispatchConfiguredRule(input, normalized); return rows; }
+export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: string }) {
+  const normalized = normalizeInput(input);
+  const staff = await staffIds(normalized.type);
+  const explicitIds = [...new Set((input.recipientIds ?? []).filter((id) => /^[A-Za-z0-9_-]{1,160}$/.test(id)))];
+  const explicit = explicitIds.length
+    ? await getDb().select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), inArray(users.id, explicitIds)))
+    : [];
+  const recipientIds = [...new Set([...staff.map(({ id }) => id), ...explicit.map(({ id }) => id)])];
+  if (!recipientIds.length) { await dispatchConfiguredRule(input, normalized); return []; }
+  const rows = await createNotifications(recipientIds.map((recipientId) => ({ recipientId, ...normalized })));
+  await dispatchConfiguredRule(input, normalized);
+  return rows;
+}
 export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>) { if (!rows.length) return []; const values = rows.map((row) => { const normalized = normalizeInput(row); return { id: `notification-${crypto.randomUUID()}`, recipientId: row.recipientId, type: normalized.type, title: normalized.title, body: normalized.body, link: normalized.link, metadata: normalized.metadata, dedupeKey: normalized.dedupeKey }; }); return getDb().insert(notifications).values(values).onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] }).returning(); }
 export async function getNotificationPreferences(userId: string) { const [row] = await getDb().select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); return row?.preferences ?? {}; }
 export async function saveNotificationPreferences(userId: string, input: unknown) { const value = input && typeof input === "object" ? input as Record<string, unknown> : {}; const preferences = Object.fromEntries(Object.entries(value).filter(([key, setting]) => /^[A-Za-z0-9_.:-]{1,80}$/.test(key) && typeof setting === "boolean")) as Record<string, boolean>; const [existing] = await getDb().select({ userId: notificationPreferences.userId }).from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); const [row] = existing ? await getDb().update(notificationPreferences).set({ preferences, updatedAt: new Date() }).where(eq(notificationPreferences.userId, userId)).returning() : await getDb().insert(notificationPreferences).values({ userId, preferences }).returning(); return row.preferences; }

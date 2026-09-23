@@ -2,6 +2,7 @@
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { CompareToggle } from "@/components/catalog/CompareToggle";
 import { ProductMedia } from "@/components/catalog/ProductMedia";
 import { Badge } from "@/components/shared/Badge";
@@ -60,7 +61,14 @@ export function ProductCard({ product }: ProductCardProps) {
           </p>
           <div className="mt-4 grid gap-2">
             <Button href={productHref} variant="outline" size="sm" className="w-full" onClick={trackOpen}>Ver ficha técnica</Button>
-            <AddToCartButton productId={product.id} label="Cotizar" className="w-full" />
+            {product.price !== null ? (
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                <AddToCartButton productId={product.id} purchasable label="Agregar" className="w-full" />
+                <AddToQuoteButton productId={product.id} className="px-3" />
+              </div>
+            ) : (
+              <AddToQuoteButton productId={product.id} variant="primary" className="w-full" />
+            )}
           </div>
         </div>
       </div>

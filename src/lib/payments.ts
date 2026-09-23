@@ -1,3 +1,6 @@
+import { commerceConfig } from "@/lib/env";
+import { MOCK_PAYMENT_PROVIDER, MockPaymentProvider } from "@/lib/payments/mock-provider";
+
 export type PaymentCreateInput = { orderId: string; amount: string; currency: string; returnUrl?: string };
 export type PaymentCreateResult = { provider: string; providerReference: string; checkoutUrl: string };
 export type PaymentRefundResult = { status: "SUCCEEDED" | "PENDING" | "FAILED"; providerReference?: string; metadata?: Record<string, unknown> };
@@ -17,5 +20,22 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
 }
 
 let configuredProvider: PaymentProvider | null = null;
-export function getPaymentProvider(): PaymentProvider { return configuredProvider ?? new UnconfiguredPaymentProvider(); }
+
+// The name webhooks must arrive under; null when no provider is active.
+export function getActivePaymentProviderName(): string | null {
+  if (configuredProvider) return "configured";
+  if (commerceConfig.paymentProvider === MOCK_PAYMENT_PROVIDER && commerceConfig.mockPaymentWebhookSecret) return MOCK_PAYMENT_PROVIDER;
+  return null;
+}
+
+export function isMockPaymentProviderActive() {
+  return !configuredProvider && getActivePaymentProviderName() === MOCK_PAYMENT_PROVIDER;
+}
+
+export function getPaymentProvider(): PaymentProvider {
+  if (configuredProvider) return configuredProvider;
+  if (isMockPaymentProviderActive()) return new MockPaymentProvider(commerceConfig.mockPaymentWebhookSecret!);
+  return new UnconfiguredPaymentProvider();
+}
+
 export function configurePaymentProvider(provider: PaymentProvider) { configuredProvider = provider; }

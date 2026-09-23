@@ -616,6 +616,19 @@ final result: blocked
 
 final result: blocked — falta inspección en el navegador autenticado personal a 1920 × 1080; este entorno no dispone de ese controlador.
 
+## Contacto público — rediseño visual y flujo CRM — 2026-09-22
+
+- source: `pasted-text-1.txt` plus `image-1.png`; reference image is a 938 × 1677 desktop capture of the public Contacto page.
+- implementation route: `/contacto`, rendered in the authenticated personal Brave profile at `http://localhost:3002/contacto` with the local Webpack dev server.
+- generated assets: `public/images/contact-hero-coldpower.webp` (1513 × 1040), `public/images/contact-coverage-peru.webp` (1813 × 868), and `public/images/contact-cta-cooling.webp` (2243 × 701). The assets were generated for the requested refrigeration/HVAC visual language and inspected before integration.
+- layout state: desktop hero with two-column contact channels, transactional contact form, help/brand panel, coverage/map section, CTA and global footer; CSS adapts at 1100, 767 and 420px breakpoints.
+- data state: company settings, catalog brands, CMS media slots and payment-method labels are server-backed. Missing business settings remain explicit (`Disponible al configurar`, `Horario por confirmar`, `Cobertura coordinada`); no operational values were invented.
+- behavior state: `/api/contacto` validates and rate-limits public submissions, rejects the honeypot without persistence, validates attachment type/signature/size, persists customer/opportunity/activity/history/attachment through CRM, and sends a deduplicated `CONTACT_SUBMITTED` notification. Repeated `requestId` submissions are idempotent.
+- browser evidence: the authenticated Brave session rendered the updated desktop page, completed a real form submission, displayed `Consulta enviada correctamente.`, and confirmed the persisted CRM activity and notification through read-only database checks. A JPEG attachment submission also persisted its `crm_attachments` relation and local file.
+- responsive/accessibility state: semantic headings, labels, required controls, inline errors with `aria-invalid`/`aria-describedby`, consent error announcement, keyboard-compatible controls, reduced-motion CSS, and mobile layout rules are implemented. The browser session was additionally resized toward 1024px and 390px for visual inspection; exact screenshot capture at every requested viewport remains constrained by the desktop-window controller.
+
+final result: passed
+
 ## Catálogo admin — alineación de barra de filtros — 2026-09-12
 
 - Referencia: la barra del Dashboard suministrada por Jean. La segunda fila conserva sus utilidades en una secuencia compacta a la izquierda.
@@ -623,3 +636,17 @@ final result: blocked — falta inspección en el navegador autenticado personal
 - Se preservaron los controles, enlaces, foco por teclado y ajuste responsive mediante `flex-wrap`.
 
 final result: blocked — falta comparación visual en el navegador autenticado personal a 1920 × 1080.
+
+## CP-PUBLIC-CONTACT — cierre actual de QA — 2026-09-22
+
+- source visual truth: `C:\Users\jean_\.codex\attachments\fafb984a-2407-4088-9e30-cdc8d8624ec4\image-1.png` (938 × 1677) plus `pasted-text-1.txt`.
+- implementation: `/contacto` in the authenticated Brave Personal tab `http://localhost:3002/contacto`; the reference header remains shared and the page uses the generated hero, coverage and CTA assets.
+- desktop evidence: CSS viewport 1920 × 1080 at 100% zoom; the hero keeps the two-line title, channels card, generated product image and three benefits without horizontal overflow. The full-page capture also shows the transactional form, real-brand list, coverage visual, CTA and footer.
+- responsive evidence: CSS viewports 1440 × 900, 1024 × 900, 768 × 900 and 390 × 844 were inspected through the authenticated browser. `document.documentElement.scrollWidth` stayed below the viewport at every size. Tablet now stacks hero/art/channels to avoid collisions; mobile stacks fields, buttons and coverage cards, and keeps the handwritten note over the hero image.
+- interaction evidence this pass: clicking the empty `Enviar consulta` button produced inline accessible errors for name, phone, email and message plus the summary notice; no request was emitted. A valid CRM submission was not repeated in this pass because it would create another real lead.
+- persisted evidence from the prior authenticated QA run: read-only Neon checks show two `public.contact_submitted` audit entries and one row in `crm_attachments`; the current migration check confirms the attachment table exists. This is historical evidence, not a new submission in this pass.
+- data and safety: company settings, CMS media slots, catalog brands and payment labels remain server-backed. Missing settings stay explicit (`Disponible al configurar`, `Horario por confirmar`, `Cobertura coordinada`); no operational contact values or brands were invented.
+- console: no error filtered to Contacto was reported by the current browser tab. Older unrelated logs from another local homepage tab reference missing components in a dirty worktree and are not part of `/contacto`.
+- automated verification: `corepack pnpm test:contact` PASS (7/7); `corepack pnpm exec tsc --noEmit` PASS; `corepack pnpm build` PASS; targeted ESLint PASS with one pre-existing unused-type warning in `src/lib/media-repository.ts`. The global lint remains blocked by generated `.next/dev` and `.claude/worktrees/verification-execution-rules-09b665` contents (341 errors outside this change). The inventory suite is 19/20 because the external workbook `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx` is absent.
+
+final result: passed

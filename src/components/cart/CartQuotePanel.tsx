@@ -3,11 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CreditCard, MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
+import { MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/shared/Button";
 import { WhatsAppLeadButton } from "@/components/shared/WhatsAppLeadButton";
 import { cartSyncErrorMessage, useCart } from "@/components/cart/CartProvider";
-import { formatProductPrice } from "@/lib/formatters";
 
 type CartProduct = {
   id: string;
@@ -46,7 +45,7 @@ export function CartQuotePanel() {
         .catch(() => {
           if (!cancelled) {
             setCatalogProducts([]);
-            setCatalogError("No pudimos cargar las referencias del carrito. Reintenta para continuar.");
+            setCatalogError("No pudimos cargar las referencias de la lista. Reintenta para continuar.");
           }
         })
         .finally(() => {
@@ -64,21 +63,14 @@ export function CartQuotePanel() {
     const product = catalogProducts.find((candidate) => candidate.id === item.productId);
     return product ? [{ ...item, product }] : [];
   });
-  const pricedItems = resolvedItems.filter((item) => item.product.price !== null);
-  const currencies = [...new Set(pricedItems.map((item) => item.product.priceCurrency).filter((currency): currency is string => Boolean(currency)))];
-  const hasUnpricedItems = resolvedItems.some((item) => item.product.price === null || !item.product.priceCurrency);
-  const hasMixedCurrencies = currencies.length > 1;
-  const subtotal = hasMixedCurrencies ? null : pricedItems.reduce((total, item) => total + (item.product.price ?? 0) * item.quantity, 0);
-  const displayCurrency = currencies[0] ?? "PEN";
-  const totalLabel = hasMixedCurrencies || hasUnpricedItems ? "Cotizar" : formatProductPrice(subtotal, displayCurrency);
   const leadItems = resolvedItems.map((item) => ({ name: item.product.name, sku: item.product.sku, quantity: item.quantity }));
 
   return (
-    <aside className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-white p-5 shadow-card sm:p-6">
+    <aside className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-white p-5 shadow-card sm:p-6" aria-label="Lista de cotización">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Carrito</p>
-          <h2 className="mt-2 font-display text-2xl font-black tracking-normal text-dark">Productos para cotizar</h2>
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Lista de cotización</p>
+          <h2 className="mt-2 font-display text-2xl font-black tracking-normal text-dark">Referencias a cotizar</h2>
         </div>
         <span className="shrink-0 rounded-pill bg-background px-3 py-1 text-xs font-black text-dark">{totalQuantity}</span>
       </div>
@@ -99,7 +91,8 @@ export function CartQuotePanel() {
 
       {items.length === 0 ? (
         <div className="mt-5 rounded-md border border-dashed border-border bg-background p-4 text-sm leading-6 text-gray-text">
-          <p className="font-extrabold text-dark">Tu carrito está vacío.</p>
+          <p className="font-extrabold text-dark">Aún no agregaste referencias.</p>
+          <p className="mt-1">Usa &quot;Cotizar&quot; en el catálogo o describe lo que necesitas en el formulario.</p>
           <Button href="/catalogo" variant="outline" size="sm" className="mt-4">Ver catálogo</Button>
         </div>
       ) : loading ? (
@@ -130,18 +123,13 @@ export function CartQuotePanel() {
             ))}
           </div>
 
-          <div className="mt-5 rounded-md border border-primary/20 bg-primary/10 p-4">
-            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-primary">Total referencial</p>
-            <p className="mt-1 font-display text-3xl font-black text-dark">{totalLabel}</p>
-            <p className="mt-1 text-xs font-semibold leading-5 text-gray-text">
-              {hasMixedCurrencies ? "Hay productos con monedas distintas; un asesor calculará el total correcto." : hasUnpricedItems ? "Incluye productos sin precio cargado; el asesor confirma stock y precio final." : "El asesor confirma compatibilidad, stock y precio final antes de pago."}
-            </p>
-          </div>
+          <p className="mt-5 rounded-md border border-primary/20 bg-primary/10 p-4 text-xs font-semibold leading-5 text-gray-text">
+            Estas referencias se envían con tu solicitud. Un asesor confirma precio, stock y compatibilidad; no es una compra.
+          </p>
 
           <div className="mt-5 grid gap-3">
-            <WhatsAppLeadButton title="Consulta del carrito" productIds={resolvedItems.map((item) => item.productId)} items={leadItems} className="w-full"><MessageCircle className="h-5 w-5" />Cotizar carrito por WhatsApp</WhatsAppLeadButton>
-            <Button href="/checkout" variant="primary" className="w-full" disabled={hasMixedCurrencies || hasUnpricedItems}><CreditCard className="h-5 w-5" />Continuar al checkout</Button>
-            <button type="button" className="text-sm font-extrabold text-gray-text hover:text-danger" onClick={clearCart}>Vaciar carrito</button>
+            <WhatsAppLeadButton title="Consulta de cotización" productIds={resolvedItems.map((item) => item.productId)} items={leadItems} className="w-full"><MessageCircle className="h-5 w-5" />Cotizar por WhatsApp</WhatsAppLeadButton>
+            <button type="button" className="text-sm font-extrabold text-gray-text hover:text-danger" onClick={clearCart}>Vaciar lista</button>
           </div>
         </>
       )}

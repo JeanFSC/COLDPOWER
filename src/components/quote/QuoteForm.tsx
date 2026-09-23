@@ -5,6 +5,7 @@ import { MessageCircle, Search, Send, X } from "lucide-react";
 import type { CompanySettings } from "@/lib/company-settings";
 import { Button } from "@/components/shared/Button";
 import { QuoteSuccess } from "@/components/quote/QuoteSuccess";
+import { useCart } from "@/components/cart/CartProvider";
 import { WhatsAppLeadButton } from "@/components/shared/WhatsAppLeadButton";
 import { trackCatalogEvent } from "@/lib/analytics";
 import {
@@ -86,6 +87,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
   const [formMessage, setFormMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<(ApiSuccess & { payload: QuotePayload }) | null>(null);
+  const { clearCart: clearQuoteList } = useCart();
 
   useEffect(() => {
     trackCatalogEvent("quote_started", { productSlug: initialProduct?.slug });
@@ -177,6 +179,9 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
         return;
       }
       setSuccess({ ...result, payload: validation.data });
+      // The server already emptied the quote list inside the quote transaction; clear the
+      // local copy too so it isn't synced back.
+      clearQuoteList();
       trackCatalogEvent("quote_submitted", {
         quoteId: result.quoteId,
         productSlug: validation.data.productSlug,

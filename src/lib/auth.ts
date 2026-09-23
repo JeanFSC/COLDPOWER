@@ -73,6 +73,13 @@ async function getProxyVerifiedRole(userId: string): Promise<AppRole | null> {
 }
 
 export async function requireUser() {
+  // Same local-QA bypass as the admin (never active with NODE_ENV=production).
+  const devUserId = await getDevAdminUserId();
+  if (devUserId) {
+    const access = await resolveAccess(devUserId);
+    if (!access.role || access.status !== "ACTIVE") redirect("/sign-in");
+    return { userId: devUserId, role: access.role };
+  }
   if (!isAuthConfigured) redirect("/");
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
@@ -81,7 +88,26 @@ export async function requireUser() {
   return { userId, role: access.role };
 }
 
+// For routes open to anonymous visitors (e.g. the purchase cart): the signed-in user when
+// there is one, otherwise null. Never throws or redirects.
+export async function getOptionalUserId(): Promise<string | null> {
+  const devUserId = await getDevAdminUserId();
+  if (devUserId) return devUserId;
+  if (!isAuthConfigured) return null;
+  try {
+    return (await auth()).userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function requireApiUser() {
+  const devUserId = await getDevAdminUserId();
+  if (devUserId) {
+    const access = await resolveAccess(devUserId);
+    if (!access.role || access.status !== "ACTIVE") throw new ApiAuthorizationError();
+    return { userId: devUserId, role: access.role };
+  }
   if (!isAuthConfigured) throw new ApiAuthorizationError();
   const { userId } = await auth();
   if (!userId) throw new ApiAuthorizationError();

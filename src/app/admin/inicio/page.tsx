@@ -21,7 +21,7 @@ export default async function AdminHomePage() {
     getDb().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, actor.userId)).limit(1),
     getUnreadNotificationCount(actor.userId),
     can(actor.role, "dashboard.view") ? getHomeActivitySummary({ range: "today" }, actor) : Promise.resolve(null),
-    can(actor.role, "operations.view") ? getOperationsWorkspace({ range: "today", sellerId: actor.userId, page: 1, pageSize: 10 }, { allowedPermissions: permissionsForRole(actor.role) }) : Promise.resolve(null),
+    can(actor.role, "operations.view") ? getOperationsWorkspace({ range: "today", sellerId: actor.userId, page: 1, pageSize: 10 }, { allowedPermissions: permissionsForRole(actor.role), summaryScope: "home" }) : Promise.resolve(null),
     getWorkspacePreferences(actor.userId, actor.role),
     listRecentAdminItems(actor.userId),
   ]);

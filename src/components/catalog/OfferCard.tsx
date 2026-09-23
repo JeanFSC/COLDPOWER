@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { Button } from "@/components/shared/Button";
 import { formatProductPrice } from "@/lib/formatters";
 
@@ -74,7 +75,7 @@ export function OfferCard({
           <Button href={productHref} variant="outline" size="sm" className="w-full">
             Ver detalle
           </Button>
-          <AddToCartButton productId={product.id} className="w-full" />
+          {product.price !== null ? <AddToCartButton productId={product.id} purchasable label="Agregar" className="w-full" /> : <AddToQuoteButton productId={product.id} variant="primary" className="w-full" />}
         </div>
       </div>
     </article>

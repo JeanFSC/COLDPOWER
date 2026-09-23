@@ -8,6 +8,7 @@ import { TransactionBox } from "@/components/product/TransactionBox";
 import { ProductAnchors } from "@/components/product/ProductAnchors";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { Button } from "@/components/shared/Button";
 import { getCatalogRelatedProducts } from "@/lib/catalog-repository";
 
@@ -68,8 +69,17 @@ export async function ProductDetail({ product }: ProductDetailProps) {
       </div>
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white/95 p-3 shadow-[0_-8px_24px_rgba(7,32,56,0.12)] backdrop-blur lg:hidden" aria-label="Acciones rápidas del producto">
         <div className="mx-auto flex max-w-lg gap-2">
-          <AddToCartButton productId={product.id} label="Agregar a cotización" size="md" className="min-w-0 flex-1" />
-          <Button href={quoteHref} variant="outline" size="md" className="shrink-0 px-4">Cotizar</Button>
+          {product.price !== null ? (
+            <>
+              <AddToCartButton productId={product.id} purchasable size="md" className="min-w-0 flex-1" />
+              <AddToQuoteButton productId={product.id} size="md" className="shrink-0 px-4" />
+            </>
+          ) : (
+            <>
+              <AddToQuoteButton productId={product.id} label="Agregar a cotización" size="md" variant="primary" className="min-w-0 flex-1" />
+              <Button href={quoteHref} variant="outline" size="md" className="shrink-0 px-4">Cotizar ahora</Button>
+            </>
+          )}
         </div>
       </div>
     </main>

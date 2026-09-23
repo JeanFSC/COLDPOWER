@@ -69,3 +69,34 @@ export function validateManualPaymentInput(input: unknown) {
   if (!reason) throw new Error("El motivo de confirmación manual es obligatorio.");
   return { orderId, method: method as ManualPaymentMethod, amount: amount.toFixed(2), currency, reference, reason };
 }
+export type CartCheckoutDetails = { district?: string; province?: string; department?: string; reference?: string; agencyName?: string; recipientName?: string; recipientDocument?: string };
+export type CartCheckoutRequest = { deliveryMethod: DeliveryMethod; locationId: string; name: string; phone: string; email: string | null; address: string | null; deliveryDetails: CartCheckoutDetails | null };
+// Online checkout from the purchase cart: the items and their prices come only from the
+// server-side cart, so any client-sent items/prices/keys are refused outright.
+export function validateCartCheckoutInput(input: unknown): CartCheckoutRequest {
+  if (!input || typeof input !== "object") throw new Error("El checkout debe enviarse como objeto.");
+  const value = input as Record<string, unknown>;
+  if (Object.keys(value).some((key) => ["items", "unitPrice", "price", "total", "currency", "idempotencyKey"].includes(key))) throw new Error("Los productos, precios y totales se toman de tu carrito en el servidor.");
+  const deliveryMethod = text(value.deliveryMethod, 30);
+  if (!(deliveryMethods as readonly string[]).includes(deliveryMethod)) throw new Error("Método de entrega inválido.");
+  const locationId = text(value.locationId, 160); const name = text(value.name, 160); const phone = text(value.phone, 40);
+  const email = text(value.email, 180).toLowerCase() || null; const address = text(value.address, 300) || null;
+  if (!locationId) throw new Error("Selecciona el local de recojo o despacho.");
+  if (!name || !phone) throw new Error("Nombre y teléfono son obligatorios.");
+  if (!/^[+\d][\d\s-]{6,19}$/.test(phone)) throw new Error("El teléfono no es válido.");
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("El correo no es válido.");
+  const raw = value.deliveryDetails && typeof value.deliveryDetails === "object" ? value.deliveryDetails as Record<string, unknown> : {};
+  const details: CartCheckoutDetails = {};
+  for (const key of ["district", "province", "department", "reference", "agencyName", "recipientName", "recipientDocument"] as const) { const field = text(raw[key], 160); if (field) details[key] = field; }
+  if (deliveryMethod === "DELIVERY") {
+    if (!address) throw new Error("La dirección de entrega es obligatoria.");
+    if (!details.district) throw new Error("Indica el distrito de entrega en Lima.");
+    details.department = "Lima";
+  }
+  if (deliveryMethod === "SHIPPING") {
+    if (!details.department || !details.province) throw new Error("Indica el departamento y la provincia de destino.");
+    if (!details.agencyName) throw new Error("Indica la agencia de transporte de destino.");
+    if (!details.recipientName || !details.recipientDocument) throw new Error("Indica el nombre y DNI de quien recoge en la agencia.");
+  }
+  return { deliveryMethod: deliveryMethod as DeliveryMethod, locationId, name, phone, email, address: deliveryMethod === "PICKUP" ? null : address, deliveryDetails: deliveryMethod === "PICKUP" ? null : details };
+}

@@ -18,7 +18,12 @@ test("Bloque E declara ventas, pedidos, pagos e historial", () => {
 test("checkout usa servicio transaccional, snapshots, idempotencia y reservas", () => {
   const route = read("src/app/api/checkout/route.ts");
   const service = read("src/lib/sales-service.ts");
-  assert.match(route, /createCheckoutOrder/);
+  // The public checkout builds the order from the server-side purchase cart.
+  assert.match(route, /createCheckoutFromCart/);
+  assert.match(route, /requireApiUser/);
+  assert.doesNotMatch(route, /validateCheckoutInput\(/);
+  assert.match(service, /createCheckoutOrder/);
+  assert.match(service, /lockCartForCheckout/);
   assert.match(service, /transaction/);
   assert.match(service, /idempotencyKey/);
   assert.match(service, /inventoryReservations|reserveInventory/);

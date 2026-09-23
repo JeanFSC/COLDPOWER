@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import type { CatalogCategory } from "@/lib/catalog-repository";
 
 const technicalLinks = [
   { label: "Compresores", href: "/catalogo?familia=compresores" },
@@ -9,10 +10,18 @@ const technicalLinks = [
   { label: "Controles", href: "/catalogo?familia=controles" },
   { label: "Herramientas", href: "/catalogo?familia=herramientas" },
   { label: "Repuestos", href: "/categoria/repuestos-y-accesorios-generales" },
-  { label: "Marcas", href: "/catalogo?vista=marcas" },
 ] as const;
 
-export function TechnicalNav() {
+export function TechnicalNav({ categories = [] }: { categories?: CatalogCategory[] }) {
+  const dynamicLinks = categories
+    .filter((category) => category.productCount > 0)
+    .slice(0, 8)
+    .map((category) => ({ label: category.name, href: `/categoria/${category.slug}` }));
+  const links = [
+    ...dynamicLinks,
+    ...technicalLinks.filter((link) => !dynamicLinks.some((dynamicLink) => dynamicLink.href === link.href)),
+  ].slice(0, 8);
+
   return (
     <nav
       aria-label="Navegación técnica; desplázate horizontalmente para ver más opciones"
@@ -28,7 +37,7 @@ export function TechnicalNav() {
           Todas las categorías
           <ChevronDown className="h-4 w-4" aria-hidden="true" />
         </Link>
-        {technicalLinks.map((link) => (
+        {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
@@ -38,6 +47,13 @@ export function TechnicalNav() {
             {link.label}
           </Link>
         ))}
+        <Link
+          href="/catalogo?vista=marcas"
+          prefetch={false}
+          className="inline-flex h-9 shrink-0 items-center rounded-md px-3 text-xs font-semibold text-text-secondary transition hover:bg-surface-page hover:text-brand-secondary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-secondary-600"
+        >
+          Marcas
+        </Link>
       </div>
       <div
         className="pointer-events-none absolute inset-y-0 right-0 hidden w-14 items-center justify-end bg-gradient-to-l from-white via-white/95 to-transparent pr-2 lg:flex xl:hidden"

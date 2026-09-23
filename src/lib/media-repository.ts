@@ -43,3 +43,22 @@ export async function listMediaAssets(search?: string) { const result = await ge
 export async function getMediaAsset(id: string) { const [asset] = await getDb().select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1); return asset; }
 export async function getMediaDetail(id: string) { const db = getDb(); const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1); if (!asset) return null; const [usages, audit] = await Promise.all([db.select().from(mediaAssetUsages).where(eq(mediaAssetUsages.assetId, id)).orderBy(asc(mediaAssetUsages.createdAt)), db.select().from(auditLogs).where(and(eq(auditLogs.entityType, "media_asset"), eq(auditLogs.entityId, id))).orderBy(desc(auditLogs.createdAt))]); return { asset: { ...toView(asset), usageCount: usages.length }, usages, audit }; }
 export async function getPublishedMediaForEntities(entityType: string, entityIds: string[]) { if (!entityIds.length) return new Map<string, string[]>(); const rows = await getDb().select({ entityId: mediaAssetUsages.entityId, assetId: mediaAssets.id, sortOrder: mediaAssetUsages.sortOrder }).from(mediaAssetUsages).innerJoin(mediaAssets, eq(mediaAssetUsages.assetId, mediaAssets.id)).where(and(eq(mediaAssetUsages.entityType, entityType), inArray(mediaAssetUsages.entityId, entityIds), eq(mediaAssets.status, "ACTIVE"), isNull(mediaAssets.deletedAt))).orderBy(asc(mediaAssetUsages.sortOrder), asc(mediaAssets.createdAt)); const result = new Map<string, string[]>(); for (const row of rows) result.set(row.entityId, [...(result.get(row.entityId) ?? []), `/api/media/${row.assetId}`]); return result; }
+
+export async function getPublishedMediaSlots(entityType: string, entityId: string) {
+  const rows = await getDb()
+    .select({ slot: mediaAssetUsages.slot, assetId: mediaAssets.id, sortOrder: mediaAssetUsages.sortOrder })
+    .from(mediaAssetUsages)
+    .innerJoin(mediaAssets, eq(mediaAssetUsages.assetId, mediaAssets.id))
+    .where(
+      and(
+        eq(mediaAssetUsages.entityType, entityType),
+        eq(mediaAssetUsages.entityId, entityId),
+        eq(mediaAssets.status, "ACTIVE"),
+        isNull(mediaAssets.deletedAt),
+      ),
+    )
+    .orderBy(asc(mediaAssetUsages.slot), asc(mediaAssetUsages.sortOrder), asc(mediaAssets.createdAt));
+  const result = new Map<string, string>();
+  for (const row of rows) if (!result.has(row.slot)) result.set(row.slot, `/api/media/${row.assetId}`);
+  return result;
+}

@@ -11,6 +11,16 @@ export const whatsappRateLimitConfig = { max: readNumber("WHATSAPP_RATE_LIMIT_MA
 export const authConfig = { clerkPublishableKey: readOptionalUrl("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"), clerkSecretKey: readOptionalUrl("CLERK_SECRET_KEY"), signInUrl: readString("NEXT_PUBLIC_CLERK_SIGN_IN_URL", "/sign-in"), signUpUrl: readString("NEXT_PUBLIC_CLERK_SIGN_UP_URL", "/sign-up"), webhookSecret: readOptionalUrl("CLERK_WEBHOOK_SECRET") };
 export const isAuthConfigured = Boolean(authConfig.clerkPublishableKey && authConfig.clerkSecretKey);
 export const databaseConfig = { url: readOptionalUrl("DATABASE_URL"), poolMax: readNumber("DATABASE_POOL_MAX", 20) };
+// Payment/tracking providers are chosen explicitly by env, never by NODE_ENV: the public
+// preview runs `next start` (production mode) and must still be able to use the mocks.
+export const commerceConfig = {
+  paymentProvider: readOptionalString("PAYMENT_PROVIDER"),
+  mockPaymentWebhookSecret: readOptionalString("MOCK_PAYMENT_WEBHOOK_SECRET"),
+  trackingProvider: readOptionalString("TRACKING_PROVIDER"),
+  orderPaymentTtlMinutes: readNumber("ORDER_PAYMENT_TTL_MIN", 30),
+  cronSecret: readOptionalString("CRON_SECRET"),
+  internalAppUrl: readOptionalString("INTERNAL_APP_URL"),
+};
 const PLACEHOLDER_COMPANY_VALUES = { NEXT_PUBLIC_WHATSAPP_NUMBER: "51999999999", NEXT_PUBLIC_CONTACT_EMAIL: "ventas@coldpower.pe", NEXT_PUBLIC_CONTACT_PHONE: "+51 999 999 999", NEXT_PUBLIC_RUC: "00000000000" } as const;
 export const isProduction = process.env.NODE_ENV === "production";
 export const allowPlaceholderCompanyData = parseBoolean(process.env.NEXT_PUBLIC_ALLOW_PLACEHOLDER_COMPANY_DATA, false);

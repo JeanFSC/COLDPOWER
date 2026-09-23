@@ -772,9 +772,51 @@ async function loadTeamLoad(filters: OperationsFilters) {
 
 export async function getOperationsWorkspace(
   filters: OperationsFilters = { range: "all", page: 1, pageSize: 25 },
-  options: { allowedPermissions?: Iterable<string>; summaryScope?: "header" } = {},
+  options: { allowedPermissions?: Iterable<string>; summaryScope?: "header" | "home" } = {},
 ): Promise<OperationsWorkspace> {
   const selectedQueue = filters.queue;
+  // "home" (/admin/inicio) renders only each queue's first page + metrics.overdueTasks. It
+  // never reads workItemId/teamLoad, so it skips the 1,000-row projection wave, the
+  // operations_work_items upsert and loadTeamLoad. That sync still runs on every
+  // /admin/operaciones load, the only module that consumes work items.
+  if (options.summaryScope === "home") {
+    const [metrics, quoteResult, opportunityResult, orderResult, followUpResult, inventoryResult] =
+      await Promise.all([
+        loadMetrics(filters),
+        loadQuotes(filters),
+        loadOpportunities(filters),
+        loadOrders(filters),
+        loadFollowUps(filters),
+        loadInventoryAlerts(filters),
+      ]);
+    const totals: Record<OperationsQueue, number> = {
+      quotes: quoteResult.total,
+      opportunities: opportunityResult.total,
+      orders: orderResult.total,
+      followUps: followUpResult.total,
+      inventoryAlerts: inventoryResult.total,
+    };
+    const allowedPermissions = options.allowedPermissions
+      ? new Set(options.allowedPermissions)
+      : undefined;
+    return {
+      metrics: metrics.metrics,
+      operationalSignals: metrics.operationalSignals,
+      teamLoad: [],
+      queueTotals: totals,
+      queues: {
+        quotes: filterActions(quoteResult.items, allowedPermissions),
+        opportunities: filterActions(opportunityResult.items, allowedPermissions),
+        orders: filterActions(orderResult.items, allowedPermissions),
+        followUps: filterActions(followUpResult.items, allowedPermissions),
+        inventoryAlerts: filterActions(inventoryResult.items, allowedPermissions),
+      },
+      ...pagination(
+        selectedQueue ? totals[selectedQueue] : Object.values(totals).reduce((sum, value) => sum + value, 0),
+        filters,
+      ),
+    };
+  }
   // "header" callers (KPI/comparison reads on /admin/operaciones) only ever consume
   // .metrics/.operationalSignals/.teamLoad — never .queues. The full path below still
   // loads and upserts every queue's items (up to 1,000 rows x 5 queues) just to compute

@@ -1,6 +1,7 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, notLike, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { adminRecentItems, adminWorkspacePreferences } from "@/db/operations-schema";
+import { HIDDEN_ADMIN_MODULES, isHiddenAdminHref } from "@/lib/hidden-admin-modules";
 import type { AppRole } from "@/lib/roles";
 
 export type WorkspacePreferences = {
@@ -131,13 +132,19 @@ export async function listRecentAdminItems(userId: string) {
       visitedAt: adminRecentItems.visitedAt,
     })
     .from(adminRecentItems)
-    .where(eq(adminRecentItems.userId, userId))
+    .where(
+      and(
+        eq(adminRecentItems.userId, userId),
+        ...HIDDEN_ADMIN_MODULES.map((module) => notLike(adminRecentItems.href, `${module}%`)),
+      ),
+    )
     .orderBy(desc(adminRecentItems.visitedAt))
     .limit(10);
 }
 
 export async function recordRecentAdminItem(userId: string, input: RecentAdminItem) {
   if (!validHref.test(input.href)) throw new Error("La ruta reciente no es válida.");
+  if (isHiddenAdminHref(input.href)) return;
   const db = getDb();
   const now = new Date();
   await db

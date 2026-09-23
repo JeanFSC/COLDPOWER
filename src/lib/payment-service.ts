@@ -1,6 +1,7 @@
-import { and, eq, inArray, sql, sum } from "drizzle-orm";
+import { and, count, eq, inArray, like, or, sql, sum } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
+import { customers } from "@/db/crm-schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory } from "@/db/sales-schema";
 import { getPaymentProvider, type PaymentCreateResult, type PaymentRefundResult } from "@/lib/payments";
 import { canTransitionPayment, normalizeProviderStatus, summarizePaymentLedger } from "@/lib/payments-contract";
@@ -14,6 +15,31 @@ function audit(actor: Actor | null, action: string, entityId: string, before: un
 
 export class PaymentDomainError extends Error {
   constructor(public code: string, message: string, public status = 400) { super(message); this.name = "PaymentDomainError"; }
+}
+
+// A new provider attempt may only replace a payment that never succeeded.
+const retryablePaymentStatuses = ["PENDING", "REJECTED", "CANCELLED", "ERROR"] as const as readonly string[];
+
+function storedCheckoutUrl(payment: { status: string; metadata: Record<string, unknown> | null }) {
+  const url = payment.metadata?.checkoutUrl;
+  return payment.status === "PENDING" && typeof url === "string" ? url : null;
+}
+
+// Starts (or resumes) the provider payment for the signed-in owner of an online order.
+// A still-pending attempt returns its existing checkout URL; after a rejection a fresh
+// attempt is created, until the order's payment deadline passes.
+export async function startPaymentForOrder(orderCode: string, userId: string, returnUrl?: string) {
+  const db = getDb();
+  const [row] = await db.select({ order: orders }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).where(and(eq(orders.code, orderCode), or(eq(orders.userId, userId), eq(customers.userId, userId)))).limit(1);
+  if (!row) throw new PaymentDomainError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404);
+  const order = row.order;
+  if (order.status !== "PAYMENT_PENDING") throw new PaymentDomainError("PAYMENT_NOT_ALLOWED", "Este pedido ya no está pendiente de pago.", 409);
+  const [current] = await db.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
+  const resumable = current ? storedCheckoutUrl(current) : null;
+  if (current && resumable && current.provider) return { payment: current, checkoutUrl: resumable, idempotent: true, orderCode: order.code };
+  const [{ attempts }] = await db.select({ attempts: count() }).from(paymentAttempts).innerJoin(payments, eq(paymentAttempts.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), like(paymentAttempts.idempotencyKey, `pay:${order.id}:%`)));
+  const result = await createProviderPayment({ orderId: order.id, returnUrl, idempotencyKey: `pay:${order.id}:${Number(attempts) + 1}` });
+  return { ...result, orderCode: order.code };
 }
 
 export async function createProviderPayment(input: { orderId: string; returnUrl?: string; idempotencyKey?: string }) {
@@ -32,11 +58,15 @@ export async function createProviderPayment(input: { orderId: string; returnUrl?
     const [existingAttempt] = await tx.select().from(paymentAttempts).where(eq(paymentAttempts.idempotencyKey, key)).limit(1);
     if (existingAttempt) {
       const [existingPayment] = await tx.select().from(payments).where(eq(payments.id, existingAttempt.paymentId)).limit(1);
-      if (existingPayment) return { payment: existingPayment, checkoutUrl: null, idempotent: true };
+      // A retried request must get the same hosted checkout back, not a dead null link.
+      if (existingPayment) return { payment: existingPayment, checkoutUrl: storedCheckoutUrl(existingPayment), idempotent: true };
     }
     const [order] = await tx.select().from(orders).where(eq(orders.id, input.orderId)).limit(1);
     if (!order) throw new PaymentDomainError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404);
     if (["CANCELLED", "DELIVERED"].includes(order.status)) throw new PaymentDomainError("PAYMENT_NOT_ALLOWED", "El pedido no admite un nuevo pago.", 409);
+    if (order.paymentDueAt && order.paymentDueAt.getTime() <= Date.now()) throw new PaymentDomainError("ORDER_PAYMENT_EXPIRED", "El plazo de pago del pedido venció. Vuelve a armar tu carrito.", 409);
+    const [currentPayment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
+    if (currentPayment && !retryablePaymentStatuses.includes(currentPayment.status)) throw new PaymentDomainError(currentPayment.status === "CONFIRMED" || currentPayment.status === "APPROVED" ? "PAYMENT_ALREADY_CONFIRMED" : "PAYMENT_NOT_ALLOWED", "El pedido ya tiene un pago en curso o confirmado.", 409);
     let created: PaymentCreateResult;
     try { created = await getPaymentProvider().createPayment({ orderId: order.id, amount: order.total, currency: order.currency, returnUrl: input.returnUrl }); } catch (error) {
       const unconfigured = error instanceof Error && error.message === "PAYMENT_PROVIDER_NOT_CONFIGURED";
@@ -52,7 +82,7 @@ export async function createProviderPayment(input: { orderId: string; returnUrl?
       ? (await tx.update(payments).set({ methodType: "PROVIDER", method: created.provider, provider: created.provider, providerReference: created.providerReference, status: "PENDING", metadata: { checkoutUrl: created.checkoutUrl }, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning())[0]
       : (await tx.insert(payments).values({ id: id("payment"), orderId: order.id, methodType: "PROVIDER", method: created.provider, provider: created.provider, providerReference: created.providerReference, amount: order.total, currency: order.currency, status: "PENDING", metadata: { checkoutUrl: created.checkoutUrl } }).returning())[0];
     await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: saved.id, provider: created.provider, providerReference: created.providerReference, status: "PENDING", amount: saved.amount, currency: saved.currency, idempotencyKey: key });
-    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: saved.id, fromStatus: saved.status, toStatus: "PENDING", changedBy: null, actorRole: "CUSTOMER", provider: created.provider, reason: "Pago iniciado en proveedor" });
+    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: saved.id, fromStatus: payment?.status ?? null, toStatus: "PENDING", changedBy: null, actorRole: "CUSTOMER", provider: created.provider, reason: payment && payment.status !== "PENDING" ? `Nuevo intento de pago tras ${payment.status}` : "Pago iniciado en proveedor" });
     await tx.insert(auditLogs).values(audit(null, "payments.provider_created", saved.id, payment, saved, { orderId: order.id, provider: created.provider }));
     return { payment: saved, checkoutUrl: created.checkoutUrl, idempotent: false };
   });
@@ -83,15 +113,16 @@ export async function refreshPaymentStatus(paymentId: string, actor: Actor | nul
 
 async function markOrderPaid(tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0], orderId: string, changedBy: string | null, note: string) {
   const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
-  if (order?.status !== "PAYMENT_PENDING") return;
+  if (order?.status !== "PAYMENT_PENDING") return order?.status ?? null;
   const [grossRows, refundedRows] = await Promise.all([
     tx.select({ total: sum(payments.amount) }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), inArray(payments.status, ["CONFIRMED", "APPROVED"]))),
     tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
   ]);
   const netReceived = summarizePaymentLedger(order.total, [{ amount: grossRows[0]?.total ?? 0, status: "CONFIRMED" }], [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
-  if (netReceived + 0.005 < amount(order.total)) return;
+  if (netReceived + 0.005 < amount(order.total)) return order.status;
   await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id));
   await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy, note });
+  return "PAID" as const;
 }
 
 export async function refundPayment(paymentId: string, input: { amount?: string; reason: string; idempotencyKey?: string }, actor: Actor) {
@@ -161,11 +192,28 @@ export async function processPaymentWebhook(provider: string, rawPayload: string
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado para el evento del proveedor.", 404);
     const payload = sanitizeAuditValue(event.metadata) as Record<string, unknown>;
     await tx.insert(paymentEvents).values({ id: id("payment-event"), paymentId: payment.id, provider, providerEventId: event.providerEventId, eventType: event.eventType, payload });
+    // The customer paid after the order expired and was cancelled: money moved, so this must
+    // not vanish silently. Keep the order cancelled, record it and alert staff to refund.
+    if (nextStatus === "CONFIRMED" && payment.status === "CANCELLED") {
+      const [order] = await tx.select({ status: orders.status, code: orders.code }).from(orders).where(eq(orders.id, payment.orderId)).limit(1);
+      if (order?.status === "CANCELLED") {
+        await tx.insert(auditLogs).values(audit(null, "payments.confirmed_on_cancelled_order", payment.id, payment, { providerStatus: event.status }, { provider, providerEventId: event.providerEventId, orderCode: order.code }));
+        return { duplicate: false, paymentId: payment.id, status: payment.status, ignored: true, lateApprovalOrderCode: order.code };
+      }
+    }
     if (!canTransitionPayment(payment.status, nextStatus)) return { duplicate: false, paymentId: payment.id, status: payment.status, ignored: true };
     const [updatedPayment] = await tx.update(payments).set({ status: nextStatus, metadata: payload, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
     await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider, providerReference: event.providerReference, status: nextStatus, amount: payment.amount, currency: payment.currency, idempotencyKey: `webhook:${provider}:${event.providerEventId}` });
     await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: nextStatus, changedBy: null, actorRole: "PROVIDER", provider, reason: event.eventType });
-    if (nextStatus === "CONFIRMED") await markOrderPaid(tx, payment.orderId, null, `Pago aprobado por ${provider}`);
+    if (nextStatus === "CONFIRMED") {
+      const orderStatus = await markOrderPaid(tx, payment.orderId, null, `Pago aprobado por ${provider}`);
+      if (orderStatus === "CANCELLED") {
+        const [order] = await tx.select({ code: orders.code }).from(orders).where(eq(orders.id, payment.orderId)).limit(1);
+        await tx.insert(auditLogs).values(audit(null, "payments.confirmed_on_cancelled_order", payment.id, payment, updatedPayment, { provider, providerEventId: event.providerEventId, orderCode: order?.code ?? null }));
+        await tx.insert(auditLogs).values(audit(null, "payments.webhook_processed", payment.id, payment, updatedPayment, { provider, eventType: event.eventType, providerEventId: event.providerEventId }));
+        return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false, lateApprovalOrderCode: order?.code ?? payment.orderId };
+      }
+    }
     if (nextStatus === "REFUNDED") {
       const [pendingRefund] = await tx.select().from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, payment.id), eq(paymentRefunds.status, "PENDING"))).orderBy(paymentRefunds.createdAt).limit(1);
       if (pendingRefund) await tx.update(paymentRefunds).set({ status: "SUCCEEDED", externalReference: event.providerReference, confirmedAt: new Date(), updatedAt: new Date(), metadata: payload }).where(eq(paymentRefunds.id, pendingRefund.id));
@@ -174,6 +222,9 @@ export async function processPaymentWebhook(provider: string, rawPayload: string
     await tx.insert(auditLogs).values(audit(null, "payments.webhook_processed", payment.id, payment, updatedPayment, { provider, eventType: event.eventType, providerEventId: event.providerEventId }));
     return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false };
   });
+  if ("lateApprovalOrderCode" in result && result.lateApprovalOrderCode) {
+    try { await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago recibido en pedido cancelado", body: `El proveedor ${provider} aprobó un pago del pedido ${result.lateApprovalOrderCode}, que ya estaba cancelado por vencimiento. Requiere reembolso.`, link: "/admin/pagos", metadata: { paymentId: result.paymentId, provider, orderCode: result.lateApprovalOrderCode }, dedupeKey: `payment-late-approval:${result.paymentId}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
+  }
   if (!result.duplicate && !result.ignored && ["CONFIRMED", "REJECTED", "CANCELLED", "ERROR"].includes(result.status)) {
     try { await notifyStaffOnce({ type: result.status === "CONFIRMED" ? "PAYMENT_APPROVED" : "PAYMENT_FAILED", title: result.status === "CONFIRMED" ? "Pago aprobado" : "Pago fallido", body: `El pago del proveedor ${provider} quedó en estado ${result.status}.`, link: "/admin/pagos", metadata: { paymentId: result.paymentId, provider, status: result.status }, dedupeKey: `payment-event:${provider}:${result.paymentId}:${result.status}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el resultado del pago", error); }
   }

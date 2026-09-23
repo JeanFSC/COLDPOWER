@@ -9,7 +9,7 @@ import { administrativeCompanySettings, companySettingsFields, publicCompanySett
 import { validateCompanySettingsInput } from "@/lib/company-settings-validation";
 
 const SETTINGS_ID = "default";
-export class CompanySettingsConflictError extends Error { constructor() { super("COMPANY_SETTINGS_CONFLICT"); this.name = "CompanySettingsConflictError"; } }
+class CompanySettingsConflictError extends Error { constructor() { super("COMPANY_SETTINGS_CONFLICT"); this.name = "CompanySettingsConflictError"; } }
 
 function adminResponse(settings: typeof companySettings.$inferSelect | null) {
   if (!settings) return { settings: null, public: {}, administrative: {}, version: 0, updatedAt: null, updatedBy: null, validationStatus: "NOT_CONFIGURED" };

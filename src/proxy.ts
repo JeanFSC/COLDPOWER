@@ -51,7 +51,7 @@ const middleware = isAuthConfigured
       requestHeaders.delete(VERIFIED_USER_HEADER);
       requestHeaders.delete(VERIFIED_ROLE_HEADER);
 
-      if (isAdminRoute(req) && getDevAuthUserId(req.headers.get("host"))) {
+      if ((isAdminRoute(req) || isAccountRoute(req)) && getDevAuthUserId(req.headers.get("host"))) {
         return NextResponse.next({ request: { headers: requestHeaders } });
       }
       if (isAdminRoute(req)) {

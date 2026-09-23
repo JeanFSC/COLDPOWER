@@ -6,6 +6,7 @@ type SearchBarProps = {
   placeholder?: string;
   className?: string;
   compact?: boolean;
+  showCompactSubmit?: boolean;
   submitLabel?: string;
 };
 
@@ -15,6 +16,7 @@ export function SearchBar({
   placeholder = "Busca por codigo, modelo, marca o especificacion",
   className = "",
   compact = false,
+  showCompactSubmit = false,
   submitLabel = "Buscar",
 }: SearchBarProps) {
   return (
@@ -24,7 +26,16 @@ export function SearchBar({
         <Search className="h-5 w-5 shrink-0 text-brand-secondary-600" aria-hidden="true" />
         <input id={id} name="q" type="search" placeholder={placeholder} className="min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outline-none placeholder:text-text-secondary" />
       </div>
-      {!compact ? <button type="submit" className="inline-flex h-14 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-hover">{submitLabel}</button> : null}
+      {!compact || showCompactSubmit ? (
+        <button
+          type="submit"
+          aria-label={submitLabel}
+          className={compact ? "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-secondary-600 text-white transition hover:bg-brand-primary-900" : "inline-flex h-14 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-hover"}
+        >
+          <Search className={compact ? "h-5 w-5" : "hidden"} aria-hidden="true" />
+          <span className={compact ? "sr-only" : ""}>{submitLabel}</span>
+        </button>
+      ) : null}
     </form>
   );
 }
