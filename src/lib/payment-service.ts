@@ -162,7 +162,7 @@ export async function refundPayment(paymentId: string, input: { amount?: string;
       const isFullRefund = refundedTotal + 0.005 >= amount(currentPayment.amount);
       let updatedPayment = currentPayment;
       if (isFullRefund) {
-        if (!canTransitionPayment(currentPayment.status, "REFUNDED")) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El estado del pago cambiÃ³ y no permite completar el reembolso.", 409);
+        if (!canTransitionPayment(currentPayment.status, "REFUNDED")) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El estado del pago cambió y no permite completar el reembolso.", 409);
         [updatedPayment] = await tx.update(payments).set({ status: "REFUNDED", metadata: { ...(currentPayment.metadata ?? {}), requiresRefund: false }, updatedAt: new Date() }).where(eq(payments.id, currentPayment.id)).returning();
         await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: currentPayment.id, fromStatus: currentPayment.status, toStatus: "REFUNDED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: null, reason: prepared.refund.reason });
       }
