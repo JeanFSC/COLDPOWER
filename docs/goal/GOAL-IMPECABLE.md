@@ -104,6 +104,7 @@ Sev: P0 rompe datos/seguridad · P1 bloquea tarea · P2 fricción/inconsistencia
 - [ ] Tests del módulo enganchados a `test:all` y en verde.
 - [ ] Navegador 1920×1080 y 390 px: flujo principal con el rol real, estados carga/vacío/error vistos, teclado, cero errores de consola, sin desbordes.
 - [ ] Enlaces de entrada/salida probados.
+- [ ] Escenarios de uso real de ese módulo (`docs/goal/usabilidad-escenarios.md`) ejecutados con el rol real y aprobados: la persona completa su tarea con el criterio que tendría, dentro del máximo de clics y sin fricciones P0/P1.
 - [ ] Commit `feat(<área>/<módulo>): …` en `codex/goal-impecable`.
 
 ## 10. Orden del goal
