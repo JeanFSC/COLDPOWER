@@ -91,7 +91,7 @@ Sev: P0 rompe datos/seguridad · P1 bloquea tarea · P2 fricción/inconsistencia
 ## 8. Protocolo de trabajo (Codex y subagentes)
 
 1. Lee este archivo, `AGENTS.md` y la auditoría del módulo (`docs/goal/audits/<m>.md`).
-2. **Visual**: primero diseño (skill `imagegen` / `product-design:ideate`) → guarda la referencia en `docs/goal/designs/<m>/` → espera aprobación → implementa con `product-design:image-to-code` → compara con `design-qa`.
+2. **Visual — diseño SIEMPRE antes de código**: primero diseño (skill `imagegen` / `product-design:ideate`; Claude puede aportar referencias generadas con Stitch) → guarda la referencia en `docs/goal/designs/<m>/` y **detente** → Claude audita el diseño contra este documento y envía la orden de implementar → implementa exactamente lo aprobado con `product-design:image-to-code` → compara con `design-qa` → Claude audita la implementación en navegador (1920×1080 y 390).
 3. **Lógica**: corrige en el servicio/API, no parches en UI. Tests de contrato que prueben comportamiento, no strings de componentes muertos.
 4. Alcance: solo archivos del módulo + kit compartido si es imprescindible. No reformatees archivos ajenos.
 5. Al terminar reporta: archivos cambiados, hallazgos cerrados (#), hallazgos pendientes, riesgos, comandos corridos con resultado.
