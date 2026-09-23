@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   BarChart3,
-  CalendarDays,
   CheckCircle2,
   CircleAlert,
   ClipboardList,
@@ -53,6 +52,27 @@ function money(currency: string, value: string | number | null | undefined) {
         currency,
         minimumFractionDigits: 2,
       }).format(Number(value));
+}
+function limaDateTimeLocal(value: string | Date | null | undefined) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+}
+function limaInputToIso(value: string) {
+  if (!value) return null;
+  const date = new Date(`${value}:00-05:00`);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 function moneyByCurrencyText(
   rows: SalesPageResponse["metrics"]["moneyByCurrency"],
@@ -146,6 +166,7 @@ export function SalesControlCenter({
   page,
   queryString,
   canManage,
+  canCancel,
   canPaymentsView,
   customers,
   locations,
@@ -153,12 +174,40 @@ export function SalesControlCenter({
   page: SalesPageResponse;
   queryString: string;
   canManage: boolean;
+  canCancel: boolean;
   canPaymentsView: boolean;
   customers: CustomerOption[];
   locations: LocationOption[];
 }) {
   const [mode, setMode] = useState<"chooser" | "direct" | null>(null);
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(() => {
+    const params = new URLSearchParams(queryString);
+    const directId = params.get("saleId");
+    if (directId) return directId;
+    const ownerItem = page.items.find(
+      (item) =>
+        item.quoteId === params.get("quoteId") ||
+        item.orderId === params.get("orderId") ||
+        item.customerId === params.get("customerId"),
+    );
+    return ownerItem?.id ?? null;
+  });
+  useEffect(() => {
+    const paymentId = new URLSearchParams(queryString).get("paymentId");
+    if (!paymentId || detailId) return;
+    let cancelled = false;
+    void fetch(`/api/admin/pagos/${encodeURIComponent(paymentId)}`, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = (await response.json()) as { sale?: { id?: unknown } | null };
+        const resolvedSaleId = data.sale?.id;
+        if (!cancelled && typeof resolvedSaleId === "string") setDetailId(resolvedSaleId);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [queryString, detailId]);
   const { pending, invoices, alerts } = page.queues;
   const kpis: Array<{ key: string; label: string; value: string | number; note: string; icon: typeof BarChart3; iconBg: string; iconInk: string }> = [
     { key: "confirmed", label: "Ventas confirmadas", value: page.metrics.confirmed, note: "Compromisos comerciales", icon: CheckCircle2, iconBg: "bg-blue-50", iconInk: "text-blue-600" },
@@ -188,10 +237,6 @@ export function SalesControlCenter({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
-            <CalendarDays className="h-3.5 w-3.5 text-slate-500" />
-            Últimos 30 días
-          </span>
           <Link href={`/api/admin/ventas/export?${queryString}`} className={secondaryButtonClass}>
             <Download className="h-3.5 w-3.5 text-slate-500" />
             Exportar
@@ -256,6 +301,19 @@ export function SalesControlCenter({
                   <strong className="text-slate-800">{money(primaryMoney.currency, primaryMoney.pendingAmount)}</strong>
                 </div>
               </div>
+              {page.metrics.moneyByCurrency.slice(1).map((row) => (
+                <div key={row.currency} className="border-t border-slate-100 pt-2 text-[11px]">
+                  <p className="font-extrabold uppercase tracking-wide text-slate-400">{row.currency}</p>
+                  <div className="mt-1 flex justify-between gap-2">
+                    <span className="text-slate-600">Cobrado</span>
+                    <strong className="text-slate-800">{money(row.currency, row.receivedAmount)}</strong>
+                  </div>
+                  <div className="mt-1 flex justify-between gap-2">
+                    <span className="text-slate-600">Pendiente</span>
+                    <strong className="text-slate-800">{money(row.currency, row.pendingAmount)}</strong>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <p className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-center text-[11px] text-slate-400">Sin ventas registradas en este alcance.</p>
@@ -377,15 +435,19 @@ export function SalesControlCenter({
                       </span>
                     </button>
                   </td>
-                  <td className="px-3 py-3 font-medium text-slate-900">{row.customerName}</td>
+                  <td className="px-3 py-3 font-medium text-slate-900">
+                    <Link href={`/admin/clientes?customerId=${encodeURIComponent(row.customerId)}`} className="hover:text-blue-600 hover:underline">
+                      {row.customerName}
+                    </Link>
+                  </td>
                   <td className="px-3 py-3 font-semibold text-slate-900">{money(row.currency, row.total)}</td>
                   <td className="px-3 py-3">
                     <div className="flex flex-wrap gap-1">
                       {row.quoteTrackingCode ? (
-                        <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[10px] font-medium text-blue-700">{row.quoteTrackingCode}</span>
+                        <Link href={`/admin/cotizaciones?quoteId=${encodeURIComponent(row.quoteId ?? "")}`} className="rounded-md bg-blue-50 px-1.5 py-1 text-[10px] font-medium text-blue-700 hover:underline">{row.quoteTrackingCode}</Link>
                       ) : null}
                       {row.orderCode ? (
-                        <span className="rounded-md bg-slate-100 px-1.5 py-1 text-[10px] font-medium text-slate-600">{row.orderCode}</span>
+                        <Link href={`/admin/pedidos?orderId=${encodeURIComponent(row.orderId ?? "")}`} className="rounded-md bg-slate-100 px-1.5 py-1 text-[10px] font-medium text-slate-600 hover:underline">{row.orderCode}</Link>
                       ) : null}
                       {row.externalInvoiceReference ? (
                         <span className="rounded-md bg-emerald-50 px-1.5 py-1 text-[10px] font-medium text-emerald-700">{row.externalInvoiceReference}</span>
@@ -473,6 +535,7 @@ export function SalesControlCenter({
         key={detailId ?? "closed"}
         saleId={detailId}
         canManage={canManage}
+        canCancel={canCancel}
         canPaymentsView={canPaymentsView}
         onClose={() => setDetailId(null)}
       />
@@ -744,7 +807,7 @@ function DirectSaleForm({ customers, locations, onDone }: { customers: CustomerO
     </div>
   );
 }
-function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { saleId: string | null; canManage: boolean; canPaymentsView: boolean; onClose: () => void }) {
+function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClose }: { saleId: string | null; canManage: boolean; canCancel: boolean; canPaymentsView: boolean; onClose: () => void }) {
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState("");
   const [detailLoading, setDetailLoading] = useState(false);
@@ -756,6 +819,8 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
     invoiceNote: "",
   });
   const [invoiceBusy, setInvoiceBusy] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelBusy, setCancelBusy] = useState(false);
   const loadDetail = useCallback(async () => {
     if (!saleId) return;
     setDetailLoading(true);
@@ -769,7 +834,7 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
       setInvoiceDraft({
         invoiceStatus: String(saleData.invoiceStatus ?? "PENDING"),
         externalInvoiceReference: String(saleData.externalInvoiceReference ?? ""),
-        invoiceIssuedAt: saleData.invoiceIssuedAt ? new Date(String(saleData.invoiceIssuedAt)).toISOString().slice(0, 16) : "",
+        invoiceIssuedAt: limaDateTimeLocal(saleData.invoiceIssuedAt ? String(saleData.invoiceIssuedAt) : null),
         invoiceNote: String(saleData.invoiceNote ?? ""),
       });
       setDetail(data);
@@ -831,7 +896,7 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
       const response = await fetch(`/api/admin/ventas/${encodeURIComponent(saleId)}/facturacion`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(invoiceDraft),
+        body: JSON.stringify({ ...invoiceDraft, invoiceIssuedAt: limaInputToIso(invoiceDraft.invoiceIssuedAt) }),
       });
       const data = await json(response);
       if (!response.ok || !data) throw new Error(message(data, "No se pudo actualizar la facturación."));
@@ -842,7 +907,7 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
           ...current,
           invoiceStatus: String(updatedSale.invoiceStatus ?? current.invoiceStatus),
           externalInvoiceReference: String(updatedSale.externalInvoiceReference ?? ""),
-          invoiceIssuedAt: updatedSale.invoiceIssuedAt ? new Date(String(updatedSale.invoiceIssuedAt)).toISOString().slice(0, 16) : current.invoiceIssuedAt,
+          invoiceIssuedAt: updatedSale.invoiceIssuedAt ? limaDateTimeLocal(String(updatedSale.invoiceIssuedAt)) : current.invoiceIssuedAt,
           invoiceNote: String(updatedSale.invoiceNote ?? ""),
         }));
       }
@@ -850,6 +915,26 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
       setError(saveError instanceof Error ? saveError.message : "No se pudo actualizar la facturación.");
     } finally {
       setInvoiceBusy(false);
+    }
+  }
+  async function cancelSale() {
+    if (!saleId || !cancelReason.trim()) return;
+    setCancelBusy(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/ventas/${encodeURIComponent(saleId)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reason: cancelReason.trim() }),
+      });
+      const data = await json(response);
+      if (!response.ok) throw new Error(message(data, "No se pudo cancelar la venta."));
+      setCancelReason("");
+      await loadDetail();
+    } catch (cancelError) {
+      setError(cancelError instanceof Error ? cancelError.message : "No se pudo cancelar la venta.");
+    } finally {
+      setCancelBusy(false);
     }
   }
   return (
@@ -897,7 +982,8 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
             ))}
           </nav>
           {tab === "Resumen" ? (
-            <div className="grid gap-2 sm:grid-cols-2">
+            <>
+              <div className="grid gap-2 sm:grid-cols-2">
               {[
                 ["Cliente", value(customer?.name)],
                 ["Vendedor", value(detail?.sellerName, "Sin asignar")],
@@ -913,7 +999,19 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
                   <p className="mt-1 text-xs font-bold text-slate-900">{String(itemValue)}</p>
                 </div>
               ))}
-            </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {customer?.id ? (
+                  <Link href={`/admin/clientes?customerId=${encodeURIComponent(String(customer.id))}`} className={secondaryButtonClass}>Ver cliente · {value(customer.name)}</Link>
+                ) : null}
+                {quote?.id ? (
+                  <Link href={`/admin/cotizaciones?quoteId=${encodeURIComponent(String(quote.id))}`} className={secondaryButtonClass}>Ver cotización · {value(quote.trackingCode, String(quote.id))}</Link>
+                ) : null}
+                {opportunity?.id ? (
+                  <Link href={`/admin/crm?opportunityId=${encodeURIComponent(String(opportunity.id))}`} className={secondaryButtonClass}>Ver oportunidad · {value(opportunity.code, String(opportunity.id))}</Link>
+                ) : null}
+              </div>
+            </>
           ) : null}
           {tab === "Productos" ? (
             <DetailSection title="Productos (snapshot de venta)">
@@ -963,7 +1061,7 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
               {payments.length ? (
                 payments.map((payment, index) => (
                   <div key={String(payment.id ?? index)} className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3 text-[11px]">
-                    <span className="font-semibold text-slate-700">{value(payment.method)} · {value(payment.orderCode)}</span>
+                    <Link href={`/admin/pagos?paymentId=${encodeURIComponent(String(payment.id))}`} className="font-semibold text-blue-600 hover:underline">{value(payment.method)} · {value(payment.orderCode)}</Link>
                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium ${tone(value(payment.status))}`}>{labelState(value(payment.status))}</span>
                     <strong className="text-slate-900">
                       {money(
@@ -989,7 +1087,7 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
                         Estado: {labelOrderState(value(order.status))} · Entrega: {labelState(value(order.deliveryMethod))}
                       </p>
                     </div>
-                    <Link href={`/admin/pedidos?query=${encodeURIComponent(value(order.code, ""))}`} className="font-semibold text-blue-600 hover:underline">
+                    <Link href={`/admin/pedidos?orderId=${encodeURIComponent(String(order.id))}`} className="font-semibold text-blue-600 hover:underline">
                       Ver pedido
                     </Link>
                   </div>
@@ -1092,11 +1190,38 @@ function SaleDetailDrawer({ saleId, canManage, canPaymentsView, onClose }: { sal
               )}
             </DetailSection>
           ) : null}
+          {canCancel && !["CANCELLED", "INVOICED", "DELIVERED"].includes(String(sale.status)) ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+              <label className="grid gap-1.5 text-[11px] font-semibold text-amber-800">
+                Motivo de cancelación
+                <input
+                  value={cancelReason}
+                  onChange={(event) => setCancelReason(event.target.value)}
+                  maxLength={500}
+                  placeholder="Obligatorio para cancelar"
+                  className={inputClass}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void cancelSale()}
+                disabled={cancelBusy || !cancelReason.trim()}
+                className="mt-2 rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50"
+              >
+                {cancelBusy ? "Cancelando…" : "Cancelar venta"}
+              </button>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {canPaymentsView ? (
-              <Link href="/admin/pagos" className={secondaryButtonClass}>Gestionar cobros</Link>
+              <Link href={payments[0]?.id ? `/admin/pagos?paymentId=${encodeURIComponent(String(payments[0].id))}` : `/admin/pagos?saleId=${encodeURIComponent(String(sale.id))}`} className={secondaryButtonClass}>Gestionar cobros</Link>
             ) : null}
-            <Link href="/admin/pedidos" className={secondaryButtonClass}>Ver pedidos</Link>
+            {orders[0]?.id ? (
+              <Link href={`/admin/pedidos?orderId=${encodeURIComponent(String(orders[0].id))}`} className={secondaryButtonClass}>Ver pedido · {value(orders[0].code, String(orders[0].id))}</Link>
+            ) : null}
+            {customer?.id ? (
+              <Link href={`/admin/clientes?customerId=${encodeURIComponent(String(customer.id))}`} className={secondaryButtonClass}>Ver cliente</Link>
+            ) : null}
           </div>
         </div>
       )}

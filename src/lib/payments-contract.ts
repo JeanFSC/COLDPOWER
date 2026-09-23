@@ -57,7 +57,7 @@ export function parsePaymentsFilters(params: URLSearchParams): PaymentsFilters {
 export type PaymentListItem = {
   id: string; orderId: string; orderCode: string; saleId: string | null; saleCode: string | null; customerId: string; customerName: string;
   methodType: string; method: string; provider: string | null; providerReference: string | null; amount: string; currency: string; status: string; attempts: number;
-  expectedAmount: string; grossReceivedAmount: string; refundedAmount: string; netReceivedAmount: string; receivedAmount: string; difference: string; reconciliation: ReconciliationState;
+  expectedAmount: string; grossReceivedAmount: string; refundedAmount: string; netReceivedAmount: string; receivedAmount: string; difference: string; reconciliation: ReconciliationState; refundRequired: boolean;
   createdAt: Date; updatedAt: Date;
 };
 
@@ -73,7 +73,7 @@ export type PaymentsPageResponse = {
   };
   metrics: {
     total: number; pending: number; approved: number; rejected: number; refunded: number; observed: number;
-    reconciledOrders: number; ordersWithConfirmedPayments: number; underpaidOrders: number; overpaidOrders: number; reconciliationRate: number | null;
+    reconciledOrders: number; ordersWithConfirmedPayments: number; reconciliationNumerator: number; reconciliationDenominator: number; underpaidOrders: number; overpaidOrders: number; reconciliationRate: number | null;
     totalAmount: number; amountsByCurrency: CurrencyPaymentMetric[];
     statusBreakdown: Array<{ status: string; count: number }>; methodBreakdown: Array<{ method: string; count: number; confirmedAmountsByCurrency: CurrencyPaymentMetric[] }>;
   };

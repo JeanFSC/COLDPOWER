@@ -51,7 +51,7 @@ const rolePermissions: Record<OperationalRole, readonly Permission[]> = {
   VENTAS: [
     "catalog.product.view", "catalog.product.edit", "catalog.media.upload", "inventory.view", "customers.view", "customers.create", "customers.edit", "customers.manage", "crm.view", "crm.manage", "crm.export", "sales.view", "sales.manage", "quotes.view", "quotes.create", "quotes.edit", "quotes.send", "quotes.convert", "quotes.export", "quote:manage", "orders.view", "orders.manage", "payments.view", "payments.export", "inventory:read", "operations.view",
   ],
-  ALMACEN: ["inventory.view", "inventory.adjust", "inventory.transfer", "inventory.reserve", "inventory.kardex.view", "inventory:read", "inventory:adjust", "inventory:transfer", "inventory:reserve", "operations.view"],
+  ALMACEN: ["inventory.view", "inventory.adjust", "inventory.transfer", "inventory.reserve", "inventory.kardex.view", "orders.view", "orders.manage", "inventory:read", "inventory:adjust", "inventory:transfer", "inventory:reserve", "operations.view"],
   COMPRAS: ["inventory.view", "pricing.view", "purchases.view", "purchases.receive", "purchases.cost.view", "purchases.cost.manage", "purchases.manage", "inventory:read", "operations.view"],
   REPORTES: ["inventory.view", "reports.view", "reports.export", "audit.view", "audit.export", "inventory:read", "reports:read"],
 };

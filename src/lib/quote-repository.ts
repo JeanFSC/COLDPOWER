@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, exists, gte, gt, ilike, inArray, isNotNull, 
 import { getDb } from "@/db";
 import { quoteDiscountApprovals, quoteItems, quoteStatusHistory, quoteVersionItems, quoteVersions, quotes, users } from "@/db/schema";
 import { crmActivities, crmTasks, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityStageHistory } from "@/db/crm-schema";
+import { orders, payments, sales } from "@/db/sales-schema";
 import { effectiveQuoteStatus, quoteWorkflowStatuses, type QuoteWorkflowStatus } from "@/lib/quote-workflow";
 import type { QuoteFilters, QuoteListItem, QuotePageResponse } from "@/lib/quote-contract";
 
@@ -90,7 +91,7 @@ export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePa
     // NOTE: intentionally only quotes/customerQuoteLinks/customers/opportunities joined —
     // matches the same `where` scope as the other summary queries above so status
     // counts reflect the filtered set, not every quote ever created.
-    db.select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where),
+    db.select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where).groupBy(quotes.workflowStatus, quotes.status, quotes.validUntil),
   ]);
   const itemRows = rows.length ? await db.select({ quoteId: quoteItems.quoteId, sku: quoteItems.skuSnapshot, name: quoteItems.productNameSnapshot, quantity: quoteItems.quantity }).from(quoteItems).where(inArray(quoteItems.quoteId, rows.map((row) => row.quote.id))).orderBy(asc(quoteItems.createdAt)) : [];
   const itemMap = quoteItemPreviewMap(itemRows);
@@ -106,9 +107,9 @@ export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePa
   }
   const metricsBase = metricsFromStatusCounts(statusCounts);
   const [followUpRows, expiryRows, pendingDiscountRows] = await Promise.all([
-    db.select({ bucket: sql<string>`case when ${crmTasks.dueAt} < now() then 'overdue' when ${crmTasks.dueAt} < now() + interval '1 day' then 'today' else 'upcoming' end`, total: count(crmTasks.id) }).from(crmTasks).where(and(eq(crmTasks.status, "PENDING"), isNotNull(crmTasks.quoteId))).groupBy(sql`1`),
-    db.select({ bucket: sql<string>`case when ${quotes.validUntil} < now() + interval '1 day' then 'today' when ${quotes.validUntil} < now() + interval '3 days' then 'threeDays' else 'sevenDays' end`, total: count(quotes.id) }).from(quotes).where(and(gte(quotes.validUntil, new Date()), lt(quotes.validUntil, new Date(Date.now() + 7 * 86_400_000)))).groupBy(sql`1`),
-    db.select({ total: count(quoteDiscountApprovals.id) }).from(quoteDiscountApprovals).where(eq(quoteDiscountApprovals.status, "PENDING")),
+    db.select({ bucket: sql<string>`case when ${crmTasks.dueAt} < now() then 'overdue' when ${crmTasks.dueAt} < now() + interval '1 day' then 'today' else 'upcoming' end`, total: count(crmTasks.id) }).from(crmTasks).innerJoin(quotes, eq(crmTasks.quoteId, quotes.id)).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(and(where, eq(crmTasks.status, "PENDING"), isNotNull(crmTasks.quoteId))).groupBy(sql`1`),
+    db.select({ bucket: sql<string>`case when ${quotes.validUntil} < now() + interval '1 day' then 'today' when ${quotes.validUntil} < now() + interval '3 days' then 'threeDays' else 'sevenDays' end`, total: count(quotes.id) }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(and(where, gte(quotes.validUntil, new Date()), lt(quotes.validUntil, new Date(Date.now() + 7 * 86_400_000)), or(inArray(quotes.workflowStatus, ["SENT", "FOLLOW_UP"]), inArray(quotes.status, ["enviada", "nuevo", "contactado", "evaluacion", "requiere_info", "cotizada"])))).groupBy(sql`1`),
+    db.select({ total: count(quoteDiscountApprovals.id) }).from(quoteDiscountApprovals).innerJoin(quotes, eq(quoteDiscountApprovals.quoteId, quotes.id)).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(and(where, eq(quoteDiscountApprovals.status, "PENDING"))),
   ]);
   const followUps = { overdue: 0, today: 0, upcoming: 0 };
   for (const row of followUpRows) if (row.bucket in followUps) followUps[row.bucket as keyof typeof followUps] = numberValue(row.total);
@@ -129,12 +130,14 @@ export async function getQuoteDetail(quoteId: string) {
   const db = getDb();
   const [quote] = await db.select().from(quotes).where(eq(quotes.id, quoteId)).limit(1);
   if (!quote) return null;
-  const [items, history, link, versions, activities] = await Promise.all([
+  const [items, history, link, versions, activities, discountApprovals, commercialRows] = await Promise.all([
     db.select().from(quoteItems).where(eq(quoteItems.quoteId, quoteId)).orderBy(asc(quoteItems.createdAt)),
     db.select().from(quoteStatusHistory).where(eq(quoteStatusHistory.quoteId, quoteId)).orderBy(desc(quoteStatusHistory.createdAt)),
     db.select({ link: customerQuoteLinks, customer: customers, opportunity: opportunities, seller }).from(customerQuoteLinks).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).leftJoin(seller, or(eq(seller.id, opportunities.assignedSellerId), quote.assignedSellerId ? eq(seller.id, quote.assignedSellerId) : undefined)).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1),
     db.select().from(quoteVersions).where(eq(quoteVersions.quoteId, quoteId)).orderBy(desc(quoteVersions.versionNumber)),
     db.select().from(crmActivities).where(eq(crmActivities.quoteId, quoteId)).orderBy(desc(crmActivities.createdAt)),
+    db.select().from(quoteDiscountApprovals).where(eq(quoteDiscountApprovals.quoteId, quoteId)).orderBy(desc(quoteDiscountApprovals.createdAt)),
+    db.select({ sale: sales, order: orders, payment: payments }).from(sales).leftJoin(orders, eq(orders.saleId, sales.id)).leftJoin(payments, eq(payments.orderId, orders.id)).where(eq(sales.quoteId, quoteId)).orderBy(desc(sales.createdAt)).limit(1),
   ]);
   const opportunityId = link[0]?.opportunity?.id;
   const [followUps, stageHistory, versionItems] = await Promise.all([
@@ -144,7 +147,7 @@ export async function getQuoteDetail(quoteId: string) {
   ]);
   const itemsByVersion = new Map<string, typeof versionItems>();
   for (const item of versionItems) itemsByVersion.set(item.versionId, [...(itemsByVersion.get(item.versionId) ?? []), item]);
-  return { quote: { ...quote, normalizedWorkflowStatus: displayStatus(quote.status, quote.workflowStatus, quote.validUntil) }, items, history, customer: link[0]?.customer ?? null, opportunity: link[0]?.opportunity ?? null, seller: link[0]?.seller ?? null, activities, followUps, stageHistory, versions: versions.map((version) => ({ ...version, items: itemsByVersion.get(version.id) ?? [] })), acceptedVersion: versions.find((version) => version.id === quote.acceptedVersionId) ?? null };
+  return { quote: { ...quote, normalizedWorkflowStatus: displayStatus(quote.status, quote.workflowStatus, quote.validUntil) }, items, history, customer: link[0]?.customer ?? null, opportunity: link[0]?.opportunity ?? null, seller: link[0]?.seller ?? null, activities, followUps, stageHistory, versions: versions.map((version) => ({ ...version, items: itemsByVersion.get(version.id) ?? [] })), acceptedVersion: versions.find((version) => version.id === quote.acceptedVersionId) ?? null, discountApprovals, commercial: { sale: commercialRows[0]?.sale ?? null, order: commercialRows[0]?.order ?? null, payment: commercialRows[0]?.payment ?? null } };
 }
 
 export function isCanonicalQuoteStatus(value: string): value is QuoteWorkflowStatus {

@@ -53,7 +53,7 @@ export function parseOrdersFilters(params: URLSearchParams): OrdersFilters {
 export type OrderAttention = "NORMAL" | "REQUIRES_ATTENTION" | "OVERDUE" | "INCIDENT";
 export type OrderListItem = {
   id: string; code: string; customerId: string; customerName: string; customerPhone: string; customerEmail: string | null;
-  sellerId: string | null; sellerName: string | null; sellerEmail: string | null; locationName: string | null;
+  sellerId: string | null; sellerName: string | null; sellerEmail: string | null; locationName: string | null; channel: string | null;
   saleId: string; quoteId: string | null; quoteTrackingCode: string | null;
   // Set for online (storefront) purchases: the buyer's account.
   userId: string | null;

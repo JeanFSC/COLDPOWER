@@ -32,10 +32,12 @@ test("CP-036 workflow protege transiciones, cancelación, historia y auditoría"
 test("CP-036 exportación audita PII y la UI conserva filtros/paginación", () => {
   const exportRoute = read("src/app/api/admin/cotizaciones/export/route.ts");
   const page = read("src/app/admin/cotizaciones/page.tsx");
-  const workspace = read("src/components/admin/AdminCategoryViews.tsx");
+  const workspace = read("src/components/admin/QuotesWorkspace.tsx");
   assert.match(exportRoute, /quotes\.exported/);
   assert.match(exportRoute, /text\/csv/);
   assert.match(page, /getQuotesPage/);
-  assert.match(workspace, /quote-controls/);
-  assert.match(workspace, /hrefForPage/);
+  assert.match(workspace, /new URLSearchParams/);
+  assert.match(workspace, /quoteId/);
+  assert.match(workspace, /\/api\/admin\/cotizaciones\/discount/);
+  assert.match(workspace, /approveDiscount/);
 });

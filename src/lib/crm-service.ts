@@ -338,22 +338,30 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus, actor
   });
 }
 
+export async function ensureLeadFromQuoteInTransaction(tx: Transaction, quoteId: string, actorId: string | null) {
+  const [quote] = await tx.select().from(quotes).where(eq(quotes.id, quoteId)).limit(1);
+  if (!quote) throw new Error("Cotización no encontrada.");
+  const [existingLink] = await tx.select().from(customerQuoteLinks).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1);
+  if (existingLink) {
+    const [existingOpportunity] = existingLink.opportunityId
+      ? await tx.select({ assignedSellerId: opportunities.assignedSellerId }).from(opportunities).where(eq(opportunities.id, existingLink.opportunityId)).limit(1)
+      : [];
+    return { ...existingLink, assignedSellerId: existingOpportunity?.assignedSellerId ?? null };
+  }
+  const [existingCustomer] = await tx.select().from(customers).where(and(eq(customers.email, quote.email ?? ""), eq(customers.phone, quote.phone))).limit(1);
+  const customerId = existingCustomer?.id ?? id("customer");
+  const customer = existingCustomer ?? (await tx.insert(customers).values({ id: customerId, userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone, whatsapp: quote.phone, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "PROSPECT" }).returning())[0];
+  const [seller] = await tx.select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), inArray(users.roleCode, sellerRoleCodes))).orderBy(asc(users.createdAt), asc(users.id)).limit(1);
+  const opportunityId = id("opportunity");
+  const opportunity = (await tx.insert(opportunities).values({ id: opportunityId, code: `OP-${quote.trackingCode}`, customerId: customer.id, quoteId, title: quote.productName ? `Cotización: ${quote.productName}` : "Solicitud de cotización", origin: "WEB", stage: "NEW", assignedSellerId: seller?.id ?? null, createdBy: actorId }).returning())[0];
+  await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId, fromStage: null, toStage: "NEW", changedBy: actorId ?? "anonymous", note: "Lead creado desde cotización" });
+  const link = (await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId, opportunityId }).returning())[0];
+  await tx.insert(auditLogs).values({ id: id("audit"), actorId: actorId, actorRole: "system", action: "crm.lead_created_from_quote", entityType: "quote", entityId: quoteId, before: null, after: { customer, opportunity, link }, metadata: null });
+  return { ...link, assignedSellerId: opportunity.assignedSellerId ?? null };
+}
+
 export async function ensureLeadFromQuote(quoteId: string, actorId: string | null) {
-  return getDb().transaction(async (tx) => {
-    const [quote] = await tx.select().from(quotes).where(eq(quotes.id, quoteId)).limit(1);
-    if (!quote) throw new Error("Cotización no encontrada.");
-    const [existingLink] = await tx.select().from(customerQuoteLinks).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1);
-    if (existingLink) return existingLink;
-    const [existingCustomer] = await tx.select().from(customers).where(and(eq(customers.email, quote.email ?? ""), eq(customers.phone, quote.phone))).limit(1);
-    const customerId = existingCustomer?.id ?? id("customer");
-    const customer = existingCustomer ?? (await tx.insert(customers).values({ id: customerId, userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone, whatsapp: quote.phone, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "PROSPECT" }).returning())[0];
-    const opportunityId = id("opportunity");
-    const opportunity = (await tx.insert(opportunities).values({ id: opportunityId, code: `OP-${quote.trackingCode}`, customerId: customer.id, quoteId, title: quote.productName ? `Cotización: ${quote.productName}` : "Solicitud de cotización", origin: "WEB", stage: "NEW", createdBy: actorId }).returning())[0];
-    await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId, fromStage: null, toStage: "NEW", changedBy: actorId ?? "anonymous", note: "Lead creado desde cotización" });
-    const link = (await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId, opportunityId }).returning())[0];
-    await tx.insert(auditLogs).values({ id: id("audit"), actorId: actorId, actorRole: "system", action: "crm.lead_created_from_quote", entityType: "quote", entityId: quoteId, before: null, after: { customer, opportunity, link }, metadata: null });
-    return link;
-  });
+  return getDb().transaction((tx) => ensureLeadFromQuoteInTransaction(tx, quoteId, actorId));
 }
 
 export type PublicContactLeadInput = {

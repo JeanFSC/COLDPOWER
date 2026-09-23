@@ -6,7 +6,7 @@ import { isAuthConfigured, quoteConfig } from "@/lib/env";
 import { checkQuoteRateLimit, generateQuoteId, validateQuotePayload } from "@/lib/quote";
 import { getDb } from "@/db";
 import { products, quoteCarts, quoteItems, quoteStatusHistory, quotes } from "@/db/schema";
-import { ensureLeadFromQuote } from "@/lib/crm-service";
+import { ensureLeadFromQuoteInTransaction } from "@/lib/crm-service";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 
 const maxPayloadBytes = 8 * 1024;
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
   const sessionToken = (await cookies()).get(sessionCookieName)?.value ?? null;
   try {
     const db = getDb();
-    await db.transaction(async (tx) => {
-      await tx.insert(quotes).values({ id: quoteId, trackingCode: quoteId, userId: userId ?? null, name: validation.data.name, customerType: validation.data.customerType, documentNumber: validation.data.documentNumber, phone: validation.data.phone, email: validation.data.email || null, department: validation.data.department, province: validation.data.province, district: validation.data.district, preferredContact: validation.data.preferredContact, consentAt: validation.data.consent ? receivedAt : null, productSlug: validation.data.productSlug || null, productName: validation.data.productName || null, sku: validation.data.sku || null, message: validation.data.message, status: "enviada", workflowStatus: "SENT", clientIp, createdAt: receivedAt });
-      await tx.insert(quoteStatusHistory).values({ id: `qsh-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`, quoteId, fromStatus: null, toStatus: "enviada", changedBy: userId ?? "anonymous", note: null });
+    const lead = await db.transaction(async (tx) => {
+      await tx.insert(quotes).values({ id: quoteId, trackingCode: quoteId, userId: userId ?? null, name: validation.data.name, customerType: validation.data.customerType, documentNumber: validation.data.documentNumber, phone: validation.data.phone, email: validation.data.email || null, department: validation.data.department, province: validation.data.province, district: validation.data.district, preferredContact: validation.data.preferredContact, consentAt: validation.data.consent ? receivedAt : null, productSlug: validation.data.productSlug || null, productName: validation.data.productName || null, sku: validation.data.sku || null, message: validation.data.message, status: "borrador", workflowStatus: "DRAFT", origin: "WEB", clientIp, createdAt: receivedAt });
+      await tx.insert(quoteStatusHistory).values({ id: `qsh-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`, quoteId, fromStatus: null, toStatus: "borrador", changedBy: userId ?? "anonymous", note: "Solicitud web recibida como borrador" });
       const requestedQuantities = new Map<string, number>();
       // quote_carts is only the quote list ("Lista de cotización"); the purchase cart lives in
       // shopping_carts and is never read here. The list is emptied once it becomes a quote.
@@ -44,10 +44,10 @@ export async function POST(request: Request) {
       const directConditions = [...(validation.data.productSlug ? [eq(products.slug, validation.data.productSlug)] : []), ...(validation.data.sku ? [eq(products.sku, validation.data.sku)] : [])];
       if (directConditions.length > 0) { const [directProduct] = await tx.select({ id: products.id }).from(products).where(or(...directConditions)); if (directProduct) addQuantity(requestedQuantities, directProduct.id, 1); }
       const productIds = [...requestedQuantities.keys()];
-      if (productIds.length > 0) { const sourceProducts = await tx.select({ id: products.id, sku: products.sku, name: products.normalizedName }).from(products).where(inArray(products.id, productIds)); const sourceById = new Map(sourceProducts.map((product) => [product.id, product])); const snapshots = productIds.flatMap((productId) => { const product = sourceById.get(productId); return product ? [{ id: `qi-${crypto.randomUUID()}`, quoteId, productId: product.id, skuSnapshot: product.sku, productNameSnapshot: product.name, quantity: requestedQuantities.get(productId) ?? 1 }] : []; }); if (snapshots.length > 0) await tx.insert(quoteItems).values(snapshots); }
-    });
-    await ensureLeadFromQuote(quoteId, userId);
-    try { await notifyStaffOnce({ type: "QUOTE_CREATED", title: "Nueva solicitud de cotización", body: `La solicitud ${quoteId} requiere revisión comercial.`, link: "/admin/cotizaciones", metadata: { quoteId }, dedupeKey: `quote:${quoteId}:created` }); await notifyStaffOnce({ type: "LEAD_CREATED", title: "Nuevo lead comercial", body: `Se creó el lead asociado a la solicitud ${quoteId}.`, link: "/admin/crm", metadata: { quoteId }, dedupeKey: `quote:${quoteId}:lead` }); } catch (error) { console.error("ColdPower: no se pudo notificar la nueva cotización", error); }
+       if (productIds.length > 0) { const sourceProducts = await tx.select({ id: products.id, sku: products.sku, name: products.normalizedName }).from(products).where(inArray(products.id, productIds)); const sourceById = new Map(sourceProducts.map((product) => [product.id, product])); const snapshots = productIds.flatMap((productId) => { const product = sourceById.get(productId); return product ? [{ id: `qi-${crypto.randomUUID()}`, quoteId, productId: product.id, skuSnapshot: product.sku, productNameSnapshot: product.name, quantity: requestedQuantities.get(productId) ?? 1 }] : []; }); if (snapshots.length > 0) await tx.insert(quoteItems).values(snapshots); }
+       return ensureLeadFromQuoteInTransaction(tx, quoteId, userId);
+     });
+     try { const recipientIds = lead.assignedSellerId ? [lead.assignedSellerId] : undefined; const notificationMetadata = { quoteId, opportunityId: lead.opportunityId, assigneeId: lead.assignedSellerId }; await notifyStaffOnce({ type: "QUOTE_CREATED", title: "Nueva solicitud de cotización", body: `La solicitud ${quoteId} requiere revisión comercial.`, link: `/admin/cotizaciones?quoteId=${encodeURIComponent(quoteId)}`, metadata: notificationMetadata, recipientIds, dedupeKey: `quote:${quoteId}:created` }); await notifyStaffOnce({ type: "LEAD_CREATED", title: "Nuevo lead comercial", body: `Se creó el lead asociado a la solicitud ${quoteId}.`, link: `/admin/crm?quoteId=${encodeURIComponent(quoteId)}`, metadata: notificationMetadata, recipientIds, dedupeKey: `quote:${quoteId}:lead` }); } catch (error) { console.error("ColdPower: no se pudo notificar la nueva cotización", error); }
   } catch (persistError) {
     console.error("ColdPower: fallo al persistir cotización o lead CRM", persistError);
     return NextResponse.json({ success: false, message: "No se pudo guardar la solicitud y su seguimiento comercial. Inténtalo nuevamente o continúa por WhatsApp." }, { status: 503, headers: { "X-RateLimit-Limit": String(rateLimit.limit), "X-RateLimit-Remaining": String(rateLimit.remaining) } });

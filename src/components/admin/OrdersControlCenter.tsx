@@ -24,6 +24,8 @@ type Detail = {
   customer?: Record<string, unknown>;
   location?: Record<string, unknown> | null;
   items: Array<Record<string, unknown>>;
+  reservations: Array<Record<string, unknown>>;
+  shipments: Array<Record<string, unknown>>;
   incidents: Array<Record<string, unknown>>;
   history: Array<Record<string, unknown>>;
   reconciliation?: {
@@ -39,7 +41,7 @@ const label: Record<string, string> = {
   NEW: "Nuevo",
   RECEIVED: "Recibido",
   PAYMENT_PENDING: "Pendiente de pago",
-  PAID: "Pagado",
+  PAID: "Por preparar",
   PREPARING: "En preparación",
   READY: "Listo",
   READY_FOR_PICKUP: "Listo para recojo",
@@ -47,6 +49,11 @@ const label: Record<string, string> = {
   SHIPPED: "Despachado",
   DELIVERED: "Entregado",
   CANCELLED: "Cancelado",
+  NO_PAYMENT: "Sin cobro",
+  ACTIVE: "Activa",
+  RELEASED: "Liberada",
+  CONSUMED: "Consumida",
+  EXPIRED: "Vencida",
   PENDING: "Pendiente",
   MATCH: "Conciliado",
   UNDERPAID: "Faltante",
@@ -55,6 +62,11 @@ const label: Record<string, string> = {
   REQUIRES_ATTENTION: "Requiere atención",
   OVERDUE: "Vencido",
   INCIDENT: "Incidencia",
+  LABEL_CREATED: "Etiqueta creada",
+  PICKED_UP: "Recogido por transportista",
+  AT_AGENCY: "En agencia",
+  OUT_FOR_DELIVERY: "En reparto",
+  EXCEPTION: "Incidencia de envío",
 };
 const incidentTypeLabel: Record<string, string> = {
   PHYSICAL_SHORTAGE: "Faltante físico",
@@ -114,7 +126,34 @@ export function OrdersControlCenter({
   canManage: boolean;
   canPaymentsView: boolean;
 }) {
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(() => {
+    const params = new URLSearchParams(queryString);
+    const directId = params.get("orderId");
+    if (directId) return directId;
+    const ownerItem = page.items.find(
+      (item) =>
+        item.saleId === params.get("saleId") ||
+        item.quoteId === params.get("quoteId") ||
+        item.customerId === params.get("customerId"),
+    );
+    return ownerItem?.id ?? null;
+  });
+  useEffect(() => {
+    const paymentId = new URLSearchParams(queryString).get("paymentId");
+    if (!paymentId || detailId) return;
+    let cancelled = false;
+    void fetch(`/api/admin/pagos/${encodeURIComponent(paymentId)}`, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = (await response.json()) as { order?: { id?: unknown } };
+        const resolvedOrderId = data.order?.id;
+        if (!cancelled && typeof resolvedOrderId === "string") setDetailId(resolvedOrderId);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [queryString, detailId]);
   const { prepare, dispatch, pickup, incidents } = page.queues;
   const kpis: Array<{
     key: string;
@@ -149,8 +188,8 @@ export function OrdersControlCenter({
             Exportar
           </Link>
           <button
-            onClick={() => setDetailId(prepare[0]?.id ?? page.items[0]?.id ?? null)}
-            disabled={!prepare.length && !page.items.length}
+            onClick={() => setDetailId(prepare[0]?.id ?? null)}
+            disabled={!prepare.length}
             className={primaryButtonClass}
           >
             <PackageCheck className="h-3.5 w-3.5" />
@@ -268,7 +307,7 @@ export function OrdersControlCenter({
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <Badge value={item.status} />
-                {canPaymentsView ? <Badge value={item.paymentReconciliation} /> : null}
+                {canPaymentsView ? <Badge value={item.paymentStatus ? item.paymentReconciliation : "NO_PAYMENT"} /> : null}
               </div>
             </button>
           ))}
@@ -339,11 +378,15 @@ function OrderRow({
         <button onClick={() => onOpen(item.id)} className="text-left font-semibold text-blue-600 hover:underline">
           {item.code}
           <span className="mt-0.5 block text-[10.5px] font-normal text-slate-400">
-            {item.quoteTrackingCode ?? (item.userId ? "Compra web" : "Venta directa")}
+            {item.quoteTrackingCode ?? (item.channel === "WEB" ? "Compra web" : item.channel ? `Venta ${item.channel}` : "Venta directa")}
           </span>
         </button>
       </td>
-      <td className="px-3 py-3 font-medium text-slate-900">{item.customerName}</td>
+      <td className="px-3 py-3 font-medium text-slate-900">
+        <Link href={`/admin/clientes?customerId=${encodeURIComponent(item.customerId)}`} className="hover:text-blue-600 hover:underline">
+          {item.customerName}
+        </Link>
+      </td>
       <td className="px-3 py-3">
         <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-[10.5px] font-semibold text-slate-600">
           <Package className="h-3 w-3" aria-hidden="true" />
@@ -361,7 +404,7 @@ function OrderRow({
       <td className="px-3 py-3 text-slate-500">{text(item.deliveryMethod)}</td>
       {canPaymentsView ? (
         <td className="px-3 py-3">
-          <Badge value={item.paymentReconciliation} />
+          <Badge value={item.paymentStatus ? item.paymentReconciliation : "NO_PAYMENT"} />
         </td>
       ) : null}
       <td className="px-3 py-3 text-slate-500">{item.locationName ?? "N/D"}</td>
@@ -795,7 +838,9 @@ function OrderDrawer({
                       </p>
                       <p className="mt-1 text-[10.5px] text-slate-400">
                         Solicitado {String(item.quantity)} · Preparado {String(item.pickedQuantity)} · Reserva{" "}
-                        {item.reservationId ? "activa" : "N/D"}
+                        {item.reservationId
+                          ? text(String(detail.reservations.find((reservation) => reservation.id === item.reservationId)?.status ?? "activa"))
+                          : "N/D"}
                       </p>
                     </div>
                     {tab === "Preparación" && canManage && String(order?.status) === "PREPARING" ? (
@@ -843,7 +888,7 @@ function OrderDrawer({
             <div className="grid gap-2">
               {detail.history.map((row) => (
                 <div key={String(row.id)} className="rounded-lg border border-slate-100 p-3 text-[11px] text-slate-500">
-                  {text(String(row.status))} · {new Date(String(row.createdAt)).toLocaleString("es-PE")}
+                  {row.fromStatus ? `${text(String(row.fromStatus))} → ` : ""}{text(String(row.toStatus ?? row.status))} · {new Date(String(row.createdAt)).toLocaleString("es-PE")}
                 </div>
               ))}
             </div>
@@ -854,9 +899,36 @@ function OrderDrawer({
                 {String(detail.location?.name ?? "N/D")}
               </div>
               {tab === "Entrega" ? (
-                <p className="text-[11px] text-slate-500">
-                  El avance depende del método de entrega y se habilita solo cuando el picking está completo.
-                </p>
+                detail.shipments[0] ? (
+                  <div className="grid gap-2 rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-[11px] text-slate-600 sm:grid-cols-2">
+                    <div>
+                      <p className="font-semibold text-slate-500">Transportista</p>
+                      <p className="mt-1 font-bold text-slate-800">{String(detail.shipments[0].carrier ?? "N/D")}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-500">Guía</p>
+                      <p className="mt-1 font-mono font-bold text-slate-800">{String(detail.shipments[0].trackingNumber ?? "N/D")}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-500">Estado</p>
+                      <p className="mt-1 font-bold text-slate-800">{text(String(detail.shipments[0].status ?? ""))}</p>
+                    </div>
+                    {detail.shipments[0].trackingUrl ? (
+                      <a
+                        href={String(detail.shipments[0].trackingUrl)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="self-end font-semibold text-blue-600 hover:underline"
+                      >
+                        Abrir seguimiento ↗
+                      </a>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500">
+                    Aún no hay una guía registrada. El avance depende del método de entrega y se habilita solo cuando el picking está completo.
+                  </p>
+                )
               ) : null}
               {canManage && actions.some((action) => action.status === "DELIVERED") ? (
                 <label className="block text-[11px] font-semibold text-slate-500">
@@ -1040,6 +1112,20 @@ function OrderDrawer({
               ) : null}
             </div>
           )}
+          <div className="flex flex-wrap gap-2">
+            {detail.order.saleId ? (
+              <Link href={`/admin/ventas?saleId=${encodeURIComponent(String(detail.order.saleId))}`} className={secondaryButtonClass}>Ver venta</Link>
+            ) : null}
+            {detail.order.quoteId ? (
+              <Link href={`/admin/cotizaciones?quoteId=${encodeURIComponent(String(detail.order.quoteId))}`} className={secondaryButtonClass}>Ver cotización</Link>
+            ) : null}
+            {canPaymentsView ? (
+              <Link href={`/admin/pagos?orderId=${encodeURIComponent(String(detail.order.id))}`} className={secondaryButtonClass}>Gestionar pago</Link>
+            ) : null}
+            {detail.customer?.id ? (
+              <Link href={`/admin/clientes?customerId=${encodeURIComponent(String(detail.customer.id))}`} className={secondaryButtonClass}>Ver cliente</Link>
+            ) : null}
+          </div>
           {trackingNotice ? (
             <p role="status" className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
               {trackingNotice}

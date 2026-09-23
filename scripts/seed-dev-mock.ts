@@ -368,6 +368,7 @@ export async function seedDevelopmentMockData(options: { replaceLegacyMock?: boo
       opportunityId: definition.opportunityIndex === null ? null : opportunityRows[definition.opportunityIndex].id,
       quoteId: definition.quoteIndex === null ? null : quoteRows[definition.quoteIndex].id,
       status: "CONFIRMED",
+      channel: index % 3 === 0 ? "WEB" : "DIRECT",
       sellerId: salesTeamIds[index % salesTeamIds.length],
       subtotal: money(definition.total),
       discountAmount: "0.00",
@@ -386,21 +387,34 @@ export async function seedDevelopmentMockData(options: { replaceLegacyMock?: boo
     });
     const saleItemCount = await insertRows(tx, saleItems, saleItemRows);
 
-    const orderStatuses = ["DELIVERED", "PAYMENT_PENDING", "PREPARING", "READY", "IN_TRANSIT", "PAID", "DELIVERED", "DELIVERED", "DELIVERED"] as const;
+    const paymentStatusForOrder = (orderIndex: number): (typeof payments.$inferInsert)["status"] | null => {
+      if (orderIndex % 2 !== 0) return null;
+      return ["APPROVED", "UNDER_REVIEW", "PENDING", "CONFIRMED", "PENDING", "APPROVED"][
+        (orderIndex / 2) % 6
+      ] as (typeof payments.$inferInsert)["status"];
+    };
+    const orderStatusForFixture = (orderIndex: number): (typeof orders.$inferInsert)["status"] => {
+      const paymentStatus = paymentStatusForOrder(orderIndex);
+      if (!paymentStatus || ["PENDING", "UNDER_REVIEW"].includes(paymentStatus)) {
+        return orderIndex % 3 === 0 ? "PAYMENT_PENDING" : "RECEIVED";
+      }
+      return ["PAID", "PREPARING", "READY", "DELIVERED"][(orderIndex / 2) % 4] as (typeof orders.$inferInsert)["status"];
+    };
     const orderRows = saleRows.map((sale, index) => {
       const customer = customerRows[saleDefinitions[index].customerIndex];
-      return { id: id("order", String(index + 1).padStart(3, "0")), code: `PED-DEV-${String(index + 1).padStart(3, "0")}`, saleId: sale.id, customerId: customer.id, opportunityId: sale.opportunityId, status: orderStatuses[index % orderStatuses.length], deliveryMethod: index % 3 === 0 ? "DELIVERY" : index % 3 === 1 ? "SHIPPING" : "PICKUP", locationId: index % 2 ? id("location", "arequipa") : id("location", "lima"), deliveryAddress: customer.address ?? "Lima", customerNameSnapshot: customer.name, customerPhoneSnapshot: customer.phone ?? "", customerEmailSnapshot: customer.email, sellerId: sale.sellerId, subtotal: sale.subtotal, discountAmount: sale.discountAmount, total: sale.total, currency: "PEN", idempotencyKey: id("order-key", String(index + 1).padStart(3, "0")), createdAt: sale.createdAt, updatedAt: sale.updatedAt };
+      return { id: id("order", String(index + 1).padStart(3, "0")), code: `PED-DEV-${String(index + 1).padStart(3, "0")}`, saleId: sale.id, customerId: customer.id, opportunityId: sale.opportunityId, status: orderStatusForFixture(index), deliveryMethod: index % 3 === 0 ? "DELIVERY" : index % 3 === 1 ? "SHIPPING" : "PICKUP", locationId: index % 2 ? id("location", "arequipa") : id("location", "lima"), deliveryAddress: customer.address ?? "Lima", customerNameSnapshot: customer.name, customerPhoneSnapshot: customer.phone ?? "", customerEmailSnapshot: customer.email, sellerId: sale.sellerId, subtotal: sale.subtotal, discountAmount: sale.discountAmount, total: sale.total, currency: "PEN", idempotencyKey: id("order-key", String(index + 1).padStart(3, "0")), createdAt: sale.createdAt, updatedAt: sale.updatedAt };
     });
     const orderCount = await insertRows(tx, orders, orderRows);
-    const orderItemCount = await insertRows(tx, orderItems, orderRows.map((order, index) => { const item = saleItemRows[index]; return { id: id("order-item", String(index + 1).padStart(3, "0")), orderId: order.id, productId: item.productId, skuSnapshot: item.skuSnapshot, productNameSnapshot: item.productNameSnapshot, quantity: item.quantity, unitPrice: item.unitPrice, currency: "PEN", lineTotal: order.total, reservationId: index < 24 && index % 3 === 0 ? id("reservation", String(index / 3 + 1).padStart(3, "0")) : null, createdAt: order.createdAt }; }));
-    const paymentDefinitions = orderRows.filter((_, index) => index % 2 === 0).map((_, index) => ({ status: ["APPROVED", "UNDER_REVIEW", "PENDING", "CONFIRMED", "PENDING", "APPROVED"][index % 6], orderIndex: index * 2 }));
+    const orderItemCount = await insertRows(tx, orderItems, orderRows.map((order, index) => { const item = saleItemRows[index]!; const picked = ["READY", "READY_FOR_PICKUP", "DELIVERED"].includes(String(order.status)) ? item.quantity : 0; return { id: id("order-item", String(index + 1).padStart(3, "0")), orderId: order.id, productId: item.productId, skuSnapshot: item.skuSnapshot, productNameSnapshot: item.productNameSnapshot, quantity: item.quantity, pickedQuantity: picked, unitPrice: item.unitPrice, currency: "PEN", lineTotal: order.total, reservationId: index < 8 ? id("reservation", String(index + 1).padStart(3, "0")) : null, createdAt: order.createdAt }; }));
+    const paymentDefinitions = orderRows.filter((_, index) => index % 2 === 0).map((_, index) => ({ status: paymentStatusForOrder(index * 2)!, orderIndex: index * 2 }));
     const paymentRows = paymentDefinitions.map((definition, index) => { const order = orderRows[definition.orderIndex]; return { id: id("payment", String(index + 1).padStart(3, "0")), orderId: order.id, methodType: index % 2 ? "MANUAL" : "PROVIDER", method: index % 2 ? "TRANSFERENCIA" : "CARD", provider: "development-gateway", providerReference: `DEV-PAY-${String(index + 1).padStart(3, "0")}`, amount: order.total, currency: "PEN", status: definition.status, metadata: { fixture: DEV_MOCK_SEED_VERSION }, createdBy: actor.id, createdAt: shiftedDate(Math.max(1, index + 2)), updatedAt: shiftedDate(Math.max(0, index + 1)) }; });
     const paymentCount = await insertRows(tx, payments, paymentRows);
     const paymentHistoryCount = await insertRows(tx, paymentStatusHistory, paymentRows.map((payment, index) => ({ id: id("payment-history", String(index + 1).padStart(3, "0")), paymentId: payment.id, fromStatus: null, toStatus: payment.status, changedBy: actor.id, actorRole: "SUPERADMIN", provider: payment.provider, reason: "Estado inicial de la demostración", createdAt: payment.createdAt })));
     const reservationRows = Array.from({ length: 30 }, (_, index) => {
       const reservationNumber = String(index + 1).padStart(3, "0");
-      const active = index < 24;
-      return { id: id("reservation", reservationNumber), productId: bulkProducts[index % bulkProducts.length].id, locationId: index % 2 ? id("location", "arequipa") : id("location", "lima"), quantity: 1 + (index % 3), status: active ? "ACTIVE" : "CONSUMED", referenceType: "ORDER", referenceId: orderRows[(index + 1) % orderRows.length].id, idempotencyKey: id("reservation-key", reservationNumber), expiresAt: shiftedDate(active ? -(2 + (index % 8)) : 2), createdBy: actor.id, createdAt: shiftedDate(3 + (index % 20)), releasedAt: active ? null : shiftedDate(1) };
+      const referenceOrder = orderRows[index < 8 ? index : (index + 8) % orderRows.length];
+      const terminal = referenceOrder.status === "DELIVERED" ? "CONSUMED" : referenceOrder.status === "CANCELLED" ? "CANCELLED" : "ACTIVE";
+      return { id: id("reservation", reservationNumber), productId: bulkProducts[index % bulkProducts.length].id, locationId: index % 2 ? id("location", "arequipa") : id("location", "lima"), quantity: 1 + (index % 3), status: terminal, referenceType: "ORDER", referenceId: referenceOrder.id, idempotencyKey: id("reservation-key", reservationNumber), expiresAt: terminal === "ACTIVE" ? shiftedDate(-(2 + (index % 8))) : null, createdBy: actor.id, createdAt: shiftedDate(3 + (index % 20)), releasedAt: terminal === "ACTIVE" ? null : shiftedDate(1) };
     });
     const reservationCount = await insertRows(tx, inventoryReservations, reservationRows);
     const orderHistoryCount = await insertRows(tx, orderStatusHistory, orderRows.map((order, index) => ({ id: id("order-history", String(index + 1).padStart(3, "0")), orderId: order.id, fromStatus: null, toStatus: order.status, changedBy: actor.id, note: "Estado inicial de la demostración", createdAt: order.createdAt })));

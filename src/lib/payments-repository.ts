@@ -19,6 +19,8 @@ const orderCurrencyReference = sql.raw('"orders"."currency"');
 const grossForOrder = sql<number>`coalesce((select sum(p2.amount) from payments p2 where p2.order_id = ${orderIdReference} and p2.currency = ${orderCurrencyReference} and p2.status in ('CONFIRMED','APPROVED','REFUNDED')), 0)`;
 const refundsForOrder = sql<number>`coalesce((select sum(r.amount) from payment_refunds r join payments p3 on p3.id = r.payment_id where p3.order_id = ${orderIdReference} and p3.currency = ${orderCurrencyReference} and r.currency = p3.currency and r.status = 'SUCCEEDED'), 0)`;
 const netForOrder = sql<number>`(${grossForOrder} - ${refundsForOrder})`;
+const refundRequiredForPayment = sql<boolean>`coalesce(${payments.metadata}->>'requiresRefund', 'false') = 'true'`;
+const refundRequiredForOrder = sql<boolean>`exists (select 1 from payments p4 where p4.order_id = ${orderIdReference} and coalesce(p4.metadata->>'requiresRefund', 'false') = 'true')`;
 
 function paymentWhere(filters: PaymentsFilters) {
   const conditions: SQL[] = [];
@@ -45,7 +47,7 @@ function paymentWhere(filters: PaymentsFilters) {
   if (filters.queue === "pending") conditions.push(inArray(payments.status, ["PENDING", "UNDER_REVIEW"]));
   if (filters.queue === "difference") conditions.push(or(sql`${netForOrder} > 0 and ${netForOrder} < ${orders.total} - 0.005`, sql`${netForOrder} > ${orders.total} + 0.005`)!);
   if (filters.queue === "providerErrors") conditions.push(inArray(payments.status, ["REJECTED", "ERROR"]));
-  if (filters.queue === "refunds") conditions.push(eq(payments.status, "REFUNDED"));
+  if (filters.queue === "refunds") conditions.push(refundRequiredForPayment);
   return conditions.length ? and(...conditions) : undefined;
 }
 
@@ -61,9 +63,9 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
     pending: and(where, inArray(payments.status, ["PENDING", "UNDER_REVIEW"])),
     difference: and(where, or(sql`${netForOrder} > 0 and ${netForOrder} < ${orders.total} - 0.005`, sql`${netForOrder} > ${orders.total} + 0.005`)),
     providerErrors: and(where, inArray(payments.status, ["REJECTED", "ERROR"])),
-    refunds: and(where, eq(payments.status, "REFUNDED")),
+    refunds: and(where, refundRequiredForPayment),
   };
-  const [rows, totalRows, statusRows, confirmedAmountRows, refundAmountRows, statusFacets, providerFacets, methodFacets, currencyFacets, methodRows, methodConfirmedAmountRows, methodRefundAmountRows, metricOrderRows, pendingQueueRows, differenceQueueRows, providerErrorQueueRows, refundQueueRows] = await Promise.all([
+  const [rows, totalRows, statusRows, confirmedAmountRows, refundAmountRows, statusFacets, providerFacets, methodFacets, currencyFacets, methodRows, methodConfirmedAmountRows, methodRefundAmountRows, metricOrderRows, pendingQueueRows, differenceQueueRows, providerErrorQueueRows, refundQueueRows, refundQueueCountRows] = await Promise.all([
     listBase(db, where).orderBy(desc(payments.updatedAt), asc(payments.id)).limit(pageSize).offset((page - 1) * pageSize),
     db.select({ total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where),
     db.select({ status: payments.status, total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).groupBy(payments.status),
@@ -76,11 +78,12 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
     db.select({ method: payments.method, total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).groupBy(payments.method).orderBy(desc(count(payments.id))).limit(8),
     db.select({ method: payments.method, currency: payments.currency, total: sum(payments.amount) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, inArray(payments.status, [...confirmedStatuses]))).groupBy(payments.method, payments.currency),
     db.select({ method: payments.method, currency: paymentRefunds.currency, total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, eq(paymentRefunds.status, "SUCCEEDED"))).groupBy(payments.method, paymentRefunds.currency),
-    db.selectDistinct({ orderId: payments.orderId }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, inArray(payments.status, [...confirmedStatuses]))),
+    db.selectDistinct({ orderId: payments.orderId }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where),
     listBase(db, queueWhere.pending).orderBy(desc(payments.updatedAt), asc(payments.id)).limit(5),
     listBase(db, queueWhere.difference).orderBy(desc(payments.updatedAt), asc(payments.id)).limit(5),
     listBase(db, queueWhere.providerErrors).orderBy(desc(payments.updatedAt), asc(payments.id)).limit(5),
     listBase(db, queueWhere.refunds).orderBy(desc(payments.updatedAt), asc(payments.id)).limit(5),
+    db.select({ total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, refundRequiredForPayment)),
   ]);
   const totalItems = numberValue(totalRows[0]?.total);
   const allRows = [...rows, ...pendingQueueRows, ...differenceQueueRows, ...providerErrorQueueRows, ...refundQueueRows];
@@ -91,22 +94,22 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
     paymentIds.length ? db.select({ paymentId: paymentAttempts.paymentId, total: count(paymentAttempts.id) }).from(paymentAttempts).where(inArray(paymentAttempts.paymentId, paymentIds)).groupBy(paymentAttempts.paymentId) : [],
     orderIds.length ? db.select({ orderId: payments.orderId, total: sum(payments.amount) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(inArray(payments.orderId, orderIds), eq(payments.currency, orders.currency), inArray(payments.status, [...confirmedStatuses]))).groupBy(payments.orderId) : [],
     orderIds.length ? db.select({ orderId: payments.orderId, total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(inArray(payments.orderId, orderIds), eq(payments.currency, orders.currency), eq(paymentRefunds.currency, orders.currency), eq(paymentRefunds.status, "SUCCEEDED"))).groupBy(payments.orderId) : [],
-    metricOrderIds.length ? db.select({ orderId: orders.id, expected: orders.total, gross: grossForOrder, refunded: refundsForOrder }).from(orders).where(inArray(orders.id, metricOrderIds)) : [],
+    metricOrderIds.length ? db.select({ orderId: orders.id, expected: orders.total, gross: grossForOrder, refunded: refundsForOrder, refundRequired: refundRequiredForOrder }).from(orders).where(inArray(orders.id, metricOrderIds)) : [],
   ]);
   const attemptsByPayment = new Map(attemptRows.map((row) => [row.paymentId, numberValue(row.total)]));
   const grossByOrder = new Map(confirmedRows.map((row) => [row.orderId, numberValue(row.total)]));
   const refundsByOrder = new Map(refundRows.map((row) => [row.orderId, numberValue(row.total)]));
   const toItem = (row: (typeof rows)[number]): PaymentListItem => {
     const expected = numberValue(row.orderTotal); const ledger = summarizePaymentLedger(expected, [{ amount: grossByOrder.get(row.payment.orderId) ?? 0, status: "CONFIRMED" }], [{ amount: refundsByOrder.get(row.payment.orderId) ?? 0, status: "SUCCEEDED" }]);
-    return { ...row.payment, orderCode: row.orderCode, saleId: row.saleId, saleCode: row.saleCode, customerId: row.customerId, customerName: row.customerName, attempts: attemptsByPayment.get(row.payment.id) ?? 0, expectedAmount: ledger.expected.toFixed(2), grossReceivedAmount: ledger.gross.toFixed(2), refundedAmount: ledger.refunded.toFixed(2), netReceivedAmount: ledger.net.toFixed(2), receivedAmount: ledger.net.toFixed(2), difference: ledger.difference.toFixed(2), reconciliation: ledger.reconciliation };
+    return { ...row.payment, orderCode: row.orderCode, saleId: row.saleId, saleCode: row.saleCode, customerId: row.customerId, customerName: row.customerName, attempts: attemptsByPayment.get(row.payment.id) ?? 0, expectedAmount: ledger.expected.toFixed(2), grossReceivedAmount: ledger.gross.toFixed(2), refundedAmount: ledger.refunded.toFixed(2), netReceivedAmount: ledger.net.toFixed(2), receivedAmount: ledger.net.toFixed(2), difference: ledger.difference.toFixed(2), reconciliation: ledger.reconciliation, refundRequired: row.payment.metadata?.requiresRefund === true };
   };
   const items = rows.map(toItem);
   const statusMap = new Map(statusRows.map((row) => [row.status, numberValue(row.total)]));
   const refundByCurrency = new Map(refundAmountRows.map((row) => [row.currency, numberValue(row.total)]));
   const amountsByCurrency = confirmedAmountRows.map((row) => { const gross = numberValue(row.total); const refunded = refundByCurrency.get(row.currency) ?? 0; return { currency: row.currency, gross, refunded, net: gross - refunded }; });
-  const financialStates = allFinancialRows.flatMap((row) => {
+  const financialStates = allFinancialRows.map((row) => {
     const net = numberValue(row.gross) - numberValue(row.refunded);
-    return net > 0 ? [reconciliationState(numberValue(row.expected), net, true)] : [];
+    return row.refundRequired ? "PENDING" as const : reconciliationState(numberValue(row.expected), net, net > 0);
   });
   const reconciledOrders = financialStates.filter((state) => state === "MATCH").length;
   const underpaidOrders = financialStates.filter((state) => state === "UNDERPAID").length;
@@ -123,7 +126,9 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
       });
     return { method: row.method, count: numberValue(row.total), confirmedAmountsByCurrency: amountsByCurrency };
   });
-  return { items, queues: { pending: pendingQueueRows.map(toItem), difference: differenceQueueRows.map(toItem), providerErrors: providerErrorQueueRows.map(toItem), refunds: refundQueueRows.map(toItem) }, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, pending: (statusMap.get("PENDING") ?? 0) + (statusMap.get("UNDER_REVIEW") ?? 0), approved: (statusMap.get("CONFIRMED") ?? 0) + (statusMap.get("APPROVED") ?? 0), rejected: (statusMap.get("REJECTED") ?? 0) + (statusMap.get("ERROR") ?? 0), refunded: statusMap.get("REFUNDED") ?? 0, observed, reconciledOrders, ordersWithConfirmedPayments: financialStates.length, underpaidOrders, overpaidOrders, reconciliationRate: financialStates.length ? Number(((reconciledOrders / financialStates.length) * 100).toFixed(2)) : null, totalAmount: amountsByCurrency.length === 1 ? amountsByCurrency[0].net : 0, amountsByCurrency, statusBreakdown: statusRows.map((row) => ({ status: row.status, count: numberValue(row.total) })), methodBreakdown }, facets: { statuses: statusFacets.map((row) => row.value), providers: providerFacets.flatMap((row) => row.value ? [row.value] : []), methods: methodFacets.map((row) => row.value), currencies: currencyFacets.map((row) => row.value) } };
+  const reconciliationDenominator = financialStates.length;
+  const refundRequiredCount = numberValue(refundQueueCountRows[0]?.total);
+  return { items, queues: { pending: pendingQueueRows.map(toItem), difference: differenceQueueRows.map(toItem), providerErrors: providerErrorQueueRows.map(toItem), refunds: refundQueueRows.map(toItem) }, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, pending: (statusMap.get("PENDING") ?? 0) + (statusMap.get("UNDER_REVIEW") ?? 0), approved: (statusMap.get("CONFIRMED") ?? 0) + (statusMap.get("APPROVED") ?? 0), rejected: (statusMap.get("REJECTED") ?? 0) + (statusMap.get("ERROR") ?? 0), refunded: refundRequiredCount, observed, reconciledOrders, ordersWithConfirmedPayments: reconciliationDenominator, reconciliationNumerator: reconciledOrders, reconciliationDenominator, underpaidOrders, overpaidOrders, reconciliationRate: reconciliationDenominator ? Number(((reconciledOrders / reconciliationDenominator) * 100).toFixed(2)) : null, totalAmount: amountsByCurrency.length === 1 ? amountsByCurrency[0].net : 0, amountsByCurrency, statusBreakdown: statusRows.map((row) => ({ status: row.status, count: numberValue(row.total) })), methodBreakdown }, facets: { statuses: statusFacets.map((row) => row.value), providers: providerFacets.flatMap((row) => row.value ? [row.value] : []), methods: methodFacets.map((row) => row.value), currencies: currencyFacets.map((row) => row.value) } };
 }
 
 const trendDays = 14;

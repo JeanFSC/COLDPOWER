@@ -12,7 +12,9 @@ test("cotización crea lead CRM y el servicio protege idempotencia", () => {
   assert.match(quoteRoute, /ensureLeadFromQuote/);
   assert.match(service, /existingLink/);
   assert.match(service, /customerQuoteLinks/);
+  assert.match(service, /assignedSellerId/);
   assert.match(service, /crm\.lead_created_from_quote/);
+  assert.match(quoteRoute, /recipientIds/);
 });
 
 test("pipeline exige transición y conserva historial", () => {

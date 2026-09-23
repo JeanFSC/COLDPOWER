@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -53,6 +54,7 @@ type DetailLine = {
   finalUnitPrice: string | null;
   lineTotal: string | null;
   currency: string | null;
+  discountStatus?: string;
 };
 type Detail = {
   quote: {
@@ -136,6 +138,21 @@ type Detail = {
     items: DetailLine[];
   }>;
   acceptedVersion: { id: string; versionNumber: number; status: string } | null;
+  discountApprovals: Array<{
+    id: string;
+    quoteItemId: string | null;
+    percentage: string;
+    amount: string;
+    reason: string;
+    status: string;
+    note: string | null;
+    createdAt: string;
+  }>;
+  commercial: {
+    sale: { id: string; code: string } | null;
+    order: { id: string; code: string } | null;
+    payment: { id: string } | null;
+  };
 };
 type DialogKind = "send" | "response" | "followUp" | "cancel" | null;
 type CustomerOption = {
@@ -255,7 +272,7 @@ export function QuotesWorkspace({
   const opportunityId = initialOpportunityId ?? params.get("opportunityId");
   const customerId = initialCustomerId ?? params.get("customerId");
   const [search, setSearch] = useState(params.get("query") ?? "");
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(() => params.get("quoteId"));
   const [detail, setDetail] = useState<Detail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [drawerTab, setDrawerTab] = useState<
@@ -266,7 +283,7 @@ export function QuotesWorkspace({
   const [actionError, setActionError] = useState("");
   const [newQuoteOpen, setNewQuoteOpen] = useState(
     Boolean(
-      (opportunityId || customerId || params.get("new") === "1") &&
+      params.get("new") === "1" &&
       permissions.includes("quotes.create"),
     ),
   );
@@ -337,6 +354,37 @@ export function QuotesWorkspace({
   const createVersion = async () => {
     await performAction("/version", "POST", {}, "Nueva versión abierta para edición.");
   };
+
+  const approveDiscount = async (approvalId: string, approved: boolean) => {
+    if (!detailId) return;
+    setActionBusy(true);
+    setActionError("");
+    try {
+      const response = await fetch("/api/admin/cotizaciones/discount", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approvalId, approved }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(readApiError(payload, "No se pudo actualizar el descuento."));
+      setNotice(approved ? "Descuento aprobado." : "Descuento rechazado.");
+      await openDetail(detailId);
+      router.refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "No se pudo actualizar el descuento.");
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    const quoteId = params.get("quoteId");
+    if (!quoteId || detail) return;
+    const timer = window.setTimeout(() => {
+      void openDetail(quoteId);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [params, detail]);
 
   useEffect(() => {
     if (!detailId) return;
@@ -799,6 +847,7 @@ export function QuotesWorkspace({
           setError={setActionError}
           performAction={performAction}
           createVersion={createVersion}
+          approveDiscount={approveDiscount}
           can={can}
           onEdited={() => {
             router.refresh();
@@ -1098,6 +1147,7 @@ function DetailDrawer({
   setError,
   performAction,
   createVersion,
+  approveDiscount,
   can,
   onEdited,
 }: {
@@ -1113,6 +1163,7 @@ function DetailDrawer({
   setError: (error: string) => void;
   performAction: (path: string, method: "POST" | "PATCH", body: Record<string, unknown>, success: string) => Promise<void>;
   createVersion: () => Promise<void>;
+  approveDiscount: (approvalId: string, approved: boolean) => Promise<void>;
   can: (permission: string) => boolean;
   onEdited: () => void;
 }) {
@@ -1181,7 +1232,7 @@ function DetailDrawer({
           {tab === "summary" ? (
             <SummaryTab detail={detail} />
           ) : tab === "pricing" ? (
-            <PricingTab detail={detail} />
+            <PricingTab detail={detail} can={can} approveDiscount={approveDiscount} />
           ) : tab === "activity" ? (
             <ActivityTab detail={detail} />
           ) : tab === "versions" ? (
@@ -1333,6 +1384,33 @@ function SummaryTab({ detail }: { detail: Detail }) {
         <Info label="Responsable" value={detail.seller?.name || "Sin asignar"} />
         <Info label="Vigencia" value={dateLabel(quote.validUntil)} />
       </div>
+      <div className="flex flex-wrap gap-2">
+        {detail.customer?.id ? (
+          <Link href={`/admin/clientes?customerId=${encodeURIComponent(detail.customer.id)}`} className="text-xs font-bold text-blue-600 hover:underline">
+            Ver cliente · {detail.customer.name}
+          </Link>
+        ) : null}
+        {detail.opportunity?.id ? (
+          <Link href={`/admin/crm?opportunityId=${encodeURIComponent(detail.opportunity.id)}`} className="text-xs font-bold text-blue-600 hover:underline">
+            Ver oportunidad · {detail.opportunity.code}
+          </Link>
+        ) : null}
+        {detail.commercial.sale?.id ? (
+          <Link href={`/admin/ventas?saleId=${encodeURIComponent(detail.commercial.sale.id)}`} className="text-xs font-bold text-blue-600 hover:underline">
+            Ver venta · {detail.commercial.sale.code}
+          </Link>
+        ) : null}
+        {detail.commercial.order?.id ? (
+          <Link href={`/admin/pedidos?orderId=${encodeURIComponent(detail.commercial.order.id)}`} className="text-xs font-bold text-blue-600 hover:underline">
+            Ver pedido · {detail.commercial.order.code}
+          </Link>
+        ) : null}
+        {detail.commercial.payment?.id ? (
+          <Link href={`/admin/pagos?paymentId=${encodeURIComponent(detail.commercial.payment.id)}`} className="text-xs font-bold text-blue-600 hover:underline">
+            Ver pago · {detail.commercial.payment.id}
+          </Link>
+        ) : null}
+      </div>
       <div className="rounded-xl border border-[#e0eaf2] bg-[#fbfdff] p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-900">Productos cotizados</h3>
@@ -1379,7 +1457,15 @@ function SummaryTab({ detail }: { detail: Detail }) {
     </div>
   );
 }
-function PricingTab({ detail }: { detail: Detail }) {
+function PricingTab({
+  detail,
+  can,
+  approveDiscount,
+}: {
+  detail: Detail;
+  can: (permission: string) => boolean;
+  approveDiscount: (approvalId: string, approved: boolean) => Promise<void>;
+}) {
   const quote = detail.quote;
   const version =
     detail.versions.find((item) => item.id === quote.acceptedVersionId) || detail.versions[0];
@@ -1419,6 +1505,51 @@ function PricingTab({ detail }: { detail: Detail }) {
         <Info label="Fuente de precio" value="Precio vigente al versionar" />
         <Info label="Margen / costo" value="No visible en cotización pública" />
       </div>
+      {detail.discountApprovals.length ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+          <p className="text-xs font-extrabold uppercase tracking-wide text-amber-700">
+            Aprobaciones de descuento
+          </p>
+          <p className="mt-1 text-xs text-amber-800/80">
+            El envío queda bloqueado mientras una aprobación permanezca pendiente.
+          </p>
+          <div className="mt-3 grid gap-2">
+            {detail.discountApprovals.map((approval) => (
+              <div key={approval.id} className="rounded-lg border border-amber-200 bg-white p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">
+                      {approval.percentage}% · {amount(quote.currency, approval.amount)}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#657f96]">
+                      {approval.reason || "Sin motivo registrado"} · Estado: {approval.status}
+                    </p>
+                  </div>
+                  {can("pricing.discount.approve") && approval.status === "PENDING" ? (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void approveDiscount(approval.id, true)}
+                        className="rounded-lg bg-emerald-600 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-700"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void approveDiscount(approval.id, false)}
+                        className="rounded-lg border border-rose-200 px-2.5 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-50"
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+                {approval.note ? <p className="mt-2 text-[11px] text-[#536f87]">Nota: {approval.note}</p> : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
       {version ? (
         <div className="overflow-hidden rounded-xl border border-[#e0eaf2]">
           <div className="grid grid-cols-[1fr_75px_105px] gap-2 bg-[#fbfdff] px-3 py-3 text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">

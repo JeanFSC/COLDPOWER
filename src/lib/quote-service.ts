@@ -83,8 +83,8 @@ export async function createAdminQuote(input: { customerId: string; opportunityI
       await tx.update(opportunities).set({ quoteId, stage: nextStage, updatedAt: now }).where(eq(opportunities.id, opportunity.id));
       if (nextStage !== opportunity.stage) await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: opportunity.id, fromStage: opportunity.stage, toStage: nextStage, changedBy: actor.userId ?? "system", note: "Cotización creada desde el pipeline" });
     }
-    if (lineInputs.length) await tx.insert(quoteItems).values(lines.map((line) => ({ id: id("quote-item"), quoteId, productId: line.product.id, skuSnapshot: line.product.sku, productNameSnapshot: line.product.commercialName ?? line.product.normalizedName, quantity: line.quantity, baseUnitPrice: line.baseUnitPrice, discountPercentage: line.discountPercentage, discountAmount: line.discountAmount, finalUnitPrice: line.finalUnitPrice, lineTotal: line.lineTotal, currency: line.currency, priceType: line.priceType, priceSourceId: line.priceSourceId, priceReason: line.priceReason, discountStatus: line.discountStatus, discountReason: line.discountReason, createdAt: now, updatedAt: now })));
-    if (lines.some((line) => line.discountStatus === "PENDING")) for (const line of lines.filter((value) => value.discountStatus === "PENDING")) await tx.insert(quoteDiscountApprovals).values({ id: id("discount-approval"), quoteId, quoteItemId: null, requestedBy: actor.userId, percentage: line.discountPercentage ?? "0.00", amount: line.discountAmount ?? "0.00", reason: line.discountReason ?? "Descuento comercial solicitado", status: "PENDING", createdAt: now, updatedAt: now });
+    const createdItems = lineInputs.length ? await tx.insert(quoteItems).values(lines.map((line) => ({ id: id("quote-item"), quoteId, productId: line.product.id, skuSnapshot: line.product.sku, productNameSnapshot: line.product.commercialName ?? line.product.normalizedName, quantity: line.quantity, baseUnitPrice: line.baseUnitPrice, discountPercentage: line.discountPercentage, discountAmount: line.discountAmount, finalUnitPrice: line.finalUnitPrice, lineTotal: line.lineTotal, currency: line.currency, priceType: line.priceType, priceSourceId: line.priceSourceId, priceReason: line.priceReason, discountStatus: line.discountStatus, discountReason: line.discountReason, createdAt: now, updatedAt: now }))).returning({ id: quoteItems.id }) : [];
+    for (const [index, line] of lines.entries()) if (line.discountStatus === "PENDING") await tx.insert(quoteDiscountApprovals).values({ id: id("discount-approval"), quoteId, quoteItemId: createdItems[index]?.id ?? null, requestedBy: actor.userId, percentage: line.discountPercentage ?? "0.00", amount: line.discountAmount ?? "0.00", reason: line.discountReason ?? "Descuento comercial solicitado", status: "PENDING", createdAt: now, updatedAt: now });
     await tx.insert(customerQuoteLinks).values({ id: id("quote-link"), customerId: customer.id, quoteId, opportunityId: opportunity.id });
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, toStatus: "borrador", changedBy: actor.userId ?? "system", note: "Cotización interna creada" });
     await tx.insert(auditLogs).values(audit(actor, "quote.created", "quote", quoteId, null, { trackingCode, workflowStatus: "DRAFT", opportunityId: opportunity.id }));
@@ -103,9 +103,10 @@ export async function updateAdminQuoteDraft(quoteId: string, input: { message?: 
     const totals = buildQuoteTotals(lines.map((line) => ({ ...line, sku: line.product.sku, name: line.product.commercialName ?? line.product.normalizedName, productId: line.product.id } as CommercialLine)));
     const now = new Date();
     await tx.delete(quoteItems).where(eq(quoteItems.quoteId, quoteId));
-    if (lines.length) await tx.insert(quoteItems).values(lines.map((line) => ({ id: id("quote-item"), quoteId, productId: line.product.id, skuSnapshot: line.product.sku, productNameSnapshot: line.product.commercialName ?? line.product.normalizedName, quantity: line.quantity, baseUnitPrice: line.baseUnitPrice, discountPercentage: line.discountPercentage, discountAmount: line.discountAmount, finalUnitPrice: line.finalUnitPrice, lineTotal: line.lineTotal, currency: line.currency, priceType: line.priceType, priceSourceId: line.priceSourceId, priceReason: line.priceReason, discountStatus: line.discountStatus, discountReason: line.discountReason, createdAt: now, updatedAt: now })));
+    await tx.delete(quoteDiscountApprovals).where(eq(quoteDiscountApprovals.quoteId, quoteId));
+    const createdItems = lines.length ? await tx.insert(quoteItems).values(lines.map((line) => ({ id: id("quote-item"), quoteId, productId: line.product.id, skuSnapshot: line.product.sku, productNameSnapshot: line.product.commercialName ?? line.product.normalizedName, quantity: line.quantity, baseUnitPrice: line.baseUnitPrice, discountPercentage: line.discountPercentage, discountAmount: line.discountAmount, finalUnitPrice: line.finalUnitPrice, lineTotal: line.lineTotal, currency: line.currency, priceType: line.priceType, priceSourceId: line.priceSourceId, priceReason: line.priceReason, discountStatus: line.discountStatus, discountReason: line.discountReason, createdAt: now, updatedAt: now }))).returning({ id: quoteItems.id }) : [];
     const [updated] = await tx.update(quotes).set({ message: text(input.message, 2000) || quote.message, currency: totals.currency, subtotal: totals.subtotal, discountAmount: totals.discountAmount, taxAmount: totals.taxAmount, total: totals.total, taxMode: input.taxMode ?? quote.taxMode, discountApprovalStatus: lines.some((line) => line.discountStatus === "PENDING") ? "PENDING" : "NOT_REQUIRED", validUntil: input.validUntil ?? quote.validUntil, updatedAt: now, revision: quote.revision + 1 }).where(eq(quotes.id, quoteId)).returning();
-    for (const line of lines.filter((value) => value.discountStatus === "PENDING")) await tx.insert(quoteDiscountApprovals).values({ id: id("discount-approval"), quoteId, quoteItemId: null, requestedBy: actor.userId, percentage: line.discountPercentage ?? "0.00", amount: line.discountAmount ?? "0.00", reason: line.discountReason ?? "Descuento comercial solicitado", status: "PENDING", createdAt: now, updatedAt: now });
+    for (const [index, line] of lines.entries()) if (line.discountStatus === "PENDING") await tx.insert(quoteDiscountApprovals).values({ id: id("discount-approval"), quoteId, quoteItemId: createdItems[index]?.id ?? null, requestedBy: actor.userId, percentage: line.discountPercentage ?? "0.00", amount: line.discountAmount ?? "0.00", reason: line.discountReason ?? "Descuento comercial solicitado", status: "PENDING", createdAt: now, updatedAt: now });
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, fromStatus: quote.status, toStatus: "borrador", changedBy: actor.userId ?? "system", note: "Borrador editado" });
     await tx.insert(auditLogs).values(audit(actor, "quote.draft_updated", "quote", quoteId, { revision: quote.revision }, { revision: updated.revision, itemCount: lines.length }));
     return updated;
@@ -115,9 +116,9 @@ export async function updateAdminQuoteDraft(quoteId: string, input: { message?: 
 async function quoteSendData<T extends Database | Transaction>(tx: T, quoteId: string) {
   const [quote] = await tx.select().from(quotes).where(eq(quotes.id, quoteId)).limit(1);
   if (!quote) throw new Error("Cotización no encontrada.");
-  const [link] = await tx.select({ customer: customers }).from(customerQuoteLinks).innerJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1);
+  const [link] = await tx.select({ customer: customers, opportunityId: customerQuoteLinks.opportunityId }).from(customerQuoteLinks).innerJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1);
   const items = await tx.select().from(quoteItems).where(eq(quoteItems.quoteId, quoteId)).orderBy(asc(quoteItems.createdAt));
-  return { quote, customer: link?.customer ?? null, items };
+  return { quote, customer: link?.customer ?? null, opportunityId: link?.opportunityId ?? null, items };
 }
 
 function sendBlockers(data: Awaited<ReturnType<typeof quoteSendData>>) {
@@ -128,14 +129,14 @@ function sendBlockers(data: Awaited<ReturnType<typeof quoteSendData>>) {
   for (const item of data.items) {
     if (!Number.isInteger(item.quantity) || item.quantity <= 0) blockers.push({ code: `QUANTITY_${item.id}`, label: `Corregir cantidad de ${item.skuSnapshot}` });
     if (item.baseUnitPrice === null || item.finalUnitPrice === null || item.lineTotal === null || !item.currency) blockers.push({ code: `PRICE_${item.id}`, label: `Asignar precio a ${item.skuSnapshot}` });
-    if (item.discountStatus === "PENDING") blockers.push({ code: `DISCOUNT_${item.id}`, label: `Aprobar descuento de ${item.skuSnapshot}` });
+    if (item.discountStatus === "PENDING" || item.discountStatus === "REJECTED") blockers.push({ code: `DISCOUNT_${item.id}`, label: item.discountStatus === "REJECTED" ? `Revisar descuento rechazado de ${item.skuSnapshot}` : `Aprobar descuento de ${item.skuSnapshot}` });
   }
   const currencies = new Set(data.items.map((item) => item.currency).filter(Boolean));
   if (currencies.size > 1) blockers.push({ code: "MULTI_CURRENCY", label: "Usar una sola moneda en la versión" });
   if (!data.quote.validUntil) blockers.push({ code: "VALID_UNTIL_REQUIRED", label: "Definir vigencia" });
   else if (data.quote.validUntil <= new Date()) blockers.push({ code: "VALID_UNTIL_PAST", label: "La vigencia debe ser futura" });
   if (data.quote.taxMode === "UNCONFIGURED") blockers.push({ code: "TAX_MODE_REQUIRED", label: "Definir si los precios incluyen impuestos" });
-  if (data.quote.discountApprovalStatus === "PENDING") blockers.push({ code: "DISCOUNT_APPROVAL_REQUIRED", label: "Aprobar descuentos pendientes" });
+  if (data.quote.discountApprovalStatus === "PENDING" || data.quote.discountApprovalStatus === "REJECTED") blockers.push({ code: "DISCOUNT_APPROVAL_REQUIRED", label: data.quote.discountApprovalStatus === "REJECTED" ? "Revisar descuentos rechazados" : "Aprobar descuentos pendientes" });
   return blockers;
 }
 
@@ -167,7 +168,7 @@ export async function sendQuote(quoteId: string, actor: Actor, channel: string, 
     const [updated] = await tx.update(quotes).set({ workflowStatus: "SENT", status: legacyStatus("SENT"), currentVersionNumber: version.versionNumber, sentAt: now, sentBy: actor.userId, updatedAt: now, revision: data.quote.revision + 1 }).where(and(eq(quotes.id, quoteId), eq(quotes.revision, data.quote.revision))).returning();
     if (!updated) throw new Error("Esta cotización fue actualizada por otro usuario. Recarga los cambios.");
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, fromStatus: data.quote.status, toStatus: "enviada", changedBy: actor.userId ?? "system", note: `Versión v${version.versionNumber} enviada por ${text(channel, 30) || "canal no indicado"}` });
-    await tx.insert(crmActivities).values({ id: id("activity"), customerId: data.customer?.id ?? null, opportunityId: null, quoteId, type: channel === "EMAIL" ? "EMAIL" : channel === "PHONE" ? "CALL" : channel === "IN_PERSON" ? "MEETING" : "WHATSAPP", subject: `Cotización v${version.versionNumber} enviada`, body: recipient ? `Destinatario: ${recipient}` : null, performedBy: actor.userId });
+    await tx.insert(crmActivities).values({ id: id("activity"), customerId: data.customer?.id ?? null, opportunityId: data.opportunityId, quoteId, type: channel === "EMAIL" ? "EMAIL" : channel === "PHONE" ? "CALL" : channel === "IN_PERSON" ? "MEETING" : "WHATSAPP", subject: `Cotización v${version.versionNumber} enviada`, body: recipient ? `Destinatario: ${recipient}` : null, performedBy: actor.userId });
     await tx.insert(auditLogs).values(audit(actor, "quote.sent", "quote", quoteId, { workflowStatus: data.quote.workflowStatus, version: data.quote.currentVersionNumber }, { workflowStatus: "SENT", version: version.versionNumber, channel, recipient: recipient ?? null }));
     return { quote: updated, version, idempotent: false };
   });
@@ -256,8 +257,16 @@ export async function approveQuoteDiscount(approvalId: string, approved: boolean
     if (approval.status !== "PENDING") return approval;
     const status = approved ? "APPROVED" : "REJECTED";
     const [updated] = await tx.update(quoteDiscountApprovals).set({ status, approvedBy: actor.userId, approvedAt: new Date(), note: text(note, 500) || null, updatedAt: new Date() }).where(eq(quoteDiscountApprovals.id, approvalId)).returning();
+    if (approval.quoteItemId) {
+      const [item] = await tx.update(quoteItems).set({ discountStatus: status, updatedAt: new Date() }).where(eq(quoteItems.id, approval.quoteItemId)).returning({ productId: quoteItems.productId });
+      if (item) {
+        const versions = approval.versionId ? [approval.versionId] : (await tx.select({ id: quoteVersions.id }).from(quoteVersions).where(eq(quoteVersions.quoteId, approval.quoteId))).map((version) => version.id);
+        if (versions.length) await tx.update(quoteVersionItems).set({ discountStatus: status }).where(and(inArray(quoteVersionItems.versionId, versions), eq(quoteVersionItems.productId, item.productId)));
+      }
+    }
     const pending = await tx.select({ id: quoteDiscountApprovals.id }).from(quoteDiscountApprovals).where(and(eq(quoteDiscountApprovals.quoteId, approval.quoteId), eq(quoteDiscountApprovals.status, "PENDING")));
-    await tx.update(quotes).set({ discountApprovalStatus: pending.length ? "PENDING" : approved ? "APPROVED" : "REJECTED", updatedAt: new Date() }).where(eq(quotes.id, approval.quoteId));
+    const [rejected] = await tx.select({ id: quoteDiscountApprovals.id }).from(quoteDiscountApprovals).where(and(eq(quoteDiscountApprovals.quoteId, approval.quoteId), eq(quoteDiscountApprovals.status, "REJECTED"))).limit(1);
+    await tx.update(quotes).set({ discountApprovalStatus: pending.length ? "PENDING" : rejected ? "REJECTED" : "APPROVED", updatedAt: new Date() }).where(eq(quotes.id, approval.quoteId));
     await tx.insert(auditLogs).values(audit(actor, approved ? "quote.discount_approved" : "quote.discount_rejected", "quote_discount_approval", approvalId, approval, updated));
     return updated;
   });

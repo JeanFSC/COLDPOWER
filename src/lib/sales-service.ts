@@ -18,6 +18,7 @@ import { applyPromotionsInTransaction } from "@/lib/promotion-service";
 
 type Actor = { userId: string | null; role?: string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+type ChangeOrderOptions = { expectedVersion?: number; expectedStatus?: OrderStatus; receivedBy?: string | null; idempotencyKey?: string | null };
 function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function money(value: string | number) { return Number(Number(value).toFixed(2)); }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role ?? null, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
@@ -112,7 +113,7 @@ async function notifyCheckoutCreated(result: Awaited<ReturnType<typeof createChe
   for (const reservation of result.reservations) {
     try { await notifyInventoryState(reservation.productId, reservation.locationId); } catch (error) { console.error("ColdPower: no se pudo notificar el stock reservado", error); }
   }
-  if (result.sale) { try { await notifyStaffOnce({ type: "ORDER_CREATED", title: "Nuevo pedido pendiente de pago", body: `El pedido ${result.order.code} requiere revisión de pago.`, link: "/admin/pedidos", metadata: { orderId: result.order.id, status: result.order.status }, dedupeKey: `order:${result.order.id}:created` }); await notifyStaffOnce({ type: "SALE_CREATED", title: "Nueva venta registrada", body: `La venta ${result.sale.code} fue registrada desde el checkout.`, link: "/admin/ventas", metadata: { saleId: result.sale.id, orderId: result.order.id }, dedupeKey: `sale:${result.sale.id}:created` }); } catch (error) { console.error("ColdPower: no se pudo notificar el nuevo pedido o venta", error); } }
+  if (result.sale) { try { await notifyStaffOnce({ type: "ORDER_CREATED", title: "Nuevo pedido pendiente de pago", body: `El pedido ${result.order.code} requiere revisión de pago.`, link: `/admin/pedidos?orderId=${encodeURIComponent(result.order.id)}`, metadata: { orderId: result.order.id, status: result.order.status }, dedupeKey: `order:${result.order.id}:created` }); await notifyStaffOnce({ type: "SALE_CREATED", title: "Nueva venta registrada", body: `La venta ${result.sale.code} fue registrada desde el checkout.`, link: `/admin/ventas?saleId=${encodeURIComponent(result.sale.id)}`, metadata: { saleId: result.sale.id, orderId: result.order.id }, dedupeKey: `sale:${result.sale.id}:created` }); } catch (error) { console.error("ColdPower: no se pudo notificar el nuevo pedido o venta", error); } }
 }
 
 async function createCheckoutOrderInTransaction(tx: Transaction, input: CheckoutInput, actor: Actor, options: CheckoutOrderOptions) {
@@ -217,49 +218,58 @@ export async function listOrdersPage(requestedPage = 1, requestedPageSize = 25) 
 }
 export async function listOrdersForUser(userId: string) { return getDb().select({ order: orders, payment: payments }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(payments, eq(payments.orderId, orders.id)).where(eq(customers.userId, userId)).orderBy(desc(orders.createdAt)).limit(200); }
 
-export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: { expectedVersion?: number; expectedStatus?: OrderStatus; receivedBy?: string | null; idempotencyKey?: string | null } = {}) {
-  const after = await getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
-    if (!before) throw new Error("Pedido no encontrado.");
-    if (options.idempotencyKey) {
-      const [previous] = await tx.select().from(orderStatusHistory).where(eq(orderStatusHistory.idempotencyKey, options.idempotencyKey)).limit(1);
-      if (previous) {
-        if (previous.orderId !== orderId || previous.toStatus !== nextStatus || (previous.note ?? "") !== (reason?.trim() ?? "")) throw new Error("ORDER_IDEMPOTENCY_CONFLICT");
-        return before;
-      }
+async function changeOrderStatusInTransaction(tx: Transaction, orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: ChangeOrderOptions = {}) {
+  const [before] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
+  if (!before) throw new Error("Pedido no encontrado.");
+  if (options.idempotencyKey) {
+    const [previous] = await tx.select().from(orderStatusHistory).where(eq(orderStatusHistory.idempotencyKey, options.idempotencyKey)).limit(1);
+    if (previous) {
+      if (previous.orderId !== orderId || previous.toStatus !== nextStatus || (previous.note ?? "") !== (reason?.trim() ?? "")) throw new Error("ORDER_IDEMPOTENCY_CONFLICT");
+      return before;
     }
-    if (options.expectedVersion !== undefined && before.version !== options.expectedVersion) throw new Error("ORDER_VERSION_CONFLICT");
-    if (options.expectedStatus !== undefined && before.status !== options.expectedStatus) throw new Error("ORDER_STATUS_CONFLICT");
-    if (nextStatus === "CANCELLED" && !reason?.trim()) throw new Error("CANCELLATION_REASON_REQUIRED");
-    if (!canTransitionOrderForDelivery(before.status, nextStatus, before.deliveryMethod)) throw new Error(`Transición no permitida para ${before.deliveryMethod}: ${before.status} → ${nextStatus}.`);
-    if (before.status === nextStatus) return before;
-    if (nextStatus === "READY" || nextStatus === "READY_FOR_PICKUP") {
-      const lines = await tx.select({ quantity: orderItems.quantity, pickedQuantity: orderItems.pickedQuantity }).from(orderItems).where(eq(orderItems.orderId, orderId)).for("update");
-      if (!lines.length || lines.some((line) => line.pickedQuantity !== line.quantity)) throw new Error("ORDER_PICKING_INCOMPLETE");
-      const [blocker] = await tx.select({ id: orderIncidents.id }).from(orderIncidents).where(and(eq(orderIncidents.orderId, orderId), eq(orderIncidents.status, "OPEN"), eq(orderIncidents.blocker, true))).limit(1);
-      if (blocker) throw new Error("ORDER_BLOCKED_BY_INCIDENT");
+  }
+  if (options.expectedVersion !== undefined && before.version !== options.expectedVersion) throw new Error("ORDER_VERSION_CONFLICT");
+  if (options.expectedStatus !== undefined && before.status !== options.expectedStatus) throw new Error("ORDER_STATUS_CONFLICT");
+  if (nextStatus === "CANCELLED" && !reason?.trim()) throw new Error("CANCELLATION_REASON_REQUIRED");
+  if (!canTransitionOrderForDelivery(before.status, nextStatus, before.deliveryMethod)) throw new Error(`Transición no permitida para ${before.deliveryMethod}: ${before.status} → ${nextStatus}.`);
+  if (before.status === nextStatus) return before;
+  if (nextStatus === "READY" || nextStatus === "READY_FOR_PICKUP") {
+    const lines = await tx.select({ quantity: orderItems.quantity, pickedQuantity: orderItems.pickedQuantity }).from(orderItems).where(eq(orderItems.orderId, orderId)).for("update");
+    if (!lines.length || lines.some((line) => line.pickedQuantity !== line.quantity)) throw new Error("ORDER_PICKING_INCOMPLETE");
+    const [blocker] = await tx.select({ id: orderIncidents.id }).from(orderIncidents).where(and(eq(orderIncidents.orderId, orderId), eq(orderIncidents.status, "OPEN"), eq(orderIncidents.blocker, true))).limit(1);
+    if (blocker) throw new Error("ORDER_BLOCKED_BY_INCIDENT");
+  }
+  if (nextStatus === "CANCELLED") {
+    const [confirmed] = await tx.select({ id: payments.id }).from(payments).where(and(eq(payments.orderId, orderId), or(eq(payments.status, "CONFIRMED"), eq(payments.status, "APPROVED")))).limit(1);
+    if (confirmed) throw new Error("ORDER_PAID_CANCELLATION_REQUIRES_REFUND");
+  }
+  if (nextStatus === "CANCELLED" || nextStatus === "DELIVERED") {
+    const lines = await tx.select({ reservationId: orderItems.reservationId, reservationStatus: inventoryReservations.status }).from(orderItems).leftJoin(inventoryReservations, eq(inventoryReservations.id, orderItems.reservationId)).where(eq(orderItems.orderId, orderId));
+    for (const line of lines) if (line.reservationId) {
+      if (nextStatus === "CANCELLED") { if (line.reservationStatus === "ACTIVE") await releaseInventoryReservationInTransaction(tx, line.reservationId, actor.userId ?? undefined, actor.role ?? undefined); }
+      else await consumeInventoryReservationInTransaction(tx, line.reservationId, actor.userId ?? undefined, actor.role ?? undefined);
     }
-    if (nextStatus === "CANCELLED") {
-      const [confirmed] = await tx.select({ id: payments.id }).from(payments).where(and(eq(payments.orderId, orderId), or(eq(payments.status, "CONFIRMED"), eq(payments.status, "APPROVED")))).limit(1);
-      if (confirmed) throw new Error("ORDER_PAID_CANCELLATION_REQUIRES_REFUND");
-    }
-    if (nextStatus === "CANCELLED" || nextStatus === "DELIVERED") {
-      const lines = await tx.select({ reservationId: orderItems.reservationId, reservationStatus: inventoryReservations.status }).from(orderItems).leftJoin(inventoryReservations, eq(inventoryReservations.id, orderItems.reservationId)).where(eq(orderItems.orderId, orderId));
-      for (const line of lines) if (line.reservationId) {
-        // A reservation already expired by the reservation sweep has given its stock back;
-        // cancelling must not fail on it (that left unpaid orders stuck in PAYMENT_PENDING).
-        if (nextStatus === "CANCELLED") { if (line.reservationStatus === "ACTIVE") await releaseInventoryReservationInTransaction(tx, line.reservationId, actor.userId ?? undefined, actor.role ?? undefined); }
-        else await consumeInventoryReservationInTransaction(tx, line.reservationId, actor.userId ?? undefined, actor.role ?? undefined);
-      }
-    }
+  }
+  if (nextStatus === "CANCELLED") {
+    const openPayments = await tx.select().from(payments).where(and(eq(payments.orderId, orderId), inArray(payments.status, ["PENDING", "UNDER_REVIEW"]))).for("update");
     const now = new Date();
-    const [updated] = await tx.update(orders).set({ status: nextStatus, cancellationReason: nextStatus === "CANCELLED" ? reason?.trim() ?? null : before.cancellationReason, cancelledBy: nextStatus === "CANCELLED" ? actor.userId : before.cancelledBy, cancelledAt: nextStatus === "CANCELLED" ? now : before.cancelledAt, deliveredAt: nextStatus === "DELIVERED" ? now : before.deliveredAt, receivedBy: nextStatus === "DELIVERED" ? options.receivedBy?.trim().slice(0, 160) || before.receivedBy : before.receivedBy, version: before.version + 1, updatedAt: now }).where(eq(orders.id, orderId)).returning();
-    await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId, fromStatus: before.status, toStatus: nextStatus, changedBy: actor.userId, note: reason?.trim() || null, idempotencyKey: options.idempotencyKey ?? null });
-    await tx.insert(auditLogs).values(audit(actor, "sales.order_status_changed", "order", orderId, before, updated, reason ? { reason: reason.trim() } : undefined));
-    return updated;
-  });
+    for (const payment of openPayments) {
+      await tx.update(payments).set({ status: "CANCELLED", cancellationReason: reason?.trim() ?? "order_cancelled", cancelledBy: actor.userId, cancelledAt: now, updatedAt: now }).where(eq(payments.id, payment.id));
+      await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: "CANCELLED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: payment.provider, reason: reason?.trim() ?? "Pedido cancelado" });
+      await tx.insert(auditLogs).values(audit(actor, "payments.cancelled_with_order", "payment", payment.id, payment, { status: "CANCELLED", orderId }));
+    }
+  }
+  const now = new Date();
+  const [updated] = await tx.update(orders).set({ status: nextStatus, cancellationReason: nextStatus === "CANCELLED" ? reason?.trim() ?? null : before.cancellationReason, cancelledBy: nextStatus === "CANCELLED" ? actor.userId : before.cancelledBy, cancelledAt: nextStatus === "CANCELLED" ? now : before.cancelledAt, deliveredAt: nextStatus === "DELIVERED" ? now : before.deliveredAt, receivedBy: nextStatus === "DELIVERED" ? options.receivedBy?.trim().slice(0, 160) || before.receivedBy : before.receivedBy, version: before.version + 1, updatedAt: now }).where(eq(orders.id, orderId)).returning();
+  await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId, fromStatus: before.status, toStatus: nextStatus, changedBy: actor.userId, note: reason?.trim() || null, idempotencyKey: options.idempotencyKey ?? null });
+  await tx.insert(auditLogs).values(audit(actor, "sales.order_status_changed", "order", orderId, before, updated, reason ? { reason: reason.trim() } : undefined));
+  return updated;
+}
+
+export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: ChangeOrderOptions = {}) {
+  const after = await getDb().transaction(async (tx) => changeOrderStatusInTransaction(tx, orderId, nextStatus, actor, reason, options));
   if (nextStatus === "READY_FOR_PICKUP") {
-    try { await notifyStaffOnce({ type: "ORDER_READY", title: "Pedido listo", body: `El pedido ${after.code} está listo para recoger.`, link: "/admin/pedidos", metadata: { orderId: after.id, status: after.status }, dedupeKey: `order:${after.id}:ready` }); }
+    try { await notifyStaffOnce({ type: "ORDER_READY", title: "Pedido listo", body: `El pedido ${after.code} está listo para recoger.`, link: `/admin/pedidos?orderId=${encodeURIComponent(after.id)}`, metadata: { orderId: after.id, status: after.status }, dedupeKey: `order:${after.id}:ready` }); }
     catch (error) { console.error("ColdPower: no se pudo notificar el pedido listo", error); }
   }
   // Courier tracking follows the order: registered when it leaves the warehouse, closed when
@@ -271,6 +281,21 @@ export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus
     } catch (error) { console.error("ColdPower: no se pudo actualizar el seguimiento del envío", error); }
   }
   return after;
+}
+
+export async function cancelSale(saleId: string, actor: Actor, reason: string) {
+  return getDb().transaction(async (tx) => {
+    const [sale] = await tx.select().from(sales).where(eq(sales.id, saleId)).for("update").limit(1);
+    if (!sale) throw new Error("Venta no encontrada.");
+    if (sale.status === "CANCELLED") return { sale, order: null, idempotent: true };
+    if (sale.invoiceStatus === "ISSUED" || sale.invoiceIssuedAt) throw new Error("SALE_INVOICED_CANNOT_CANCEL");
+    const [order] = await tx.select().from(orders).where(eq(orders.saleId, sale.id)).limit(1);
+    if (order?.status === "DELIVERED") throw new Error("SALE_DELIVERED_CANNOT_CANCEL");
+    const changedOrder = order ? await changeOrderStatusInTransaction(tx, order.id, "CANCELLED", actor, reason) : null;
+    const [updated] = await tx.update(sales).set({ status: "CANCELLED", cancellationReason: reason, cancelledBy: actor.userId, cancelledAt: new Date(), version: sale.version + 1, updatedAt: new Date() }).where(eq(sales.id, sale.id)).returning();
+    await tx.insert(auditLogs).values(audit(actor, "sales.cancelled", "sale", sale.id, sale, updated, { reason, orderId: order?.id ?? null }));
+    return { sale: updated, order: changedOrder, idempotent: false };
+  });
 }
 export async function registerManualPayment(input: { orderId: string; method: ManualPaymentMethod; amount: string; currency: string; reference: string | null; reason: string; idempotencyKey?: string }, actor: Actor) {
   const result = await getDb().transaction(async (tx) => {
@@ -290,11 +315,11 @@ export async function registerManualPayment(input: { orderId: string; method: Ma
     const [payment] = await tx.insert(payments).values({ id: id("payment"), orderId: order.id, methodType: "MANUAL", method: input.method, provider: null, providerReference: input.reference, idempotencyKey, amount: input.amount, currency: input.currency, status: "CONFIRMED", metadata: input.reference ? { reference: input.reference, reason: input.reason } : { reason: input.reason }, createdBy: actor.userId }).returning();
     await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider: null, providerReference: input.reference, status: "CONFIRMED", amount: input.amount, currency: input.currency, idempotencyKey });
     await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: null, toStatus: "CONFIRMED", changedBy: actor.userId, actorRole: actor.role ?? null, reason: input.reason });
-    const [confirmedRows, refundedRows] = await Promise.all([
-      tx.select({ total: sum(payments.amount) }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), or(eq(payments.status, "CONFIRMED"), eq(payments.status, "APPROVED")))),
+    const [paymentRows, refundedRows] = await Promise.all([
+      tx.select({ amount: payments.amount, status: payments.status }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency))),
       tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
     ]);
-    const netReceived = summarizePaymentLedger(order.total, [{ amount: confirmedRows[0]?.total ?? 0, status: "CONFIRMED" }], [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
+    const netReceived = summarizePaymentLedger(order.total, paymentRows, [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
     const shouldAdvance = netReceived + 0.005 >= money(order.total) && order.status === "PAYMENT_PENDING";
     const [updated] = shouldAdvance ? await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id)).returning() : [order];
     if (shouldAdvance) {
@@ -305,7 +330,7 @@ export async function registerManualPayment(input: { orderId: string; method: Ma
     await tx.insert(auditLogs).values(audit(actor, "payments.manual_confirmed", "payment", payment.id, null, payment, { orderId: order.id, reason: input.reason, expected: order.total, netReceived: netReceived.toFixed(2), difference: (netReceived - money(order.total)).toFixed(2) }));
     return { payment, order: updated, idempotent: false };
   });
-  if (!result.idempotent) try { await notifyStaffOnce({ type: "PAYMENT_APPROVED", title: "Pago aprobado", body: `El pago manual del pedido ${result.order.code} fue confirmado.`, link: "/admin/pedidos", metadata: { orderId: result.order.id, paymentId: result.payment.id, method: "MANUAL" }, dedupeKey: `payment:${result.payment.id}:approved` }); }
+  if (!result.idempotent) try { await notifyStaffOnce({ type: "PAYMENT_APPROVED", title: "Pago aprobado", body: `El pago manual del pedido ${result.order.code} fue confirmado.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.payment.id)}`, metadata: { orderId: result.order.id, paymentId: result.payment.id, method: "MANUAL" }, dedupeKey: `payment:${result.payment.id}:approved` }); }
   catch (error) { console.error("ColdPower: no se pudo notificar el pago manual", error); }
   return result;
 }
@@ -326,13 +351,6 @@ export async function cancelExpiredUnpaidOrders(now = new Date(), limit = 100) {
       // expectedStatus is re-checked under the order row lock, which the payment path also takes:
       // an order paid after it was listed here is left alone instead of being cancelled.
       await changeOrderStatus(order.id, "CANCELLED", systemActor, "Pago no recibido dentro del plazo", { idempotencyKey: `expire:${order.id}`, expectedStatus: "PAYMENT_PENDING" });
-      await getDb().transaction(async (tx) => {
-        const open = await tx.select().from(payments).where(and(eq(payments.orderId, order.id), inArray(payments.status, ["PENDING", "UNDER_REVIEW"]))).for("update");
-        for (const payment of open) {
-          await tx.update(payments).set({ status: "CANCELLED", cancellationReason: "order_payment_expired", cancelledAt: new Date(), updatedAt: new Date() }).where(eq(payments.id, payment.id));
-          await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: "CANCELLED", changedBy: null, actorRole: "SYSTEM", provider: payment.provider, reason: "Plazo de pago vencido" });
-        }
-      });
       cancelled.push(order.code);
     } catch (error) {
       console.error(`ColdPower: no se pudo cancelar el pedido vencido ${order.code}`, error);

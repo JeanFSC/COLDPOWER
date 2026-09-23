@@ -28,6 +28,7 @@ import type { getPaymentsKpiSeries } from "@/lib/payments-repository";
 type Detail = {
   payment: Record<string, unknown>;
   order: Record<string, unknown>;
+  sale?: Record<string, unknown> | null;
   customer: Record<string, unknown>;
   attempts: Array<Record<string, unknown>>;
   events: Array<Record<string, unknown>>;
@@ -51,6 +52,7 @@ const labels: Record<string, string> = {
   REJECTED: "Rechazado",
   CANCELLED: "Cancelado",
   REFUNDED: "Reembolsado",
+  REFUND_REQUIRED: "Por reembolsar",
   ERROR: "Error",
   MATCH: "Conciliado",
   UNDERPAID: "Faltante",
@@ -133,7 +135,7 @@ export function PaymentsControlCenter({
   canRefund: boolean;
   canManual: boolean;
 }) {
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(() => new URLSearchParams(queryString).get("paymentId"));
   const confirmed =
     page.metrics.amountsByCurrency
       .map((row) => row.currency + " " + money(row.currency, row.net))
@@ -161,7 +163,7 @@ export function PaymentsControlCenter({
     ["Pendientes", "pending", page.metrics.pending],
     ["Con diferencia", "difference", page.metrics.underpaidOrders + page.metrics.overpaidOrders],
     ["Errores de proveedor", "providerErrors", page.metrics.rejected],
-    ["Reembolsos", "refunds", page.metrics.refunded],
+    ["Por reembolsar", "refunds", page.metrics.refunded],
   ];
   const activeQueue = new URLSearchParams(queryString).get("queue") ?? "";
   const queueHref = (value: string | undefined) => {
@@ -171,7 +173,7 @@ export function PaymentsControlCenter({
     params.delete("page");
     return "/admin/pagos?" + params.toString();
   };
-  const actionable = [...page.queues.pending, ...page.queues.difference, ...page.queues.providerErrors].slice(0, 8);
+  const actionable = [...page.queues.pending, ...page.queues.difference, ...page.queues.providerErrors, ...page.queues.refunds].slice(0, 8);
   const otherStatus = Math.max(0, page.metrics.total - page.metrics.approved - page.metrics.pending - page.metrics.rejected);
   const statusDonut = [
     { label: "Aprobados", value: page.metrics.approved, dot: "bg-emerald-500", hex: "#10b981" },
@@ -243,7 +245,7 @@ export function PaymentsControlCenter({
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-purple-100">
             <div className="h-full rounded-full bg-purple-600" style={{ width: `${Math.max(0, Math.min(100, reconciliationRate ?? 0))}%` }} />
           </div>
-          <p className="mt-1.5 text-[10.5px] font-semibold text-slate-400">{page.metrics.ordersWithConfirmedPayments} órdenes con pago neto</p>
+          <p className="mt-1.5 text-[10.5px] font-semibold text-slate-400">{page.metrics.reconciliationNumerator} de {page.metrics.reconciliationDenominator} órdenes conciliables</p>
         </div>
       </section>
 
@@ -407,7 +409,7 @@ export function PaymentsControlCenter({
               </div>
               <div className="mt-3 flex gap-1.5">
                 <Badge value={item.status} />
-                <Badge value={item.reconciliation} />
+                <Badge value={item.refundRequired ? "REFUND_REQUIRED" : item.reconciliation} />
               </div>
             </button>
           ))}
@@ -576,21 +578,23 @@ function Pager({ page, total, query }: { page: number; total: number; query: str
   );
 }
 function reconciliationNote(item: PaymentListItem) {
+  if (item.refundRequired) return "Aprobación tardía: reembolso pendiente";
   if (item.status === "REJECTED" || item.status === "ERROR") return "Rechazado por el proveedor";
   if (item.reconciliation === "UNDERPAID" || item.reconciliation === "OVERPAID") return "Monto no coincide con el pedido";
   return "Pendiente de confirmación";
 }
 function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (id: string) => void }) {
+  const refundRequired = item.refundRequired;
   const observed = item.status === "REJECTED" || item.status === "ERROR" || item.reconciliation === "UNDERPAID" || item.reconciliation === "OVERPAID";
-  const accent = observed ? "border-red-200" : "border-amber-200";
-  const badge = observed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-600 border-amber-200";
-  const buttonColor = observed ? "bg-red-500 hover:bg-red-600" : "bg-orange-500 hover:bg-orange-600";
+  const accent = refundRequired ? "border-orange-200" : observed ? "border-red-200" : "border-amber-200";
+  const badge = refundRequired ? "bg-orange-50 text-orange-700 border-orange-200" : observed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-600 border-amber-200";
+  const buttonColor = refundRequired ? "bg-orange-500 hover:bg-orange-600" : observed ? "bg-red-500 hover:bg-red-600" : "bg-orange-500 hover:bg-orange-600";
   return (
     <div className={`flex flex-col justify-between rounded-xl border ${accent} bg-white p-4 shadow-2xs`}>
       <div>
         <div className="mb-2 flex items-center justify-between">
           <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${badge} border`}>
-            {observed ? "Observado" : "Pendiente"}
+            {refundRequired ? "Por reembolsar" : observed ? "Observado" : "Pendiente"}
           </span>
           <button type="button" onClick={() => onOpen(item.id)} aria-label={`Ver pago ${item.id}`} className="text-slate-400 hover:text-slate-600">
             <Eye className="h-4 w-4" />
@@ -624,7 +628,7 @@ function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (
         onClick={() => onOpen(item.id)}
         className={`mt-4 w-full rounded-lg py-2 text-xs font-semibold text-white shadow-2xs transition-colors ${buttonColor}`}
       >
-        {observed ? "Resolver conciliación" : "Revisar pago"}
+        {refundRequired ? "Procesar reembolso" : observed ? "Resolver conciliación" : "Revisar pago"}
       </button>
     </div>
   );
@@ -637,10 +641,14 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
           {paymentCode(item.id)}
         </button>
       </td>
-      <td className="px-3 py-3 font-medium text-slate-800">{item.customerName}</td>
+      <td className="px-3 py-3 font-medium text-slate-800">
+        <Link href={`/admin/clientes?customerId=${encodeURIComponent(item.customerId)}`} className="hover:text-blue-600 hover:underline">
+          {item.customerName}
+        </Link>
+      </td>
       <td className="px-3 py-3">
         <Link
-          href={"/admin/pedidos?query=" + encodeURIComponent(item.orderCode)}
+          href={`/admin/pedidos?orderId=${encodeURIComponent(item.orderId)}`}
           className="font-semibold text-blue-600 hover:underline"
         >
           {item.orderCode}
@@ -656,7 +664,7 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
         <Badge value={item.status} />
       </td>
       <td className="px-3 py-3">
-        <Badge value={item.reconciliation} />
+        <Badge value={item.refundRequired ? "REFUND_REQUIRED" : item.reconciliation} />
       </td>
       <td className="max-w-32 truncate px-3 py-3">{item.providerReference ?? "N/D"}</td>
       <td className="px-3 py-3 text-slate-500">{new Date(item.createdAt).toLocaleDateString("es-PE")}</td>
@@ -693,6 +701,7 @@ function PaymentDrawer({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [refund, setRefund] = useState({ amount: "", reason: "" });
+  const [refundAttempt, setRefundAttempt] = useState(0);
   const loadDetail = useCallback(async () => {
     if (!paymentId) return;
     setDetailLoading(true);
@@ -725,7 +734,8 @@ function PaymentDrawer({
   const payment = detail?.payment;
   const currency = String(payment?.currency ?? "PEN");
   const refundable =
-    String(payment?.status) === "CONFIRMED" || String(payment?.status) === "APPROVED";
+    ["CONFIRMED", "APPROVED"].includes(String(payment?.status)) &&
+    (String(payment?.methodType) === "MANUAL" || Boolean(payment?.provider));
   const amountPending = Math.max(
     0,
     Number(detail?.reconciliation.expectedAmount ?? 0) -
@@ -771,7 +781,7 @@ function PaymentDrawer({
           method: "POST",
           headers: {
             "content-type": "application/json",
-            "Idempotency-Key": "refund-" + paymentId + "-" + (refund.amount || "full"),
+            "Idempotency-Key": "refund-" + paymentId + "-" + (refund.amount || "full") + "-" + refundAttempt,
           },
           body: JSON.stringify({ amount: refund.amount || undefined, reason: refund.reason }),
         },
@@ -779,8 +789,10 @@ function PaymentDrawer({
       const data = await parse(response);
       if (!response.ok) throw new Error(apiMessage(data, "No se pudo solicitar el reembolso."));
       setRefund({ amount: "", reason: "" });
+      setRefundAttempt(0);
       await load();
     } catch (error) {
+      setRefundAttempt((value) => value + 1);
       setNotice(error instanceof Error ? error.message : "No se pudo solicitar el reembolso.");
     } finally {
       setBusy(false);
@@ -824,6 +836,19 @@ function PaymentDrawer({
                 <p className="mt-1 truncate text-xs font-bold text-slate-800">{String(value)}</p>
               </div>
             ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/clientes?customerId=${encodeURIComponent(String(detail.customer.id))}`} className="text-xs font-semibold text-blue-600 hover:underline">
+              Ver cliente · {String(detail.customer.name)}
+            </Link>
+            <Link href={`/admin/pedidos?orderId=${encodeURIComponent(String(detail.order.id))}`} className="text-xs font-semibold text-blue-600 hover:underline">
+              Ver pedido · {String(detail.order.code)}
+            </Link>
+            {detail.sale?.id ? (
+              <Link href={`/admin/ventas?saleId=${encodeURIComponent(String(detail.sale.id))}`} className="text-xs font-semibold text-blue-600 hover:underline">
+                Ver venta · {String(detail.sale.code ?? detail.sale.id)}
+              </Link>
+            ) : null}
           </div>
           <div
             className="flex flex-wrap gap-1 border-b border-slate-100 pb-2"

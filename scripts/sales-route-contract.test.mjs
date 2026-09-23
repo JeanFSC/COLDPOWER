@@ -8,17 +8,20 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 
 test("Bloque E declara ventas, pedidos, pagos e historial", () => {
   const schema = read("src/db/sales-schema.ts");
-  for (const table of ["sales", "saleItems", "orders", "orderItems", "payments", "paymentAttempts", "paymentEvidence", "paymentEvents", "orderStatusHistory"]) assert.match(schema, new RegExp(`export const ${table}`));
+  for (const table of ["sales", "saleItems", "orders", "orderItems", "payments", "paymentAttempts", "paymentEvidence", "paymentEvents", "orderStatusHistory"]) {
+    assert.match(schema, new RegExp(`export const ${table}`));
+  }
   const migrationFile = readdirSync(join(root, "drizzle")).find((file) => /^0011_.*\.sql$/.test(file));
-  assert.ok(migrationFile, "falta la migraciÃ³n 0011 del Bloque E");
+  assert.ok(migrationFile, "falta la migración 0011 del Bloque E");
   const migration = read(join("drizzle", migrationFile));
-  for (const table of ["sales", "sale_items", "orders", "order_items", "payments", "payment_events", "order_status_history"]) assert.match(migration, new RegExp(table));
+  for (const table of ["sales", "sale_items", "orders", "order_items", "payments", "payment_events", "order_status_history"]) {
+    assert.match(migration, new RegExp(table));
+  }
 });
 
 test("checkout usa servicio transaccional, snapshots, idempotencia y reservas", () => {
   const route = read("src/app/api/checkout/route.ts");
   const service = read("src/lib/sales-service.ts");
-  // The public checkout builds the order from the server-side purchase cart.
   assert.match(route, /createCheckoutFromCart/);
   assert.match(route, /requireApiUser/);
   assert.doesNotMatch(route, /validateCheckoutInput\(/);
@@ -42,9 +45,12 @@ test("pagos manuales requieren permiso y no publican proveedor inventado", () =>
 
 test("cancelación de venta y facturación solo registran estados y referencias externas", () => {
   const cancellation = read("src/app/api/admin/ventas/[id]/route.ts");
+  const service = read("src/lib/sales-service.ts");
   const invoicing = read("src/app/api/admin/ventas/[id]/facturacion/route.ts");
-  assert.match(cancellation, /cancellationReason/);
-  assert.match(cancellation, /releaseInventoryReservationInTransaction/);
+  assert.match(cancellation, /CANCELLATION_REASON_REQUIRED/);
+  assert.match(cancellation, /cancelSale/);
+  assert.match(service, /releaseInventoryReservationInTransaction/);
+  assert.match(service, /sales\.cancelled/);
   assert.match(invoicing, /externalInvoiceReference/);
   assert.doesNotMatch(invoicing, /SUNAT|simulate|simul/);
 });

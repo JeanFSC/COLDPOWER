@@ -22,5 +22,5 @@ export default async function AdminVentasPage({ searchParams }: { searchParams?:
     db.select({ id: customers.id, name: customers.name, phone: customers.phone }).from(customers).where(and(or(eq(customers.status, "ACTIVE"), eq(customers.status, "PROSPECT")), isNull(customers.canonicalCustomerId))).orderBy(asc(customers.name)).limit(500),
     db.select({ id: locations.id, code: locations.code, name: locations.name }).from(locations).where(eq(locations.active, true)).orderBy(asc(locations.code)),
   ]);
-  return <SalesControlCenter page={page} queryString={query.toString()} canManage={can(actor.role, "sales.manage")} canPaymentsView={can(actor.role, "payments.view")} customers={customerOptions} locations={locationOptions} />;
+  return <SalesControlCenter page={page} queryString={query.toString()} canManage={can(actor.role, "sales.manage")} canCancel={can(actor.role, "sales.cancel")} canPaymentsView={can(actor.role, "payments.view")} customers={customerOptions} locations={locationOptions} />;
 }

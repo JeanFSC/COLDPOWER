@@ -27,6 +27,7 @@ import type {
   SalesListItem,
   SalesPageResponse,
 } from "@/lib/sales-contract";
+import { summarizePaymentLedger } from "@/lib/payments-contract";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
@@ -395,8 +396,8 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
   const paymentsBySale = new Map<
     string,
     {
-      received: number;
-      refunded: number;
+      payments: Array<{ amount: string; status: string }>;
+      refunds: Array<{ amount: string; status: string }>;
       observed: boolean;
       hasOrder: boolean;
       rawStatus: string | null;
@@ -404,18 +405,15 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
   >();
   for (const row of paymentRows) {
     const current = paymentsBySale.get(row.saleId) ?? {
-      received: 0,
-      refunded: 0,
+      payments: [],
+      refunds: [],
       observed: false,
       hasOrder: Boolean(row.orderId),
       rawStatus: null,
     };
-    const successful = ["CONFIRMED", "APPROVED", "REFUNDED"].includes(row.status);
     const refunded = numberValue(row.refundedAmount);
-    if (successful) {
-      current.received += numberValue(row.amount) - refunded;
-      current.refunded += refunded;
-    }
+    current.payments.push({ amount: row.amount, status: row.status });
+    if (refunded > 0) current.refunds.push({ amount: row.refundedAmount, status: "SUCCEEDED" });
     if (["UNDER_REVIEW", "REJECTED", "ERROR"].includes(row.status)) current.observed = true;
     current.rawStatus = row.status;
     current.hasOrder = current.hasOrder || Boolean(row.orderId);
@@ -423,16 +421,17 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
   }
   const toItem = (row: (typeof rows)[number]): SalesListItem => {
     const financial = paymentsBySale.get(row.sale.id) ?? {
-      received: 0,
-      refunded: 0,
+      payments: [],
+      refunds: [],
       observed: false,
       hasOrder: Boolean(row.orderId),
       rawStatus: null,
     };
     const expected = numberValue(row.sale.total);
+    const ledger = summarizePaymentLedger(expected, financial.payments, financial.refunds);
     const state = financialState(
       expected,
-      financial.received,
+      ledger.net,
       financial.hasOrder,
       financial.observed,
     );
@@ -449,9 +448,9 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
       paymentStatus: financial.rawStatus,
       payment: {
         expectedAmount: expected.toFixed(2),
-        receivedAmount: financial.received.toFixed(2),
-        refundedAmount: financial.refunded.toFixed(2),
-        difference: (financial.received - expected).toFixed(2),
+        receivedAmount: ledger.net.toFixed(2),
+        refundedAmount: ledger.refunded.toFixed(2),
+        difference: ledger.difference.toFixed(2),
         state,
       },
       orderId: row.orderId,
@@ -542,7 +541,7 @@ export async function getSaleDetail(
     .where(eq(sales.id, saleId))
     .limit(1);
   if (!row) return null;
-  const [items, orderRows, audit] = await Promise.all([
+  const [items, orderRows] = await Promise.all([
     db
       .select()
       .from(saleItems)
@@ -558,17 +557,23 @@ export async function getSaleDetail(
       .leftJoin(payments, and(eq(payments.orderId, orders.id), eq(payments.currency, row.sale.currency)))
       .where(eq(orders.saleId, saleId))
       .orderBy(desc(orders.createdAt)),
-    db
-      .select()
-      .from(auditLogs)
-      .where(and(eq(auditLogs.entityType, "sale"), eq(auditLogs.entityId, saleId)))
-      .orderBy(desc(auditLogs.createdAt))
-      .limit(100),
   ]);
   const orderIds = orderRows.map((entry) => entry.order.id);
-  const orderLineRows = orderIds.length
-    ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
-    : [];
+  const auditScope = [
+    and(eq(auditLogs.entityType, "sale"), eq(auditLogs.entityId, saleId)),
+    ...(orderIds.length
+      ? [and(eq(auditLogs.entityType, "order"), inArray(auditLogs.entityId, orderIds))]
+      : []),
+    ...(row.quote
+      ? [and(eq(auditLogs.entityType, "quote"), eq(auditLogs.entityId, row.quote.id))]
+      : []),
+  ];
+  const [orderLineRows, audit] = await Promise.all([
+    orderIds.length
+      ? db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
+      : Promise.resolve([]),
+    db.select().from(auditLogs).where(or(...auditScope)).orderBy(desc(auditLogs.createdAt)).limit(100),
+  ]);
   return {
     sale: row.sale,
     customer: row.customer,

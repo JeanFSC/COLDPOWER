@@ -3,7 +3,7 @@ import { and, asc, count, desc, eq, exists, gte, ilike, inArray, lt, or, sql, su
 import { getDb } from "@/db";
 import { auditLogs, inventoryReservations, locations, quotes, users } from "@/db/schema";
 import { customers } from "@/db/crm-schema";
-import { orderIncidents, orderItems, orderStatusHistory, orders, paymentRefunds, payments, sales } from "@/db/sales-schema";
+import { orderIncidents, orderItems, orderStatusHistory, orders, paymentRefunds, payments, sales, shipments } from "@/db/sales-schema";
 import type { OrderAttention, OrderListItem, OrdersFilters, OrdersPageResponse } from "@/lib/orders-contract";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
 import { ACTIVE_ORDER_STATUSES } from "@/lib/dashboard-definitions";
@@ -19,7 +19,7 @@ function numberValue(value: unknown) { return Number(value ?? 0); }
 function paymentState(rows: Array<{ status: string }>) { return rows.reduce<string | null>((current, row) => !current || (paymentPriority[row.status] ?? -1) > (paymentPriority[current] ?? -1) ? row.status : current, null); }
 
 function orderListRows(db: ReturnType<typeof getDb>, where: SQL | undefined, pageSize: number, page = 1) {
-  return db.select({ order: orders, customerName: customers.name, customerEmail: customers.email, sellerName: seller.name, sellerEmail: seller.email, locationName: locations.name, quoteId: quotes.id, quoteTrackingCode: quotes.trackingCode }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(seller, eq(orders.sellerId, seller.id)).leftJoin(locations, eq(orders.locationId, locations.id)).leftJoin(sales, eq(orders.saleId, sales.id)).leftJoin(quotes, eq(sales.quoteId, quotes.id)).where(where).orderBy(desc(orders.updatedAt), asc(orders.code)).limit(pageSize).offset((page - 1) * pageSize);
+  return db.select({ order: orders, customerName: customers.name, customerEmail: customers.email, sellerName: seller.name, sellerEmail: seller.email, locationName: locations.name, channel: sales.channel, quoteId: quotes.id, quoteTrackingCode: quotes.trackingCode }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(seller, eq(orders.sellerId, seller.id)).leftJoin(locations, eq(orders.locationId, locations.id)).leftJoin(sales, eq(orders.saleId, sales.id)).leftJoin(quotes, eq(sales.quoteId, quotes.id)).where(where).orderBy(desc(orders.updatedAt), asc(orders.code)).limit(pageSize).offset((page - 1) * pageSize);
 }
 
 const orderIdReference = sql.raw('"orders"."id"');
@@ -116,7 +116,7 @@ export async function getOrdersPage(filters: OrdersFilters = {}): Promise<Orders
     const ledger = summarizePaymentLedger(row.order.total, [{ amount: grossByOrder.get(row.order.id) ?? 0, status: "CONFIRMED" }], [{ amount: refundsByOrder.get(row.order.id) ?? 0, status: "SUCCEEDED" }]); const incidents = incidentsByOrder.get(row.order.id) ?? 0;
     const overdue = ACTIVE_ORDER_STATUSES.includes(row.order.status as typeof ACTIVE_ORDER_STATUSES[number]) && now - row.order.updatedAt.getTime() > 48 * 60 * 60 * 1000;
     const attention: OrderAttention = incidents ? "INCIDENT" : overdue ? "OVERDUE" : row.order.status === "PAYMENT_PENDING" ? "REQUIRES_ATTENTION" : "NORMAL";
-    return { ...row.order, customerName: row.customerName, customerPhone: row.order.customerPhoneSnapshot, customerEmail: row.customerEmail ?? row.order.customerEmailSnapshot, sellerName: row.sellerName, sellerEmail: row.sellerEmail, locationName: row.locationName, saleId: row.order.saleId, quoteId: row.quoteId, quoteTrackingCode: row.quoteTrackingCode, lineCount: item.lines, reservationCount: item.reservations, totalQuantity: item.quantity, pickedQuantity: item.picked, openIncidentCount: incidents, paymentStatus: paymentState(paymentsByOrder.get(row.order.id) ?? []), expectedAmount: ledger.expected.toFixed(2), netReceivedAmount: ledger.net.toFixed(2), paymentReconciliation: ledger.reconciliation, attention };
+    return { ...row.order, customerName: row.customerName, customerPhone: row.order.customerPhoneSnapshot, customerEmail: row.customerEmail ?? row.order.customerEmailSnapshot, sellerName: row.sellerName, sellerEmail: row.sellerEmail, locationName: row.locationName, channel: row.channel, saleId: row.order.saleId, quoteId: row.quoteId, quoteTrackingCode: row.quoteTrackingCode, lineCount: item.lines, reservationCount: item.reservations, totalQuantity: item.quantity, pickedQuantity: item.picked, openIncidentCount: incidents, paymentStatus: paymentState(paymentsByOrder.get(row.order.id) ?? []), expectedAmount: ledger.expected.toFixed(2), netReceivedAmount: ledger.net.toFixed(2), paymentReconciliation: ledger.reconciliation, attention };
   };
   const items = rows.map(toItem);
   const totalItems = numberValue(totalRows[0]?.total);
@@ -144,11 +144,12 @@ export async function getOrderDetail(
     .where(eq(orders.id, orderId))
     .limit(1);
   if (!row) return null;
-  const [items, history, audit, incidents] = await Promise.all([
+  const [items, history, audit, incidents, shipmentRows] = await Promise.all([
     db.select().from(orderItems).where(eq(orderItems.orderId, orderId)).orderBy(asc(orderItems.createdAt)),
     db.select().from(orderStatusHistory).where(eq(orderStatusHistory.orderId, orderId)).orderBy(desc(orderStatusHistory.createdAt)),
     db.select().from(auditLogs).where(and(eq(auditLogs.entityType, "order"), eq(auditLogs.entityId, orderId))).orderBy(desc(auditLogs.createdAt)).limit(100),
     db.select().from(orderIncidents).where(eq(orderIncidents.orderId, orderId)).orderBy(desc(orderIncidents.createdAt)),
+    db.select().from(shipments).where(eq(shipments.orderId, orderId)).orderBy(desc(shipments.createdAt)).limit(1),
   ]);
   const reservationIds = items.flatMap((item) => item.reservationId ? [item.reservationId] : []);
   const reservations = reservationIds.length
@@ -162,6 +163,7 @@ export async function getOrderDetail(
     location: row.location,
     items,
     reservations,
+    shipments: shipmentRows,
     incidents,
     history,
     audit,
