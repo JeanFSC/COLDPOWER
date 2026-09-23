@@ -1,6 +1,6 @@
 import { and, count, eq, inArray, like, or, sql, sum } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditLogs } from "@/db/schema";
+import { auditLogs, inventoryReservations } from "@/db/schema";
 import { customers } from "@/db/crm-schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory } from "@/db/sales-schema";
 import { getPaymentProvider, type PaymentCreateResult, type PaymentRefundResult } from "@/lib/payments";
@@ -122,6 +122,8 @@ async function markOrderPaid(tx: Parameters<Parameters<ReturnType<typeof getDb>[
   if (netReceived + 0.005 < amount(order.total)) return order.status;
   await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id));
   await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy, note });
+  // A paid order keeps its stock: its reservations stop expiring with the payment deadline.
+  await tx.update(inventoryReservations).set({ expiresAt: null }).where(and(eq(inventoryReservations.referenceType, "order"), eq(inventoryReservations.referenceId, order.id), eq(inventoryReservations.status, "ACTIVE")));
   return "PAID" as const;
 }
 

@@ -110,7 +110,9 @@ async function main() {
     assert.ok(duplicate.duplicate);
     [order] = await db.select().from(orders).where(eq(orders.id, first.order.id));
     assert.equal(order.status, "PAID");
-    ok("pago aprobado: pedido PAID; evento duplicado ignorado");
+    const paidReservations = await db.select().from(inventoryReservations).where(and(eq(inventoryReservations.referenceType, "order"), eq(inventoryReservations.referenceId, first.order.id)));
+    assert.ok(paidReservations.every((reservation) => reservation.status === "ACTIVE" && reservation.expiresAt === null), "Un pedido pagado no debe perder su reserva por vencimiento");
+    ok("pago aprobado: pedido PAID, reserva sin vencimiento; evento duplicado ignorado");
     const detail = await sales.getOrderForUser(userId, first.order.code);
     assert.ok(detail?.history.some((entry) => entry.toStatus === "PAID"));
     assert.equal(await sales.getOrderForUser(`user_other_${tag}`, first.order.code), null);

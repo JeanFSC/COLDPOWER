@@ -285,7 +285,11 @@ export async function registerManualPayment(input: { orderId: string; method: Ma
     const netReceived = summarizePaymentLedger(order.total, [{ amount: confirmedRows[0]?.total ?? 0, status: "CONFIRMED" }], [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
     const shouldAdvance = netReceived + 0.005 >= money(order.total) && order.status === "PAYMENT_PENDING";
     const [updated] = shouldAdvance ? await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id)).returning() : [order];
-    if (shouldAdvance) await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy: actor.userId, note: `Cobro neto completado con pago manual ${input.method}` });
+    if (shouldAdvance) {
+      await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy: actor.userId, note: `Cobro neto completado con pago manual ${input.method}` });
+      // A paid order keeps its stock: its reservations stop expiring with the payment deadline.
+      await tx.update(inventoryReservations).set({ expiresAt: null }).where(and(eq(inventoryReservations.referenceType, "order"), eq(inventoryReservations.referenceId, order.id), eq(inventoryReservations.status, "ACTIVE")));
+    }
     await tx.insert(auditLogs).values(audit(actor, "payments.manual_confirmed", "payment", payment.id, null, payment, { orderId: order.id, reason: input.reason, expected: order.total, netReceived: netReceived.toFixed(2), difference: (netReceived - money(order.total)).toFixed(2) }));
     return { payment, order: updated, idempotent: false };
   });
