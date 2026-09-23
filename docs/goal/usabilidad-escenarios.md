@@ -77,6 +77,52 @@ Cada escenario se registra en `docs/goal/usabilidad/<fecha>-<persona>.md` con: p
 
 ---
 
+## C. Recorridos integrados cliente ↔ sistema (de punta a punta)
+
+Cada recorrido cruza la tienda y el admin: lo que hace el cliente dispara trabajo en el sistema y el cliente debe ver el resultado. Se ejecuta con dos navegadores/sesiones a la vez (cliente y staff).
+
+| # | Recorrido | Cliente | Sistema (roles) | El cliente ve al final |
+|---|---|---|---|---|
+| C1 | Cotización web → venta | Pide precio de 3 productos sin cuenta | Ventas recibe notificación, cotiza, envía; cliente acepta; Ventas convierte; Almacén prepara; Caja confirma pago manual | Su cotización con estado, y luego el pedido con seguimiento |
+| C2 | Compra online con delivery | Compra con precio, paga (mock) | Almacén prepara y despacha; avanza seguimiento; entrega | Timeline completo + seguimiento del envío |
+| C3 | Compra con pago rechazado y vencimiento | Paga, rechaza, no reintenta | Sistema cancela al vencer y libera stock; si llega aprobación tardía → "Por reembolsar"; Gerencia reembolsa | Pedido cancelado con motivo claro; reembolso visible |
+| C4 | Envío a provincia | Compra con agencia | Almacén despacha por agencia (AT_AGENCY), incidencia de faltante, resuelve | Estados de agencia y aviso de incidencia |
+| C5 | Recojo en tienda | Compra PICKUP | Almacén marca listo para recojo; cliente recoge; se registra quién recibió | "Listo para recojo" con dirección del local |
+| C6 | Cliente recurrente | Repite un pedido desde historial | Ventas ve el cliente 360 con todo el historial | Historial y pagos coherentes |
+| C7 | Stock agotado en el camino | Dos clientes compran la última unidad a la vez | Solo uno reserva; el otro recibe mensaje claro; Compras recibe alerta de crítico y crea OC; al recibir, vuelve a haber stock | El segundo cliente entiende que no hay stock y puede cotizar |
+| C8 | Promoción | Compra un producto en promoción aprobada | Gerencia creó/aprobó la promo; al rechazarla deja de aplicarse | Precio con descuento igual en ficha, carrito y pedido |
+| C9 | Devolución / anulación | Pide anular tras pagar | Ventas anula (bloqueado si hay dinero) → Caja registra devolución → pedido cancelado | Estado final coherente con el dinero |
+| C10 | Producto nuevo | — | Catálogo crea producto con foto, precio y stock; publica | Aparece en búsqueda, categoría y ficha con su foto |
+
+## D. Matriz de factores (se cruza con cada escenario A/B/C)
+
+Para cada escenario se hipotetizan y prueban **todos** los factores que apliquen. Un escenario no está aprobado hasta cubrir su fila de factores.
+
+| Factor | Variantes a probar |
+|---|---|
+| **Dispositivo** | Móvil 390, tablet 768, laptop 1366, escritorio 1920; táctil y teclado |
+| **Red** | Rápida, lenta (3G simulado), corte a mitad de acción (reintento sin duplicar) |
+| **Sesión** | Anónimo, recién registrado, sesión expirada a mitad del checkout, dos pestañas abiertas |
+| **Primera vez vs recurrente** | Sin historial (estados vacíos que guían) y con mucho historial (paginación, búsqueda) |
+| **Datos del producto** | Con y sin precio, con y sin stock, con y sin foto (imagen referencial), nombre largo, specs faltantes |
+| **Volumen** | 0, 1, pocos y muchos registros (listas paginadas, rendimiento) |
+| **Entrada del usuario** | Vacía, inválida, extremos (cantidad 0, 999, negativa), caracteres especiales/tildes, copiar-pegar con espacios |
+| **Doble acción** | Doble clic/envío, volver atrás y reenviar, refrescar en medio (idempotencia) |
+| **Concurrencia** | Dos usuarios editando el mismo registro (conflicto de versión claro), última unidad de stock |
+| **Tiempo** | Vencimiento de pago (30 min), fin de mes/rangos de fecha, zona horaria Lima, fechas límite de cotización |
+| **Dinero** | Soles y dólares, redondeo, descuento, pago parcial, sobrepago, reembolso total/parcial, promoción |
+| **Permisos** | Cada rol: qué ve, qué puede hacer, qué pasa si abre una URL que no le corresponde |
+| **Errores del sistema** | Base de datos caída, proveedor de pago caído, notificación fallida: mensaje humano + reintento, sin perder datos |
+| **Accesibilidad** | Solo teclado, lector de pantalla (encabezados, labels, alt), contraste AA, `prefers-reduced-motion` |
+| **Idioma y tono** | Español peruano claro, sin enums ni jerga técnica, tildes correctas |
+| **Navegación** | Botón atrás del navegador, enlaces compartidos (deep-links) abiertos por otra persona, 404 útil |
+
+## E. Registro y severidad
+- Cada ejecución se guarda en `docs/goal/usabilidad/<fecha>-<escenario>.md`: persona, dispositivo, factores cubiertos, pasos, clics, capturas, fricciones y veredicto.
+- **P0**: pierde dinero/datos o expone datos. **P1**: no puede completar la tarea. **P2**: la completa con fricción o confusión. **P3**: pulido.
+- P0/P1 bloquean el cierre del módulo; P2 se corrigen o se justifican; P3 van a una lista final.
+- Fase D: se ejecutan A + B + C completos cruzados con la matriz D, y se entrega un reporte con cobertura (escenario × factor) y capturas.
+
 ## Criterio transversal
 - **Cada rol ve solo lo suyo** y nunca aterriza en una página que no puede usar.
 - **Todo ID visible es un link** al módulo dueño, ya filtrado.
