@@ -170,3 +170,11 @@ export function diffAuditSnapshots(before: Record<string, unknown> | null, after
   }
   return diffs.sort((a, b) => a.field.localeCompare(b.field));
 }
+
+// Viewers without audit.sensitive.view get the event envelope only: no snapshots, request
+// metadata or raw IP. Viewers with it get snapshots passed through sanitizeAuditValue, since
+// some rows were written directly without going through writeAuditLog's sanitization.
+export function presentAuditItem<T extends AuditListItem>(item: T, canViewSensitive: boolean, sanitize: (value: unknown) => unknown): T {
+  if (!canViewSensitive) return { ...item, before: null, after: null, metadata: null, ip: null, origin: item.origin && item.origin === item.ip ? null : item.origin };
+  return { ...item, before: sanitize(item.before) as T["before"], after: sanitize(item.after) as T["after"], metadata: sanitize(item.metadata) as T["metadata"] };
+}

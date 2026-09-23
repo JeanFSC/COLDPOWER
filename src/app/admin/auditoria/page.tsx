@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { AuditModule } from "@/components/admin/AdminAuditModule";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
-import { diffAuditSnapshots, parseAuditFilters, type AuditPageResponse } from "@/lib/audit-contract";
+import { diffAuditSnapshots, parseAuditFilters, presentAuditItem, type AuditListItem, type AuditPageResponse } from "@/lib/audit-contract";
+import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { getAuditPage, getAuditDetail, getRelatedAuditEvents, listSavedAuditFilters } from "@/lib/audit-repository";
 
 export const metadata: Metadata = {
@@ -51,20 +52,22 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
   const baseQuery = baseParams.toString();
 
   const [pageResult, selectedResult, savedFilters] = await Promise.all([
-    getAuditPage(parseAuditFilters(query)).catch((error) => {
+    Promise.resolve().then(() => getAuditPage(parseAuditFilters(query))).catch((error) => {
       console.error("ColdPower: no se pudo cargar la auditoría", error);
       return null;
     }),
     eventId ? getAuditDetail(eventId).catch(() => null) : Promise.resolve(null),
     listSavedAuditFilters(actor.userId).catch(() => []),
   ]);
-  const page = pageResult ?? emptyPage;
+  // Everything handed to the client component is serialized into the page payload, so
+  // redaction must happen here, not only in what the UI chooses to render.
+  const present = <T extends AuditListItem>(item: T) => presentAuditItem(item, canViewSensitive, sanitizeAuditValue);
+  const page = pageResult ? { ...pageResult, items: pageResult.items.map(present) } : emptyPage;
   const loadError = pageResult === null;
 
-  let selected = selectedResult;
-  if (selected && !canViewSensitive) selected = { ...selected, before: null, after: null };
+  const selected = selectedResult ? present(selectedResult) : null;
 
-  const relatedEvents = selected ? await getRelatedAuditEvents(selected).catch(() => []) : [];
+  const relatedEvents = selected ? (await getRelatedAuditEvents(selectedResult!).catch(() => [])).map(present) : [];
   const diff = selected && canViewSensitive ? diffAuditSnapshots(selected.before, selected.after) : [];
 
   const exportHref = `/api/admin/auditoria/export${query.toString() ? `?${query.toString()}` : ""}`;
