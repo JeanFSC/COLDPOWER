@@ -12,7 +12,12 @@ test("CP-033 inventory page is backed by the paginated database service", async 
   assert.doesNotMatch(page, /getInventoryAdminSnapshot|snapshot\.balances\.length|snapshot\.locations\.length/);
   assert.match(service, /count\(inventoryBalances\.id\)/);
   assert.match(service, /limit\(pageSize\)/);
-  assert.match(service, /getPublishedMediaForEntities/);
+  assert.match(service, /leftJoinLateral/);
+  assert.match(service, /mediaAssetUsages/);
+  assert.match(service, /transferConditions/);
+  assert.match(service, /reservationConditions/);
+  assert.match(service, /transfersPagination/);
+  assert.match(service, /reservationsPagination/);
 });
 
 test("CP-033 inventory UI uses safe workflow controls and refreshes router state", async () => {
@@ -37,6 +42,9 @@ test("CP-033 inventory UI uses safe workflow controls and refreshes router state
   assert.match(page, /Stock después/);
   assert.match(page, /referenceType/);
   assert.match(page, /router\.refresh\(\)/);
+  assert.match(page, /referenceHref/);
+  assert.match(page, /Idempotency-Key/);
+  assert.match(page, /inventory:expire:manual/);
   assert.doesNotMatch(page, /window\.location\.reload/);
   assert.doesNotMatch(workflow, /window\.location\.reload/);
   assert.doesNotMatch(workflow, /APPROVED|PREPARED/);

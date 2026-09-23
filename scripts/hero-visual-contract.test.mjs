@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
-const root = path.resolve(import.meta.dirname, "..");
+const root = process.cwd();
+const read = (file) => readFileSync(join(root, file), "utf8");
 
-test("hero: el asset editorial se encuadra para ocupar el bloque visual derecho", async () => {
-  const source = await readFile(path.join(root, "src/components/home/Hero.tsx"), "utf8");
-
-  assert.match(source, /coldpower-hero-products\.png/);
-  assert.match(source, /lg:object-cover/);
-  assert.match(source, /object-right/);
-  assert.match(source, /lg:scale-110/);
-  assert.match(source, /lg:origin-right/);
+test("home hero uses the generated responsive technical image and search CTA", () => {
+  const source = read("src/components/home/Hero.tsx");
+  assert.match(source, /hero-tecnico-hvac\.webp/);
+  assert.match(source, /hero-tecnico-hvac-mobile\.webp/);
+  assert.match(source, /submitLabel="Buscar"/);
   assert.match(source, /overflow-hidden/);
+  assert.equal(existsSync(join(root, "public/images/home/hero-tecnico-hvac.webp")), true);
 });
+

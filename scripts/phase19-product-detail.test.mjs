@@ -25,7 +25,11 @@ for (const component of ["ProductGallery", "TechnicalIdentity", "CompatibilityPa
 
 assert.ok(/lg:grid-cols-\[400px_minmax\(0,536px\)_336px\]|lg:grid-cols-\[minmax\(0,1\.05fr\)_minmax\(0,0\.95fr\)\]/.test(detail), "PDP should use a responsive product-forward desktop composition");
 assert.ok(/position-sticky|sticky|TransactionBox/.test(detail), "PDP should keep transaction actions in the product composition");
-assert.ok(/Agregar a cotizaci[oó]n|Solicitar cotizaci[oó]n/.test(detail + transactionBox), "PDP should expose quote CTA");
+assert.match(transactionBox, /hasPrice/);
+assert.match(transactionBox, /Agregar al carrito/);
+assert.match(transactionBox, /Solicitar cotización/);
+assert.match(transactionBox, /Solo cotizable/);
+assert.match(read("src/components/product/TechnicalIdentity.tsx"), /filter\(\(spec\) => spec\.label.*spec\.value/);
 assert.match(detail, /lg:hidden/, "PDP should expose a mobile-only action bar");
 assert.match(detail, /fixed\s+inset-x-0\s+bottom-0|sticky\s+bottom-0/, "PDP mobile action bar should remain reachable while scrolling");
 assert.match(detail, /pb-24|pb-\[.*\]/, "PDP should reserve space for the mobile action bar");
@@ -38,5 +42,8 @@ for (const state of ["confirmed", "specification-match", "validation-required", 
 
 assert.match(productPage, /noindex|index:\s*false/, "incomplete product pages should be noindex");
 assert.match(productPage, /evaluateProductPublication/, "product metadata should use publication status");
+assert.match(productPage, /application\/ld\+json/);
+assert.match(productPage, /BreadcrumbList/);
+assert.match(productPage, /cache\(/);
 
 console.log("Phase 19 technical product detail: PASS");

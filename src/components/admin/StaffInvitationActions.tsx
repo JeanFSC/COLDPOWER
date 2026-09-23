@@ -10,6 +10,7 @@ export function StaffInvitationActions({ invitation }: { invitation: ClerkInvita
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"error" | "success">("success");
   function action(value: "cancel" | "resend") {
+    if (!window.confirm(value === "cancel" ? "¿Cancelar esta invitación?" : "¿Reenviar esta invitación?")) return;
     setMessage(null);
     setMessageKind("success");
     startTransition(async () => {

@@ -152,3 +152,17 @@ test("Inventario #2: las reservas de pedidos no son operables desde Inventario",
   const workspace = read("src/components/admin/InventoryAdminWorkspace.tsx");
   assert.match(workspace, /isAdminOperableReservation\(reservation\.referenceType\)/);
 });
+
+test("Inventario y compras: la recepciÃ³n, expiraciÃ³n y traslado conservan sus contratos de seguridad", () => {
+  const roles = read("src/lib/roles.ts");
+  const transferRoute = read("src/app/api/admin/inventario/transferencias/route.ts");
+  const cronRoute = read("src/app/api/internal/cron/pedidos-expirados/route.ts");
+  const receptionRoute = read("src/app/api/admin/compras/recepciones/route.ts");
+  assert.match(roles, /ALMACEN:[^\n]*purchases\.receive/);
+  assert.match(transferRoute, /resolvedTransferId = existing\.id/);
+  assert.match(transferRoute, /status: idempotent \? 200 : 201/);
+  assert.match(transferRoute, /requestedBy: actor\.userId/);
+  assert.match(cronRoute, /expireInventoryReservations/);
+  assert.match(cronRoute, /cronSecret/);
+  assert.match(receptionRoute, /Idempotency-Key/);
+});

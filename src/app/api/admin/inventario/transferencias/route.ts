@@ -25,15 +25,21 @@ export async function POST(request: Request) {
   try {
     const db = getDb();
     const transferId = `transfer-${crypto.randomUUID()}`;
+    let resolvedTransferId = transferId;
+    let idempotent = false;
     await db.transaction(async (tx) => {
       if (idempotencyKey) {
         const [existing] = await tx.select({ id: transfers.id }).from(transfers).where(eq(transfers.idempotencyKey, idempotencyKey)).limit(1);
-        if (existing) return;
+        if (existing) {
+          resolvedTransferId = existing.id;
+          idempotent = true;
+          return;
+        }
       }
       const [source] = await tx.select({ id: locations.id }).from(locations).where(and(eq(locations.id, input.sourceLocationId as string), eq(locations.active, true))).limit(1);
       const [destination] = await tx.select({ id: locations.id }).from(locations).where(and(eq(locations.id, input.destinationLocationId as string), eq(locations.active, true))).limit(1);
       if (!source || !destination) throw new Error("Origen o destino no encontrado.");
-      await tx.insert(transfers).values({ id: transferId, sourceLocationId: source.id, destinationLocationId: destination.id, status: "DRAFT", requestedBy: null, approvedBy: null, notes: typeof input.notes === "string" ? input.notes.slice(0, 500) : null, idempotencyKey });
+      await tx.insert(transfers).values({ id: transferId, sourceLocationId: source.id, destinationLocationId: destination.id, status: "DRAFT", requestedBy: actor.userId, approvedBy: null, notes: typeof input.notes === "string" ? input.notes.slice(0, 500) : null, idempotencyKey });
       for (const item of items) {
         const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, item.productId)).limit(1);
         if (!product) throw new Error(`Producto no encontrado: ${item.productId}.`);
@@ -45,6 +51,6 @@ export async function POST(request: Request) {
       }
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "inventory.transfer_created", entityType: "transfer", entityId: transferId, before: null, after: { status: "DRAFT", sourceLocationId: source.id, destinationLocationId: destination.id, items: items.map((item) => ({ productId: item.productId, quantity: Number(item.quantity) })) }, metadata: null });
     });
-    return NextResponse.json({ success: true, transferId }, { status: 201 });
+    return NextResponse.json({ success: true, transferId: resolvedTransferId, idempotent }, { status: idempotent ? 200 : 201 });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudo crear el traslado." }, { status: 409 }); }
 }

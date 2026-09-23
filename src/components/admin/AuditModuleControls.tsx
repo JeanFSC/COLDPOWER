@@ -127,7 +127,9 @@ export function SaveFilterButton({ currentQuery, className }: { currentQuery: st
 }
 
 export function SavedFiltersMenu({ savedFilters, className }: { savedFilters: AuditSavedFilter[]; className: string }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -138,6 +140,21 @@ export function SavedFiltersMenu({ savedFilters, className }: { savedFilters: Au
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
+
+  async function removeFilter(filter: AuditSavedFilter) {
+    if (!window.confirm(`Eliminar el filtro guardado "${filter.name}"?`)) return;
+    setBusyId(filter.id);
+    try {
+      const response = await fetch("/api/admin/auditoria/filtros", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: filter.id }),
+      });
+      if (response.ok) router.refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <div className="relative" ref={ref}>
@@ -150,13 +167,17 @@ export function SavedFiltersMenu({ savedFilters, className }: { savedFilters: Au
           <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Filtros guardados</p>
           {savedFilters.length ? (
             savedFilters.map((filter) => (
-              <a
-                key={filter.id}
-                href={`/admin/auditoria?${new URLSearchParams(filter.filters as Record<string, string>).toString()}`}
-                className="block truncate rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-              >
-                {filter.name}
-              </a>
+              <div key={filter.id} className="flex items-center gap-1 rounded-md hover:bg-slate-50">
+                <a
+                  href={`/admin/auditoria?${new URLSearchParams(filter.filters as Record<string, string>).toString()}`}
+                  className="min-w-0 flex-1 truncate px-2 py-1.5 text-xs font-medium text-slate-700"
+                >
+                  {filter.name}
+                </a>
+                <button type="button" onClick={() => void removeFilter(filter)} disabled={busyId === filter.id} className="mr-1 rounded px-1.5 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50" aria-label={`Eliminar filtro ${filter.name}`}>
+                  Eliminar
+                </button>
+              </div>
             ))
           ) : (
             <p className="px-2 py-2 text-[11px] text-slate-400">Aún no guardaste ningún filtro.</p>

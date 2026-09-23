@@ -6,9 +6,9 @@ const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
 assert.equal(existsSync(join(root, "src/app/api/cuenta/perfil/route.ts")), true);
-assert.equal(existsSync(join(root, "src/components/account/ProfileForm.tsx")), true);
+assert.equal(existsSync(join(root, "src/components/account/AccountProfileEditor.tsx")), true);
 const route = read("src/app/api/cuenta/perfil/route.ts");
-const form = read("src/components/account/ProfileForm.tsx");
+const form = read("src/components/account/AccountProfileEditor.tsx");
 const account = read("src/app/cuenta/page.tsx");
 
 assert.match(route, /requireApiUser/);
@@ -17,7 +17,8 @@ assert.match(route, /PATCH/);
 assert.match(route, /users/);
 assert.match(form, /fetch\("\/api\/cuenta\/perfil"/);
 assert.match(form, /name|phone/);
-assert.match(account, /ProfileForm/);
-assert.match(account, /key=\{section\.href \+ section\.title\}/);
+assert.match(form, /Guardar cambios|Editar informaci/);
+assert.match(account, /AccountProfileEditor/);
+assert.match(account, /\/cuenta\/(cotizaciones|pedidos|carrito)/);
 
 console.log("Phase 30 profile editing contract: PASS");

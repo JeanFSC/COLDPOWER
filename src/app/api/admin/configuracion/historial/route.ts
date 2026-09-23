@@ -5,5 +5,32 @@ import { companySettingsHistory } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 
-function positive(value: string | null, fallback: number) { const parsed = Number(value); return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 100) : fallback; }
-export async function GET(request: Request) { try { await requireApiPermission("company.settings.manage"); const params = new URL(request.url).searchParams; const page = positive(params.get("page"), 1); const pageSize = positive(params.get("pageSize"), 25); const conditions = [eq(companySettingsHistory.settingsId, "default")]; if (params.get("actor")) conditions.push(eq(companySettingsHistory.actorId, params.get("actor")!)); const from = params.get("date"); if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) { const start = new Date(`${from}T00:00:00-05:00`); conditions.push(gte(companySettingsHistory.createdAt, start), lt(companySettingsHistory.createdAt, new Date(start.getTime() + 86_400_000))); } const [items, totals] = await Promise.all([getDb().select().from(companySettingsHistory).where(and(...conditions)).orderBy(desc(companySettingsHistory.createdAt)).limit(pageSize).offset((page - 1) * pageSize), getDb().select({ value: count() }).from(companySettingsHistory).where(and(...conditions))]); const totalItems = Number(totals[0]?.value ?? 0); return NextResponse.json({ items, page, pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)) }); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para ver el historial.", 403); return apiError("COMPANY_SETTINGS_HISTORY_UNAVAILABLE", "No se pudo cargar el historial.", 503); } }
+function positive(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 100) : fallback;
+}
+
+export async function GET(request: Request) {
+  try {
+    await requireApiPermission("settings.business.edit");
+    const params = new URL(request.url).searchParams;
+    const page = positive(params.get("page"), 1);
+    const pageSize = positive(params.get("pageSize"), 25);
+    const conditions = [eq(companySettingsHistory.settingsId, "default")];
+    if (params.get("actor")) conditions.push(eq(companySettingsHistory.actorId, params.get("actor")!));
+    const from = params.get("date");
+    if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) {
+      const start = new Date(`${from}T00:00:00-05:00`);
+      conditions.push(gte(companySettingsHistory.createdAt, start), lt(companySettingsHistory.createdAt, new Date(start.getTime() + 86_400_000)));
+    }
+    const [items, totals] = await Promise.all([
+      getDb().select().from(companySettingsHistory).where(and(...conditions)).orderBy(desc(companySettingsHistory.createdAt)).limit(pageSize).offset((page - 1) * pageSize),
+      getDb().select({ value: count() }).from(companySettingsHistory).where(and(...conditions)),
+    ]);
+    const totalItems = Number(totals[0]?.value ?? 0);
+    return NextResponse.json({ items, page, pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)) });
+  } catch (error) {
+    if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para ver el historial.", 403);
+    return apiError("COMPANY_SETTINGS_HISTORY_UNAVAILABLE", "No se pudo cargar el historial.", 503);
+  }
+}

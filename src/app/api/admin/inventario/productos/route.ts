@@ -7,7 +7,11 @@ export async function GET(request: Request) {
     await requireApiPermission("inventory.view");
     const params = new URL(request.url).searchParams;
     return apiSuccess({
-      products: await getInventoryProductOptions(params.get("query") ?? "", params.get("locationId") ?? undefined),
+      products: await getInventoryProductOptions(
+        params.get("query") ?? "",
+        params.get("locationId") ?? undefined,
+        params.get("productId") ?? undefined,
+      ),
     });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("INVENTORY_FORBIDDEN", "No tienes permiso para ver el inventario.", 403);

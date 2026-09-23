@@ -44,8 +44,8 @@ test("CP-061 edit drawer and public footer keep real routes and honest states", 
   assert.match(footer, /Mi cuenta/);
   assert.match(footer, /cuenta\/cotizaciones/);
   assert.match(footer, /cuenta\/pedidos/);
-  assert.match(footer, /cuenta\/carrito/);
+  assert.match(footer, /href="\/carrito"/);
   assert.match(footer, /cuenta\/pagos/);
   assert.match(footer, /Síguenos/);
-  assert.doesNotMatch(footer, /paymentLabels|paymentMethods/);
+  assert.match(footer, /paymentMethodLabels|settings\.paymentMethods/);
 });

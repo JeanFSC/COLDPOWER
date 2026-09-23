@@ -10,12 +10,16 @@ export function PurchaseRequestActions({
   locationId,
   items = [],
   suppliers = [],
+  canApprove = false,
+  canManage = false,
 }: {
   requestId: string;
   status: string;
   locationId?: string | null;
   items?: Array<{ productId: string; quantityRequested: number }>;
   suppliers?: Array<{ id: string; name: string; currency: string; status: string }>;
+  canApprove?: boolean;
+  canManage?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -92,19 +96,19 @@ export function PurchaseRequestActions({
     }
   }
 
-  if (status === "DRAFT") {
+  if (status === "DRAFT" && canManage) {
     return (
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           disabled={busy}
           onClick={() => void transition("SUBMITTED")}
-          className="rounded-full bg-[#2277ee] px-3 py-2 text-[10px] font-extrabold text-white disabled:opacity-50"
+          className="min-h-8 rounded-full bg-blue-600 px-3 py-2 text-[11px] font-extrabold text-white disabled:opacity-50"
         >
           Enviar a aprobación
         </button>
         {message ? (
-          <span role="alert" className="text-[10px] font-semibold text-[#d94848]">
+          <span role="alert" className="text-[11px] font-semibold text-rose-600">
             {message}
           </span>
         ) : null}
@@ -112,21 +116,21 @@ export function PurchaseRequestActions({
     );
   }
 
-  if (status === "SUBMITTED") {
+  if (status === "SUBMITTED" && canApprove) {
     return (
       <div className="space-y-2">
         <input
           value={reason}
           onChange={(event) => setReason(event.currentTarget.value)}
           placeholder="Motivo si rechazas (obligatorio para rechazar)"
-          className="h-9 w-full rounded-lg border border-[#dce6ee] px-3 text-[11px]"
+          className="h-9 w-full rounded-lg border border-slate-200 px-3 text-[11px]"
         />
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => void transition("APPROVED")}
-            className="rounded-full bg-[#159263] px-3 py-2 text-[10px] font-extrabold text-white disabled:opacity-50"
+            className="min-h-8 rounded-full bg-emerald-600 px-3 py-2 text-[11px] font-extrabold text-white disabled:opacity-50"
           >
             Aprobar
           </button>
@@ -134,12 +138,12 @@ export function PurchaseRequestActions({
             type="button"
             disabled={busy || !reason.trim()}
             onClick={() => void transition("REJECTED")}
-            className="rounded-full border border-[#f1c5c5] px-3 py-2 text-[10px] font-extrabold text-[#c43333] disabled:opacity-50"
+            className="min-h-8 rounded-full border border-rose-200 px-3 py-2 text-[11px] font-extrabold text-rose-600 disabled:opacity-50"
           >
             Rechazar
           </button>
           {message ? (
-            <span role="alert" className="text-[10px] font-semibold text-[#d94848]">
+            <span role="alert" className="text-[11px] font-semibold text-rose-600">
               {message}
             </span>
           ) : null}
@@ -148,15 +152,15 @@ export function PurchaseRequestActions({
     );
   }
 
-  if (status === "APPROVED") {
+  if (status === "APPROVED" && canManage) {
     return (
       <div className="space-y-2">
-        <p className="text-[10px] font-semibold text-[#15784e]">Aprobada · lista para convertir</p>
+        <p className="text-[11px] font-semibold text-emerald-700">Aprobada · lista para convertir</p>
         <div className="grid gap-2 sm:grid-cols-2">
           <select
             value={supplierId}
             onChange={(event) => setSupplierId(event.currentTarget.value)}
-            className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
+            className="h-9 rounded-lg border border-slate-200 px-2 text-[11px]"
             aria-label="Proveedor para convertir solicitud"
           >
             <option value="">Proveedor activo</option>
@@ -170,7 +174,7 @@ export function PurchaseRequestActions({
           </select>
           <div className="grid gap-2 sm:col-span-2">
             {items.map((item) => (
-              <label key={item.productId} className="grid gap-1 text-[10px] font-semibold text-slate-600">
+              <label key={item.productId} className="grid gap-1 text-[11px] font-semibold text-slate-600">
                 <span>{item.productId} · {item.quantityRequested} unidades</span>
                 <input
                   value={unitCosts[item.productId] ?? ""}
@@ -180,7 +184,7 @@ export function PurchaseRequestActions({
                   step="0.01"
                   placeholder="Costo unitario"
                   aria-label={`Costo unitario para ${item.productId}`}
-                  className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px]"
+                  className="h-9 rounded-lg border border-slate-200 px-3 text-[11px]"
                 />
               </label>
             ))}
@@ -190,19 +194,19 @@ export function PurchaseRequestActions({
             onChange={(event) => setExpectedDeliveryAt(event.currentTarget.value)}
             type="datetime-local"
             aria-label="Entrega esperada de la orden"
-            className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px] sm:col-span-2"
+            className="h-9 rounded-lg border border-slate-200 px-3 text-[11px] sm:col-span-2"
           />
         </div>
         <button
           type="button"
           disabled={busy || !supplierId || !items.length || items.some((item) => !unitCosts[item.productId]?.trim())}
           onClick={() => void convert()}
-          className="rounded-full bg-[#159263] px-3 py-2 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-8 rounded-full bg-emerald-600 px-3 py-2 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           Convertir en OC
         </button>
         {message ? (
-          <span role="status" className="block text-[10px] font-semibold text-[#526b84]">
+          <span role="status" className="block text-[11px] font-semibold text-slate-500">
             {message}
           </span>
         ) : null}
@@ -210,5 +214,5 @@ export function PurchaseRequestActions({
     );
   }
 
-  return <span className="text-[10px] font-semibold text-[#8195aa]">Sin acciones disponibles</span>;
+  return <span className="text-[11px] font-semibold text-slate-400">Sin acciones disponibles</span>;
 }

@@ -22,11 +22,12 @@ import {
   inventoryMovements,
   inventoryReservations,
   locations,
+  mediaAssetUsages,
+  mediaAssets,
   products,
   transfers,
   users,
 } from "@/db/schema";
-import { getPublishedMediaForEntities } from "@/lib/media-repository";
 import { deriveInventoryStatus } from "@/lib/inventory-domain";
 import {
   inventoryMovementLabels,
@@ -39,6 +40,7 @@ import {
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
+const operationPageSize = 10;
 const alertWindowMs = 48 * 60 * 60 * 1000;
 
 function effectiveCategoryJoin() {
@@ -138,6 +140,7 @@ function statusCondition(status: InventoryAdminStatus | undefined) {
 
 function inventoryConditions(filters: InventoryAdminFilters, includeStatus = true) {
   const conditions: SQL[] = [eq(locations.active, true), ...productConditions(filters)];
+  if (filters.productId) conditions.push(eq(inventoryBalances.productId, filters.productId));
   if (filters.locationId) conditions.push(eq(inventoryBalances.locationId, filters.locationId));
   if (filters.hasReservations !== undefined)
     conditions.push(
@@ -164,6 +167,10 @@ function inventoryConditions(filters: InventoryAdminFilters, includeStatus = tru
   if (includeStatus) {
     const status = statusCondition(filters.status);
     if (status) conditions.push(status);
+    if (filters.critical)
+      conditions.push(
+        sql<boolean>`${inventoryBalances.minimumStock} is not null and ${availableExpression()} > 0 and ${availableExpression()} <= ${inventoryBalances.minimumStock}`,
+      );
   }
   return conditions;
 }
@@ -185,42 +192,25 @@ function movementReference(referenceType: string | null, referenceId: string | n
         ? "Traslado"
         : referenceType === "reservation" || referenceType === "reservation_expiry"
           ? "Reserva"
-          : referenceType === "purchase"
+          : referenceType === "purchase" || referenceType === "purchase_receipt"
             ? "Compra"
             : null;
   return label ? `${label} ${referenceId}` : referenceId;
 }
 
-const lastMovementAt = sql<Date | null>`(
-  select im.created_at
-  from inventory_movements im
-  where im.product_id = ${inventoryBalances.productId}
-    and im.location_id = ${inventoryBalances.locationId}
-  order by im.created_at desc, im.id desc
-  limit 1
-)`;
-
-const lastMovementType = sql<string | null>`(
-  select im.type
-  from inventory_movements im
-  where im.product_id = ${inventoryBalances.productId}
-    and im.location_id = ${inventoryBalances.locationId}
-  order by im.created_at desc, im.id desc
-  limit 1
-)`;
-
-const lastMovementQuantity = sql<number | null>`(
-  select case
-    when im.resulting_on_hand > im.previous_on_hand then im.quantity
-    when im.resulting_on_hand < im.previous_on_hand then -im.quantity
-    else im.resulting_reserved - im.previous_reserved
-  end
-  from inventory_movements im
-  where im.product_id = ${inventoryBalances.productId}
-    and im.location_id = ${inventoryBalances.locationId}
-  order by im.created_at desc, im.id desc
-  limit 1
-)`;
+function movementReferenceHref(referenceType: string | null, referenceId: string | null) {
+  if (!referenceId) return null;
+  const id = encodeURIComponent(referenceId);
+  if (referenceType === "order") return `/admin/pedidos?orderId=${id}`;
+  if (referenceType === "sale") return `/admin/ventas?saleId=${id}`;
+  if (referenceType === "transfer" || referenceType === "transfer_cancel")
+    return `/admin/inventario?tab=transfers&transferId=${id}`;
+  if (referenceType === "reservation" || referenceType === "reservation_expiry")
+    return `/admin/inventario?tab=reservations&reservationId=${id}`;
+  if (referenceType === "purchase" || referenceType === "purchase_receipt")
+    return `/admin/compras?purchaseId=${id}`;
+  return null;
+}
 
 function itemSelect() {
   return {
@@ -239,9 +229,6 @@ function itemSelect() {
     reserved: inventoryBalances.reserved,
     minimumStock: inventoryBalances.minimumStock,
     updatedAt: inventoryBalances.updatedAt,
-    lastMovementAt,
-    lastMovementType,
-    lastMovementQuantity,
   };
 }
 
@@ -279,6 +266,14 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
   );
   const countWhere = and(...inventoryConditions(filters));
   const summaryWhere = and(...inventoryConditions({ ...filters, status: undefined }));
+  const transferConditions: SQL[] = [];
+  if (filters.transferId) transferConditions.push(eq(transfers.id, filters.transferId));
+  if (filters.transferStatus) transferConditions.push(eq(transfers.status, filters.transferStatus));
+  const reservationConditions: SQL[] = [];
+  if (filters.reservationId)
+    reservationConditions.push(eq(inventoryReservations.id, filters.reservationId));
+  if (filters.reservationStatus)
+    reservationConditions.push(eq(inventoryReservations.status, filters.reservationStatus));
   const [
     totalRows,
     summaryRows,
@@ -289,8 +284,8 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
     expiringRows,
     pendingTransferRows,
     movementRows,
-    transferRows,
-    reservationRows,
+    transferCountRows,
+    reservationCountRows,
     minimumRows,
     importRows,
     activeReservationsRow,
@@ -413,6 +408,7 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
     db
       .select({
         id: inventoryMovements.id,
+        productId: inventoryMovements.productId,
         type: inventoryMovements.type,
         quantity: inventoryMovements.quantity,
         previousOnHand: inventoryMovements.previousOnHand,
@@ -437,47 +433,13 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
       .orderBy(desc(inventoryMovements.createdAt), desc(inventoryMovements.id))
       .limit(8),
     db
-      .select({
-        id: transfers.id,
-        status: transfers.status,
-        sourceCode: sql<string>`(select l.code from locations l where l.id = ${transfers.sourceLocationId})`,
-        sourceName: sql<string>`(select l.name from locations l where l.id = ${transfers.sourceLocationId})`,
-        destinationCode: sql<string>`(select l.code from locations l where l.id = ${transfers.destinationLocationId})`,
-        destinationName: sql<string>`(select l.name from locations l where l.id = ${transfers.destinationLocationId})`,
-        requestedByName: sql<
-          string | null
-        >`(select coalesce(u.name, u.email) from users u where u.id = ${transfers.requestedBy})`,
-        itemCount: sql<string>`(select count(*) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
-        units: sql<string>`(select coalesce(sum(ti.quantity), 0) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
-        notes: transfers.notes,
-        updatedAt: transfers.updatedAt,
-      })
+      .select({ total: count(transfers.id) })
       .from(transfers)
-      .orderBy(desc(transfers.updatedAt), desc(transfers.id))
-      .limit(8),
+      .where(transferConditions.length ? and(...transferConditions) : undefined),
     db
-      .select({
-        id: inventoryReservations.id,
-        sku: products.sku,
-        productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`,
-        locationCode: locations.code,
-        locationName: locations.name,
-        quantity: inventoryReservations.quantity,
-        status: inventoryReservations.status,
-        referenceType: inventoryReservations.referenceType,
-        referenceId: inventoryReservations.referenceId,
-        reason: inventoryReservations.reason,
-        expiresAt: inventoryReservations.expiresAt,
-        createdByName: sql<
-          string | null
-        >`(select coalesce(u.name, u.email) from users u where u.id = ${inventoryReservations.createdBy})`,
-        createdAt: inventoryReservations.createdAt,
-      })
+      .select({ total: count(inventoryReservations.id) })
       .from(inventoryReservations)
-      .innerJoin(products, eq(inventoryReservations.productId, products.id))
-      .innerJoin(locations, eq(inventoryReservations.locationId, locations.id))
-      .orderBy(desc(inventoryReservations.createdAt), desc(inventoryReservations.id))
-      .limit(8),
+      .where(reservationConditions.length ? and(...reservationConditions) : undefined),
     db
       .select({
         id: inventoryBalances.id,
@@ -524,23 +486,116 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
   const totalItems = toNumber(totalRows[0]?.total);
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const page = Math.min(requestedPage, totalPages);
+  const totalTransferItems = toNumber(transferCountRows[0]?.total);
+  const transferTotalPages = Math.max(1, Math.ceil(totalTransferItems / operationPageSize));
+  const transferPage = Math.min(Math.max(1, Math.floor(filters.transferPage ?? 1)), transferTotalPages);
+  const totalReservationItems = toNumber(reservationCountRows[0]?.total);
+  const reservationTotalPages = Math.max(1, Math.ceil(totalReservationItems / operationPageSize));
+  const reservationPage = Math.min(
+    Math.max(1, Math.floor(filters.reservationPage ?? 1)),
+    reservationTotalPages,
+  );
+  const [transferRows, reservationRows] = await Promise.all([
+    db
+      .select({
+        id: transfers.id,
+        status: transfers.status,
+        sourceCode: sql<string>`(select l.code from locations l where l.id = ${transfers.sourceLocationId})`,
+        sourceName: sql<string>`(select l.name from locations l where l.id = ${transfers.sourceLocationId})`,
+        destinationCode: sql<string>`(select l.code from locations l where l.id = ${transfers.destinationLocationId})`,
+        destinationName: sql<string>`(select l.name from locations l where l.id = ${transfers.destinationLocationId})`,
+        requestedByName: sql<string | null>`(select coalesce(u.name, u.email) from users u where u.id = ${transfers.requestedBy})`,
+        itemCount: sql<string>`(select count(*) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
+        units: sql<string>`(select coalesce(sum(ti.quantity), 0) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
+        notes: transfers.notes,
+        updatedAt: transfers.updatedAt,
+      })
+      .from(transfers)
+      .where(transferConditions.length ? and(...transferConditions) : undefined)
+      .orderBy(desc(transfers.updatedAt), desc(transfers.id))
+      .limit(operationPageSize)
+      .offset((transferPage - 1) * operationPageSize),
+    db
+      .select({
+        id: inventoryReservations.id,
+        productId: inventoryReservations.productId,
+        sku: products.sku,
+        productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`,
+        locationCode: locations.code,
+        locationName: locations.name,
+        quantity: inventoryReservations.quantity,
+        status: inventoryReservations.status,
+        referenceType: inventoryReservations.referenceType,
+        referenceId: inventoryReservations.referenceId,
+        reason: inventoryReservations.reason,
+        expiresAt: inventoryReservations.expiresAt,
+        createdByName: sql<string | null>`(select coalesce(u.name, u.email) from users u where u.id = ${inventoryReservations.createdBy})`,
+        createdAt: inventoryReservations.createdAt,
+      })
+      .from(inventoryReservations)
+      .innerJoin(products, eq(inventoryReservations.productId, products.id))
+      .innerJoin(locations, eq(inventoryReservations.locationId, locations.id))
+      .where(reservationConditions.length ? and(...reservationConditions) : undefined)
+      .orderBy(desc(inventoryReservations.createdAt), desc(inventoryReservations.id))
+      .limit(operationPageSize)
+      .offset((reservationPage - 1) * operationPageSize),
+  ]);
+  const latestMovement = db
+    .select({
+      createdAt: inventoryMovements.createdAt,
+      type: inventoryMovements.type,
+      quantity: sql<number | null>`case
+        when ${inventoryMovements.resultingOnHand} > ${inventoryMovements.previousOnHand} then ${inventoryMovements.quantity}
+        when ${inventoryMovements.resultingOnHand} < ${inventoryMovements.previousOnHand} then -${inventoryMovements.quantity}
+        else ${inventoryMovements.resultingReserved} - ${inventoryMovements.previousReserved}
+      end`.as("quantity"),
+    })
+    .from(inventoryMovements)
+    .where(
+      and(
+        eq(inventoryMovements.productId, inventoryBalances.productId),
+        eq(inventoryMovements.locationId, inventoryBalances.locationId),
+      ),
+    )
+    .orderBy(desc(inventoryMovements.createdAt), desc(inventoryMovements.id))
+    .limit(1)
+    .as("latest_inventory_movement");
+  const primaryMedia = db
+    .select({ assetId: mediaAssets.id })
+    .from(mediaAssetUsages)
+    .innerJoin(mediaAssets, eq(mediaAssetUsages.assetId, mediaAssets.id))
+    .where(
+      and(
+        eq(mediaAssetUsages.entityType, "product"),
+        eq(mediaAssetUsages.entityId, inventoryBalances.productId),
+        eq(mediaAssets.status, "ACTIVE"),
+        isNull(mediaAssets.deletedAt),
+      ),
+    )
+    .orderBy(asc(mediaAssetUsages.sortOrder), asc(mediaAssets.createdAt))
+    .limit(1)
+    .as("primary_product_media");
   const rawItems = await db
-    .select(itemSelect())
+    .select({
+      ...itemSelect(),
+      mediaAssetId: primaryMedia.assetId,
+      lastMovementAt: latestMovement.createdAt,
+      lastMovementType: latestMovement.type,
+      lastMovementQuantity: latestMovement.quantity,
+    })
     .from(inventoryBalances)
     .innerJoin(products, eq(inventoryBalances.productId, products.id))
     .innerJoin(locations, eq(inventoryBalances.locationId, locations.id))
     .innerJoin(categories, effectiveCategoryJoin())
     .innerJoin(families, effectiveFamilyJoin())
     .leftJoin(brands, effectiveBrandJoin())
+    .leftJoinLateral(latestMovement, sql`true`)
+    .leftJoinLateral(primaryMedia, sql`true`)
     .where(countWhere)
     .orderBy(desc(inventoryBalances.updatedAt), asc(products.sku), asc(locations.code))
     .limit(pageSize)
     .offset((page - 1) * pageSize);
-  const media = await getPublishedMediaForEntities(
-    "product",
-    rawItems.map((item) => item.productId),
-  );
-  const items = rawItems.map((item) => {
+  const items = rawItems.map(({ mediaAssetId, ...item }) => {
     const onHand = Number(item.onHand);
     const reserved = Number(item.reserved);
     const minimumStock = item.minimumStock === null ? null : Number(item.minimumStock);
@@ -551,7 +606,7 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
       available: onHand - reserved,
       minimumStock,
       status: deriveInventoryStatus({ onHand, reserved, minimumStock }),
-      mediaUrl: media.get(item.productId)?.[0] ?? null,
+      mediaUrl: mediaAssetId ? `/api/media/${mediaAssetId}` : null,
       updatedAt: toDate(item.updatedAt)?.toISOString() ?? null,
       lastMovementAt: toDate(item.lastMovementAt)?.toISOString() ?? null,
       lastMovementType: item.lastMovementType,
@@ -630,6 +685,7 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
         exit: row.resultingOnHand < row.previousOnHand ? row.quantity : 0,
         reservedDelta: row.resultingReserved - row.previousReserved,
         referenceLabel: movementReference(row.referenceType, row.referenceId),
+        referenceHref: movementReferenceHref(row.referenceType, row.referenceId),
         createdAt: toDate(row.createdAt)?.toISOString() ?? null,
       })),
       transfers: transferRows.map((row) => ({
@@ -643,6 +699,18 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
         expiresAt: toDate(row.expiresAt)?.toISOString() ?? null,
         createdAt: toDate(row.createdAt)?.toISOString() ?? null,
       })),
+      transfersPagination: {
+        page: transferPage,
+        pageSize: operationPageSize,
+        totalItems: totalTransferItems,
+        totalPages: transferTotalPages,
+      },
+      reservationsPagination: {
+        page: reservationPage,
+        pageSize: operationPageSize,
+        totalItems: totalReservationItems,
+        totalPages: reservationTotalPages,
+      },
       minimums: minimumRows.map((row) => {
         const onHand = Number(row.onHand);
         const reserved = Number(row.reserved);
@@ -758,18 +826,57 @@ export async function getInventoryKardexPage(filters: InventoryKardexFilters) {
     reservedDelta: row.resultingReserved - row.previousReserved,
     availableAfter: row.resultingOnHand - row.resultingReserved,
     referenceLabel: movementReference(row.referenceType, row.referenceId),
+    referenceHref: movementReferenceHref(row.referenceType, row.referenceId),
   }));
   return { items, page, pageSize, totalItems, totalPages };
 }
 
 export async function getInventoryKardexExport(filters: InventoryKardexFilters) {
-  const firstPage = await getInventoryKardexPage({ ...filters, page: 1, pageSize: maxPageSize });
-  const items = [...firstPage.items];
-  for (let page = 2; page <= firstPage.totalPages; page += 1) {
-    const nextPage = await getInventoryKardexPage({ ...filters, page, pageSize: maxPageSize });
-    items.push(...nextPage.items);
-  }
-  return items;
+  const db = getDb();
+  const conditions: SQL[] = [
+    eq(inventoryMovements.productId, filters.productId),
+    eq(inventoryMovements.locationId, filters.locationId),
+  ];
+  if (filters.type) conditions.push(eq(inventoryMovements.type, filters.type));
+  if (filters.dateFrom)
+    conditions.push(
+      sql`${inventoryMovements.createdAt} >= ${new Date(`${filters.dateFrom}T00:00:00-05:00`)}`,
+    );
+  if (filters.dateTo)
+    conditions.push(
+      sql`${inventoryMovements.createdAt} < ${new Date(new Date(`${filters.dateTo}T00:00:00-05:00`).getTime() + 86_400_000)}`,
+    );
+  const rows = await db
+    .select({
+      id: inventoryMovements.id,
+      productId: inventoryMovements.productId,
+      type: inventoryMovements.type,
+      quantity: inventoryMovements.quantity,
+      previousOnHand: inventoryMovements.previousOnHand,
+      resultingOnHand: inventoryMovements.resultingOnHand,
+      previousReserved: inventoryMovements.previousReserved,
+      resultingReserved: inventoryMovements.resultingReserved,
+      referenceType: inventoryMovements.referenceType,
+      referenceId: inventoryMovements.referenceId,
+      reason: inventoryMovements.reason,
+      notes: inventoryMovements.notes,
+      createdAt: inventoryMovements.createdAt,
+      actorName: sql<string | null>`coalesce(${users.name}, ${users.email})`,
+    })
+    .from(inventoryMovements)
+    .leftJoin(users, eq(inventoryMovements.performedBy, users.id))
+    .where(and(...conditions))
+    .orderBy(desc(inventoryMovements.createdAt), desc(inventoryMovements.id));
+  return rows.map((row) => ({
+    ...row,
+    label: inventoryMovementLabels[row.type],
+    entry: row.resultingOnHand > row.previousOnHand ? row.quantity : 0,
+    exit: row.resultingOnHand < row.previousOnHand ? row.quantity : 0,
+    reservedDelta: row.resultingReserved - row.previousReserved,
+    availableAfter: row.resultingOnHand - row.resultingReserved,
+    referenceLabel: movementReference(row.referenceType, row.referenceId),
+    referenceHref: movementReferenceHref(row.referenceType, row.referenceId),
+  }));
 }
 
 export async function getInventoryMovementsPage(filters: InventoryMovementsFilters = {}) {
@@ -844,6 +951,7 @@ export async function getInventoryMovementsPage(filters: InventoryMovementsFilte
       availableBefore: Number(row.previousOnHand) - Number(row.previousReserved),
       availableAfter: Number(row.resultingOnHand) - Number(row.resultingReserved),
       referenceLabel: movementReference(row.referenceType, row.referenceId),
+      referenceHref: movementReferenceHref(row.referenceType, row.referenceId),
       createdAt: toDate(row.createdAt)?.toISOString() ?? null,
     })),
     page,
@@ -853,10 +961,15 @@ export async function getInventoryMovementsPage(filters: InventoryMovementsFilte
   };
 }
 
-export async function getInventoryProductOptions(query = "", locationId?: string) {
+export async function getInventoryProductOptions(
+  query = "",
+  locationId?: string,
+  productId?: string,
+) {
   const db = getDb();
   const pattern = query.trim() ? `%${query.trim()}%` : null;
   const conditions: SQL[] = [];
+  if (productId) conditions.push(eq(products.id, productId));
   if (pattern)
     conditions.push(
       or(

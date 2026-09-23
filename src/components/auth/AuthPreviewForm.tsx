@@ -112,7 +112,7 @@ export function AuthPreviewForm({ mode }: AuthPreviewFormProps) {
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
-        <button type="submit" className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-extrabold text-white shadow-sm transition hover:bg-primary/90">
+        <button type="submit" className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-extrabold text-brand-primary-900 shadow-sm transition hover:bg-primary-hover">
           <LockKeyhole className="h-4 w-4" aria-hidden="true" />
           Iniciar sesión
         </button>
@@ -154,7 +154,7 @@ export function AuthPreviewForm({ mode }: AuthPreviewFormProps) {
           Acepto los <Link href="/contacto" className="font-extrabold text-brand-secondary-600 hover:underline">Términos y condiciones</Link> y la <Link href="/contacto" className="font-extrabold text-brand-secondary-600 hover:underline">Política de privacidad</Link>.
         </span>
       </label>
-      <button type="submit" className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-extrabold text-white shadow-sm transition hover:bg-primary/90">
+      <button type="submit" className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-extrabold text-brand-primary-900 shadow-sm transition hover:bg-primary-hover">
         <UserRound className="h-4 w-4" aria-hidden="true" />
         Crear cuenta
       </button>

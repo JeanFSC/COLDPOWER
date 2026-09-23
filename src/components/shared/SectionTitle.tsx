@@ -27,7 +27,7 @@ export function SectionTitle({
       )}
     >
       {eyebrow ? (
-        <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-primary">
+        <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-brand-secondary-600">
           {eyebrow}
         </p>
       ) : null}

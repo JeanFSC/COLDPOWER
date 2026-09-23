@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { AdminReportsStitch } from "@/components/admin/AdminReportsStitch";
 import { requirePermission } from "@/lib/auth";
-import { type DashboardFilters, type DashboardRange } from "@/lib/operations-dashboard";
+import { can } from "@/lib/roles";
+import { type DashboardFilters } from "@/lib/operations-dashboard";
 import { getReportSnapshot, listReportOptions, listReportSchedules } from "@/lib/reporting-service";
-import { dashboardFiltersToQuery } from "@/lib/dashboard-contract";
+import { dashboardFiltersToQuery, DashboardInvalidFilterError } from "@/lib/dashboard-contract";
+import { parseReportsFilters } from "@/lib/reports-contract";
 
 export const metadata: Metadata = {
   title: "Reportes | Panel admin ColdPower",
@@ -11,21 +13,6 @@ export const metadata: Metadata = {
 };
 
 type Params = Record<string, string | string[] | undefined>;
-function value(params: Params, key: string) {
-  const raw = params[key];
-  return Array.isArray(raw) ? raw[0] : raw;
-}
-function range(raw: string | undefined): DashboardRange {
-  return raw === "today" ||
-    raw === "yesterday" ||
-    raw === "week" ||
-    raw === "current_month" ||
-    raw === "previous_month" ||
-    raw === "year" ||
-    raw === "custom"
-    ? raw
-    : "month";
-}
 
 function SelectField({
   name,
@@ -64,21 +51,19 @@ export default async function AdminReportesPage({
 }) {
   const actor = await requirePermission("reports.view");
   const params = (await searchParams) ?? {};
-  const filters: DashboardFilters = {
-    range: range(value(params, "range")),
-    from: value(params, "from"),
-    to: value(params, "to"),
-    locationId: value(params, "locationId"),
-    sellerId: value(params, "sellerId"),
-    customerId: value(params, "customerId"),
-    productId: value(params, "productId"),
-    categoryId: value(params, "categoryId"),
-    familyId: value(params, "familyId"),
-    brandId: value(params, "brandId"),
-    channel: value(params, "channel"),
-    orderStatus: value(params, "orderStatus"),
-    currency: value(params, "currency"),
-  };
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") query.set(key, value);
+    else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
+  }
+  let filters: DashboardFilters = { range: "month" };
+  let filterError = false;
+  try {
+    filters = parseReportsFilters(query);
+  } catch (error) {
+    filterError = error instanceof DashboardInvalidFilterError;
+    if (!filterError) throw error;
+  }
   type ReportSnapshot = Awaited<ReturnType<typeof getReportSnapshot>>;
   type ReportOptions = Awaited<ReturnType<typeof listReportOptions>>;
   let data: ReportSnapshot | null = null;
@@ -91,9 +76,10 @@ export default async function AdminReportesPage({
     families: [],
     brands: [],
   };
-  let reportError = false;
+  let reportError = filterError;
   let schedules: Awaited<ReturnType<typeof listReportSchedules>> = [];
   try {
+    if (filterError) throw new Error("REPORTS_INVALID_FILTER");
     [data, options, schedules] = await Promise.all([
       getReportSnapshot(filters, actor),
       listReportOptions(),
@@ -282,8 +268,10 @@ export default async function AdminReportesPage({
     <AdminReportsStitch
       exportHref={`/api/admin/reportes/export?${dashboardFiltersToQuery(filters).toString()}`}
       error={
-        reportError
-          ? "La fuente de datos no respondió. Intenta nuevamente o revisa el contrato del reporte."
+        filterError
+          ? "El rango o las fechas no son v\u00e1lidos. Revisa que la fecha inicial no sea posterior a la final."
+          : reportError
+          ? "La fuente de datos no respondi\u00f3. Intenta nuevamente o revisa el contrato del reporte."
           : undefined
       }
       metrics={metrics}
@@ -292,6 +280,7 @@ export default async function AdminReportesPage({
       schedules={schedules}
       reportFilters={filters}
       currentUserId={actor.userId}
+      canViewCatalog={can(actor.role, "catalog.product.view")}
     />
   );
 }

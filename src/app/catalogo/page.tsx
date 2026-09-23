@@ -7,12 +7,12 @@ import { EmptyState } from "@/components/catalog/EmptyState";
 import { BrandsDirectory } from "@/components/catalog/BrandsDirectory";
 import { MobileFilterDrawer } from "@/components/catalog/MobileFilterDrawer";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
-import { PublicPageHeader } from "@/components/shared/PublicPageHeader";
+import { CatalogHero } from "@/components/catalog/CatalogHero";
 import type { CatalogFilters as CatalogFiltersType, ProductSort } from "@/lib/catalog";
 import { getCatalogBrands, getCatalogCategories, getCatalogFamilies, getCatalogProducts } from "@/lib/catalog-repository";
 import type { ProductStatus } from "@/types/product";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Catalogo tecnico",
   description: "Explora equipos y repuestos ColdPower por código, marca, familia y especificaciones técnicas.",
@@ -41,13 +41,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   return (
     <section className="bg-surface-page py-8 sm:py-10">
       <div className="cp-container">
-        <div className="border-b border-border pb-7">
-          <PublicPageHeader
-            eyebrow="Inicio / Catalogo"
-            title={mode?.title ?? "Encuentra la referencia correcta"}
-            description={mode?.description ?? "Busca por SKU, nombre, marca, familia o atributo tecnico. La ficha te muestra la informacion disponible para solicitar una cotizacion."}
-          />
-        </div>
+        <CatalogHero
+          eyebrow="Inicio / Catálogo"
+          title={mode?.title ?? "Encuentra la referencia correcta"}
+          description={mode?.description ?? "Busca por SKU, nombre, marca, familia o atributo técnico. La ficha muestra solo la información publicada."}
+        />
         <div className="mt-6 flex items-center justify-between gap-3 lg:hidden">
           <p className="text-sm font-bold text-dark">{catalog.total} referencias encontradas</p>
           <MobileFilterDrawer>
@@ -89,9 +87,7 @@ async function BrandsCatalogView() {
   return (
     <section className="bg-surface-page py-8 sm:py-10">
       <div className="cp-container">
-        <div className="border-b border-border pb-7">
-          <PublicPageHeader eyebrow="Inicio / Marcas" title="Marcas presentes en el catálogo" description="Explora fabricantes con referencias publicadas y filtra el catálogo por marca." />
-        </div>
+        <CatalogHero eyebrow="Inicio / Marcas" title="Marcas presentes en el catálogo" description="Explora fabricantes con referencias publicadas y filtra el catálogo por marca." image="/images/categories/repuestos.webp" />
         <div className="mt-7"><BrandsDirectory brands={brands} /></div>
       </div>
     </section>
@@ -116,6 +112,7 @@ async function loadCatalogPageData(filters: CatalogFiltersType, params: SearchPa
         familySlug: firstFacet(filters.family),
         brandSlug: firstFacet(filters.brand),
         status: firstFacet(filters.status),
+        sort: filters.sort,
         page: numberParam(params.pagina),
         pageSize: 24,
       }),
@@ -131,7 +128,7 @@ async function loadCatalogPageData(filters: CatalogFiltersType, params: SearchPa
 
 function readCatalogFilters(params: SearchParams): CatalogFiltersType {
   return {
-    query: getFirst(params.q) ?? getFirst(params.aplicacion),
+    query: getFirst(params.q),
     category: getFacet(params.categoria),
     family: getFacet(params.familia),
     brand: getFacet(params.marca),
@@ -182,9 +179,7 @@ function RelationCatalogView({ relation }: { relation: keyof typeof relationLabe
   return (
     <section className="bg-surface-page py-8 sm:py-10">
       <div className="cp-container">
-        <div className="border-b border-border pb-7">
-          <PublicPageHeader eyebrow="Inicio / Catálogo" title={relationLabels[relation]} description="Estas relaciones se mostrarán únicamente cuando estén verificadas y publicadas por el equipo técnico." />
-        </div>
+        <CatalogHero eyebrow="Inicio / Catálogo" title={relationLabels[relation]} description="Estas relaciones se mostrarán únicamente cuando estén verificadas y publicadas por el equipo técnico." />
         <div className="mt-7"><EmptyState title="Aún no hay relaciones publicadas" description="Puedes explorar el catálogo general o enviar una solicitud para que un asesor revise la combinación adecuada." /></div>
       </div>
     </section>

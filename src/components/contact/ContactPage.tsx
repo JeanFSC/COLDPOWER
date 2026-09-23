@@ -63,7 +63,7 @@ export function ContactPage({ settings, brands, assets, initialMessage }: Contac
     : "Un asesor confirmará cobertura y opciones de despacho para tu proyecto.";
 
   return (
-    <main className={styles.page} data-contact-page="true">
+    <section className={styles.page} data-contact-page="true">
       <section className={styles.heroSection}>
         <div className={styles.container}>
           <div className={styles.heroGrid}>
@@ -180,7 +180,7 @@ export function ContactPage({ settings, brands, assets, initialMessage }: Contac
           </div>
         </div>
       </section>
-    </main>
+    </section>
   );
 }
 

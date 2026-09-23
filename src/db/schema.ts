@@ -144,6 +144,7 @@ export const quoteDiscountApprovalStatusEnum = pgEnum("quote_discount_approval_s
   "APPROVED",
   "REJECTED",
 ]);
+export const publicComplaintStatusEnum = pgEnum("public_complaint_status", ["RECEIVED", "IN_REVIEW", "RESOLVED", "CLOSED"]);
 export type QuoteStatus = (typeof quoteStatusEnum.enumValues)[number];
 
 export const categories = pgTable(
@@ -1135,6 +1136,32 @@ export const inventoryReservations = pgTable(
     idempotencyUnique: uniqueIndex("inventory_reservations_idempotency_unique").on(
       table.idempotencyKey,
     ),
+  }),
+);
+export const publicComplaints = pgTable(
+  "public_complaints",
+  {
+    id: text("id").primaryKey(),
+    ticketNumber: varchar("ticket_number", { length: 32 }).notNull(),
+    requestId: text("request_id").notNull(),
+    complainantName: text("complainant_name").notNull(),
+    documentType: varchar("document_type", { length: 24 }).notNull(),
+    documentNumber: varchar("document_number", { length: 32 }).notNull(),
+    email: varchar("email", { length: 180 }).notNull(),
+    phone: varchar("phone", { length: 32 }).notNull(),
+    address: text("address").notNull(),
+    complaintType: varchar("complaint_type", { length: 16 }).notNull(),
+    detail: text("detail").notNull(),
+    productReference: text("product_reference"),
+    status: publicComplaintStatusEnum("status").notNull().default("RECEIVED"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    ticketUnique: uniqueIndex("public_complaints_ticket_unique").on(table.ticketNumber),
+    requestUnique: uniqueIndex("public_complaints_request_unique").on(table.requestId),
+    statusIndex: index("public_complaints_status_idx").on(table.status),
+    createdAtIndex: index("public_complaints_created_at_idx").on(table.createdAt),
   }),
 );
 export const auditLogs = pgTable(

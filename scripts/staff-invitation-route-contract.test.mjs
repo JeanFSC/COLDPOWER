@@ -22,7 +22,7 @@ assert.match(webhook, /const roleCode/);
 assert.match(webhook, /session\.created/);
 assert.match(page, /<AdminUsersStitch/);
 assert.match(page, /canInvite=\{can\(actor\.role, "users\.invite"\)\}/);
-assert.match(page, /canManage=\{can\(actor\.role, "users\.manage"\)\}/);
+assert.match(page, /canManage=\{can\(actor\.role, "roles\.manage"\)\}/);
 assert.match(page, /allowSuperadmin=\{actor\.role === "SUPERADMIN"\}/);
 assert.match(usersView, /import \{ StaffInvitationForm \}/);
 assert.match(usersView, /canInvite \? <StaffInvitationForm[\s\S]*allowSuperadmin=\{allowSuperadmin\}/);

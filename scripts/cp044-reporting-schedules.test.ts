@@ -44,6 +44,7 @@ test("reportes: el flujo expone dominio, migración, API y UI persistentes", () 
     "src/lib/reporting-service.ts",
     "src/app/api/admin/reportes/programados/route.ts",
     "src/app/api/admin/reportes/programados/[id]/route.ts",
+    "src/app/api/cron/gestion/route.ts",
     "src/components/admin/ReportScheduleControls.tsx",
     "drizzle/0042_cp044_report_schedules.sql",
   ]) assert.equal(existsSync(`${root}/${file}`), true, file);
@@ -51,5 +52,9 @@ test("reportes: el flujo expone dominio, migración, API y UI persistentes", () 
   assert.doesNotMatch(read("src/app/admin/reportes/page.tsx"), /getOperationsDashboard/);
   assert.match(read("src/app/api/admin/reportes/programados/route.ts"), /reports\.export/);
   assert.match(read("src/lib/reporting-service.ts"), /reportScheduleRuns/);
+  assert.match(read("src/lib/reporting-service.ts"), /processDueReportSchedules/);
+  assert.match(read("src/lib/reporting-service.ts"), /for\("update"\)/);
+  assert.match(read("src/app/api/cron/gestion/route.ts"), /CRON_SECRET/);
   assert.match(read("src/components/admin/ReportScheduleControls.tsx"), /INTERNAL|inbox interno/i);
+  assert.match(read("src/components/admin/ReportScheduleControls.tsx"), /EjecuciÃ³n automÃ¡tica activa|Ejecución automática activa/i);
 });

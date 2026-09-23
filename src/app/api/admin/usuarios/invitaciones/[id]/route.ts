@@ -3,6 +3,7 @@ import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { cancelStaffInvitation, resendStaffInvitation, UserAdministrationError } from "@/lib/user-administration";
 import { auditLogs } from "@/db/schema";
 import { getDb } from "@/db";
+import { sanitizeAuditValue } from "@/lib/operational-semantics";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
@@ -13,7 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.action !== "cancel" && body.action !== "resend") return NextResponse.json({ error: "Acción inválida. Usa cancel o resend." }, { status: 400 });
   try {
     const invitation = body.action === "cancel" ? await cancelStaffInvitation(id, actor.role) : await resendStaffInvitation(id, actor.role);
-    await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: body.action === "cancel" ? "access.staff_invitation_cancelled" : "access.staff_invitation_resent", entityType: "clerk_invitation", entityId: id, before: null, after: { email: invitation.emailAddress, status: invitation.status }, metadata: { replacementId: body.action === "resend" ? invitation.id : null } });
+    await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: body.action === "cancel" ? "access.staff_invitation_cancelled" : "access.staff_invitation_resent", entityType: "clerk_invitation", entityId: id, before: null, after: sanitizeAuditValue({ email: invitation.emailAddress, status: invitation.status }) as Record<string, unknown>, metadata: sanitizeAuditValue({ replacementId: body.action === "resend" ? invitation.id : null }) as Record<string, unknown> });
     return NextResponse.json({ success: true, invitation });
   } catch (error) { if (error instanceof UserAdministrationError) return NextResponse.json({ error: error.message }, { status: error.status }); return NextResponse.json({ error: "No se pudo gestionar la invitación." }, { status: 409 }); }
 }

@@ -6,7 +6,6 @@ import { CompareProvider } from "@/components/catalog/CompareProvider";
 import { AppChrome } from "@/components/layout/AppChrome";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { TopBar } from "@/components/layout/TopBar";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { ShoppingCartProvider } from "@/components/shopping-cart/ShoppingCartProvider";
 import { PreviewBanner } from "@/components/shared/PreviewBanner";
@@ -32,7 +31,7 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const metadata: Metadata = {
   metadataBase: new URL(company.domain),
   title: {
@@ -57,6 +56,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_PE",
     siteName: company.commercialName,
+    images: [{ url: "/images/og/og-tienda.webp", width: 1200, height: 630, alt: "ColdPower catálogo técnico" }],
   },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
@@ -75,7 +75,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           publicBefore={
             <>
               <PreviewBanner />
-              <TopBar />
               <Header authEnabled={isAuthConfigured} categories={categories} />
             </>
           }

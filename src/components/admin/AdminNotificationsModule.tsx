@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { NotificationDetail } from "@/components/admin/AdminNotificationDetail";
 import { NotificationAdminControls } from "@/components/admin/NotificationAdminControls";
 import { NotificationRuleToggle } from "@/components/admin/NotificationRuleToggle";
+import { NotificationPreferencesPanel } from "@/components/admin/NotificationPreferencesPanel";
 import type {
   getNotificationDetail,
   listNotificationRules,
@@ -54,6 +55,8 @@ function deltaDisplay(key: string, kpi: PeriodKpi) {
 export type AdminNotificationsModuleProps = {
   loadError: boolean;
   canManage: boolean;
+  canPreferences: boolean;
+  preferences: Record<string, boolean>;
   personalUnread: PeriodKpi;
   automation: NotificationAutomationMetrics;
   inboxSlot: ReactNode;
@@ -63,7 +66,7 @@ export type AdminNotificationsModuleProps = {
   schedules: Schedule[];
 };
 
-export function NotificationsModule({ loadError, canManage, personalUnread, automation, inboxSlot, detail, rules, templates, schedules }: AdminNotificationsModuleProps) {
+export function NotificationsModule({ loadError, canManage, canPreferences, preferences, personalUnread, automation, inboxSlot, detail, rules, templates, schedules }: AdminNotificationsModuleProps) {
   const kpis: Array<{ key: string; label: string; kpi: PeriodKpi; iconBg: string; iconInk: string; iconPath: string }> = [
     { key: "unread", label: "No leídas", kpi: personalUnread, iconBg: "bg-blue-50", iconInk: "text-blue-600", iconPath: ICON.bell },
     { key: "activeRules", label: "Automatizaciones activas", kpi: automation.activeRules, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", iconPath: ICON.gear },
@@ -241,6 +244,8 @@ export function NotificationsModule({ loadError, canManage, personalUnread, auto
           <NotificationAdminControls templates={templates} rules={rules} schedules={schedules} />
         </section>
       ) : null}
+
+      {canPreferences ? <NotificationPreferencesPanel initialPreferences={preferences} /> : null}
     </div>
   );
 }

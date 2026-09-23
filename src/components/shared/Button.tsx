@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
@@ -25,7 +26,7 @@ type LinkButtonProps = ButtonBaseProps &
 export type ButtonProps = NativeButtonProps | LinkButtonProps;
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-white shadow-card hover:bg-primary-hover",
+  primary: "bg-primary text-brand-primary-900 shadow-card hover:bg-primary-hover",
   secondary: "bg-dark-secondary text-white hover:bg-dark",
   outline: "border border-border bg-white text-dark hover:border-primary hover:text-primary",
   ghost: "bg-transparent text-dark hover:bg-dark/5",
@@ -53,16 +54,13 @@ export function Button({
   if ("href" in props && props.href) {
     const { disabled, href, ...anchorProps } = props;
 
-    return (
-      <a
-        className={cn(classes, disabled && "pointer-events-none opacity-55")}
-        href={disabled ? undefined : href}
-        aria-disabled={disabled}
-        {...anchorProps}
-      >
-        {children}
-      </a>
-    );
+    const linkProps = {
+      className: cn(classes, disabled && "pointer-events-none opacity-55"),
+      href: disabled ? "#" : href,
+      "aria-disabled": disabled,
+      ...anchorProps,
+    };
+    return href.startsWith("/") ? <Link {...linkProps}>{children}</Link> : <a {...linkProps}>{children}</a>;
   }
 
   const buttonProps = props as ButtonHTMLAttributes<HTMLButtonElement>;

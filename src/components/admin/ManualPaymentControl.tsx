@@ -15,6 +15,21 @@ function readApiError(payload: unknown, fallback: string) {
   return fallback;
 }
 
+function formatMoney(currency: string, value: string | number) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return `${currency} ${value}`;
+  try {
+    return new Intl.NumberFormat("es-PE", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numericValue);
+  } catch {
+    return `${currency} ${numericValue.toFixed(2)}`;
+  }
+}
+
 export function ManualPaymentControl({
   orderId,
   amount,
@@ -26,6 +41,7 @@ export function ManualPaymentControl({
   currency: string;
   onConfirmed?: () => void | Promise<void>;
 }) {
+  const [enteredAmount, setEnteredAmount] = useState(amount);
   const [method, setMethod] = useState<ManualPaymentMethod>("TRANSFER");
   const [reference, setReference] = useState("");
   const [reason, setReason] = useState("");
@@ -39,8 +55,11 @@ export function ManualPaymentControl({
         ? crypto.randomUUID()
         : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2)),
   );
+  const numericAmount = Number(enteredAmount);
+  const validAmount = Number.isFinite(numericAmount) && numericAmount > 0 && numericAmount <= Number(amount);
 
   async function confirmPayment() {
+    if (!validAmount || !reason.trim()) return;
     setBusy(true);
     setMessage("");
     setMessageKind("success");
@@ -51,7 +70,7 @@ export function ManualPaymentControl({
         body: JSON.stringify({
           orderId,
           method,
-          amount,
+          amount: numericAmount.toFixed(2),
           currency,
           reference: reference || null,
           reason,
@@ -70,19 +89,28 @@ export function ManualPaymentControl({
   }
 
   return (
-    <div className="mt-3 grid gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
-      <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-dark">
-        Confirmar pago manual
+    <div className="mt-3 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+      <p className="text-xs font-bold uppercase tracking-[0.08em] text-amber-800">Confirmar pago manual</p>
+      <p className="text-xs font-semibold text-slate-600">
+        Saldo pendiente: {formatMoney(currency, amount)}. El monto confirmado puede ser parcial.
       </p>
-      <p className="text-xs font-semibold text-muted-foreground">
-        Monto pendiente: {currency} {amount}
-      </p>
-      <div className="grid gap-2 sm:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-[130px_145px_minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <input
+          aria-label="Monto del pago manual"
+          type="number"
+          inputMode="decimal"
+          min="0.01"
+          max={amount}
+          step="0.01"
+          value={enteredAmount}
+          onChange={(event) => setEnteredAmount(event.target.value)}
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
+        />
         <select
           aria-label="Método de pago manual"
           value={method}
           onChange={(event) => setMethod(event.target.value as ManualPaymentMethod)}
-          className="h-9 rounded-md border border-border bg-white px-2 text-xs font-bold text-dark"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
         >
           {manualPaymentMethods.map((item) => (
             <option key={item} value={item}>
@@ -96,7 +124,7 @@ export function ManualPaymentControl({
           onChange={(event) => setReference(event.target.value)}
           placeholder="Referencia (opcional)"
           maxLength={180}
-          className="h-9 rounded-md border border-border bg-white px-2 text-xs text-dark"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
         />
         <input
           aria-label="Motivo de confirmación manual"
@@ -104,20 +132,21 @@ export function ManualPaymentControl({
           onChange={(event) => setReason(event.target.value)}
           placeholder="Motivo obligatorio"
           maxLength={500}
-          className="h-9 rounded-md border border-border bg-white px-2 text-xs text-dark"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
         />
         <button
           type="button"
-          disabled={busy || !reason.trim()}
+          disabled={busy || !reason.trim() || !validAmount}
           onClick={() => void confirmPayment()}
-          className="h-9 rounded-md bg-primary px-3 text-xs font-extrabold text-white disabled:opacity-50"
+          className="h-9 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "Confirmando…" : "Confirmar"}
         </button>
       </div>
+      {!validAmount ? <p className="text-[11px] font-semibold text-amber-800">Ingresa un monto mayor que cero y no mayor al saldo pendiente.</p> : null}
       {message ? (
         <p
-          className="text-xs font-bold text-dark"
+          className={messageKind === "error" ? "text-xs font-bold text-rose-700" : "text-xs font-bold text-emerald-700"}
           role={messageKind === "error" ? "alert" : "status"}
           aria-live={messageKind === "error" ? "assertive" : "polite"}
         >

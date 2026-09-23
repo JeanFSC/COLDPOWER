@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, FileText } from "lucide-react";
 import { Button } from "@/components/shared/Button";
 import { useCart as useQuoteList } from "@/components/cart/CartProvider";
+import { trackCatalogEvent } from "@/lib/analytics";
 
 type AddToQuoteButtonProps = {
   productId: string;
@@ -34,6 +35,7 @@ export function AddToQuoteButton({ productId, label = "Cotizar", size = "sm", va
       onClick={() => {
         addItem(productId);
         setWasAdded(true);
+        trackCatalogEvent("quote_item_added", { productId });
       }}
     >
       {wasAdded ? <Check className="h-4 w-4" aria-hidden="true" /> : <FileText className="h-4 w-4" aria-hidden="true" />}

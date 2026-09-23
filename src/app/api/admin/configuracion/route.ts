@@ -22,13 +22,13 @@ function partialSettings(body: Record<string, unknown>, before: typeof companySe
 function invalidatePublicSettings() { revalidateTag("coldpower-company-settings", "max"); }
 
 export async function GET() {
-  try { await requireApiPermission("company.settings.manage"); const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1); return NextResponse.json(adminResponse(settings ?? null)); }
+  try { await requireApiPermission("settings.business.edit"); const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1); return NextResponse.json(adminResponse(settings ?? null)); }
   catch (error) { if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para ver configuración.", 403); return apiError("COMPANY_SETTINGS_UNAVAILABLE", "No se pudo cargar la configuración empresarial.", 503); }
 }
 
 export async function PUT(request: Request) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
-  try { actor = await requireApiPermission("company.settings.manage"); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para modificar configuración.", 403); throw error; }
+  try { actor = await requireApiPermission("settings.business.edit"); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para modificar configuración.", 403); throw error; }
   let body: unknown; try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
   const value = plainObject(body); if (!value) return apiError("COMPANY_SETTINGS_INVALID", "Configuración empresarial inválida.", 400);
   try {

@@ -8,6 +8,7 @@ import {
 } from "@/lib/audit-contract";
 import { geoLabel, browserLabel } from "@/lib/geo";
 import { deltaPct } from "@/lib/period-metrics";
+import { sanitizeAuditValue } from "@/lib/operational-semantics";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
@@ -44,7 +45,7 @@ const criticalCondition = eq(auditLogs.severity, "CRITICAL");
 
 function map(row: typeof auditLogs.$inferSelect): AuditListItem {
   const rawModule = row.module || row.action.split(".")[0] || "system";
-  const metadata = row.metadata;
+  const metadata = sanitizeAuditValue(row.metadata) as Record<string, unknown> | null;
   const ip = typeof metadata?.ip === "string" ? metadata.ip : null;
   const userAgent = typeof metadata?.userAgent === "string" ? metadata.userAgent : null;
   // Most rows carry a raw ip/userAgent captured from the request and parsed here; login
@@ -57,7 +58,7 @@ function map(row: typeof auditLogs.$inferSelect): AuditListItem {
   return {
     id: row.id, createdAt: row.createdAt, actorId: row.actorId, actorRole: row.actorRole, action: row.action,
     module: rawModule, moduleLabel: moduleLabel(rawModule, row.action, row.entityType), entityType: row.entityType, entityId: row.entityId,
-    before: row.before, after: row.after,
+    before: sanitizeAuditValue(row.before) as Record<string, unknown> | null, after: sanitizeAuditValue(row.after) as Record<string, unknown> | null,
     origin: row.origin ?? (typeof metadata?.origin === "string" ? metadata.origin : ip),
     requestId: row.requestId ?? (typeof metadata?.requestId === "string" ? metadata.requestId : null),
     correlationId: row.correlationId ?? (typeof metadata?.correlationId === "string" ? metadata.correlationId : null),
@@ -250,4 +251,9 @@ export async function listSavedAuditFilters(ownerId: string): Promise<AuditSaved
 export async function createSavedAuditFilter(ownerId: string, name: string, filters: Record<string, unknown>): Promise<AuditSavedFilter> {
   const [row] = await getDb().insert(auditSavedFilters).values({ id: `audit-filter-${crypto.randomUUID()}`, ownerId, name, filters }).returning();
   return { id: row.id, name: row.name, filters: row.filters, createdAt: row.createdAt };
+}
+
+export async function deleteSavedAuditFilter(ownerId: string, id: string) {
+  const [row] = await getDb().delete(auditSavedFilters).where(and(eq(auditSavedFilters.ownerId, ownerId), eq(auditSavedFilters.id, id))).returning({ id: auditSavedFilters.id });
+  return Boolean(row);
 }

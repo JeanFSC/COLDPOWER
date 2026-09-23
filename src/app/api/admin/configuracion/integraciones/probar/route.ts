@@ -5,7 +5,7 @@ import { testAllIntegrations } from "@/lib/integrations";
 
 export async function POST() {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
-  try { actor = await requireApiPermission("company.settings.manage"); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("INTEGRATIONS_FORBIDDEN", "No tienes permiso para probar integraciones.", 403); throw error; }
+  try { actor = await requireApiPermission("integrations.manage"); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("INTEGRATIONS_FORBIDDEN", "No tienes permiso para probar integraciones.", 403); throw error; }
   try {
     const integrations = await testAllIntegrations(actor.userId);
     return NextResponse.json({ integrations });

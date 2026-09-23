@@ -23,12 +23,15 @@ test("CP-033 requires traceability for manual adjustments", () => {
 });
 
 test("CP-033 parses server-side inventory and Kardex filters", () => {
-  const filters = parseInventoryFilters(new URLSearchParams("query=compresor&locationId=store-1&status=CRITICO&page=2&pageSize=50"));
-  assert.deepEqual(filters, { query: "compresor", locationId: "store-1", categoryId: undefined, familyId: undefined, brandId: undefined, status: "CRITICO", hasReservations: undefined, hasMinimum: undefined, minAvailable: undefined, updatedFrom: undefined, updatedTo: undefined, page: 2, pageSize: 50 });
+  const filters = parseInventoryFilters(new URLSearchParams("query=compresor&productId=prod-1&locationId=store-1&status=CRITICO&critical=true&page=2&pageSize=50"));
+  assert.deepEqual(filters, { query: "compresor", productId: "prod-1", locationId: "store-1", categoryId: undefined, familyId: undefined, brandId: undefined, status: "CRITICO", critical: true, hasReservations: undefined, hasMinimum: undefined, minAvailable: undefined, updatedFrom: undefined, updatedTo: undefined, transferId: undefined, transferStatus: undefined, transferPage: undefined, reservationId: undefined, reservationStatus: undefined, reservationPage: undefined, page: 2, pageSize: 50 });
   assert.throws(() => parseInventoryFilters(new URLSearchParams("pageSize=12")));
-  assert.deepEqual(parseInventoryFilters(new URLSearchParams("status=RESERVADO&hasReservations=true&hasMinimum=false&minAvailable=4&updatedFrom=2026-08-01&updatedTo=2026-08-31")), { query: undefined, locationId: undefined, categoryId: undefined, familyId: undefined, brandId: undefined, status: "RESERVADO", hasReservations: true, hasMinimum: false, minAvailable: 4, updatedFrom: "2026-08-01", updatedTo: "2026-08-31", page: undefined, pageSize: undefined });
+  assert.deepEqual(parseInventoryFilters(new URLSearchParams("status=RESERVADO&hasReservations=true&hasMinimum=false&minAvailable=4&updatedFrom=2026-08-01&updatedTo=2026-08-31&transferStatus=IN_TRANSIT&transferPage=2&reservationStatus=ACTIVE&reservationPage=3")), { query: undefined, productId: undefined, locationId: undefined, categoryId: undefined, familyId: undefined, brandId: undefined, status: "RESERVADO", critical: undefined, hasReservations: true, hasMinimum: false, minAvailable: 4, updatedFrom: "2026-08-01", updatedTo: "2026-08-31", transferId: undefined, transferStatus: "IN_TRANSIT", transferPage: 2, reservationId: undefined, reservationStatus: "ACTIVE", reservationPage: 3, page: undefined, pageSize: undefined });
   assert.throws(() => parseInventoryFilters(new URLSearchParams("updatedFrom=2026-09-01&updatedTo=2026-08-31")));
+  assert.throws(() => parseInventoryFilters(new URLSearchParams("critical=maybe")));
+  assert.throws(() => parseInventoryFilters(new URLSearchParams("transferStatus=APPROVED")));
   assert.deepEqual(parseKardexFilters(new URLSearchParams("productId=p-1&locationId=l-1&type=TRANSFER_IN")), { productId: "p-1", locationId: "l-1", type: "TRANSFER_IN", dateFrom: undefined, dateTo: undefined, page: undefined, pageSize: undefined });
   assert.deepEqual(parseInventoryMovementsFilters(new URLSearchParams("productId=p-1&locationId=l-1&type=ADJUSTMENT_IN&actor=Jean&page=2&pageSize=50&dateFrom=2026-08-01&dateTo=2026-08-31")), { productId: "p-1", locationId: "l-1", type: "ADJUSTMENT_IN", actorQuery: "Jean", dateFrom: "2026-08-01", dateTo: "2026-08-31", page: 2, pageSize: 50 });
   assert.throws(() => parseInventoryMovementsFilters(new URLSearchParams("dateFrom=2026-08-31&dateTo=2026-08-01")));
+  assert.throws(() => parseKardexFilters(new URLSearchParams("productId=p-1&locationId=l-1&dateFrom=not-a-date")));
 });

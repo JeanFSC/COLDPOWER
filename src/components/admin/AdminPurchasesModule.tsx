@@ -75,14 +75,21 @@ function pageNumbers(current: number, total: number) {
   return Array.from({ length: width }, (_, index) => start + index);
 }
 
-const categoryColors = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#a855f7", "#94a3b8"];
+const categoryColors = [
+  { stroke: "stroke-blue-600", dot: "bg-blue-600" },
+  { stroke: "stroke-emerald-500", dot: "bg-emerald-500" },
+  { stroke: "stroke-amber-500", dot: "bg-amber-500" },
+  { stroke: "stroke-rose-500", dot: "bg-rose-500" },
+  { stroke: "stroke-purple-500", dot: "bg-purple-500" },
+  { stroke: "stroke-slate-400", dot: "bg-slate-400" },
+];
 const supplierColors = ["bg-blue-600", "bg-blue-500", "bg-blue-400", "bg-sky-400", "bg-sky-300", "bg-slate-400"];
 
 type KpiSeries = Awaited<ReturnType<typeof getPurchasesKpiSeries>>;
 type Scorecard = Awaited<ReturnType<typeof getSupplierScorecard>>;
 type Alerts = Awaited<ReturnType<typeof getPurchaseAlerts>>;
-type CategorySpendItem = { categoryId: string; categoryName: string; amount: number };
-type SupplierSpendItem = { supplierId: string; supplierName: string; amount: number };
+type CategorySpendItem = { categoryId: string; categoryName: string; currency: string; amount: number };
+type SupplierSpendItem = { supplierId: string; supplierName: string; currency: string; amount: number };
 
 export function AdminPurchasesModule({
   suppliers,
@@ -98,7 +105,11 @@ export function AdminPurchasesModule({
   selectedPurchase,
   filters,
   queryString,
+  filterNotice,
   canManage,
+  canReceive,
+  canApprove,
+  canViewCosts,
   controls,
 }: {
   suppliers: Array<{ id: string; name: string; currency: string; status: string }>;
@@ -118,46 +129,61 @@ export function AdminPurchasesModule({
     purchase: { id: string; code: string; status: string; currency: string; subtotal: string; createdAt: Date | string; issuedAt: Date | string | null; expectedDeliveryAt: Date | string | null; cancellationReason: string | null; notes: string | null };
     supplierName: string;
     locationName: string;
-    items: Array<{ id: string; skuSnapshot: string; productNameSnapshot: string; quantityOrdered: number; quantityReceived: number; unitCost: string; currency: string }>;
-    receipts: Array<{ id: string; code: string; receivedAt: Date | string; status: string }>;
+    items: Array<{ id: string; productId: string; skuSnapshot: string; productNameSnapshot: string; quantityOrdered: number; quantityReceived: number; unitCost: string; currency: string }>;
+    receipts: Array<{ id: string; code: string; purchaseId: string; receivedAt: Date | string; status: string }>;
   } | null;
   filters: PurchasesFilters;
   queryString: string;
+  filterNotice?: string;
   canManage: boolean;
+  canReceive: boolean;
+  canApprove: boolean;
+  canViewCosts: boolean;
   controls: ReactNode;
 }) {
   const locationById = new Map(locations.map((location) => [location.id, location.name]));
   const supplierStatusById = new Map(suppliers.map((supplier) => [supplier.id, supplier.status]));
   const metrics = purchasePage.metrics;
   const openPurchases = Math.max(0, metrics.total - metrics.received - metrics.cancelled);
-  const amountLabel =
-    metrics.amountsByCurrency.map((row) => row.currency + " " + money(row.amount, row.currency)).join(" · ") || "N/D";
+  const amountLabel = canViewCosts ? (
+    metrics.amountsByCurrency.map((row) => row.currency + " " + money(row.amount, row.currency)).join(" · ") || "N/D") : "Restringido";
 
   const kpis: Array<{ key: string; label: string; value: string; note: string; iconBg: string; iconInk: string; icon: typeof ShoppingCart; tone: "blue" | "orange" | "green" | "red" | "purple"; sparkline: number[] | null }> = [
     { key: "open", label: "Órdenes abiertas", value: String(openPurchases), note: "Sin recibir ni cancelar", icon: FileText, iconBg: "bg-blue-50", iconInk: "text-blue-600", tone: "blue", sparkline: series.openPurchases },
-    { key: "requests", label: "Solicitudes pendientes", value: String(requestPage.metrics.pending), note: "En revisión o aprobadas", icon: Boxes, iconBg: "bg-indigo-50", iconInk: "text-indigo-600", tone: "purple", sparkline: series.requests },
+    { key: "requests", label: "Solicitudes pendientes", value: String(requestPage.metrics.pending), note: "En revisión", icon: Boxes, iconBg: "bg-indigo-50", iconInk: "text-indigo-600", tone: "purple", sparkline: series.requests },
     { key: "receptions", label: "Recepciones pendientes", value: String(metrics.pending + metrics.partialReceived), note: "OC pendientes o parciales", icon: PackageCheck, iconBg: "bg-orange-50", iconInk: "text-orange-600", tone: "orange", sparkline: series.receptions },
-    { key: "spend", label: "Gasto del período", value: amountLabel, note: "Subtotal de OC filtradas", icon: Truck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.spend },
+    { key: "spend", label: "Gasto del período", value: amountLabel, note: series.spend ? "Subtotal de OC filtradas" : "Multimoneda: tendencia separada por moneda", icon: Truck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.spend },
     { key: "leadTime", label: "Lead time promedio", value: metrics.leadTimeDays == null ? "N/D" : `${metrics.leadTimeDays} días`, note: metrics.leadTimeDays == null ? "Sin OC emitida y recibida con fechas" : "Emisión a recepción final", icon: Clock, iconBg: "bg-purple-50", iconInk: "text-purple-600", tone: "purple", sparkline: null },
     { key: "incidents", label: "Proveedores con incidencias", value: String(metrics.incidents), note: "OC abiertas con proveedor inactivo", icon: AlertTriangle, iconBg: "bg-rose-50", iconInk: "text-rose-600", tone: "red", sparkline: series.incidentPurchases },
   ];
 
+  const categoryCurrencies = [...new Set(categorySpend.map((row) => row.currency))];
   const categoryTotal = Math.max(1, categorySpend.reduce((sum, row) => sum + row.amount, 0));
+  const categoryTotalByCurrency = new Map(
+    categoryCurrencies.map((currency) => [
+      currency,
+      categorySpend.filter((row) => row.currency === currency).reduce((sum, row) => sum + row.amount, 0),
+    ]),
+  );
   const topCategories = categorySpend.slice(0, 5);
   const otherCategoryAmount = categorySpend.slice(5).reduce((sum, row) => sum + row.amount, 0);
-  const categoryRows = otherCategoryAmount > 0 ? [...topCategories, { categoryId: "other", categoryName: "Otros", amount: otherCategoryAmount }] : topCategories;
+  const categoryRows = categoryCurrencies.length === 1 && otherCategoryAmount > 0
+    ? [...topCategories, { categoryId: "other", categoryName: "Otros", currency: categoryCurrencies[0], amount: otherCategoryAmount }]
+    : topCategories;
   const categorySegments = categoryRows.map((row, index) => {
     const start = categoryRows.slice(0, index).reduce((sum, previous) => sum + previous.amount, 0);
     return { ...row, color: categoryColors[index % categoryColors.length], dasharray: `${(row.amount / categoryTotal) * 251.2} 251.2`, offset: `${-(start / categoryTotal) * 251.2}` };
   });
 
-  const supplierTotal = Math.max(1, supplierRanking.reduce((sum, row) => sum + row.amount, 0));
+  const supplierCurrencies = [...new Set(supplierRanking.map((row) => row.currency))];
+  const supplierTotalByCurrency = new Map(
+    supplierCurrencies.map((currency) => [
+      currency,
+      supplierRanking.filter((row) => row.currency === currency).reduce((sum, row) => sum + row.amount, 0),
+    ]),
+  );
   const topSuppliers = supplierRanking.slice(0, 5);
-  const otherSupplierAmount = supplierRanking.slice(5).reduce((sum, row) => sum + row.amount, 0);
-  const otherSupplierCount = Math.max(0, supplierRanking.length - 5);
-  const supplierRows = otherSupplierAmount > 0
-    ? [...topSuppliers, { supplierId: "other", supplierName: `Otros (${otherSupplierCount})`, amount: otherSupplierAmount }]
-    : topSuppliers;
+  const supplierRows = topSuppliers;
 
   const activeQuery = new URLSearchParams(queryString);
   const purchaseCurrency = purchasePage.items[0]?.currency ?? "PEN";
@@ -174,23 +200,29 @@ export function AdminPurchasesModule({
             <p className="text-xs font-normal text-slate-500">Gestiona tus proveedores, órdenes de compra y recepciones en un solo lugar.</p>
           </div>
         </div>
-        {canManage ? (
+        {canManage || canReceive ? (
           <div className="flex items-center gap-2.5">
-            <Link href="#purchase-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
+            {canManage ? <Link href="#supplier-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
               <UsersRound className="h-3.5 w-3.5 text-slate-500" />
               Nuevo proveedor
-            </Link>
-            <Link href="#purchase-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
+            </Link> : null}
+            {canManage ? <Link href="#purchase-order-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
               <FileText className="h-3.5 w-3.5 text-slate-500" />
               Crear OC
-            </Link>
-            <Link href="#purchase-tools" className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700">
+            </Link> : null}
+            {canReceive ? <Link href="#purchase-receipt-tools" className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700">
               <PackageCheck className="h-3.5 w-3.5" />
               Registrar recepción
-            </Link>
+            </Link> : null}
           </div>
         ) : null}
       </header>
+
+      {filterNotice ? (
+        <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800">
+          {filterNotice}
+        </p>
+      ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {kpis.map((item) => {
@@ -221,33 +253,40 @@ export function AdminPurchasesModule({
         })}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-12">
+      {canViewCosts ? <section className="grid gap-4 xl:grid-cols-12">
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-4">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Gasto por categoría</h2>
           {categoryRows.length ? (
             <div className="flex flex-1 items-center gap-4 pt-3">
-              <div className="relative flex h-32 w-32 shrink-0 items-center justify-center">
-                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" fill="none" r="40" stroke="#f1f5f9" strokeWidth={16} />
-                  {categorySegments.map((segment) => (
-                    <circle key={segment.categoryId} cx="50" cy="50" fill="none" r="40" stroke={segment.color} strokeDasharray={segment.dasharray} strokeDashoffset={segment.offset} strokeWidth={16} />
-                  ))}
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-xs font-bold text-slate-900">{money(categoryTotal, purchaseCurrency)}</span>
-                  <span className="text-[10px] text-slate-400">Total filtrado</span>
+              {categoryCurrencies.length === 1 ? (
+                <div className="relative flex h-32 w-32 shrink-0 items-center justify-center">
+                  <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" className="fill-none stroke-slate-100" r="40" strokeWidth={16} />
+                    {categorySegments.map((segment) => (
+                      <circle key={segment.categoryId} cx="50" cy="50" className={`fill-none ${segment.color.stroke}`} r="40" strokeDasharray={segment.dasharray} strokeDashoffset={segment.offset} strokeWidth={16} />
+                    ))}
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-xs font-bold text-slate-900">{money(categoryTotal, purchaseCurrency)}</span>
+                    <span className="text-[10px] text-slate-400">Total filtrado</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-full border-[16px] border-slate-100 text-center">
+                  <span className="text-xs font-bold text-slate-900">{categoryCurrencies.length} monedas</span>
+                  <span className="text-[10px] text-slate-400">Detalle separado</span>
+                </div>
+              )}
               <div className="min-w-0 flex-1 space-y-1.5">
                 {categorySegments.map((row) => (
                   <div key={row.categoryId} className="flex items-center justify-between gap-2 text-[11px]">
                     <div className="flex min-w-0 items-center gap-1.5">
-                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
-                      <span className="truncate text-slate-600">{row.categoryName}</span>
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${row.color.dot}`} />
+                      <span className="truncate text-slate-600">{row.categoryName} · {row.currency}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2 font-medium">
-                      <span className="text-slate-800">{money(row.amount, purchaseCurrency)}</span>
-                      <span className="w-8 text-right text-slate-400">{((row.amount / categoryTotal) * 100).toFixed(0)}%</span>
+                      <span className="text-slate-800">{money(row.amount, row.currency)}</span>
+                      <span className="w-8 text-right text-slate-400">{((row.amount / (categoryTotalByCurrency.get(row.currency) ?? 1)) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
                 ))}
@@ -269,13 +308,13 @@ export function AdminPurchasesModule({
               </div>
               {supplierRows.map((row, index) => (
                 <div key={row.supplierId} className="flex items-center text-xs">
-                  <span className="w-28 truncate font-medium text-slate-700">{row.supplierName}</span>
-                  <span className="w-24 font-medium text-slate-900">{money(row.amount, purchaseCurrency)}</span>
+                  <span className="w-28 truncate font-medium text-slate-700">{row.supplierName} · {row.currency}</span>
+                  <span className="w-24 font-medium text-slate-900">{money(row.amount, row.currency)}</span>
                   <div className="flex flex-1 items-center gap-2">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div className={`h-2 rounded-full ${supplierColors[index % supplierColors.length]}`} style={{ width: `${Math.max(2, (row.amount / supplierTotal) * 100)}%` }} />
+                      <div className={`h-2 rounded-full ${supplierColors[index % supplierColors.length]}`} style={{ width: `${Math.max(2, (row.amount / (supplierTotalByCurrency.get(row.currency) ?? 1)) * 100)}%` }} />
                     </div>
-                    <span className="w-8 shrink-0 text-right text-[11px] font-medium text-slate-500">{((row.amount / supplierTotal) * 100).toFixed(0)}%</span>
+                    <span className="w-8 shrink-0 text-right text-[11px] font-medium text-slate-500">{((row.amount / (supplierTotalByCurrency.get(row.currency) ?? 1)) * 100).toFixed(0)}%</span>
                   </div>
                 </div>
               ))}
@@ -297,7 +336,11 @@ export function AdminPurchasesModule({
             <ScoreTile icon={UsersRound} tone="blue" label="Proveedores activos" value={`${scorecard.activeSuppliers}/${scorecard.totalSuppliers}`} />
           </div>
         </div>
-      </section>
+      </section> : (
+        <section className="rounded-xl border border-slate-200/90 bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+          Los importes y métricas de costo requieren permiso financiero.
+        </section>
+      )}
 
       <PurchasesFilterBar filters={filters} suppliers={suppliers} locations={locations} facets={purchasePage.facets} />
 
@@ -331,11 +374,11 @@ export function AdminPurchasesModule({
                           {purchase.code}
                         </Link>
                       </td>
-                      <td className="px-3 py-3 font-medium text-slate-900">{purchase.supplierName}</td>
-                      <td className="px-3 py-3 text-slate-500">{locationById.get(purchase.locationId) ?? "N/D"}</td>
+                      <td className="px-3 py-3 font-medium text-slate-900"><Link href={`/admin/compras/proveedores/${encodeURIComponent(purchase.supplierId)}`} className="text-blue-600 hover:underline">{purchase.supplierName}</Link></td>
+                      <td className="px-3 py-3 text-slate-500"><Link href={`/admin/compras?locationId=${encodeURIComponent(purchase.locationId)}`} className="hover:text-blue-600 hover:underline">{locationById.get(purchase.locationId) ?? "N/D"}</Link></td>
                       <td className="px-3 py-3 text-slate-500">{dateLabel(purchase.createdAt)}</td>
                       <td className="px-3 py-3 text-slate-500">{dateLabel(purchase.expectedDeliveryAt)}</td>
-                      <td className="px-3 py-3 font-semibold text-slate-900">{money(purchase.subtotal, purchase.currency)}</td>
+                      <td className="px-3 py-3 font-semibold text-slate-900">{canViewCosts ? money(purchase.subtotal, purchase.currency) : "—"}</td>
                       <td className="px-3 py-3">
                         <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-medium ${statusBadge(purchase.status)}`}>{statusLabel(purchase.status)}</span>
                       </td>
@@ -362,12 +405,13 @@ export function AdminPurchasesModule({
         </section>
 
         <div className="space-y-4 xl:col-span-4">
-          <PanelCard title="Solicitudes de compra" action={<Link href="/admin/compras?requestStatus=SUBMITTED" className="text-xs font-medium text-blue-600 hover:underline">Ver pendientes</Link>}>
+          <PanelCard title="Solicitudes de compra" action={<Link href={`/admin/compras?${new URLSearchParams({ ...Object.fromEntries(activeQuery), requestStatus: "SUBMITTED", requestPage: "1" }).toString()}`} className="text-xs font-medium text-blue-600 hover:underline">Ver pendientes</Link>}>
             {requestPage.items.length ? (
               <div className="space-y-2">
-                {requestPage.items.slice(0, 5).map((request) => (
+                {requestPage.items.map((request) => (
                   <RequestRow key={request.id} request={request} locationById={locationById} queryString={queryString} />
                 ))}
+                <RequestsPager page={requestPage.page} total={requestPage.totalPages} queryString={queryString} totalItems={requestPage.totalItems} />
               </div>
             ) : (
               <EmptyRow icon={Boxes} title="No hay solicitudes" description="Las solicitudes creadas aparecerán aquí con su estado." />
@@ -403,8 +447,8 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedRequest.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-mono text-slate-500">{item.skuSnapshot}</td>
-                          <td className="px-2 py-1.5 font-semibold text-slate-800">{item.productNameSnapshot}</td>
+                          <td className="px-2 py-1.5 font-mono text-slate-500"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="text-blue-600 hover:underline">{item.skuSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityRequested}</td>
                         </tr>
                       ))}
@@ -420,6 +464,8 @@ export function AdminPurchasesModule({
                   locationId={selectedRequest.request.locationId}
                   items={selectedRequest.items.map((item) => ({ productId: item.productId, quantityRequested: item.quantityRequested }))}
                   suppliers={suppliers}
+                  canApprove={canApprove}
+                  canManage={canManage}
                 />
               </div>
             </PanelCard>
@@ -445,7 +491,7 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedPurchase.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-semibold text-slate-800">{item.productNameSnapshot}</td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityOrdered}</td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityReceived}</td>
                         </tr>
@@ -457,9 +503,9 @@ export function AdminPurchasesModule({
                   <p className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-[10.5px] font-medium text-rose-700">Motivo de cancelación: {selectedPurchase.purchase.cancellationReason}</p>
                 ) : null}
                 {selectedPurchase.receipts.length ? (
-                  <p className="text-[10.5px] font-medium text-slate-500">Recepciones: {selectedPurchase.receipts.map((receipt) => receipt.code).join(" · ")}</p>
+                  <p className="text-[10.5px] font-medium text-slate-500">Recepciones: {selectedPurchase.receipts.map((receipt) => <Link key={receipt.id} href={`/admin/compras?purchaseId=${encodeURIComponent(receipt.purchaseId)}`} className="mr-1 text-blue-600 hover:underline">{receipt.code}</Link>)}</p>
                 ) : null}
-                <PurchaseActions purchaseId={selectedPurchase.purchase.id} status={selectedPurchase.purchase.status} />
+                <PurchaseActions purchaseId={selectedPurchase.purchase.id} status={selectedPurchase.purchase.status} canManage={canManage} />
               </div>
             </PanelCard>
           ) : null}
@@ -484,7 +530,7 @@ export function AdminPurchasesModule({
         </div>
       </section>
 
-      {canManage ? (
+      {canManage || canReceive ? (
         <section id="purchase-tools" className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs">
           <h2 className="mb-3 text-sm font-bold tracking-tight text-slate-900">Flujo de compras</h2>
           {controls}
@@ -576,6 +622,37 @@ function PurchasesPager({ page, total, queryString, totalItems, pageSize }: { pa
             </Link>
           ))}
         </nav>
+      ) : null}
+    </div>
+  );
+}
+
+function RequestsPager({
+  page,
+  total,
+  queryString,
+  totalItems,
+}: {
+  page: number;
+  total: number;
+  queryString: string;
+  totalItems: number;
+}) {
+  const href = (value: number) => {
+    const params = new URLSearchParams(queryString);
+    params.set("requestStatus", params.get("requestStatus") ?? "SUBMITTED");
+    params.set("requestPage", String(value));
+    return `/admin/compras?${params.toString()}`;
+  };
+  return (
+    <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
+      <span>{totalItems} solicitudes</span>
+      {total > 1 ? (
+        <div className="flex gap-1">
+          <Link href={href(Math.max(1, page - 1))} className="rounded-md border border-slate-200 px-2 py-1">Anterior</Link>
+          <span className="px-2 py-1 font-semibold">{page}/{total}</span>
+          <Link href={href(Math.min(total, page + 1))} className="rounded-md border border-slate-200 px-2 py-1">Siguiente</Link>
+        </div>
       ) : null}
     </div>
   );

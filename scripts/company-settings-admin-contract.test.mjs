@@ -19,7 +19,7 @@ const runtime = read("src/lib/company-settings-runtime.ts");
 const layout = read("src/app/admin/layout.tsx");
 const api = read("src/app/api/admin/configuracion/route.ts");
 
-assert.match(page, /company\.settings\.manage/);
+assert.match(page, /settings\.business\.edit/);
 for (const field of ["legalName", "commercialName", "ruc", "whatsapp", "phones", "email", "address", "hours", "socials", "locations", "paymentMethods", "guaranteeTerms", "coverage", "legalLinks"]) {
   assert.match(form, new RegExp(field), `${field} should be editable from admin`);
 }

@@ -8,6 +8,8 @@ import {
   getUserPage,
   listStaffInvitations,
   parseUserFilters,
+  canInviteRole,
+  staffRoleCatalog,
 } from "@/lib/user-administration";
 
 export const metadata: Metadata = {
@@ -33,10 +35,16 @@ export default async function AdminUsuariosPage({
 }) {
   const actor = await requirePermission("users.view");
   const query = toQuery((await searchParams) ?? {});
-  const filters = parseUserFilters(query);
+  let filters: ReturnType<typeof parseUserFilters> = {};
+  let loadError = false;
+  try {
+    filters = parseUserFilters(query);
+  } catch (error) {
+    console.error("ColdPower: filtros de usuarios inválidos", error);
+    loadError = true;
+  }
   let pendingInvitations = 0;
   let invitations: Awaited<ReturnType<typeof listStaffInvitations>> = { items: [], totalItems: 0 };
-  let loadError = false;
   try {
     [pendingInvitations, invitations] = await Promise.all([
       getPendingInvitationsCount(),
@@ -59,7 +67,17 @@ export default async function AdminUsuariosPage({
     }
   }
 
-  const page = await getUserPage(filters, pendingInvitations);
+  let page: Awaited<ReturnType<typeof getUserPage>> = {
+    items: [], page: 1, pageSize: 25, totalItems: 0, totalPages: 1,
+    metrics: { total: 0, active: 0, inactive: 0, suspended: 0, administrators: 0, pendingInvitations },
+  };
+  try {
+    page = await getUserPage(filters, pendingInvitations);
+  } catch (error) {
+    console.error("ColdPower: no se pudo cargar la base de usuarios", error);
+    loadError = true;
+  }
+  const inviteRoles = staffRoleCatalog.filter((option) => canInviteRole(actor.role, option.value));
   const users = page.items.map((user) => ({
     ...user,
     createdAt: user.createdAt,
@@ -73,7 +91,8 @@ export default async function AdminUsuariosPage({
       filters={filters}
       invitations={invitations.items}
       canInvite={can(actor.role, "users.invite")}
-      canManage={can(actor.role, "users.manage")}
+      canManage={can(actor.role, "roles.manage")}
+      inviteRoles={inviteRoles}
       allowSuperadmin={actor.role === "SUPERADMIN"}
       exportHref={exportHref}
       selectedId={selectedId}

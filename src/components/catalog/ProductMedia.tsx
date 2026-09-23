@@ -9,8 +9,8 @@ type ProductMediaProps = {
 };
 
 export function ProductMedia({ product, priority = false, sizes = "(min-width: 1280px) 240px, (min-width: 640px) 33vw, 50vw", className = "" }: ProductMediaProps) {
-  const image = product.images[0] ?? "/images/product-placeholder-repuesto.svg";
-  const isReference = image.includes("/cat-") || image.includes("placeholder");
+  const image = product.images[0] ?? "/images/products/product-placeholder.webp";
+  const isReference = image.includes("/categories/") || image.includes("/families/") || image.includes("/products/") || image.includes("placeholder") || image.includes("reference");
 
   return (
     <div className={"relative aspect-square overflow-hidden bg-surface-page " + className}>

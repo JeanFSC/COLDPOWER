@@ -5,6 +5,9 @@ import { users } from "@/db/schema";
 import { notificationStates, type NotificationState } from "@/lib/operations-validation";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { dispatchNotificationEvent } from "@/lib/notification-rules-service";
+import { isNotificationTypeEnabled } from "@/lib/notification-preferences";
+import { notificationPermissionForType } from "@/lib/notification-permissions";
+import { allOperationalRoles, can, type AppRole } from "@/lib/roles";
 import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
@@ -13,10 +16,8 @@ type Actor = { userId: string | null; role?: string | null };
 export type NotificationInput = { type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; recipientIds?: string[] };
 
 const typeAliases: Record<string, string> = { PRODUCT_OUT_OF_STOCK: "INVENTORY_CRITICAL", STOCK_MINIMUM: "INVENTORY_LOW", TRANSFER_APPROVAL_PENDING: "TRANSFER_UPDATED" };
-const targetRoles: Record<string, string[]> = { QUOTE_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], LEAD_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], PAYMENT_APPROVED: ["GERENCIA", "OPERACIONES_VENTAS", "SUPERADMIN"], PAYMENT_FAILED: ["GERENCIA", "OPERACIONES_VENTAS", "SUPERADMIN"], ORDER_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], ORDER_READY: ["OPERACIONES_VENTAS", "ALMACEN", "SUPERADMIN"], SALE_CREATED: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], INVENTORY_LOW: ["ALMACEN", "COMPRAS", "GERENCIA", "SUPERADMIN"], INVENTORY_CRITICAL: ["ALMACEN", "GERENCIA", "SUPERADMIN"], FOLLOW_UP_OVERDUE: ["GERENCIA", "OPERACIONES_VENTAS", "VENTAS", "SUPERADMIN"], TRANSFER_UPDATED: ["ALMACEN", "GERENCIA", "SUPERADMIN"] };
-
 function normalizeType(value: string) { const candidate = typeAliases[value.trim().toUpperCase()] ?? value.trim().toUpperCase(); return candidate.slice(0, 80); }
-function safeLink(value?: string | null) { const link = value?.trim(); if (!link) return null; if (link.startsWith("/") && !link.startsWith("//")) return link.slice(0, 500); try { const url = new URL(link); return ["http:", "https:"].includes(url.protocol) ? url.toString().slice(0, 500) : null; } catch { return null; } }
+function safeLink(value?: string | null) { const link = value?.trim(); return link && link.startsWith("/") && !link.startsWith("//") ? link.slice(0, 500) : null; }
 function safeMetadata(value?: Record<string, unknown> | null) { const sanitized = sanitizeAuditValue(value ?? null); return sanitized && typeof sanitized === "object" && !Array.isArray(sanitized) ? sanitized as Record<string, unknown> : null; }
 function normalizeInput(input: NotificationInput & { dedupeKey?: string | null }) { const type = normalizeType(input.type); const metadata = { ...(safeMetadata(input.metadata) ?? {}), ...(input.dedupeKey ? { dedupeKey: input.dedupeKey.slice(0, 240) } : {}) }; return { type, title: input.title.trim().slice(0, 180), body: input.body.trim().slice(0, 1000), link: safeLink(input.link), metadata: Object.keys(metadata).length ? metadata : null, dedupeKey: input.dedupeKey?.trim().slice(0, 240) || null }; }
 function dayStart(value: string) { return new Date(`${value}T00:00:00-05:00`); }
@@ -81,7 +82,14 @@ export async function listNotifications(recipientId: string) { return (await get
 export async function updateNotificationState(id: string, state: NotificationState, actor: Actor) { if (!actor.userId || !(notificationStates as readonly string[]).includes(state)) throw new Error("Notificación o estado no válido."); const patch = state === "READ" ? { state, readAt: new Date(), dismissedAt: null } : state === "DISMISSED" ? { state, dismissedAt: new Date(), readAt: null } : { state, readAt: null, dismissedAt: null }; const [updated] = await getDb().update(notifications).set(patch).where(and(eq(notifications.id, id), eq(notifications.recipientId, actor.userId))).returning(); if (!updated) throw new Error("Notificación no encontrada."); return mapNotification(updated); }
 export async function bulkUpdateNotificationState(ids: string[], state: NotificationState, actor: Actor) { if (!actor.userId || !ids.length || ids.length > 200 || !(notificationStates as readonly string[]).includes(state)) throw new Error("Notificaciones o estado no válidos."); const patch = state === "READ" ? { state, readAt: new Date(), dismissedAt: null } : state === "DISMISSED" ? { state, dismissedAt: new Date(), readAt: null } : { state, readAt: null, dismissedAt: null }; const updated = await getDb().update(notifications).set(patch).where(and(eq(notifications.recipientId, actor.userId), inArray(notifications.id, ids))).returning(); return updated.map(mapNotification); }
 
-async function staffIds(type: string) { const roles = targetRoles[type] ?? ["SUPERADMIN", "GERENCIA", "OPERACIONES_VENTAS"]; return getDb().select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), isNotNull(users.roleCode), inArray(users.roleCode, roles as never[]))); }
+async function staffIds(type: string) {
+  const permission = notificationPermissionForType(type);
+  const rows = await getDb()
+    .select({ id: users.id, roleCode: users.roleCode })
+    .from(users)
+    .where(and(eq(users.status, "ACTIVE"), isNotNull(users.roleCode), inArray(users.roleCode, allOperationalRoles as never[])));
+  return rows.filter((row) => row.roleCode && can(row.roleCode as AppRole, permission)).map(({ id }) => ({ id }));
+}
 async function dispatchConfiguredRule(input: NotificationInput, normalized: ReturnType<typeof normalizeInput>) {
   try {
     const metadata = safeMetadata(input.metadata);
@@ -102,15 +110,36 @@ export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: st
   const normalized = normalizeInput(input);
   const staff = await staffIds(normalized.type);
   const explicitIds = [...new Set((input.recipientIds ?? []).filter((id) => /^[A-Za-z0-9_-]{1,160}$/.test(id)))];
+  const permission = notificationPermissionForType(normalized.type);
   const explicit = explicitIds.length
-    ? await getDb().select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), inArray(users.id, explicitIds)))
+    ? await getDb().select({ id: users.id, roleCode: users.roleCode, role: users.role }).from(users).where(and(eq(users.status, "ACTIVE"), inArray(users.id, explicitIds)))
     : [];
-  const recipientIds = [...new Set([...staff.map(({ id }) => id), ...explicit.map(({ id }) => id)])];
+  const explicitAllowed = explicit
+    .filter((row) => can(row.roleCode ? row.roleCode as AppRole : row.role === "admin" ? "admin" : "customer", permission))
+    .map(({ id }) => id);
+  const recipientIds = [...new Set([...staff.map(({ id }) => id), ...explicitAllowed])];
   if (!recipientIds.length) { await dispatchConfiguredRule(input, normalized); return []; }
   const rows = await createNotifications(recipientIds.map((recipientId) => ({ recipientId, ...normalized })));
   await dispatchConfiguredRule(input, normalized);
   return rows;
 }
-export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>) { if (!rows.length) return []; const values = rows.map((row) => { const normalized = normalizeInput(row); return { id: `notification-${crypto.randomUUID()}`, recipientId: row.recipientId, type: normalized.type, title: normalized.title, body: normalized.body, link: normalized.link, metadata: normalized.metadata, dedupeKey: normalized.dedupeKey }; }); return getDb().insert(notifications).values(values).onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] }).returning(); }
+export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>) {
+  if (!rows.length) return [];
+  const db = getDb();
+  const recipientIds = [...new Set(rows.map((row) => row.recipientId))];
+  const preferenceRows = await db
+    .select({ userId: notificationPreferences.userId, preferences: notificationPreferences.preferences })
+    .from(notificationPreferences)
+    .where(inArray(notificationPreferences.userId, recipientIds));
+  const preferencesByUser = new Map(preferenceRows.map((row) => [row.userId, row.preferences]));
+  const values = rows
+    .map((row) => {
+      const normalized = normalizeInput(row);
+      return { id: `notification-${crypto.randomUUID()}`, recipientId: row.recipientId, type: normalized.type, title: normalized.title, body: normalized.body, link: normalized.link, metadata: normalized.metadata, dedupeKey: normalized.dedupeKey };
+    })
+    .filter((row) => isNotificationTypeEnabled(preferencesByUser.get(row.recipientId), row.type));
+  if (!values.length) return [];
+  return db.insert(notifications).values(values).onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] }).returning();
+}
 export async function getNotificationPreferences(userId: string) { const [row] = await getDb().select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); return row?.preferences ?? {}; }
 export async function saveNotificationPreferences(userId: string, input: unknown) { const value = input && typeof input === "object" ? input as Record<string, unknown> : {}; const preferences = Object.fromEntries(Object.entries(value).filter(([key, setting]) => /^[A-Za-z0-9_.:-]{1,80}$/.test(key) && typeof setting === "boolean")) as Record<string, boolean>; const [existing] = await getDb().select({ userId: notificationPreferences.userId }).from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1); const [row] = existing ? await getDb().update(notificationPreferences).set({ preferences, updatedAt: new Date() }).where(eq(notificationPreferences.userId, userId)).returning() : await getDb().insert(notificationPreferences).values({ userId, preferences }).returning(); return row.preferences; }

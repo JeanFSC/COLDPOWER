@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, ClipboardList, PackageCheck, Truck } from "lucide-react";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 
@@ -26,10 +27,13 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
 
-async function post(path: string, body: unknown) {
+async function post(path: string, body: unknown, idempotencyKey?: string) {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    },
     body: JSON.stringify(body),
   });
   const result = (await response.json()) as { error?: string | { message?: string } };
@@ -107,11 +111,19 @@ export function PurchasesOperations({
   locations,
   products,
   purchases,
+  canManage = true,
+  canReceive = true,
+  initialRequestProductId,
+  initialRequestLocationId,
 }: {
   suppliers: Supplier[];
   locations: Location[];
   products: Product[];
   purchases: Purchase[];
+  canManage?: boolean;
+  canReceive?: boolean;
+  initialRequestProductId?: string;
+  initialRequestLocationId?: string;
 }) {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error">("success");
@@ -121,9 +133,9 @@ export function PurchasesOperations({
   const [requestProductQuery, setRequestProductQuery] = useState("");
   const [requestProductOptions, setRequestProductOptions] = useState<Product[]>(products);
 
-  const [requestLocationId, setRequestLocationId] = useState("");
+  const [requestLocationId, setRequestLocationId] = useState(initialRequestLocationId ?? "");
   const [requestSource, setRequestSource] = useState("MANUAL");
-  const [requestProductId, setRequestProductId] = useState("");
+  const [requestProductId, setRequestProductId] = useState(initialRequestProductId ?? "");
   const [orderSupplierId, setOrderSupplierId] = useState("");
   const [orderLocationId, setOrderLocationId] = useState("");
   const [orderProductId, setOrderProductId] = useState("");
@@ -312,6 +324,7 @@ export function PurchasesOperations({
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <form
+          id="purchase-request-tools"
           onSubmit={(event) =>
             void submit(
               event,
@@ -335,7 +348,7 @@ export function PurchasesOperations({
               },
             )
           }
-          className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs"
+          className={canManage ? "rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs" : "hidden"}
         >
           <StepHeading
             number="1"
@@ -417,8 +430,9 @@ export function PurchasesOperations({
         </form>
 
         <form
+          id="supplier-tools"
           onSubmit={(event) => void submitSupplier(event)}
-          className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs"
+          className={canManage ? "rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs" : "hidden"}
         >
           <StepHeading
             number="2"
@@ -495,6 +509,7 @@ export function PurchasesOperations({
         </form>
 
         <form
+          id="purchase-order-tools"
           onSubmit={(event) =>
             void submit(
               event,
@@ -520,7 +535,7 @@ export function PurchasesOperations({
               },
             )
           }
-          className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs"
+          className={canManage ? "rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs" : "hidden"}
         >
           <StepHeading
             number="3"
@@ -651,7 +666,7 @@ export function PurchasesOperations({
               },
             )
           }
-          className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs lg:col-span-2"
+          className="hidden"
         >
           <StepHeading
             number="4"
@@ -713,11 +728,15 @@ export function PurchasesOperations({
           </div>
           <p className="mt-3 flex items-start gap-1.5 text-xs text-slate-500">
             <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
-            Genera `PURCHASE_RECEIPT`, actualiza saldo y deja movimiento en Kardex dentro de la
+             Genera una entrada de recepción, actualiza saldo y deja movimiento en Kardex dentro de la
             misma transacción.
           </p>
         </form>
       </div>
+
+      {canReceive ? (
+        <PurchaseReceptionForm />
+      ) : null}
 
       {message ? (
         <p
@@ -732,5 +751,166 @@ export function PurchasesOperations({
         </p>
       ) : null}
     </section>
+  );
+}
+
+type ReceivingLine = {
+  id: string;
+  productId: string;
+  sku: string;
+  productName: string;
+  quantityOrdered: number;
+  quantityReceived: number;
+  quantityPending: number;
+};
+
+type ReceivingOption = {
+  id: string;
+  code: string;
+  currency: string;
+  supplierName: string;
+  locationName: string;
+  items: ReceivingLine[];
+};
+
+function PurchaseReceptionForm() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [options, setOptions] = useState<ReceivingOption[]>([]);
+  const [purchaseId, setPurchaseId] = useState("");
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      void fetch("/api/admin/compras/recepciones/opciones?query=" + encodeURIComponent(query.trim()), {
+        signal: controller.signal,
+      })
+        .then(async (response) => {
+          const payload = (await response.json()) as { options?: ReceivingOption[]; error?: unknown };
+          if (!response.ok)
+            throw new Error(typeof payload.error === "string" ? payload.error : "No se pudieron cargar las OC.");
+          setOptions(payload.options ?? []);
+          setPurchaseId((current) => (payload.options?.some((option) => option.id === current) ? current : ""));
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setOptions([]);
+          setPurchaseId("");
+          setMessage(error instanceof Error ? error.message : "No se pudieron cargar las OC.");
+        })
+        .finally(() => setLoading(false));
+    }, 180);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
+
+  const selected = options.find((option) => option.id === purchaseId);
+  const lines = selected?.items ?? [];
+  const items = lines
+    .map((line) => ({ productId: line.productId, quantity: Number(quantities[line.id] ?? 0) }))
+    .filter((line) => Number.isInteger(line.quantity) && line.quantity > 0);
+  const ready = Boolean(selected && items.length);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!ready) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await post("/api/admin/compras/recepciones", { purchaseId, items }, idempotencyKey);
+      setMessage("Recepción registrada. Stock y Kardex fueron actualizados dentro de la misma transacción.");
+      setQuantities({});
+      setPurchaseId("");
+      setIdempotencyKey(crypto.randomUUID());
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo registrar la recepción.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form id="purchase-receipt-tools" onSubmit={(event) => void submit(event)} className="rounded-xl border border-slate-200/90 bg-white p-4">
+      <StepHeading number="4" eyebrow="Recepción" title="Ingresa lo recibido al inventario" icon={PackageCheck} />
+      <p className="mt-3 max-w-2xl text-xs text-slate-500">
+        Elige una OC pendiente y confirma sus líneas. Solo las cantidades capturadas se registran como entrada.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.8fr)]">
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.currentTarget.value)}
+          placeholder="Buscar OC, proveedor o SKU"
+          aria-label="Buscar orden pendiente de recepción"
+          className={inputClass}
+        />
+        <AdminSelect
+          ariaLabel="Orden pendiente de recepción"
+          value={purchaseId}
+          onValueChange={(value) => {
+            setPurchaseId(value);
+            setQuantities({});
+            setMessage("");
+          }}
+          options={[
+            { value: "", label: loading ? "Cargando órdenes…" : "Selecciona una orden pendiente" },
+            ...options.map((option) => ({
+              value: option.id,
+              label: option.code + " · " + option.supplierName + " · " + option.locationName,
+            })),
+          ]}
+        />
+      </div>
+      {selected ? (
+        <div className="mt-3 grid gap-2">
+          <p className="text-[11px] font-extrabold text-slate-600">
+            Líneas pendientes · {selected.currency}
+          </p>
+          {lines.map((line) => (
+            <label key={line.id} className="grid gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 sm:grid-cols-[minmax(0,1fr)_130px] sm:items-center">
+              <span className="min-w-0">
+                <strong className="block truncate text-sm font-bold text-slate-700">{line.sku} · {line.productName}</strong>
+                <span className="mt-1 block text-[11px] text-slate-500">
+                  Pendiente: {line.quantityPending} de {line.quantityOrdered} · recibida: {line.quantityReceived}
+                </span>
+              </span>
+              <input
+                type="number"
+                min="0"
+                max={line.quantityPending}
+                step="1"
+                value={quantities[line.id] ?? ""}
+                onChange={(event) => setQuantities((current) => ({ ...current, [line.id]: event.currentTarget.value }))}
+                aria-label={"Cantidad recibida de " + line.sku}
+                placeholder="0"
+                className={inputClass}
+              />
+            </label>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-3">
+          <DependencyNote>{options.length ? "Selecciona una OC para ver sus líneas pendientes." : "No hay órdenes pendientes de recepción para esta búsqueda."}</DependencyNote>
+        </div>
+      )}
+      {message ? <p role="status" className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-600">{message}</p> : null}
+      <div className="mt-3 flex justify-end">
+        <button disabled={busy || !ready} className={primaryButtonClass}>
+          {busy ? "Registrando…" : "Registrar recepción"}
+        </button>
+      </div>
+      <p className="mt-3 flex items-start gap-1.5 text-xs text-slate-500">
+        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
+         La recepción registra las entradas, actualiza el saldo y deja Kardex en la misma transacción.
+      </p>
+    </form>
   );
 }

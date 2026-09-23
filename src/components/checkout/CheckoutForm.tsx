@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { AlertTriangle, ArrowLeft, ArrowRight, Building2, Check, LoaderCircle, Lock, MapPin, Package, ShoppingBag, Truck } from "lucide-react";
 import { Button } from "@/components/shared/Button";
 import { formatProductPrice } from "@/lib/formatters";
@@ -56,7 +57,7 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
   if (!cart.items.length) {
     return (
       <section className="rounded-lg border border-border bg-white p-6 shadow-card">
-        <ShoppingBag className="h-9 w-9 text-primary" aria-hidden="true" />
+        <ShoppingBag className="h-9 w-9 text-brand-secondary-600" aria-hidden="true" />
         <h2 className="mt-4 font-display text-2xl font-black text-dark">Tu carrito está vacío</h2>
         <p className="mt-2 text-sm leading-6 text-gray-text">Agrega productos con precio publicado para comprar en línea.</p>
         <div className="mt-5 flex flex-wrap gap-3"><Button href="/catalogo" variant="primary">Ver catálogo</Button><Button href="/cuenta/pedidos" variant="outline">Mis pedidos</Button></div>
@@ -67,7 +68,7 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
     return (
       <section className="rounded-lg border border-warning/30 bg-warning/10 p-6 text-sm leading-6 text-dark" role="alert">
         <AlertTriangle className="mb-2 h-6 w-6 text-warning" aria-hidden="true" />
-        Tu carrito tiene productos que no se pueden pagar ahora (sin precio, retirados o en otra moneda). <a href="/carrito" className="font-extrabold text-primary underline">Revisa tu carrito</a>.
+        Tu carrito tiene productos que no se pueden pagar ahora (sin precio, retirados o en otra moneda). <Link href="/carrito" className="font-extrabold text-brand-secondary-600 underline">Revisa tu carrito</Link>.
       </section>
     );
   }
@@ -146,7 +147,7 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
         <ol className="flex flex-wrap items-center gap-2 text-sm font-bold" aria-label="Pasos del checkout">
           {steps.map((label, index) => (
             <li key={label} className="flex items-center gap-2">
-              <button type="button" className={index === step ? "inline-flex items-center gap-2 rounded-pill bg-dark px-3 py-1.5 text-white" : index < step ? "inline-flex items-center gap-2 rounded-pill bg-primary/10 px-3 py-1.5 text-primary" : "inline-flex items-center gap-2 rounded-pill bg-background px-3 py-1.5 text-gray-text"} aria-current={index === step ? "step" : undefined} disabled={index > step} onClick={() => goTo(index)}>
+              <button type="button" className={index === step ? "inline-flex items-center gap-2 rounded-pill bg-dark px-3 py-1.5 text-white" : index < step ? "inline-flex items-center gap-2 rounded-pill bg-brand-secondary-600/10 px-3 py-1.5 text-brand-secondary-600" : "inline-flex items-center gap-2 rounded-pill bg-background px-3 py-1.5 text-gray-text"} aria-current={index === step ? "step" : undefined} disabled={index > step} onClick={() => goTo(index)}>
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs">{index < step ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : index + 1}</span>
                 {label}
               </button>
@@ -163,8 +164,8 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
                 const Icon = option.icon;
                 const active = form.deliveryMethod === option.value;
                 return (
-                  <button key={option.value} type="button" role="radio" aria-checked={active} onClick={() => update("deliveryMethod", option.value)} className={active ? "rounded-lg border-2 border-primary bg-primary/5 p-4 text-left" : "rounded-lg border border-border bg-white p-4 text-left hover:border-primary/50"}>
-                    <Icon className={active ? "h-6 w-6 text-primary" : "h-6 w-6 text-gray-text"} aria-hidden="true" />
+                  <button key={option.value} type="button" role="radio" aria-checked={active} onClick={() => update("deliveryMethod", option.value)} className={active ? "rounded-lg border-2 border-brand-secondary-600 bg-brand-secondary-600/5 p-4 text-left" : "rounded-lg border border-border bg-white p-4 text-left hover:border-brand-secondary-600/50"}>
+                    <Icon className={active ? "h-6 w-6 text-brand-secondary-600" : "h-6 w-6 text-gray-text"} aria-hidden="true" />
                     <p className="mt-2 font-extrabold text-dark">{option.title}</p>
                     <p className="mt-1 text-xs leading-5 text-gray-text">{option.description}</p>
                   </button>
@@ -236,8 +237,8 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
         </div>
       </section>
 
-      <aside className="h-fit rounded-lg border border-border bg-dark p-5 text-white shadow-float sm:p-6 lg:sticky lg:top-28" aria-label="Resumen del pedido">
-        <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-primary">Tu pedido</p>
+      <aside className="cp-texture-dark h-fit rounded-lg border border-brand-primary-900 p-5 text-white shadow-float max-lg:sticky max-lg:bottom-0 max-lg:z-20 sm:p-6 lg:sticky lg:top-28" aria-label="Resumen del pedido">
+        <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-action-accent-500">Tu pedido</p>
         <ul className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-3">
           {cart.items.map((item) => (
             <li key={item.productId} className="flex min-w-0 justify-between gap-4 border-b border-white/10 pb-3 text-sm">

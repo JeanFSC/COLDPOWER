@@ -20,7 +20,9 @@ test("notificaciones: deduplicación transaccional, sanitización y ownership", 
   assert.match(service, /sanitizeAuditValue/);
   assert.match(service, /safeLink/);
   assert.match(service, /users\.status/);
-  assert.match(service, /targetRoles/);
+  assert.match(service, /notificationPermissionForType/);
+  assert.match(service, /notificationPreferences/);
+  assert.match(service, /startsWith\("\/\/"\)/);
 });
 
 test("notificaciones: contratos API, bulk, preferencias, métricas y RBAC", () => {

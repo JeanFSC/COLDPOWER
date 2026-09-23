@@ -3,8 +3,11 @@ import { and, count, desc, eq, gte, ilike, lt, or, sql, type SQL } from "drizzle
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { isAppRole, permissionsForRole, type AppRole } from "@/lib/roles";
+import type { UserStatus } from "@/lib/user-administration-contracts";
 
-export type UserStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export { staffRoleCatalog, userRoleCatalog } from "@/lib/user-administration-contracts";
+export type { UserStatus } from "@/lib/user-administration-contracts";
+
 export type ManagedUser = typeof users.$inferSelect;
 export type UserFilters = { query?: string; role?: string; status?: UserStatus; createdFrom?: string; createdTo?: string; lastSignInFrom?: string; lastSignInTo?: string; page?: number; pageSize?: number };
 export type UserListItem = { id: string; name: string | null; email: string; phone: string | null; role: AppRole; permissions: string[]; status: UserStatus; lastSignInAt: Date | null; createdAt: Date; updatedAt: Date; clerkSyncStatus: string; clerkSyncError: string | null; clerkSyncedAt: Date | null };

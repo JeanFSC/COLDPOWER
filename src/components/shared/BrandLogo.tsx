@@ -13,7 +13,7 @@ const sizeStyles: Record<BrandLogoSize, { image: string; gap: string }> = {
 function LogoLockup({ variant, className }: { variant: "dark" | "light"; className?: string }) {
   return (
     <Image
-      src={variant === "light" ? "/brand/logo-coldpower-lockup-light-transparent.png" : "/brand/logo-coldpower-lockup.png"}
+      src={variant === "light" ? "/brand/logo-coldpower-lockup-light.webp" : "/brand/logo-coldpower-lockup.webp"}
       alt="ColdPower"
       width={2172}
       height={724}

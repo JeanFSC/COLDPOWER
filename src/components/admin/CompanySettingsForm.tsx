@@ -53,11 +53,10 @@ function toState(settings: CompanySettings, version = settings.version ?? 0): Fo
   };
 }
 function lines(value: string) { return value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean); }
-const inputClass = "h-10 w-full max-w-md rounded-md border border-border bg-white px-3 text-sm text-dark outline-primary";
-const textAreaClass = "min-h-24 w-full max-w-md rounded-md border border-border bg-white p-3 text-sm text-dark outline-primary";
-const colorInputClass = "h-10 w-full max-w-[140px] rounded-md border border-border bg-white px-3 text-sm text-dark outline-primary";
-const extendedInputClass = "h-10 w-full rounded-lg border border-border bg-white px-3 text-sm text-dark outline-primary transition focus:border-primary";
-const extendedTextAreaClass = "min-h-28 w-full rounded-lg border border-border bg-white p-3 text-sm text-dark outline-primary transition focus:border-primary";
+const inputClass = "h-10 w-full max-w-md rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
+const colorInputClass = "h-10 w-full max-w-[140px] rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
+const extendedInputClass = "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
+const extendedTextAreaClass = "min-h-28 w-full rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
 
 export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGeneral?: ReactNode; belowBranding?: ReactNode } = {}) {
   const router = useRouter();
@@ -138,7 +137,7 @@ export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGene
     finally { setBusy(false); }
   }
 
-  if (loading) return <p className="rounded-xl border border-dashed border-border bg-white p-5 text-sm text-gray-text">Cargando configuración empresarial…</p>;
+  if (loading) return <p className="rounded-xl border border-dashed border-slate-200 bg-white p-5 text-sm text-slate-500">Cargando configuración empresarial…</p>;
   const provinceOptions = form.department ? provincesForDepartment(form.department) : [];
   const districtOptions = form.department && form.province ? districtsForProvince(form.department, form.province) : [];
   return <form id="company-settings-form" onSubmit={save} className="grid gap-4">

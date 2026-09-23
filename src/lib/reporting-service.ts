@@ -1,6 +1,6 @@
-import { and, count, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, lte } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditLogs } from "@/db/schema";
+import { auditLogs, users } from "@/db/schema";
 import { reportScheduleRuns, reportSchedules } from "@/db/reporting-schema";
 import {
   getOperationsDashboard,
@@ -12,7 +12,8 @@ import {
   parseDashboardFilters,
   type DashboardFilters,
 } from "@/lib/dashboard-contract";
-import { allOperationalRoles, type AppRole } from "@/lib/roles";
+import { allOperationalRoles, can, type AppRole } from "@/lib/roles";
+import { createNotifications } from "@/lib/notifications-service";
 
 export const reportScheduleFrequencies = ["DAILY", "WEEKLY", "MONTHLY"] as const;
 export type ReportScheduleFrequency = (typeof reportScheduleFrequencies)[number];
@@ -132,6 +133,18 @@ export { listReportOptions };
 export async function createReportSchedule(inputValue: unknown, actor: ReportScheduleActor) {
   const input = normalizeReportScheduleInput(inputValue);
   const db = getDb();
+  const unauthorizedRole = input.recipientRoles.find((role) => !allOperationalRoles.includes(role) || !can(role as AppRole, "reports.view"));
+  if (unauthorizedRole) throw new Error(`El rol ${unauthorizedRole} no puede recibir reportes.`);
+  if (input.recipientUserIds.length) {
+    const recipients = await db.select({ id: users.id, roleCode: users.roleCode, role: users.role }).from(users).where(inArray(users.id, input.recipientUserIds));
+    const recipientById = new Map(recipients.map((recipient) => [recipient.id, recipient]));
+    const unauthorizedUser = input.recipientUserIds.find((recipientId) => {
+      const recipient = recipientById.get(recipientId);
+      const role = recipient?.roleCode ? recipient.roleCode as AppRole : recipient?.role === "admin" ? "admin" : "customer";
+      return !recipient || !can(role, "reports.view");
+    });
+    if (unauthorizedUser) throw new Error("Uno de los destinatarios no tiene permiso para ver reportes.");
+  }
   const existing = await db
     .select()
     .from(reportSchedules)
@@ -236,6 +249,174 @@ export async function cancelReportSchedule(scheduleId: string, actor: ReportSche
     return [row];
   });
   return updated;
+}
+
+async function activeReportRecipientIds(
+  schedule: typeof reportSchedules.$inferSelect,
+) {
+  const db = getDb();
+  const canReceive = (row: { id: string; roleCode: string | null; role: string }) => {
+    const role = row.roleCode ? row.roleCode as AppRole : row.role === "admin" ? "admin" : "customer";
+    return can(role, "reports.view");
+  };
+  const byRole = schedule.recipientRoles.length
+    ? await db
+        .select({ id: users.id, roleCode: users.roleCode, role: users.role })
+        .from(users)
+        .where(
+          and(
+            eq(users.status, "ACTIVE"),
+            inArray(users.roleCode, schedule.recipientRoles as never[]),
+          ),
+        )
+    : [];
+  const explicit = schedule.recipientUserIds.length
+    ? await db
+        .select({ id: users.id, roleCode: users.roleCode, role: users.role })
+        .from(users)
+        .where(and(eq(users.status, "ACTIVE"), inArray(users.id, schedule.recipientUserIds)))
+    : [];
+  return [...new Set([...byRole, ...explicit].filter(canReceive).map((row) => row.id))];
+}
+
+function reportNotificationBody(
+  schedule: typeof reportSchedules.$inferSelect,
+  snapshot: Awaited<ReturnType<typeof getReportSnapshot>>,
+) {
+  const amount = snapshot.currency
+    ? new Intl.NumberFormat("es-PE", { style: "currency", currency: snapshot.currency, maximumFractionDigits: 0 }).format(snapshot.salesRange.total)
+    : "N/D";
+  return `El reporte "${schedule.name}" ya está disponible. Ventas confirmadas del período: ${amount}.`;
+}
+
+export async function processDueReportSchedules(now = new Date()) {
+  const db = getDb();
+  const candidates = await db
+    .select()
+    .from(reportSchedules)
+    .where(and(eq(reportSchedules.status, "ACTIVE"), lte(reportSchedules.nextRunAt, now)))
+    .orderBy(reportSchedules.nextRunAt)
+    .limit(50);
+  let processed = 0;
+  let succeeded = 0;
+  let failed = 0;
+
+  for (const candidate of candidates) {
+    const claim = await db.transaction(async (tx) => {
+      const [schedule] = await tx
+        .select()
+        .from(reportSchedules)
+        .where(
+          and(
+            eq(reportSchedules.id, candidate.id),
+            eq(reportSchedules.status, "ACTIVE"),
+            lte(reportSchedules.nextRunAt, now),
+          ),
+        )
+        .for("update")
+        .limit(1);
+      if (!schedule) return null;
+      const scheduledFor = schedule.nextRunAt;
+      const [existing] = await tx
+        .select()
+        .from(reportScheduleRuns)
+        .where(
+          and(
+            eq(reportScheduleRuns.scheduleId, schedule.id),
+            eq(reportScheduleRuns.scheduledFor, scheduledFor),
+          ),
+        )
+        .for("update")
+        .limit(1);
+      if (existing?.status === "RUNNING" || existing?.status === "SUCCEEDED") return null;
+      const [run] = existing
+        ? await tx
+            .update(reportScheduleRuns)
+            .set({ status: "RUNNING", error: null, startedAt: now, finishedAt: null })
+            .where(eq(reportScheduleRuns.id, existing.id))
+            .returning()
+        : await tx
+            .insert(reportScheduleRuns)
+            .values({
+              id: id("report-schedule-run"),
+              scheduleId: schedule.id,
+              scheduledFor,
+              status: "RUNNING",
+              filterSnapshot: schedule.filters,
+              startedAt: now,
+            })
+            .returning();
+      if (!run) throw new Error("No se pudo iniciar la ejecución del reporte.");
+      return { schedule, run, scheduledFor };
+    });
+    if (!claim) continue;
+    processed += 1;
+
+    try {
+      const filters = claim.schedule.filters as DashboardFilters;
+      const snapshot = await getReportSnapshot(filters, { userId: claim.schedule.createdBy, role: "REPORTES" });
+      const recipientIds = await activeReportRecipientIds(claim.schedule);
+      const notifications = await createNotifications(
+        recipientIds.map((recipientId) => ({
+          recipientId,
+          type: "SCHEDULED_REPORT",
+          title: `Reporte listo: ${claim.schedule.name}`,
+          body: reportNotificationBody(claim.schedule, snapshot),
+          link: `/admin/reportes?${dashboardFiltersToQuery(filters).toString()}`,
+          metadata: {
+            scheduleId: claim.schedule.id,
+            scheduledFor: claim.scheduledFor.toISOString(),
+            currency: snapshot.currency,
+          },
+          dedupeKey: `report-schedule:${claim.schedule.id}:${claim.scheduledFor.toISOString()}`,
+        })),
+      );
+      await db.transaction(async (tx) => {
+        const nextRunAt = getNextReportOccurrence(claim.scheduledFor, claim.schedule.frequency);
+        await tx
+          .update(reportScheduleRuns)
+          .set({ status: "SUCCEEDED", notificationCount: notifications.length, finishedAt: now, error: null })
+          .where(eq(reportScheduleRuns.id, claim.run.id));
+        await tx
+          .update(reportSchedules)
+          .set({ lastRunAt: claim.scheduledFor, nextRunAt, updatedAt: now })
+          .where(eq(reportSchedules.id, claim.schedule.id));
+        await tx.insert(auditLogs).values({
+          id: id("audit"),
+          actorId: claim.schedule.createdBy,
+          actorRole: "SYSTEM",
+          action: "reports.schedule_run_succeeded",
+          entityType: "report_schedule",
+          entityId: claim.schedule.id,
+          before: { status: "ACTIVE", nextRunAt: claim.scheduledFor },
+          after: { status: "SUCCEEDED", nextRunAt, notificationCount: notifications.length },
+          metadata: { runId: claim.run.id, delivery: "INTERNAL_INBOX" },
+        });
+      });
+      succeeded += 1;
+    } catch (error) {
+      failed += 1;
+      const message = error instanceof Error ? error.message.slice(0, 500) : "Error desconocido al ejecutar el reporte.";
+      await db.transaction(async (tx) => {
+        await tx
+          .update(reportScheduleRuns)
+          .set({ status: "FAILED", error: message, finishedAt: now })
+          .where(eq(reportScheduleRuns.id, claim.run.id));
+        await tx.insert(auditLogs).values({
+          id: id("audit"),
+          actorId: claim.schedule.createdBy,
+          actorRole: "SYSTEM",
+          action: "reports.schedule_run_failed",
+          entityType: "report_schedule",
+          entityId: claim.schedule.id,
+          before: { status: "RUNNING" },
+          after: { status: "FAILED", error: message },
+          metadata: { runId: claim.run.id },
+        });
+      });
+    }
+  }
+  return { processed, succeeded, failed };
 }
 
 export function getNextReportOccurrence(current: Date, frequency: ReportScheduleFrequency) {

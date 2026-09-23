@@ -6,9 +6,13 @@ import {
   notificationRules,
   notificationSchedules,
   notificationTemplates,
+  notificationPreferences,
   notifications,
 } from "@/db/operations-schema";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
+import { isNotificationTypeEnabled } from "@/lib/notification-preferences";
+import { notificationPermissionForType } from "@/lib/notification-permissions";
+import { can, type AppRole, type Permission } from "@/lib/roles";
 import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 
 export const notificationSeverities = ["INFO", "WARNING", "CRITICAL"] as const;
@@ -75,13 +79,7 @@ function clean(value: unknown, max: number) {
 function safeLink(value: string | null | undefined) {
   const link = value?.trim();
   if (!link) return null;
-  if (link.startsWith("/") && !link.startsWith("//")) return link.slice(0, 500);
-  try {
-    const url = new URL(link);
-    return ["http:", "https:"].includes(url.protocol) ? url.toString().slice(0, 500) : null;
-  } catch {
-    return null;
-  }
+  return link.startsWith("/") && !link.startsWith("//") ? link.slice(0, 500) : null;
 }
 function audit(
   actor: Actor,
@@ -339,14 +337,15 @@ export async function dispatchNotificationEvent(context: NotificationEventContex
       rule.cooldownSeconds > 0 ? Math.floor(Date.now() / (rule.cooldownSeconds * 1000)) : 0;
     const dedupeKey = `rule:${rule.id}:${entityId}:${bucket}`;
     const result = await db.transaction(async (tx) => {
-      const recipients = await recipientIds(
+      const recipients = await filterRecipientsByPreference(await recipientIds(
         rule.audienceRoles,
         [
           ...rule.audienceUserIds,
           ...(rule.assigneeAudience && context.assigneeId ? [context.assigneeId] : []),
         ],
         tx,
-      );
+        ["MANUAL", "SCHEDULED"].includes(eventType) ? undefined : notificationPermissionForType(eventType),
+      ), eventType, tx);
       if (!recipients.length) return [];
       const rows = await tx
         .insert(notifications)
@@ -533,7 +532,7 @@ export async function saveNotificationRule(
   });
 }
 
-async function recipientIds(roles: string[], userIds: string[], tx = getDb()) {
+async function recipientIds(roles: string[], userIds: string[], tx = getDb(), permission?: Permission) {
   const byRole = roles.length
     ? await tx
         .select({ id: users.id })
@@ -543,10 +542,26 @@ async function recipientIds(roles: string[], userIds: string[], tx = getDb()) {
   const ids = [...new Set([...byRole.map((row) => row.id), ...userIds])];
   if (!ids.length) return [];
   const active = await tx
-    .select({ id: users.id })
+    .select({ id: users.id, roleCode: users.roleCode, role: users.role })
     .from(users)
     .where(and(eq(users.status, "ACTIVE"), inArray(users.id, ids)));
-  return active.map((row) => row.id);
+  return active
+    .filter((row) => {
+      if (!permission) return true;
+      const role = row.roleCode ? row.roleCode as AppRole : row.role === "admin" ? "admin" : "customer";
+      return can(role, permission);
+    })
+    .map((row) => row.id);
+}
+
+async function filterRecipientsByPreference(ids: string[], type: string, tx = getDb()) {
+  if (!ids.length) return [];
+  const rows = await tx
+    .select({ userId: notificationPreferences.userId, preferences: notificationPreferences.preferences })
+    .from(notificationPreferences)
+    .where(inArray(notificationPreferences.userId, ids));
+  const preferencesByUser = new Map(rows.map((row) => [row.userId, row.preferences]));
+  return ids.filter((id) => isNotificationTypeEnabled(preferencesByUser.get(id), type));
 }
 
 export async function previewNotificationRecipients(roles: string[], userIds: string[]) {
@@ -625,22 +640,25 @@ export async function createManualNotification(
   return getDb().transaction(async (tx) => {
     const ids = await recipientIds(input.recipientRoles, input.recipientUserIds, tx);
     if (!ids.length) throw new Error("No hay destinatarios activos.");
-    const rows = await tx
-      .insert(notifications)
-      .values(
-        ids.map((recipientId) => ({
-          id: id("notification"),
-          recipientId,
-          type: "MANUAL",
-          title: input.title.trim().slice(0, 180),
-          body: input.body.trim().slice(0, 1000),
-          link: safeLink(input.link),
-          metadata: { manual: true },
-          dedupeKey: input.dedupeKey?.trim().slice(0, 240) || null,
-        })),
-      )
-      .onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] })
-      .returning();
+    const enabledIds = await filterRecipientsByPreference(ids, "MANUAL", tx);
+    const rows = enabledIds.length
+      ? await tx
+          .insert(notifications)
+          .values(
+            enabledIds.map((recipientId) => ({
+              id: id("notification"),
+              recipientId,
+              type: "MANUAL",
+              title: input.title.trim().slice(0, 180),
+              body: input.body.trim().slice(0, 1000),
+              link: safeLink(input.link),
+              metadata: { manual: true },
+              dedupeKey: input.dedupeKey?.trim().slice(0, 240) || null,
+            })),
+          )
+          .onConflictDoNothing({ target: [notifications.recipientId, notifications.dedupeKey] })
+          .returning()
+      : [];
     if (rows.length)
       await tx.insert(auditLogs).values(
         audit(actor, "notifications.manual_sent", "notification", rows[0].id, null, {
@@ -688,7 +706,7 @@ export async function processDueNotificationSchedules(now = new Date()) {
               .from(users)
               .where(and(eq(users.status, "ACTIVE"), inArray(users.id, schedule.recipientUserIds)))
           : [];
-        const ids = activeRows.map((row) => row.id);
+        const ids = await filterRecipientsByPreference(activeRows.map((row) => row.id), "SCHEDULED", tx);
         let deliveredCount = 0;
         if (ids.length) {
           const rows = await tx

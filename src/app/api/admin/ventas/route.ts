@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       const preview = await getQuoteConversionPreview(quoteId);
       return apiSuccess({
         quote: { id: preview.quote.id, trackingCode: preview.quote.trackingCode, status: preview.quote.workflowStatus },
-        version: { id: preview.version.id, number: preview.version.versionNumber, currency: preview.version.currency, subtotal: preview.version.subtotal, discountAmount: preview.version.discountAmount, taxAmount: preview.version.taxAmount, total: preview.version.total, validUntil: preview.version.validUntil },
+        version: { id: preview.version.id, number: preview.version.versionNumber, currency: preview.version.currency, subtotal: preview.version.subtotal, discountAmount: preview.version.discountAmount, taxAmount: preview.version.taxAmount, taxMode: preview.version.taxMode, total: preview.version.total, validUntil: preview.version.validUntil },
         items: preview.items.map((item) => ({ productId: item.productId, sku: item.skuSnapshot, name: item.productNameSnapshot, quantity: item.quantity, baseUnitPrice: item.baseUnitPrice, discountPercentage: item.discountPercentage, discountAmount: item.discountAmount, finalUnitPrice: item.finalUnitPrice, lineTotal: item.lineTotal, currency: item.currency })),
         locations: preview.locations,
         existingSale: preview.existingSale,

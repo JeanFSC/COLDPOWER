@@ -23,4 +23,9 @@ test("purchases presents a guided workflow with persistent endpoints", () => {
   assert.match(page, /PurchasesOperations/);
   assert.match(page, /can\(actor\.role, "purchases\.manage"\)/);
   assert.match(page, /purchasePage=\{purchasePage\}/);
+  assert.match(source, /purchase-receipt-tools/);
+  assert.match(source, /recepciones\/opciones/);
+  assert.match(source, /Idempotency-Key/);
+  assert.match(source, /canReceive/);
+  assert.match(page, /PurchasesInvalidFilterError/);
 });

@@ -1,15 +1,14 @@
 "use client";
 
-import { Menu, Scale, UserRound, UserPlus } from "lucide-react";
+import { ClerkFailed, ClerkLoaded, ClerkLoading, Show, UserButton } from "@clerk/nextjs";
+import { Menu, Search, UserRound } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
-import { ClerkFailed, ClerkLoaded, ClerkLoading, Show, UserButton } from "@clerk/nextjs";
 import type { CatalogCategory } from "@/lib/catalog-repository";
-import { Button } from "@/components/shared/Button";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { MobileMenu } from "@/components/layout/MobileMenu";
-import { TechnicalNav } from "@/components/layout/TechnicalNav";
 import { CartButton } from "@/components/cart/CartButton";
 import { QuoteListButton } from "@/components/cart/QuoteListButton";
 
@@ -21,62 +20,36 @@ const navLinks = [
   { label: "Contacto", href: "/contacto" },
 ] as const;
 
-const searchPlaceholder = "Busca por código, modelo, marca o producto...";
+const searchPlaceholder = "Busca por SKU, modelo o marca";
 
-function SignedOutHeaderActions() {
+function SignedOutAccountAction() {
   return (
-    <div className="hidden items-center gap-1 xl:flex">
-      <Button href="/sign-in" variant="ghost" size="sm">
-        <UserRound className="h-4 w-4" aria-hidden="true" />
-        Ingresar
-      </Button>
-      <Button href="/sign-up" variant="outline" size="sm">
-        <UserPlus className="h-4 w-4" aria-hidden="true" />
-        Crear cuenta
-      </Button>
-    </div>
+    <Link href="/sign-in" className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-brand-primary-900 transition hover:bg-surface-page hover:text-brand-secondary-600">
+      <UserRound className="h-4 w-4" aria-hidden="true" />
+      <span>Mi cuenta</span>
+    </Link>
   );
 }
 
-function AuthHeaderActions() {
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-
-  if (!mounted) {
-    return <div className="h-9 w-28 animate-pulse rounded-md bg-slate-100" aria-label="Cargando sesión" />;
-  }
+function AuthAccountAction() {
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
+  if (!mounted) return <span className="h-10 w-28 animate-pulse rounded-md bg-surface-page" aria-label="Cargando sesión" />;
 
   return (
     <>
-      <ClerkLoading>
-        <div className="h-9 w-28 animate-pulse rounded-md bg-slate-100" aria-label="Cargando sesión" />
-      </ClerkLoading>
-      <ClerkFailed>
-        <SignedOutHeaderActions />
-      </ClerkFailed>
+      <ClerkLoading><span className="h-10 w-28 animate-pulse rounded-md bg-surface-page" aria-label="Cargando sesión" /></ClerkLoading>
+      <ClerkFailed><SignedOutAccountAction /></ClerkFailed>
       <ClerkLoaded>
-        <div className="hidden items-center gap-1 xl:flex">
-          <Show when="signed-in">
-            <Button href="/cuenta" variant="ghost" size="sm">
+        <Show when="signed-in">
+          <div className="flex items-center gap-2">
+            <Link href="/cuenta" className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-brand-primary-900 transition hover:bg-surface-page hover:text-brand-secondary-600">
               <UserRound className="h-4 w-4" aria-hidden="true" />
-              Mi cuenta
-            </Button>
+              <span>Mi cuenta</span>
+            </Link>
             <UserButton />
-          </Show>
-          <Show when="signed-out">
-            <Button href="/sign-in" variant="ghost" size="sm">
-              <UserRound className="h-4 w-4" aria-hidden="true" />
-              Ingresar
-            </Button>
-            <Button href="/sign-up" variant="outline" size="sm">
-              <UserPlus className="h-4 w-4" aria-hidden="true" />
-              Crear cuenta
-            </Button>
-          </Show>
-        </div>
+          </div>
+        </Show>
+        <Show when="signed-out"><SignedOutAccountAction /></Show>
       </ClerkLoaded>
     </>
   );
@@ -86,6 +59,7 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+  const isHome = pathname === "/";
 
   return (
     <>
@@ -94,36 +68,37 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
           <div className="flex min-h-[72px] min-w-0 items-center gap-3 py-3">
             <BrandLogo size="sm" className="min-w-0" />
             <div className="hidden min-w-0 flex-1 lg:block">
-              <SearchBar id="desktop-search" compact showCompactSubmit placeholder={searchPlaceholder} className="min-w-0" />
-              <p className="mt-1 truncate pl-4 text-[10px] font-medium text-text-secondary">Ej.: Embraco, R404A, termostato, 6871JB1103H...</p>
+              {isHome ? (
+                <Link href="/buscar" aria-label="Abrir búsqueda" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
+                  <Search className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              ) : (
+                <SearchBar id="desktop-search" compact showCompactSubmit placeholder={searchPlaceholder} className="min-w-0" />
+              )}
             </div>
             <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
-              {!isAuthPage ? (authEnabled ? <AuthHeaderActions /> : <SignedOutHeaderActions />) : null}
-              <Button href="/comparar" variant="ghost" size="sm" aria-label="Abrir comparador técnico">
-                <Scale className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden 2xl:inline">Comparar</span>
-              </Button>
+              {!isAuthPage ? (authEnabled ? <AuthAccountAction /> : <SignedOutAccountAction />) : null}
               <QuoteListButton showCount />
               <CartButton showLabel />
             </div>
             <div className="ml-auto flex items-center gap-2 lg:hidden">
+              {isHome ? (
+                <Link href="/buscar" aria-label="Abrir búsqueda" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
+                  <Search className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              ) : null}
+              <Link href="/cuenta" aria-label="Abrir Mi cuenta" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
+                <UserRound className="h-5 w-5" aria-hidden="true" />
+              </Link>
               <QuoteListButton compact className="h-11 w-11" />
               <CartButton className="h-11 w-11" />
-              <button
-                type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600"
-                aria-label="Abrir menú móvil"
-                aria-expanded={isMenuOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setIsMenuOpen(true)}
-              >
+              <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600" aria-label="Abrir menú móvil" aria-expanded={isMenuOpen} aria-controls="mobile-menu" onClick={() => setIsMenuOpen(true)}>
                 <Menu className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
           </div>
-          <SearchBar id="mobile-search" placeholder={searchPlaceholder} compact showCompactSubmit className="pb-3 lg:hidden" />
+          {!isHome ? <SearchBar id="mobile-search" placeholder={searchPlaceholder} className="pb-3 lg:hidden" /> : null}
         </div>
-        <div className="hidden lg:block"><TechnicalNav categories={categories} /></div>
       </header>
       <MobileMenu id="mobile-menu" isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} links={[...navLinks]} authEnabled={authEnabled} categories={categories} />
     </>

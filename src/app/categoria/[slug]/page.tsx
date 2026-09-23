@@ -8,11 +8,11 @@ import { CatalogPagination } from "@/components/catalog/CatalogPagination";
 import { CatalogUnavailable } from "@/components/catalog/CatalogUnavailable";
 import { MobileFilterDrawer } from "@/components/catalog/MobileFilterDrawer";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
-import { Button } from "@/components/shared/Button";
+import { CatalogHero } from "@/components/catalog/CatalogHero";
 import type { CatalogFilters as CatalogFiltersType, ProductSort } from "@/lib/catalog";
 import { resolveCatalogCategorySlug } from "@/lib/catalog-category-slugs";
 import {
-  getCatalogBrands,
+  getCatalogBrandsForCategory,
   getCatalogCategoryBySlug,
   getCatalogFamilies,
   getCatalogProducts,
@@ -20,7 +20,7 @@ import {
 } from "@/lib/catalog-repository";
 import type { ProductStatus } from "@/types/product";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
@@ -77,25 +77,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   return (
     <section className="bg-surface-page py-8 sm:py-10">
       <div className="cp-container">
-        <div className="border-b border-border pb-7">
-          <Link
-            href="/catalogo"
-            prefetch={false}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-dark"
-          >
+        <div className="relative">
+          <CatalogHero eyebrow="Inicio / Catálogo" title={category.name} description={`${category.productCount} referencias publicadas en esta categoría. La compatibilidad y el precio se confirman antes de cotizar.`} image="/images/categories/refrigeracion.webp" />
+          <Link href="/catalogo" prefetch={false} className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-pill border border-white/25 bg-brand-primary-900/60 px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-primary-900 sm:right-6">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver al catálogo
           </Link>
-          <h1 className="mt-5 font-display text-3xl font-black text-dark sm:text-4xl">{category.name}</h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">
-            {category.productCount} productos disponibles en esta categoría. La compatibilidad y el precio se confirman antes de cotizar.
-          </p>
-          <Button
-            href="/catalogo"
-            variant="outline"
-            className="mt-6"
-          >
-            Ver todo el catálogo
-          </Button>
         </div>
         <div className="mt-6 flex items-center justify-between gap-3 lg:hidden">
           <p className="text-sm font-bold text-dark">{catalog.total} referencias</p>
@@ -156,10 +142,11 @@ async function loadCategoryCatalogData(
         familySlug: firstFacet(filters.family),
         brandSlug: firstFacet(filters.brand),
         status: firstFacet(filters.status),
+        sort: filters.sort,
         page: numberParam(paramsQuery.pagina),
         pageSize: 24,
       }),
-      getCatalogBrands(),
+      getCatalogBrandsForCategory(category.id),
       getCatalogFamilies(category.id),
     ]);
   } catch (error) {

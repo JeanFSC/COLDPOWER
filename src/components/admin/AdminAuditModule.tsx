@@ -107,6 +107,38 @@ function withParam(baseQuery: string, updates: Record<string, string | undefined
   return params.toString();
 }
 
+function entityHref(entityType: string, entityId: string): string | null {
+  const id = encodeURIComponent(entityId);
+  switch (entityType.toLowerCase()) {
+    case "product":
+      return `/admin/catalogo/${id}`;
+    case "products":
+      return `/admin/catalogo?productId=${id}`;
+    case "customer":
+      return `/admin/clientes?customerId=${id}`;
+    case "user":
+      return `/admin/usuarios?userId=${id}`;
+    case "order":
+      return `/admin/pedidos?orderId=${id}`;
+    case "quote":
+      return `/admin/cotizaciones?quoteId=${id}`;
+    case "sale":
+      return `/admin/ventas?saleId=${id}`;
+    case "payment":
+      return `/admin/pagos?paymentId=${id}`;
+    case "report_schedule":
+      return `/admin/reportes?scheduleId=${id}`;
+    case "company_settings":
+      return "/admin/configuracion";
+    case "integration":
+      return "/admin/configuracion#company-integrations";
+    case "notification":
+      return `/admin/notificaciones?notificationId=${id}`;
+    default:
+      return null;
+  }
+}
+
 export type AuditModuleProps = {
   metrics: AuditPageResponse["metrics"];
   trend: AuditTrendPoint[];
@@ -326,7 +358,11 @@ export function AuditModule({
                       <td className={`px-3 py-2.5 ${isSelected ? "font-semibold text-slate-900" : "font-medium text-slate-800"}`}>{actionLabel(row.action)}</td>
                       <td className="px-3 py-2.5">
                         <p className={`leading-tight ${isSelected ? "font-medium text-slate-900" : "font-medium text-slate-800"}`}>{entityLabel(row.entityType)}</p>
-                        <p className="max-w-[160px] truncate text-[10px] leading-tight text-slate-400">{row.entityId}</p>
+                        {entityHref(row.entityType, row.entityId) ? (
+                          <Link href={entityHref(row.entityType, row.entityId)!} className="block max-w-[160px] truncate text-[10px] leading-tight text-blue-600 hover:underline" title="Abrir objeto relacionado">
+                            {row.entityId}
+                          </Link>
+                        ) : <p className="max-w-[160px] truncate text-[10px] leading-tight text-slate-400">{row.entityId}</p>}
                       </td>
                       <td className="px-3 py-2.5"><span className={`inline-flex rounded border px-2 py-0.5 text-[10px] font-medium ${severity.classes}`}>{severity.label}</span></td>
                       <td className="px-3 py-2.5">
@@ -409,7 +445,7 @@ export function AuditModule({
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">Módulo</span><span className="font-medium text-slate-700">{selected.moduleLabel}</span></div>
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">Acción</span><span className="font-medium text-slate-700">{actionLabel(selected.action)}</span></div>
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">Objeto</span><span className="font-medium text-slate-700">{entityLabel(selected.entityType)}</span></div>
-                    <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">ID del objeto</span><span className="max-w-[190px] truncate font-mono text-[11px] text-slate-700">{selected.entityId}</span></div>
+                    <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">ID del objeto</span>{entityHref(selected.entityType, selected.entityId) ? <Link href={entityHref(selected.entityType, selected.entityId)!} className="max-w-[190px] truncate font-mono text-[11px] text-blue-600 hover:underline" title="Abrir objeto relacionado">{selected.entityId}</Link> : <span className="max-w-[190px] truncate font-mono text-[11px] text-slate-700">{selected.entityId}</span>}</div>
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">IP</span><span className="font-mono text-[11px] text-slate-700">{selected.ip ?? "N/D"}</span></div>
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">Ubicación</span><span className="text-[11px] text-slate-700">{selected.geo.city && selected.geo.country ? `${selected.geo.city}, ${selected.geo.country}` : "N/D"}</span></div>
                     <div className="flex items-center justify-between"><span className="text-[11px] text-slate-400">Navegador</span><span className="text-[11px] text-slate-700">{selected.browserLabel ?? "N/D"}</span></div>

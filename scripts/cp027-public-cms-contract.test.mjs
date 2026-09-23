@@ -17,9 +17,11 @@ test("catálogo público carga nombre comercial y media activa", () => {
   assert.match(mapper, /commercialName/);
 });
 
-test("páginas públicas conservan fallback cuando no hay CMS publicado", () => {
-  for (const file of ["src/app/page.tsx", "src/app/nosotros/page.tsx", "src/app/contacto/page.tsx"]) {
-    const source = read(file);
-    assert.match(source, /loadPublishedCms|fallback|CMS|cms/i, file);
-  }
+test("páginas públicas conservan contenido recuperable cuando no hay CMS publicado", () => {
+  const home = read("src/app/page.tsx");
+  const about = read("src/app/nosotros/page.tsx");
+  const contact = read("src/app/contacto/page.tsx");
+  assert.match(home, /loadPublishedCms/);
+  assert.match(about, /timeline|FinalCTA|nosotros-almacen/);
+  assert.match(contact, /fallbackAssets|getCmsPage|ContactPage/);
 });

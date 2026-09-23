@@ -1,9 +1,24 @@
 export class AuditInvalidFilterError extends Error { constructor() { super("AUDIT_INVALID_FILTER"); this.name = "AuditInvalidFilterError"; } }
 export type AuditFilters = { query?: string; module?: string; action?: string; entityType?: string; entityId?: string; actorId?: string; actorRole?: string; severity?: string; origin?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
+const savedAuditFilterKeys = ["query", "module", "action", "entityType", "entityId", "actorId", "actorRole", "severity", "origin", "dateFrom", "dateTo", "page", "pageSize"] as const;
 function text(params: URLSearchParams, key: string) { const value = params.get(key)?.trim(); return value || undefined; }
 function positive(params: URLSearchParams, key: string) { const raw = params.get(key); if (!raw) return undefined; const value = Number(raw); if (!Number.isInteger(value) || value < 1) throw new AuditInvalidFilterError(); return value; }
-function date(params: URLSearchParams, key: string) { const value = text(params, key); if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new AuditInvalidFilterError(); return value; }
+function date(params: URLSearchParams, key: string) { const value = text(params, key); if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new AuditInvalidFilterError(); if (value) { const [year, month, day] = value.split("-").map(Number); const parsed = new Date(Date.UTC(year, month - 1, day)); if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) throw new AuditInvalidFilterError(); } return value; }
 export function parseAuditFilters(params: URLSearchParams): AuditFilters { const dateFrom = date(params, "dateFrom"); const dateTo = date(params, "dateTo"); if (dateFrom && dateTo && dateFrom > dateTo) throw new AuditInvalidFilterError(); return { query: text(params, "query") ?? text(params, "q"), module: text(params, "module"), action: text(params, "action"), entityType: text(params, "entityType"), entityId: text(params, "entityId"), actorId: text(params, "actorId"), actorRole: text(params, "actorRole"), severity: text(params, "severity"), origin: text(params, "origin"), dateFrom, dateTo, page: positive(params, "page"), pageSize: positive(params, "pageSize") }; }
+export function normalizeSavedAuditFilters(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new AuditInvalidFilterError();
+  const input = value as Record<string, unknown>;
+  const params = new URLSearchParams();
+  for (const key of savedAuditFilterKeys) {
+    const raw = input[key];
+    if (typeof raw === "string" && raw.trim()) params.set(key, raw.trim());
+    else if (typeof raw === "number" && Number.isFinite(raw)) params.set(key, String(raw));
+  }
+  const parsed = parseAuditFilters(params);
+  const normalized = Object.fromEntries(Object.entries(parsed).filter(([, item]) => item !== undefined));
+  if (!Object.keys(normalized).length) throw new AuditInvalidFilterError();
+  return normalized;
+}
 export function auditSeverity(action: string, stored?: string | null): "INFO" | "WARNING" | "CRITICAL" { if (stored === "CRITICAL" || stored === "WARNING") return stored; if (/delete|role|permission|publish|refund|failed|denied|blocked|archive/i.test(action)) return /failed|denied|blocked/i.test(action) ? "WARNING" : "CRITICAL"; return "INFO"; }
 
 // Shared action/module constants so the writers (Clerk webhook, integration test

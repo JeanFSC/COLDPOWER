@@ -14,6 +14,7 @@ test("inventario: la vista vigente recibe datos persistentes y expone controles 
   assert.match(page, /requirePermission\("inventory\.view"\)/);
   assert.match(page, /getInventoryAdminPage\(filters\)/);
   assert.match(page, /data=\{data\}/);
+  assert.match(page, /INVENTORY_INVALID_FILTER/);
   assert.match(page, /canAdjust: can\(actor\.role, "inventory\.adjust"\)/);
   assert.match(page, /canKardex: can\(actor\.role, "inventory\.kardex\.view"\)/);
   assert.match(workspace, /data\.operations\.movements/);
@@ -22,4 +23,9 @@ test("inventario: la vista vigente recibe datos persistentes y expone controles 
   assert.match(workspace, /Transferir stock/);
   assert.match(workspace, /Registrar recepción/);
   assert.match(workspace, /permissions\.canKardex/);
+  assert.match(workspace, /transfersPagination/);
+  assert.match(workspace, /reservationsPagination/);
+  assert.match(workspace, /status=CRITICO/);
+  assert.match(workspace, /Crear solicitud de compra/);
+  assert.match(workspace, /reservas\/expirar/);
 });

@@ -45,7 +45,7 @@ export function parseDashboardFilters(params: URLSearchParams): DashboardFilters
   const from = readOptional(params, "from");
   const to = readOptional(params, "to");
   if ((from && !isValidDate(from)) || (to && !isValidDate(to))) throw new DashboardInvalidFilterError();
-  if (rawRange === "custom" && from && to && from > to) throw new DashboardInvalidFilterError();
+  if (from && to && from > to) throw new DashboardInvalidFilterError();
   const granularity = readOptional(params, "granularity");
   if (granularity && !dashboardGranularities.includes(granularity as DashboardGranularity)) throw new DashboardInvalidFilterError();
   return {

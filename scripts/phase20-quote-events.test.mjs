@@ -30,8 +30,12 @@ for (const event of [
 const quoteForm = read("src/components/quote/QuoteForm.tsx");
 const transaction = read("src/components/product/TransactionBox.tsx");
 const compatibility = read("src/components/product/CompatibilityPanel.tsx");
+const quoteButton = read("src/components/cart/AddToQuoteButton.tsx");
+const whatsappButton = read("src/components/shared/WhatsAppLeadButton.tsx");
 assert.match(quoteForm, /quote_started|quote_submitted/, "quote form should emit lifecycle events");
-assert.match(transaction, /quote_item_added|whatsapp_clicked/, "transaction box should emit commercial events");
+assert.match(transaction, /product_viewed/, "transaction box should emit product view events");
+assert.match(quoteButton, /quote_item_added/, "quote button should emit commercial events");
+assert.match(whatsappButton, /whatsapp_clicked/, "WhatsApp lead button should emit commercial events");
 assert.match(compatibility, /compatibility_checked/, "compatibility panel should emit validation events");
 
 const endpoint = read("src/app/api/eventos/route.ts");

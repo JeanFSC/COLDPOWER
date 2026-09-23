@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
 import {
   getNotificationsPage,
+  getNotificationPreferences,
   getPersonalUnreadKpi,
   listNotificationTypes,
   parseNotificationFilters,
@@ -15,7 +16,6 @@ import {
   listNotificationRules,
   listNotificationSchedules,
   listNotificationTemplates,
-  processDueNotificationSchedules,
 } from "@/lib/notification-rules-service";
 
 export const metadata: Metadata = {
@@ -37,21 +37,13 @@ function toQuery(params: Params) {
 export default async function AdminNotificacionesPage({ searchParams }: { searchParams?: Promise<Params> }) {
   const actor = await requirePermission("notifications.view");
   const canManage = can(actor.role, "notifications.manage");
+  const canPreferences = can(actor.role, "notifications.preferences");
   const query = toQuery((await searchParams) ?? {});
   const notificationId = query.get("notificationId") ?? undefined;
   const inboxQuery = new URLSearchParams(query);
   inboxQuery.delete("notificationId");
 
   let loadError = false;
-  try {
-    // Restores the lazy "cron" this page already relied on before the visual rewrite —
-    // there is no scheduled job wiring in this project (no vercel.json / /api/cron route),
-    // so due schedules only ever materialize into real notifications when this page loads.
-    await processDueNotificationSchedules();
-  } catch (error) {
-    console.error("ColdPower: no se pudieron procesar avisos programados", error);
-  }
-
   let page: Awaited<ReturnType<typeof getNotificationsPage>> = {
     items: [], page: 1, pageSize: 25, totalItems: 0, totalPages: 1,
     unreadCount: 0, metrics: { unread: 0, read: 0, dismissed: 0 },
@@ -62,9 +54,10 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
   let templates: Awaited<ReturnType<typeof listNotificationTemplates>> = [];
   let schedules: Awaited<ReturnType<typeof listNotificationSchedules>> = [];
   let personalUnread: Awaited<ReturnType<typeof getPersonalUnreadKpi>> = { current: 0, previous: 0, deltaPct: null };
+  let preferences: Record<string, boolean> = {};
 
   try {
-    [page, automation, types, rules, templates, schedules, personalUnread] = await Promise.all([
+    [page, automation, types, rules, templates, schedules, personalUnread, preferences] = await Promise.all([
       getNotificationsPage(actor.userId!, parseNotificationFilters(inboxQuery)),
       getNotificationAutomationMetrics(),
       listNotificationTypes(actor.userId!),
@@ -72,6 +65,7 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
       listNotificationTemplates(),
       listNotificationSchedules(),
       getPersonalUnreadKpi(actor.userId!),
+      canPreferences ? getNotificationPreferences(actor.userId!) : Promise.resolve({}),
     ]);
   } catch (error) {
     console.error("ColdPower: no se pudieron cargar notificaciones", error);
@@ -86,6 +80,8 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
     <NotificationsModule
       loadError={loadError}
       canManage={canManage}
+      canPreferences={canPreferences}
+      preferences={preferences}
       personalUnread={personalUnread}
       automation={automation ?? {
         critical: 0,

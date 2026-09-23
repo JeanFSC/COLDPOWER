@@ -888,23 +888,31 @@ function KpiCard({
   onClick: () => void;
   title?: string;
 }) {
+  const iconTone = {
+    orange: "bg-amber-50 text-amber-600",
+    yellow: "bg-amber-50 text-amber-600",
+    green: "bg-emerald-50 text-emerald-600",
+    purple: "bg-purple-50 text-purple-600",
+  }[tone];
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
-      className="group rounded-2xl border border-[#dde8f1] bg-white p-5 text-left shadow-[0_8px_26px_rgba(16,42,67,0.04)] transition hover:-translate-y-0.5 hover:border-blue-600/30"
+      className="group flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition-colors hover:border-blue-300"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold text-[#8195a8]">{label}</p>
-          <p className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-slate-900">
+      <div className="flex items-center gap-3.5">
+        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconTone}`}>
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-[11.5px] font-medium text-slate-500">{label}</p>
+          <p className="truncate text-xl font-bold leading-snug text-slate-900">
             {value}
           </p>
         </div>
-        <IconBox tone={tone}>{icon}</IconBox>
       </div>
-      <p className="mt-4 text-[11px] leading-4 text-[#8aa0b2]">{note}</p>
+      <p className="mt-3 truncate text-[10.5px] font-semibold text-slate-400">{note}</p>
     </button>
   );
 }
@@ -1294,6 +1302,15 @@ function DetailDrawer({
                 Nueva versión
               </Button>
             </>
+          ) : null}
+          {can("pricing.discount.approve") && detail.discountApprovals.some((approval) => approval.status === "PENDING") ? (
+            <button
+              type="button"
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+              onClick={() => setTab("pricing")}
+            >
+              Aprobar descuento
+            </button>
           ) : null}
           {can("quotes.convert") && can("sales.manage") && status === "ACCEPTED" ? (
             <QuoteConversionControl

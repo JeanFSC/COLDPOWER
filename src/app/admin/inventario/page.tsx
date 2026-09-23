@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { InventoryAdminWorkspace } from "@/components/admin/InventoryAdminWorkspace";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
-import { parseInventoryFilters } from "@/lib/inventory-admin-contract";
+import { parseInventoryFilters, type InventoryAdminFilters } from "@/lib/inventory-admin-contract";
 import { getInventoryAdminPage } from "@/lib/inventory-admin-service";
 
 export const metadata: Metadata = {
@@ -23,12 +23,22 @@ function toSearchParams(input: Record<string, string | string[] | undefined>) {
 
 export default async function AdminInventarioPage({ searchParams }: PageProps) {
   const actor = await requirePermission("inventory.view");
-  const filters = parseInventoryFilters(toSearchParams((await searchParams) ?? {}));
+  const incomingParams = toSearchParams((await searchParams) ?? {});
+  let filters: InventoryAdminFilters;
+  let filterNotice: string | undefined;
+  try {
+    filters = parseInventoryFilters(incomingParams);
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== "INVENTORY_INVALID_FILTER") throw error;
+    filters = parseInventoryFilters(new URLSearchParams());
+    filterNotice = "Algunos filtros no eran válidos y se restablecieron a una vista segura.";
+  }
   const data = await getInventoryAdminPage(filters);
   return (
     <InventoryAdminWorkspace
       data={data}
       filters={filters}
+      filterNotice={filterNotice}
       permissions={{
         canAdjust: can(actor.role, "inventory.adjust"),
         canTransfer: can(actor.role, "inventory.transfer"),

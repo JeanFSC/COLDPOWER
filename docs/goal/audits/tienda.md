@@ -83,3 +83,14 @@ hero-visual-contract (**hoy falla**), phase8-visual-readiness (**hoy falla**), p
 - Estados: skeleton y error.tsx con BD cortada; 404 con buscador.
 - Lighthouse móvil (build): LCP < 2.0 s, CLS < 0.05, TBT < 150 ms, Performance ≥ 90 en `/`, `/catalogo`, `/producto/*`. Ninguna imagen pública > 250 KB.
 - `grep -ri "F2620B\|0FB5A6\|242,98,11" src public` vacío. `test:all`, `tsc`, `lint` verdes.
+
+## Contratos públicos reescritos para el diseño aprobado
+
+`test-all` ejecuta estos contratos como bloqueante, fuera de cualquier lista `known`:
+
+- `scripts/tienda-public-contract.test.mjs`: cabecera única, home, tarjetas, catálogo, ficha, carrito, informativas, estados, accesibilidad y peso de assets.
+- `scripts/cp026b-public-ui-contract.test.mjs`: anatomía pública, tokens y copy honesto.
+- `scripts/cp026b-shell-contract.test.mjs`: shell compartido desktop/mobile, contadores y footer.
+- `scripts/catalog-prefetch-performance.test.mjs`: límites de prefetch de navegación pública.
+- `scripts/hero-visual-contract.test.mjs`: hero responsive, imagen generada y CTA `Buscar`.
+- `scripts/phase3-home-structure.test.mjs`, `phase4-catalog-structure.test.mjs`, `phase6-v1-readiness.test.mjs`, `phase7-preproduction.test.mjs`, `phase8-visual-readiness.test.mjs`, `phase16-navigation-design.test.mjs`, `phase17-home-catalog-first.test.mjs`, `phase22-seo-faq-media.test.mjs`: contratos por fase alineados al nuevo storefront.

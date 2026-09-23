@@ -133,6 +133,7 @@ export function AdminUsersStitch({
   invitations,
   canInvite,
   canManage,
+  inviteRoles,
   allowSuperadmin,
   exportHref,
   selectedId,
@@ -146,6 +147,7 @@ export function AdminUsersStitch({
   invitations: ClerkInvitationItem[];
   canInvite: boolean;
   canManage: boolean;
+  inviteRoles: Array<{ value: Exclude<AppRole, "customer">; label: string }>;
   allowSuperadmin: boolean;
   exportHref: string;
   selectedId?: string;
@@ -566,7 +568,7 @@ export function AdminUsersStitch({
             </div>
           )}
           <Link
-            href="/admin/auditoria"
+            href={selectedId ? `/admin/auditoria?entityType=user&entityId=${encodeURIComponent(selectedId)}` : "/admin/auditoria"}
             className="mt-auto inline-flex items-center justify-center gap-1.5 border-t border-slate-100 pt-4 text-xs font-semibold text-blue-600"
           >
             Ver toda la auditoría
@@ -641,7 +643,7 @@ export function AdminUsersStitch({
         </section>
       ) : null}
       <section id="user-invitation" className="scroll-mt-6">
-        {canInvite ? <StaffInvitationForm allowSuperadmin={allowSuperadmin} /> : null}
+        {canInvite ? <StaffInvitationForm allowSuperadmin={allowSuperadmin} roles={inviteRoles} /> : null}
         {loadError ? (
           <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
             Clerk no respondió; las invitaciones se mostrarán cuando la sincronización se recupere.
@@ -653,9 +655,7 @@ export function AdminUsersStitch({
               Gestionar invitaciones pendientes
             </summary>
             <div className="mt-4 space-y-3">
-              {invitations.map((invitation) => (
-                <StaffInvitationActions key={invitation.id} invitation={invitation} />
-              ))}
+              {invitations.map((invitation) => (canInvite ? <StaffInvitationActions key={invitation.id} invitation={invitation} /> : null))}
             </div>
           </details>
         ) : null}

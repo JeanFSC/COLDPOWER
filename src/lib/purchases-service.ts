@@ -566,7 +566,9 @@ export async function receivePurchase(input: ReceiptInput, actor: Actor) {
         .from(purchaseReceipts)
         .where(eq(purchaseReceipts.idempotencyKey, input.idempotencyKey))
         .limit(1);
-      if (existing)
+      if (existing) {
+        if (existing.purchaseId !== input.purchaseId)
+          throw new Error("La clave de idempotencia ya fue usada para otra orden de compra.");
         return {
           receipt: existing,
           purchase: null,
@@ -574,6 +576,7 @@ export async function receivePurchase(input: ReceiptInput, actor: Actor) {
           locationId: null,
           idempotent: true,
         };
+    }
     }
     const [purchase] = await tx
       .select()

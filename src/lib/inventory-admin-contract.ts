@@ -5,15 +5,31 @@ export const inventoryPageSizes = [10, 25, 50, 100] as const;
 export type InventoryPageSize = (typeof inventoryPageSizes)[number];
 
 export const inventoryStatuses = [
-  "SIN_SALDO",
   "SIN_MINIMO",
   "AGOTADO",
   "CRITICO",
-  "BAJO",
   "OPTIMO",
   "RESERVADO",
 ] as const;
 export type InventoryAdminStatus = InventoryStatus | "RESERVADO";
+
+export const inventoryTransferStatuses = [
+  "DRAFT",
+  "REQUESTED",
+  "IN_TRANSIT",
+  "RECEIVED",
+  "CANCELLED",
+] as const;
+export type InventoryTransferStatus = (typeof inventoryTransferStatuses)[number];
+
+export const inventoryReservationStatuses = [
+  "ACTIVE",
+  "RELEASED",
+  "CONSUMED",
+  "CANCELLED",
+  "EXPIRED",
+] as const;
+export type InventoryReservationStatus = (typeof inventoryReservationStatuses)[number];
 
 export const inventoryMovementLabels: Record<InventoryMovementType, string> = {
   OPENING_BALANCE: "Saldo inicial",
@@ -31,16 +47,24 @@ export const inventoryMovementLabels: Record<InventoryMovementType, string> = {
 
 export type InventoryAdminFilters = {
   query?: string;
+  productId?: string;
   locationId?: string;
   categoryId?: string;
   familyId?: string;
   brandId?: string;
   status?: InventoryAdminStatus;
+  critical?: boolean;
   hasReservations?: boolean;
   hasMinimum?: boolean;
   minAvailable?: number;
   updatedFrom?: string;
   updatedTo?: string;
+  transferId?: string;
+  transferStatus?: InventoryTransferStatus;
+  transferPage?: number;
+  reservationId?: string;
+  reservationStatus?: InventoryReservationStatus;
+  reservationPage?: number;
   page?: number;
   pageSize?: InventoryPageSize;
 };
@@ -102,22 +126,34 @@ export function parseInventoryFilters(params: URLSearchParams): InventoryAdminFi
     throw new Error("INVENTORY_INVALID_FILTER");
   }
   const status = params.get("status") || undefined;
-  if (status && !inventoryStatuses.includes(status as InventoryAdminStatus)) throw new Error("INVENTORY_INVALID_FILTER");
+  if (status && !inventoryStatuses.includes(status as (typeof inventoryStatuses)[number])) throw new Error("INVENTORY_INVALID_FILTER");
+  const transferStatus = params.get("transferStatus") || undefined;
+  if (transferStatus && !inventoryTransferStatuses.includes(transferStatus as InventoryTransferStatus)) throw new Error("INVENTORY_INVALID_FILTER");
+  const reservationStatus = params.get("reservationStatus") || undefined;
+  if (reservationStatus && !inventoryReservationStatuses.includes(reservationStatus as InventoryReservationStatus)) throw new Error("INVENTORY_INVALID_FILTER");
   const updatedFrom = parseDate(params, "updatedFrom");
   const updatedTo = parseDate(params, "updatedTo");
   if (updatedFrom && updatedTo && updatedFrom > updatedTo) throw new Error("INVENTORY_INVALID_FILTER");
   return {
     query: params.get("query")?.trim() || undefined,
+    productId: params.get("productId")?.trim() || undefined,
     locationId: params.get("locationId") || params.get("location") || undefined,
     categoryId: params.get("categoryId") || params.get("category") || undefined,
     familyId: params.get("familyId") || params.get("family") || undefined,
     brandId: params.get("brandId") || params.get("brand") || undefined,
     status: status as InventoryAdminStatus | undefined,
+    critical: parseBoolean(params, "critical"),
     hasReservations: parseBoolean(params, "hasReservations"),
     hasMinimum: parseBoolean(params, "hasMinimum"),
     minAvailable: parseNonNegativeInteger(params, "minAvailable"),
     updatedFrom,
     updatedTo,
+    transferId: params.get("transferId")?.trim() || undefined,
+    transferStatus: transferStatus as InventoryTransferStatus | undefined,
+    transferPage: parsePositiveInteger(params, "transferPage"),
+    reservationId: params.get("reservationId")?.trim() || undefined,
+    reservationStatus: reservationStatus as InventoryReservationStatus | undefined,
+    reservationPage: parsePositiveInteger(params, "reservationPage"),
     page,
     pageSize: requestedPageSize as InventoryPageSize | undefined,
   };
@@ -130,12 +166,15 @@ export function parseKardexFilters(params: URLSearchParams): InventoryKardexFilt
   if (!productId || !locationId || (type && !inventoryMovementTypes.includes(type as InventoryMovementType))) {
     throw new Error("INVENTORY_INVALID_FILTER");
   }
+  const dateFrom = parseDate(params, "dateFrom");
+  const dateTo = parseDate(params, "dateTo");
+  if (dateFrom && dateTo && dateFrom > dateTo) throw new Error("INVENTORY_INVALID_FILTER");
   return {
     productId,
     locationId,
     type: type as InventoryMovementType | undefined,
-    dateFrom: params.get("dateFrom") || undefined,
-    dateTo: params.get("dateTo") || undefined,
+    dateFrom,
+    dateTo,
     page: parsePositiveInteger(params, "page"),
     pageSize: parsePositiveInteger(params, "pageSize"),
   };

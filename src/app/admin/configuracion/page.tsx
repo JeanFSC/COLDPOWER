@@ -4,12 +4,14 @@ import { getDb } from "@/db";
 import { companySettings, companySettingsHistory, locations } from "@/db/schema";
 import { Tanda2Settings } from "@/components/admin/AdminTanda2Workspaces";
 import { CompanySettingsForm } from "@/components/admin/CompanySettingsForm";
+import { CompanySettingsHistoryPanel } from "@/components/admin/CompanySettingsHistoryPanel";
 import { requirePermission } from "@/lib/auth";
+import { can } from "@/lib/roles";
 import { listActivePriceTypes, countActivePriceTypesBefore } from "@/lib/price-lists";
 import { listDocumentSeries, countActiveDocumentSeriesBefore } from "@/lib/document-series";
 import { listIntegrations } from "@/lib/integrations";
 
-export const metadata: Metadata = { title: "Configuracion empresarial | Panel admin ColdPower", description: "Gestiona datos empresariales confirmados y publicados." };
+export const metadata: Metadata = { title: "Configuración empresarial | Panel admin ColdPower", description: "Gestiona datos empresariales confirmados y publicados." };
 
 const DAY_MS = 86400000;
 
@@ -23,7 +25,7 @@ function contactMethodsFromSnapshot(value: Record<string, unknown> | null | unde
 }
 
 export default async function AdminConfiguracionPage() {
-  await requirePermission("company.settings.manage");
+  const actor = await requirePermission("settings.business.edit");
   const db = getDb();
   const cutoff = thirtyDaysAgo();
 
@@ -37,6 +39,7 @@ export default async function AdminConfiguracionPage() {
   let documentSeries: Awaited<ReturnType<typeof listDocumentSeries>> = [];
   let integrations: Awaited<ReturnType<typeof listIntegrations>> = [];
   let previousActiveSeriesCount = 0;
+  let loadError: string | null = null;
 
   try {
     const [[settings], [locationCount], [locationTotalRow], rows, [previousLocations], priceListRows, previousPriceTypes, seriesRows, integrationRows, [previousSettingsHistory], previousActiveSeries] = await Promise.all([
@@ -64,6 +67,7 @@ export default async function AdminConfiguracionPage() {
     previousContactMethods = previousSettingsHistory ? contactMethodsFromSnapshot(previousSettingsHistory.after) : null;
     previousActiveSeriesCount = previousActiveSeries;
   } catch (error) {
+    loadError = "No se pudo cargar la configuración empresarial. Revisa la conexión e inténtalo de nuevo.";
     console.error("ColdPower: no se pudo cargar el resumen de configuración", error);
   }
 
@@ -80,6 +84,9 @@ export default async function AdminConfiguracionPage() {
       previousActiveSeriesCount={previousActiveSeriesCount}
       integrations={integrations}
       controls={<CompanySettingsForm />}
+      canManageIntegrations={can(actor.role, "integrations.manage")}
+      loadError={loadError}
+      afterControls={<CompanySettingsHistoryPanel currentVersion={summary?.version ?? 0} />}
     />
   );
 }

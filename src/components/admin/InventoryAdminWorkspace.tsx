@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
 import {
@@ -128,6 +129,7 @@ type InventoryAdminPageData = {
   operations: {
     movements: Array<{
       id: string;
+      productId: string;
       type: string;
       label: string;
       quantity: number;
@@ -135,6 +137,7 @@ type InventoryAdminPageData = {
       exit: number;
       reservedDelta: number;
       referenceLabel: string;
+      referenceHref: string | null;
       actorName: string | null;
       reason: string | null;
       notes: string | null;
@@ -159,6 +162,7 @@ type InventoryAdminPageData = {
     }>;
     reservations: Array<{
       id: string;
+      productId: string;
       sku: string;
       productName: string;
       locationCode: string;
@@ -172,6 +176,18 @@ type InventoryAdminPageData = {
       createdByName: string | null;
       createdAt: string | null;
     }>;
+    transfersPagination: {
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    reservationsPagination: {
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    };
     minimums: Array<{
       id: string;
       sku: string;
@@ -301,6 +317,20 @@ const reservationReferenceLabels: Record<string, string> = {
   opportunity: "Oportunidad",
   manual: "Manual",
 };
+
+function referenceHref(referenceType: string | null, referenceId: string | null) {
+  if (!referenceId) return null;
+  const id = encodeURIComponent(referenceId);
+  if (referenceType === "order") return `/admin/pedidos?orderId=${id}`;
+  if (referenceType === "sale") return `/admin/ventas?saleId=${id}`;
+  if (referenceType === "transfer" || referenceType === "transfer_cancel")
+    return `/admin/inventario?tab=transfers&transferId=${id}`;
+  if (referenceType === "reservation" || referenceType === "reservation_expiry")
+    return `/admin/inventario?tab=reservations&reservationId=${id}`;
+  if (referenceType === "purchase" || referenceType === "purchase_receipt")
+    return `/admin/compras?purchaseId=${id}`;
+  return null;
+}
 const importStatusLabels: Record<string, string> = {
   DRY_RUN: "Vista previa",
   READY_FOR_TRANSACTION: "Listo para aplicar",
@@ -336,10 +366,10 @@ function messageFromResponse(payload: unknown) {
   return "No se pudo completar la operación.";
 }
 
-async function postJson(path: string, body: unknown) {
+async function postJson(path: string, body: unknown, idempotencyKey = crypto.randomUUID()) {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
     body: JSON.stringify(body),
   });
   const payload = await response.json().catch(() => null);
@@ -347,10 +377,10 @@ async function postJson(path: string, body: unknown) {
   return payload;
 }
 
-async function patchJson(path: string, body: unknown) {
+async function patchJson(path: string, body: unknown, idempotencyKey = crypto.randomUUID()) {
   const response = await fetch(path, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
     body: JSON.stringify(body),
   });
   const payload = await response.json().catch(() => null);
@@ -405,7 +435,7 @@ function ProductPicker({
 
   return (
     <div className="relative">
-      <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+      <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
         Producto
         <div className="relative">
           <Search
@@ -451,15 +481,15 @@ function ProductPicker({
             className="absolute left-0 right-0 top-[62px] z-20 max-h-56 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-[0_12px_28px_rgba(16,42,67,0.14)]"
           >
             {loading ? (
-              <p className="px-3 py-3 text-[10px] text-slate-400">Buscando referencias…</p>
+              <p className="px-3 py-3 text-[11px] text-slate-400">Buscando referencias…</p>
             ) : null}
             {!loading && requireLocation && !locationId ? (
-              <p className="px-3 py-3 text-[10px] text-slate-400">
+              <p className="px-3 py-3 text-[11px] text-slate-400">
                 Selecciona un local para consultar referencias.
               </p>
             ) : null}
             {!loading && (locationId || !requireLocation) && !options.length ? (
-              <p className="px-3 py-3 text-[10px] text-slate-400">
+              <p className="px-3 py-3 text-[11px] text-slate-400">
                 No encontramos referencias con esa búsqueda.
               </p>
             ) : null}
@@ -478,13 +508,13 @@ function ProductPicker({
                   className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left hover:bg-slate-50"
                 >
                   <span className="min-w-0">
-                    <strong className="block truncate font-mono text-[10px] text-slate-700">
+                    <strong className="block truncate font-mono text-[11px] text-slate-700">
                       {option.sku}
                     </strong>
-                    <span className="block truncate text-[10px] text-slate-500">{option.name}</span>
+                    <span className="block truncate text-[11px] text-slate-500">{option.name}</span>
                   </span>
                   <span
-                    className={`shrink-0 text-[9px] font-black ${option.available > 0 ? "text-emerald-700" : "text-slate-400"}`}
+                    className={`shrink-0 text-[11px] font-black ${option.available > 0 ? "text-emerald-700" : "text-slate-400"}`}
                   >
                     {number(option.available)} disp.
                   </span>
@@ -508,6 +538,8 @@ type GlobalMovementItem = {
   availableBefore: number;
   availableAfter: number;
   referenceLabel: string;
+  referenceHref: string | null;
+  productId: string;
   actorName: string | null;
   sku: string;
   productName: string;
@@ -598,7 +630,7 @@ function GlobalMovementsDrawer({
               resetPage();
             }}
           />
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Local
             <select
               value={locationId}
@@ -606,7 +638,7 @@ function GlobalMovementsDrawer({
                 setLocationId(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
             >
               <option value="">Todos los locales</option>
               {locations.map((location) => (
@@ -616,7 +648,7 @@ function GlobalMovementsDrawer({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Tipo de movimiento
             <select
               value={type}
@@ -624,7 +656,7 @@ function GlobalMovementsDrawer({
                 setType(event.target.value as InventoryMovementType | "");
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
             >
               <option value="">Todos los tipos</option>
               {movementTypes.map((entry) => (
@@ -634,7 +666,7 @@ function GlobalMovementsDrawer({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Usuario
             <input
               value={actorQuery}
@@ -643,10 +675,10 @@ function GlobalMovementsDrawer({
                 resetPage();
               }}
               placeholder="Nombre o correo"
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Desde
             <input
               type="date"
@@ -655,10 +687,10 @@ function GlobalMovementsDrawer({
                 setDateFrom(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Hasta
             <input
               type="date"
@@ -667,18 +699,18 @@ function GlobalMovementsDrawer({
                 setDateTo(event.target.value);
                 resetPage();
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
         </div>
         {loading ? (
-          <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center text-[10px] text-slate-400">
+          <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center text-[11px] text-slate-400">
             Cargando movimientos…
           </div>
         ) : null}
         {error ? (
           <div
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {error}
@@ -693,22 +725,33 @@ function GlobalMovementsDrawer({
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[8px] font-extrabold text-blue-600">
+                    <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[11px] font-extrabold text-blue-600">
                       {movement.label}
                     </span>
-                    <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
+                    <Link
+                      href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
+                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                    >
+                      {movement.sku}
+                    </Link>
                   </div>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
+                  <p className="mt-1 truncate text-[11px] font-extrabold text-slate-700">
                     {movement.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     {movement.locationCode} · {movement.locationName}
                   </p>
                 </div>
-                <div className="text-[9px] text-slate-500">
+                <div className="text-[11px] text-slate-500">
                   <p>
                     <span className="font-extrabold text-slate-600">Referencia:</span>{" "}
-                    {movement.referenceLabel}
+                    {movement.referenceHref ? (
+                      <Link href={movement.referenceHref} className="text-blue-600 hover:underline">
+                        {movement.referenceLabel}
+                      </Link>
+                    ) : (
+                      movement.referenceLabel
+                    )}
                   </p>
                   <p className="mt-1">
                     <span className="font-extrabold text-slate-600">Usuario:</span>{" "}
@@ -716,7 +759,7 @@ function GlobalMovementsDrawer({
                   </p>
                   {movement.reason ? <p className="mt-1 truncate">{movement.reason}</p> : null}
                 </div>
-                <div className="text-[10px] font-black">
+                <div className="text-[11px] font-black">
                   <span className="block text-emerald-700">
                     {movement.entry ? `+${number(movement.entry)}` : "—"}
                   </span>
@@ -730,7 +773,7 @@ function GlobalMovementsDrawer({
                     </span>
                   ) : null}
                 </div>
-                <div className="text-[9px] text-slate-400 lg:text-right">
+                <div className="text-[11px] text-slate-400 lg:text-right">
                   <p>
                     Disp. {number(movement.availableBefore)} → {number(movement.availableAfter)}
                   </p>
@@ -741,7 +784,7 @@ function GlobalMovementsDrawer({
             {!payload?.items.length ? (
               <OperationEmpty text="No hay movimientos para los filtros seleccionados." />
             ) : null}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[9px] font-semibold text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] font-semibold text-slate-400">
               <span>
                 {payload
                   ? `Mostrando ${payload.totalItems ? (payload.page - 1) * payload.pageSize + 1 : 0}–${Math.min(payload.page * payload.pageSize, payload.totalItems)} de ${number(payload.totalItems)}`
@@ -802,7 +845,7 @@ function DialogFrame({
             <h2 id="inventory-dialog-title" className="text-[16px] font-black text-slate-900">
               {title}
             </h2>
-            <p className="mt-1 text-[10px] leading-4 text-slate-500">{description}</p>
+            <p className="mt-1 text-[11px] leading-4 text-slate-500">{description}</p>
           </div>
           <button
             type="button"
@@ -840,6 +883,7 @@ function AdjustmentDialog({
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const manual = type === "ADJUSTMENT_IN" || type === "ADJUSTMENT_OUT";
   const outbound = type === "ADJUSTMENT_OUT" || type === "RETURN_OUT";
   const quantityNumber = Number(quantity);
@@ -860,7 +904,7 @@ function AdjustmentDialog({
         type,
         reason,
         notes,
-      });
+      }, idempotencyKey);
       onSuccess();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo registrar el movimiento.");
@@ -876,7 +920,7 @@ function AdjustmentDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -895,7 +939,7 @@ function AdjustmentDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Tipo de movimiento
             <select
               required
@@ -913,7 +957,7 @@ function AdjustmentDialog({
         </div>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Cantidad
             <input
               required
@@ -925,7 +969,7 @@ function AdjustmentDialog({
               className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 text-[10px] text-slate-500">
+          <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 text-[11px] text-slate-500">
             <span className="block font-extrabold text-slate-600">Disponible consultado</span>
             <strong className="mt-1 block text-[15px] text-slate-900">
               {product ? number(product.available) : "—"}
@@ -934,7 +978,7 @@ function AdjustmentDialog({
         </div>
         {manual ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+            <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
               Motivo
               <input
                 required
@@ -945,7 +989,7 @@ function AdjustmentDialog({
                 className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
               />
             </label>
-            <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+            <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
               Notas
               <textarea
                 required
@@ -959,7 +1003,7 @@ function AdjustmentDialog({
             </label>
           </div>
         ) : null}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">
           <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
@@ -969,7 +1013,7 @@ function AdjustmentDialog({
         </div>
         {outputBlocked ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             La salida supera el disponible; no puede dejar el reservado por encima del físico.
@@ -977,7 +1021,7 @@ function AdjustmentDialog({
         ) : null}
         {message ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {message}
@@ -987,7 +1031,7 @@ function AdjustmentDialog({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[11px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1001,7 +1045,7 @@ function AdjustmentDialog({
               !Number.isInteger(quantityNumber) ||
               quantityNumber < 1
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1037,6 +1081,7 @@ function TransferDialog({
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const invalidLines = lines.some(
     (line) =>
       !line.product ||
@@ -1057,7 +1102,7 @@ function TransferDialog({
           productId: line.product?.id,
           quantity: Number(line.quantity),
         })),
-      });
+      }, idempotencyKey);
       onSuccess();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo crear el traslado.");
@@ -1073,7 +1118,7 @@ function TransferDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Origen
             <select
               required
@@ -1092,7 +1137,7 @@ function TransferDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Destino
             <select
               required
@@ -1113,12 +1158,12 @@ function TransferDialog({
         </div>
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black text-slate-700">Referencias a trasladar</p>
+            <p className="text-[11px] font-black text-slate-700">Referencias a trasladar</p>
             <button
               type="button"
               onClick={() => setLines((current) => [...current, { product: null, quantity: "" }])}
               disabled={!sourceLocationId}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-[9px] font-extrabold text-blue-600 disabled:opacity-40"
+              className="inline-flex min-h-8 items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-extrabold text-blue-600 disabled:opacity-40"
             >
               <Plus className="h-3 w-3" />
               Agregar línea
@@ -1140,7 +1185,7 @@ function TransferDialog({
                   )
                 }
               />
-              <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+              <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
                 Cantidad
                 <input
                   required
@@ -1170,14 +1215,14 @@ function TransferDialog({
                 <X className="h-3.5 w-3.5" />
               </button>
               {line.product && Number(line.quantity) > line.product.available ? (
-                <p className="text-[9px] font-bold text-rose-600 sm:col-span-3">
+                <p className="text-[11px] font-bold text-rose-600 sm:col-span-3">
                   Disponible en origen: {number(line.product.available)} unidades.
                 </p>
               ) : null}
             </div>
           ))}
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
           Notas del traslado
           <textarea
             value={notes}
@@ -1190,13 +1235,13 @@ function TransferDialog({
         </label>
         {message ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {message}
           </p>
         ) : null}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">
           <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {lines
@@ -1209,7 +1254,7 @@ function TransferDialog({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[11px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1222,7 +1267,7 @@ function TransferDialog({
               sourceLocationId === destinationLocationId ||
               invalidLines
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1261,6 +1306,7 @@ function ReservationDialog({
   const [expiresAt, setExpiresAt] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const quantityNumber = Number(quantity);
   const manual = referenceType === "manual";
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -1276,7 +1322,7 @@ function ReservationDialog({
         referenceId: referenceId.trim() || undefined,
         reason: manual ? reason.trim() : undefined,
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
-      });
+      }, idempotencyKey);
       onSuccess();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo crear la reserva.");
@@ -1294,7 +1340,7 @@ function ReservationDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -1313,7 +1359,7 @@ function ReservationDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Tipo de referencia
             <select
               required
@@ -1328,7 +1374,7 @@ function ReservationDialog({
             </select>
           </label>
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
           {manual ? "Referencia (opcional)" : "Código de referencia"}
           <input
             value={referenceId}
@@ -1342,7 +1388,7 @@ function ReservationDialog({
         </label>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Cantidad
             <input
               required
@@ -1354,7 +1400,7 @@ function ReservationDialog({
               className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Expira el (opcional)
             <input
               type="datetime-local"
@@ -1365,7 +1411,7 @@ function ReservationDialog({
           </label>
         </div>
         {manual ? (
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Motivo de reserva manual
             <textarea
               required
@@ -1378,7 +1424,7 @@ function ReservationDialog({
             />
           </label>
         ) : null}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">
           <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
@@ -1388,7 +1434,7 @@ function ReservationDialog({
         </div>
         {outputBlocked ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             La reserva supera el disponible actual.
@@ -1396,7 +1442,7 @@ function ReservationDialog({
         ) : null}
         {message ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {message}
@@ -1406,7 +1452,7 @@ function ReservationDialog({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[11px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1421,7 +1467,7 @@ function ReservationDialog({
               quantityNumber < 1 ||
               (manual && !reason.trim())
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1454,6 +1500,7 @@ function MinimumDialog({
   const [minimumStock, setMinimumStock] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -1463,7 +1510,7 @@ function MinimumDialog({
         productId: product?.id,
         locationId,
         minimumStock: Number(minimumStock),
-      });
+      }, idempotencyKey);
       onSuccess();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo guardar el mínimo.");
@@ -1479,7 +1526,7 @@ function MinimumDialog({
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Local
             <select
               required
@@ -1498,7 +1545,7 @@ function MinimumDialog({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Mínimo
             <input
               required
@@ -1513,7 +1560,7 @@ function MinimumDialog({
           </label>
         </div>
         <ProductPicker locationId={locationId} value={product} onChange={setProduct} />
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] leading-5 text-slate-500">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">
           <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
@@ -1523,7 +1570,7 @@ function MinimumDialog({
         </div>
         {message ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {message}
@@ -1533,7 +1580,7 @@ function MinimumDialog({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[11px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
@@ -1546,7 +1593,7 @@ function MinimumDialog({
               !Number.isInteger(Number(minimumStock)) ||
               Number(minimumStock) < 0
             }
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
           >
             {busy ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1574,6 +1621,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
       reservedDelta: number;
       availableAfter: number;
       referenceLabel: string;
+      referenceHref: string | null;
       actorName: string | null;
       reason: string | null;
       notes: string | null;
@@ -1623,20 +1671,20 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-[720px] flex-col bg-white shadow-[-16px_0_42px_rgba(16,42,67,0.18)]">
         <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] font-extrabold text-blue-600">
+            <p className="font-mono text-[11px] font-extrabold text-blue-600">
               {item.sku} · {item.locationCode}
             </p>
             <h2 id="kardex-title" className="mt-1 truncate text-[16px] font-black text-slate-900">
               Kardex de {item.productName}
             </h2>
-            <p className="mt-1 text-[10px] text-slate-500">
+            <p className="mt-1 text-[11px] text-slate-500">
               {item.locationName} · disponible actual {number(item.available)}
             </p>
           </div>
           <div className="flex items-center gap-1">
             <a
               href={exportHref}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[9px] font-extrabold text-blue-600 hover:border-blue-300"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[11px] font-extrabold text-blue-600 hover:border-blue-300"
             >
               <Download className="h-3 w-3" />
               CSV
@@ -1653,19 +1701,19 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
         </div>
         <div className="min-h-0 flex-1 overflow-auto p-5">
           {error ? (
-            <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-[10px] font-bold text-rose-600">
+            <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-[11px] font-bold text-rose-600">
               {error}
             </p>
           ) : null}
           {!payload && !error ? (
-            <div className="flex items-center gap-2 text-[10px] text-slate-500">
+            <div className="flex items-center gap-2 text-[11px] text-slate-500">
               <RefreshCw className="h-4 w-4 animate-spin" />
               Cargando movimientos persistidos…
             </div>
           ) : null}
           {payload ? (
             <>
-              <div className="mb-4 flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
+              <div className="mb-4 flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
                 <span>{number(payload.totalItems)} movimientos históricos</span>
                 <span className="font-extrabold text-slate-700">
                   Página {payload.page} de {payload.totalPages} · {payload.pageSize} por página
@@ -1673,7 +1721,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px] text-left">
-                  <thead className="border-b border-slate-100 text-[8px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
+                  <thead className="border-b border-slate-100 text-[11px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
                     <tr>
                       <th className="px-2 py-2">Movimiento</th>
                       <th className="px-2 py-2">Entrada</th>
@@ -1689,10 +1737,10 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     {payload.items.map((movement) => (
                       <tr
                         key={movement.id}
-                        className="border-b border-slate-100 align-top text-[9px] text-slate-600"
+                        className="border-b border-slate-100 align-top text-[11px] text-slate-600"
                       >
                         <td className="px-2 py-3">
-                          <strong className="block text-[10px] text-slate-700">
+                          <strong className="block text-[11px] text-slate-700">
                             {movement.label}
                           </strong>
                           <span className="mt-1 block text-slate-400">
@@ -1730,7 +1778,13 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                             {movement.actorName || "Sistema"}
                           </span>
                           <span className="mt-1 block text-slate-400">
-                            {movement.referenceLabel}
+                            {movement.referenceHref ? (
+                              <a href={movement.referenceHref} className="text-blue-600 hover:underline">
+                                {movement.referenceLabel}
+                              </a>
+                            ) : (
+                              movement.referenceLabel
+                            )}
                           </span>
                         </td>
                       </tr>
@@ -1738,13 +1792,13 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                   </tbody>
                 </table>
                 {!payload.items.length ? (
-                  <p className="py-8 text-center text-[10px] text-slate-400">
+                  <p className="py-8 text-center text-[11px] text-slate-400">
                     No hay movimientos para este producto y local.
                   </p>
                 ) : null}
               </div>
               <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-[9px] text-slate-400">
+                <span className="text-[11px] text-slate-400">
                   Página {payload.page} de {payload.totalPages}
                 </span>
                 <span className="flex gap-1">
@@ -1752,7 +1806,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     type="button"
                     disabled={payload.page <= 1}
                     onClick={() => setPage((current) => Math.max(1, current - 1))}
-                    className="rounded-md border border-slate-200 px-2 py-1 text-[9px] font-extrabold text-slate-600 disabled:opacity-35"
+                    className="min-h-8 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-extrabold text-slate-600 disabled:opacity-35"
                   >
                     Anterior
                   </button>
@@ -1760,7 +1814,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                     type="button"
                     disabled={payload.page >= payload.totalPages}
                     onClick={() => setPage((current) => Math.min(payload.totalPages, current + 1))}
-                    className="rounded-md border border-slate-200 px-2 py-1 text-[9px] font-extrabold text-slate-600 disabled:opacity-35"
+                    className="min-h-8 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-extrabold text-slate-600 disabled:opacity-35"
                   >
                     Siguiente
                   </button>
@@ -1770,7 +1824,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
           ) : null}
         </div>
         <div className="border-t border-slate-100 px-5 py-3">
-          <p className="text-[9px] text-slate-400">
+          <p className="text-[11px] text-slate-400">
             El Kardex es inmutable y se consulta desde los movimientos persistidos.
           </p>
         </div>
@@ -1791,6 +1845,7 @@ function InventoryOperationsTabs({
   onSuccess: () => void;
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const requestedTab = searchParams.get("tab");
   const initialTab: OperationsTab =
     requestedTab === "transfers" ||
@@ -1808,6 +1863,7 @@ function InventoryOperationsTabs({
   } | null>(null);
   const [busyId, setBusyId] = useState("");
   const [message, setMessage] = useState("");
+  const actionKey = (action: string, id: string) => `inventory:${action}:${id}`;
   const ask = (id: string, confirmation: string, run: () => Promise<unknown>) => {
     setMessage("");
     setPending({ id, message: confirmation, run });
@@ -1827,8 +1883,8 @@ function InventoryOperationsTabs({
   };
   const tabs: Array<{ id: OperationsTab; label: string; count: number }> = [
     { id: "movements", label: "Movimientos", count: data.operations.movements.length },
-    { id: "transfers", label: "Transferencias", count: data.operations.transfers.length },
-    { id: "reservations", label: "Reservas", count: data.operations.reservations.length },
+    { id: "transfers", label: "Transferencias", count: data.operations.transfersPagination.totalItems },
+    { id: "reservations", label: "Reservas", count: data.operations.reservationsPagination.totalItems },
     { id: "minimums", label: "Mínimos", count: data.operations.minimums.length },
     { id: "imports", label: "Importaciones", count: data.operations.imports.length },
   ];
@@ -1850,11 +1906,11 @@ function InventoryOperationsTabs({
               setPending(null);
               setMessage("");
             }}
-            className={`shrink-0 border-b-2 px-3 py-2.5 text-[10px] font-extrabold transition ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
+            className={`shrink-0 border-b-2 px-3 py-2.5 text-[11px] font-extrabold transition ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
           >
             {entry.label}
             <span
-              className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[8px] ${tab === entry.id ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"}`}
+              className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[11px] ${tab === entry.id ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"}`}
             >
               {number(entry.count)}
             </span>
@@ -1863,7 +1919,7 @@ function InventoryOperationsTabs({
       </div>
       {pending ? (
         <div
-          className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-[10px] text-amber-800"
+          className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-[11px] text-amber-800"
           role="alertdialog"
           aria-label="Confirmar operación"
         >
@@ -1872,7 +1928,7 @@ function InventoryOperationsTabs({
             <button
               type="button"
               onClick={() => setPending(null)}
-              className="rounded-md border border-amber-200 bg-white px-3 py-1.5 font-extrabold text-amber-800"
+              className="min-h-8 rounded-md border border-amber-200 bg-white px-3 py-1.5 font-extrabold text-amber-800"
             >
               Cancelar
             </button>
@@ -1880,7 +1936,7 @@ function InventoryOperationsTabs({
               type="button"
               onClick={() => void execute()}
               disabled={Boolean(busyId)}
-              className="rounded-md bg-slate-900 px-3 py-1.5 font-extrabold text-white disabled:opacity-50"
+              className="min-h-8 rounded-md bg-slate-900 px-3 py-1.5 font-extrabold text-white disabled:opacity-50"
             >
               {busyId ? "Procesando…" : "Confirmar"}
             </button>
@@ -1889,7 +1945,7 @@ function InventoryOperationsTabs({
       ) : null}
       {message ? (
         <p
-          className="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+          className="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
           role="alert"
         >
           {message}
@@ -1897,13 +1953,13 @@ function InventoryOperationsTabs({
       ) : null}
       {permissions.canKardex && tab === "movements" ? (
         <div className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-          <span className="text-[9px] text-slate-500">
+          <span className="text-[11px] text-slate-500">
             Consulta el historial completo con filtros y paginación.
           </span>
           <button
             type="button"
             onClick={() => setGlobalMovementsOpen(true)}
-            className="inline-flex h-8 shrink-0 items-center gap-2 rounded-md border border-blue-200 bg-white px-2.5 text-[9px] font-extrabold text-blue-600"
+            className="inline-flex h-8 shrink-0 items-center gap-2 rounded-md border border-blue-200 bg-white px-2.5 text-[11px] font-extrabold text-blue-600"
           >
             <FileClock className="h-3.5 w-3.5" />
             Movimientos globales
@@ -1931,21 +1987,33 @@ function InventoryOperationsTabs({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="text-[10px] font-extrabold text-slate-700">
+                      <span className="text-[11px] font-extrabold text-slate-700">
                         {movement.label}
                       </span>
-                      <span className="font-mono text-[8px] text-slate-400">{movement.sku}</span>
+                      <Link
+                        href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
+                        className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                      >
+                        {movement.sku}
+                      </Link>
                     </div>
-                    <p className="mt-0.5 truncate text-[10.5px] font-extrabold text-slate-700">
+                    <p className="mt-0.5 truncate text-[11px] font-extrabold text-slate-700">
                       {movement.productName}
                     </p>
-                    <p className="mt-1 truncate text-[9px] text-slate-400">
+                    <p className="mt-1 truncate text-[11px] text-slate-400">
                       {movement.locationCode} · {movement.locationName}
-                      {movement.referenceLabel ? ` · ${movement.referenceLabel}` : ""}
+                      {movement.referenceLabel ? " · " : ""}
+                      {movement.referenceHref ? (
+                        <Link href={movement.referenceHref} className="text-blue-600 hover:underline">
+                          {movement.referenceLabel}
+                        </Link>
+                      ) : (
+                        movement.referenceLabel
+                      )}
                       {movement.actorName ? ` · ${movement.actorName}` : " · Sistema"}
                     </p>
                     {movement.reason ? (
-                      <p className="mt-1 truncate text-[8.5px] italic text-slate-400">
+                      <p className="mt-1 truncate text-[11px] italic text-slate-400">
                         {movement.reason}
                       </p>
                     ) : null}
@@ -1954,15 +2022,15 @@ function InventoryOperationsTabs({
                     <p className={`text-[12px] font-black ${amountColor}`}>
                       {netDelta > 0 ? "+" : ""}
                       {number(netDelta)}
-                      <span className="ml-0.5 text-[8px] font-bold text-slate-400">uds</span>
+                      <span className="ml-0.5 text-[11px] font-bold text-slate-400">uds</span>
                     </p>
                     {movement.reservedDelta ? (
-                      <p className="mt-1 text-[8px] font-extrabold text-purple-600">
+                      <p className="mt-1 text-[11px] font-extrabold text-purple-600">
                         Reserva {movement.reservedDelta > 0 ? "+" : ""}
                         {number(movement.reservedDelta)}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-[8.5px] text-slate-400">
+                    <p className="mt-1 text-[11px] text-slate-400">
                       {dateTime(movement.createdAt)}
                     </p>
                   </div>
@@ -1976,23 +2044,51 @@ function InventoryOperationsTabs({
         ) : null}
         {tab === "transfers" ? (
           <div className="grid gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+              <p className="text-[11px] text-slate-500">Historial completo de traslados</p>
+              <select
+                aria-label="Filtrar traslados por estado"
+                value={searchParams.get("transferStatus") ?? ""}
+                onChange={(event) => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  if (event.target.value) params.set("transferStatus", event.target.value);
+                  else params.delete("transferStatus");
+                  params.set("transferPage", "1");
+                  params.set("tab", "transfers");
+                  router.push(`/admin/inventario?${params.toString()}`);
+                }}
+                className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
+              >
+                <option value="">Todos los estados</option>
+                <option value="DRAFT">Borrador</option>
+                <option value="REQUESTED">Solicitado</option>
+                <option value="IN_TRANSIT">En tránsito</option>
+                <option value="RECEIVED">Recibido</option>
+                <option value="CANCELLED">Cancelado</option>
+              </select>
+            </div>
             {data.operations.transfers.map((transfer) => (
               <div
                 key={transfer.id}
                 className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(190px,1fr)_90px_minmax(180px,1fr)]"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
-                    {transfer.id}
+                  <p className="font-mono text-[11px] font-extrabold text-blue-600">
+                    <Link
+                      href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
+                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                    >
+                      {transfer.id}
+                    </Link>
                   </p>
-                  <p className="mt-1 text-[10px] font-extrabold text-slate-700">
+                  <p className="mt-1 text-[11px] font-extrabold text-slate-700">
                     {transfer.sourceCode} → {transfer.destinationCode}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     {transfer.sourceName} → {transfer.destinationName}
                   </p>
                 </div>
-                <div className="text-[9px] text-slate-500">
+                <div className="text-[11px] text-slate-500">
                   <p>
                     {number(transfer.itemCount)} referencias · {number(transfer.units)} unidades
                   </p>
@@ -2003,13 +2099,13 @@ function InventoryOperationsTabs({
                 </div>
                 <div>
                   <span
-                    className={`inline-flex rounded-md border px-2 py-1 text-[8px] font-extrabold ${transferStatusClass(transfer.status)}`}
+                    className={`inline-flex rounded-md border px-2 py-1 text-[11px] font-extrabold ${transferStatusClass(transfer.status)}`}
                   >
                     {transferStatusLabels[transfer.status] || "Estado"}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-start justify-between gap-2 lg:justify-end">
-                  <span className="text-[9px] text-slate-400">{dateTime(transfer.updatedAt)}</span>
+                  <span className="text-[11px] text-slate-400">{dateTime(transfer.updatedAt)}</span>
                   {permissions.canTransfer ? (
                     <div className="flex flex-wrap justify-end gap-1">
                       {transfer.status === "DRAFT" ? (
@@ -2022,10 +2118,10 @@ function InventoryOperationsTabs({
                               () =>
                                 patchJson(`/api/admin/inventario/transferencias/${transfer.id}`, {
                                   status: "REQUESTED",
-                                }),
+                                  }, actionKey("request", transfer.id)),
                             )
                           }
-                          className="rounded-md border border-blue-200 px-2 py-1.5 text-[8px] font-extrabold text-blue-600"
+                          className="min-h-8 rounded-md border border-blue-200 px-2 py-1.5 text-[11px] font-extrabold text-blue-600"
                         >
                           Solicitar
                         </button>
@@ -2040,10 +2136,10 @@ function InventoryOperationsTabs({
                               () =>
                                 patchJson(`/api/admin/inventario/transferencias/${transfer.id}`, {
                                   status: "IN_TRANSIT",
-                                }),
+                                }, actionKey("send", transfer.id)),
                             )
                           }
-                          className="rounded-md bg-blue-600 px-2 py-1.5 text-[8px] font-extrabold text-white"
+                          className="min-h-8 rounded-md bg-blue-600 px-2 py-1.5 text-[11px] font-extrabold text-white"
                         >
                           Enviar
                         </button>
@@ -2059,10 +2155,11 @@ function InventoryOperationsTabs({
                                 postJson(
                                   `/api/admin/inventario/transferencias/${transfer.id}/recibir`,
                                   {},
+                                  actionKey("receive", transfer.id),
                                 ),
                             )
                           }
-                          className="rounded-md bg-emerald-600 px-2 py-1.5 text-[8px] font-extrabold text-white"
+                          className="min-h-8 rounded-md bg-emerald-600 px-2 py-1.5 text-[11px] font-extrabold text-white"
                         >
                           Registrar recepción
                         </button>
@@ -2079,10 +2176,10 @@ function InventoryOperationsTabs({
                               () =>
                                 patchJson(`/api/admin/inventario/transferencias/${transfer.id}`, {
                                   status: "CANCELLED",
-                                }),
+                                }, actionKey("cancel", transfer.id)),
                             )
                           }
-                          className="rounded-md border border-rose-200 px-2 py-1.5 text-[8px] font-extrabold text-rose-600"
+                          className="min-h-8 rounded-md border border-rose-200 px-2 py-1.5 text-[11px] font-extrabold text-rose-600"
                         >
                           Cancelar
                         </button>
@@ -2095,46 +2192,101 @@ function InventoryOperationsTabs({
             {!data.operations.transfers.length ? (
               <OperationEmpty text="No hay traslados registrados." />
             ) : null}
+            <OperationPagination {...data.operations.transfersPagination} parameter="transferPage" />
           </div>
         ) : null}
         {tab === "reservations" ? (
           <div className="grid gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+              <p className="text-[11px] text-slate-500">Reservas operativas y su trazabilidad</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {permissions.canReserve ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      ask(
+                        "reservations:expire",
+                        "Se liberarán las reservas manuales vencidas. ¿Confirmas?",
+                        () => postJson("/api/admin/inventario/reservas/expirar", {}, "inventory:expire:manual"),
+                      )
+                    }
+                    className="h-8 rounded-md border border-amber-200 bg-white px-2.5 text-[11px] font-extrabold text-amber-700"
+                  >
+                    Liberar vencidas
+                  </button>
+                ) : null}
+                <select
+                  aria-label="Filtrar reservas por estado"
+                  value={searchParams.get("reservationStatus") ?? ""}
+                  onChange={(event) => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    if (event.target.value) params.set("reservationStatus", event.target.value);
+                    else params.delete("reservationStatus");
+                    params.set("reservationPage", "1");
+                    params.set("tab", "reservations");
+                    router.push(`/admin/inventario?${params.toString()}`);
+                  }}
+                  className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
+                >
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVE">Activa</option>
+                  <option value="RELEASED">Liberada</option>
+                  <option value="CONSUMED">Consumida</option>
+                  <option value="CANCELLED">Cancelada</option>
+                  <option value="EXPIRED">Expirada</option>
+                </select>
+              </div>
+            </div>
             {data.operations.reservations.map((reservation) => (
               <div
                 key={reservation.id}
                 className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_90px_minmax(180px,1fr)]"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
-                    {reservation.sku}
+                  <p className="font-mono text-[11px] font-extrabold text-blue-600">
+                    <Link
+                      href={`/admin/catalogo?productId=${encodeURIComponent(reservation.productId)}`}
+                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                    >
+                      {reservation.sku}
+                    </Link>
                   </p>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
+                  <p className="mt-1 truncate text-[11px] font-extrabold text-slate-700">
                     {reservation.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     {reservation.locationCode} · {reservation.locationName} ·{" "}
                     {number(reservation.quantity)} unidades
                   </p>
                 </div>
-                <div className="text-[9px] text-slate-500">
+                <div className="text-[11px] text-slate-500">
                   <p>
                     <span className="font-extrabold text-slate-600">
                       {reservationReferenceLabels[reservation.referenceType || ""] || "Referencia"}:
                     </span>{" "}
-                    {reservation.referenceId || "Sin código"}
+                    {referenceHref(reservation.referenceType, reservation.referenceId) ? (
+                      <Link
+                        href={referenceHref(reservation.referenceType, reservation.referenceId) as string}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {reservation.referenceId}
+                      </Link>
+                    ) : (
+                      reservation.referenceId || "Sin código"
+                    )}
                   </p>
                   <p className="mt-1">{reservation.reason || "Sin motivo adicional"}</p>
                   <p className="mt-1">Expira: {dateTime(reservation.expiresAt)}</p>
                 </div>
                 <div>
                   <span
-                    className={`inline-flex rounded-md border px-2 py-1 text-[8px] font-extrabold ${reservationStatusClass(reservation.status)}`}
+                    className={`inline-flex rounded-md border px-2 py-1 text-[11px] font-extrabold ${reservationStatusClass(reservation.status)}`}
                   >
                     {reservationStatusLabels[reservation.status] || "Estado"}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-start justify-between gap-2 lg:justify-end">
-                  <span className="text-[9px] text-slate-400">
+                  <span className="text-[11px] text-slate-400">
                     {reservation.createdByName || "Sistema"} · {dateTime(reservation.createdAt)}
                   </span>
                   {permissions.canReserve && reservation.status === "ACTIVE" && isAdminOperableReservation(reservation.referenceType) ? (
@@ -2149,10 +2301,11 @@ function InventoryOperationsTabs({
                               postJson(
                                 `/api/admin/inventario/reservas/${reservation.id}/liberar`,
                                 {},
+                                actionKey("release", reservation.id),
                               ),
                           )
                         }
-                        className="rounded-md border border-slate-200 px-2 py-1.5 text-[8px] font-extrabold text-slate-600"
+                        className="min-h-8 rounded-md border border-slate-200 px-2 py-1.5 text-[11px] font-extrabold text-slate-600"
                       >
                         Liberar
                       </button>
@@ -2166,10 +2319,11 @@ function InventoryOperationsTabs({
                               postJson(
                                 `/api/admin/inventario/reservas/${reservation.id}/consumir`,
                                 {},
+                                actionKey("consume", reservation.id),
                               ),
                           )
                         }
-                        className="rounded-md bg-slate-900 px-2 py-1.5 text-[8px] font-extrabold text-white"
+                        className="min-h-8 rounded-md bg-slate-900 px-2 py-1.5 text-[11px] font-extrabold text-white"
                       >
                         Consumir
                       </button>
@@ -2181,6 +2335,7 @@ function InventoryOperationsTabs({
             {!data.operations.reservations.length ? (
               <OperationEmpty text="No hay reservas registradas." />
             ) : null}
+            <OperationPagination {...data.operations.reservationsPagination} parameter="reservationPage" />
           </div>
         ) : null}
         {tab === "minimums" ? (
@@ -2191,17 +2346,17 @@ function InventoryOperationsTabs({
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
               >
                 <div className="min-w-0">
-                  <p className="font-mono text-[9px] font-extrabold text-blue-600">
+                  <p className="font-mono text-[11px] font-extrabold text-blue-600">
                     {minimum.sku}
                   </p>
-                  <p className="mt-1 truncate text-[10px] font-extrabold text-slate-700">
+                  <p className="mt-1 truncate text-[11px] font-extrabold text-slate-700">
                     {minimum.productName}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     {minimum.locationCode} · {minimum.locationName}
                   </p>
                 </div>
-                <div className="flex items-center gap-4 text-right text-[9px]">
+                <div className="flex items-center gap-4 text-right text-[11px]">
                   <span>
                     <small className="block text-slate-400">Disponible</small>
                     <b className="text-emerald-600">{number(minimum.available)}</b>
@@ -2213,7 +2368,7 @@ function InventoryOperationsTabs({
                     </b>
                   </span>
                   <span
-                    className={`rounded-md border px-2 py-1 text-[8px] font-extrabold ${statusClass(minimum.status)}`}
+                    className={`rounded-md border px-2 py-1 text-[11px] font-extrabold ${statusClass(minimum.status)}`}
                   >
                     {inventoryStatusLabels[minimum.status]}
                   </span>
@@ -2223,7 +2378,7 @@ function InventoryOperationsTabs({
             {!data.operations.minimums.length ? (
               <OperationEmpty text="No hay mínimos configurados; NULL significa sin mínimo." />
             ) : (
-              <p className="pt-1 text-[9px] text-slate-400">
+              <p className="pt-1 text-[11px] text-slate-400">
                 Un mínimo de 0 es válido y no equivale a NULL (sin mínimo).
               </p>
             )}
@@ -2237,16 +2392,16 @@ function InventoryOperationsTabs({
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
               >
                 <div>
-                  <p className="font-mono text-[9px] font-extrabold text-blue-600">{batch.id}</p>
-                  <p className="mt-1 text-[10px] font-extrabold text-slate-700">
+                  <p className="font-mono text-[11px] font-extrabold text-blue-600">{batch.id}</p>
+                  <p className="mt-1 text-[11px] font-extrabold text-slate-700">
                     {batch.filename || batch.source}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     {number(batch.rowsRead)} filas · {number(batch.matched)} coincidentes ·{" "}
                     {number(batch.unmatched)} sin SKU · {number(batch.ambiguous)} ambiguas
                   </p>
                 </div>
-                <div className="text-right text-[9px] text-slate-400">
+                <div className="text-right text-[11px] text-slate-400">
                   <span className="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 font-extrabold text-slate-600">
                     {importStatusLabels[batch.status] || batch.status}
                   </span>
@@ -2270,11 +2425,58 @@ function InventoryOperationsTabs({
   );
 }
 
+function OperationPagination({
+  page,
+  totalPages,
+  totalItems,
+  parameter,
+}: {
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  parameter: "transferPage" | "reservationPage";
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const href = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", parameter === "transferPage" ? "transfers" : "reservations");
+    params.set(parameter, String(nextPage));
+    return `/admin/inventario?${params.toString()}`;
+  };
+  if (totalItems === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500">
+      <span>
+        Página {page} de {totalPages} · {number(totalItems)} registros
+      </span>
+      <div className="flex gap-1">
+        <button
+          type="button"
+          disabled={page <= 1}
+          onClick={() => router.push(href(page - 1))}
+          className="inline-flex h-8 items-center rounded-md border border-slate-200 px-2.5 text-[11px] font-extrabold text-slate-600 disabled:opacity-40"
+        >
+          Anterior
+        </button>
+        <button
+          type="button"
+          disabled={page >= totalPages}
+          onClick={() => router.push(href(page + 1))}
+          className="inline-flex h-8 items-center rounded-md border border-slate-200 px-2.5 text-[11px] font-extrabold text-slate-600 disabled:opacity-40"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function OperationEmpty({ text }: { text: string }) {
   return (
     <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center">
       <Truck className="h-5 w-5 text-slate-300" />
-      <p className="text-[10px] font-extrabold text-slate-600">{text}</p>
+      <p className="text-[11px] font-extrabold text-slate-600">{text}</p>
     </div>
   );
 }
@@ -2303,6 +2505,8 @@ function Filters({
     const params = new URLSearchParams();
     for (const key of [
       "query",
+      "productId",
+      "critical",
       "locationId",
       "categoryId",
       "familyId",
@@ -2337,6 +2541,8 @@ function Filters({
   const familyLabel = data.facets.families.find((family) => family.id === filters.familyId);
   const brandLabel = data.facets.brands.find((brand) => brand.id === filters.brandId);
   const activeFilters: Array<{ key: string; label: string }> = [
+    filters.productId ? { key: "productId", label: "Referencia filtrada" } : null,
+    filters.critical ? { key: "critical", label: "Saldos críticos" } : null,
     filters.query ? { key: "query", label: "Búsqueda: " + filters.query } : null,
     locationLabel ? { key: "locationId", label: "Local: " + locationLabel.code } : null,
     categoryLabel ? { key: "categoryId", label: "Categoría: " + categoryLabel.name } : null,
@@ -2374,8 +2580,10 @@ function Filters({
   };
   return (
     <form onSubmit={submit} className={panel + " p-3"}>
+      {filters.productId ? <input type="hidden" name="productId" value={filters.productId} /> : null}
+      {filters.critical ? <input type="hidden" name="critical" value="true" /> : null}
       <div className="flex flex-wrap items-end gap-2">
-        <label className="min-w-[220px] flex-1 text-[10px] font-extrabold text-slate-600">
+        <label className="min-w-[220px] flex-1 text-[11px] font-extrabold text-slate-600">
           Buscar SKU, nombre o atributo
           <div className="relative mt-1">
             <Search
@@ -2390,12 +2598,12 @@ function Filters({
             />
           </div>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid min-w-[145px] gap-1 text-[11px] font-extrabold text-slate-600">
           Local
           <select
             name="locationId"
             defaultValue={filters.locationId ?? ""}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
           >
             <option value="">Todos los locales</option>
             {data.facets.locations.map((location) => (
@@ -2405,12 +2613,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid min-w-[145px] gap-1 text-[11px] font-extrabold text-slate-600">
           Categoría
           <select
             name="categoryId"
             defaultValue={filters.categoryId ?? ""}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
           >
             <option value="">Todas las categorías</option>
             {data.facets.categories.map((category) => (
@@ -2420,12 +2628,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid min-w-[145px] gap-1 text-[11px] font-extrabold text-slate-600">
           Familia
           <select
             name="familyId"
             defaultValue={filters.familyId ?? ""}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
           >
             <option value="">Todas las familias</option>
             {data.facets.families.map((family) => (
@@ -2435,12 +2643,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[145px] gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid min-w-[145px] gap-1 text-[11px] font-extrabold text-slate-600">
           Marca
           <select
             name="brandId"
             defaultValue={filters.brandId ?? ""}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
           >
             <option value="">Todas las marcas</option>
             {data.facets.brands.map((brand) => (
@@ -2450,12 +2658,12 @@ function Filters({
             ))}
           </select>
         </label>
-        <label className="grid min-w-[130px] gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid min-w-[130px] gap-1 text-[11px] font-extrabold text-slate-600">
           Estado
           <select
             name="status"
             defaultValue={filters.status ?? ""}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
           >
             <option value="">Todos los estados</option>
             {data.facets.statuses.map((status) => (
@@ -2470,12 +2678,12 @@ function Filters({
           onClick={() => setAdvancedOpen((value) => !value)}
           aria-expanded={advancedOpen}
           aria-controls="inventory-advanced-filters"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           Más filtros
           {advancedCount ? (
-            <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[8px] text-blue-600">
+            <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[11px] text-blue-600">
               {advancedCount}
             </span>
           ) : null}
@@ -2483,7 +2691,7 @@ function Filters({
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white disabled:opacity-60"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[11px] font-extrabold text-white disabled:opacity-60"
         >
           <Filter className="h-3.5 w-3.5" />
           {isPending ? "Aplicando…" : "Aplicar"}
@@ -2491,7 +2699,7 @@ function Filters({
         <button
           type="button"
           onClick={() => startTransition(() => router.push("/admin/inventario"))}
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-3 text-[10px] font-extrabold text-slate-600"
+          className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-3 text-[11px] font-extrabold text-slate-600"
         >
           Limpiar
         </button>
@@ -2501,33 +2709,33 @@ function Filters({
           id="inventory-advanced-filters"
           className="mt-3 grid gap-2 border-t border-slate-100 pt-3 sm:grid-cols-2 lg:grid-cols-5"
         >
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Reservas
             <select
               name="hasReservations"
               defaultValue={
                 filters.hasReservations === undefined ? "" : String(filters.hasReservations)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
             >
               <option value="">Con o sin reservas</option>
               <option value="true">Con reservas</option>
               <option value="false">Sin reservas</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Mínimo configurado
             <select
               name="hasMinimum"
               defaultValue={filters.hasMinimum === undefined ? "" : String(filters.hasMinimum)}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
             >
               <option value="">Con o sin mínimo</option>
               <option value="true">Con mínimo</option>
               <option value="false">Sin mínimo</option>
             </select>
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Disponible mínimo
             <input
               name="minAvailable"
@@ -2536,25 +2744,25 @@ function Filters({
               step="1"
               defaultValue={filters.minAvailable ?? ""}
               placeholder="Ej. 5"
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Actualizado desde
             <input
               name="updatedFrom"
               type="date"
               defaultValue={filters.updatedFrom ?? ""}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Actualizado hasta
             <input
               name="updatedTo"
               type="date"
               defaultValue={filters.updatedTo ?? ""}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600"
             />
           </label>
         </div>
@@ -2564,13 +2772,13 @@ function Filters({
           className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3"
           aria-label="Filtros activos"
         >
-          <span className="mr-1 text-[9px] font-extrabold text-slate-400">Filtros activos</span>
+          <span className="mr-1 text-[11px] font-extrabold text-slate-400">Filtros activos</span>
           {activeFilters.map((filter) => (
             <button
               key={filter.key}
               type="button"
               onClick={() => clearFilter(filter.key)}
-              className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[9px] font-extrabold text-blue-600"
+              className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-extrabold text-blue-600"
               aria-label={"Quitar " + filter.label}
             >
               {filter.label}
@@ -2608,7 +2816,7 @@ function Pagination({
     ),
   );
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[9px] font-semibold text-slate-400">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[11px] font-semibold text-slate-400">
       <span>
         Mostrando {data.totalItems ? (data.page - 1) * data.pageSize + 1 : 0}–
         {Math.min(data.page * data.pageSize, data.totalItems)} de {number(data.totalItems)} saldos
@@ -2629,7 +2837,7 @@ function Pagination({
             key={page}
             onClick={() => router.push(href(page))}
             aria-current={page === data.page ? "page" : undefined}
-            className={`inline-flex h-7 w-7 items-center justify-center rounded-md text-[9px] font-extrabold ${page === data.page ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-600"}`}
+            className={`inline-flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-extrabold ${page === data.page ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-600"}`}
           >
             {page}
           </button>
@@ -2647,7 +2855,7 @@ function Pagination({
           aria-label="Saldos por página"
           value={String(data.pageSize)}
           onChange={(event) => router.push(href(1, Number(event.target.value)))}
-          className="ml-2 h-7 rounded-md border border-slate-200 bg-white px-2 text-[9px] font-extrabold text-slate-600"
+          className="ml-2 h-7 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-extrabold text-slate-600"
         >
           {inventoryPageSizes.map((size) => (
             <option key={size} value={size}>
@@ -2663,10 +2871,12 @@ function Pagination({
 export function InventoryAdminWorkspace({
   data,
   filters,
+  filterNotice,
   permissions,
 }: {
   data: InventoryAdminPageData;
   filters: InventoryAdminFilters;
+  filterNotice?: string;
   permissions: PermissionSet;
 }) {
   const router = useRouter();
@@ -2704,7 +2914,7 @@ export function InventoryAdminWorkspace({
     <div className="space-y-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
             Operaciones · inventario
           </p>
           <h1 className="mt-1 text-[25px] font-black tracking-[-0.03em] text-slate-900 sm:text-[29px]">
@@ -2720,7 +2930,7 @@ export function InventoryAdminWorkspace({
             type="button"
             onClick={() => startRefresh(() => router.refresh())}
             disabled={isRefreshing}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600 hover:border-blue-200"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600 hover:border-blue-200"
           >
             {" "}
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -2729,7 +2939,7 @@ export function InventoryAdminWorkspace({
           <a
             href={exportHref}
             download
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600 hover:border-blue-200"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600 hover:border-blue-200"
           >
             <Download className="h-3.5 w-3.5" />
             Exportar
@@ -2738,7 +2948,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("reservation")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600"
             >
               <ShieldCheck className="h-3.5 w-3.5" />
               Reservar
@@ -2748,7 +2958,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("minimum")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Mínimos
@@ -2758,7 +2968,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("transfer")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[10px] font-extrabold text-slate-600"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-600"
             >
               <ArrowLeftRight className="h-3.5 w-3.5" />
               Transferir stock
@@ -2768,7 +2978,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("adjustment")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-amber-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_6px_14px_rgba(245,139,32,0.2)] hover:bg-amber-600"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-amber-600 px-3.5 text-[11px] font-extrabold text-white shadow-[0_6px_14px_rgba(245,139,32,0.2)] hover:bg-amber-600"
             >
               <Plus className="h-3.5 w-3.5" />
               Ajustar inventario
@@ -2776,6 +2986,11 @@ export function InventoryAdminWorkspace({
           ) : null}
         </div>
       </div>
+      {filterNotice ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800" role="status">
+          {filterNotice}
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <MetricCard
           icon={Boxes}
@@ -2812,13 +3027,15 @@ export function InventoryAdminWorkspace({
           note="Stock comprometido"
           tone="blue"
         />
-        <MetricCard
-          icon={AlertTriangle}
-          label="Saldos críticos"
-          value={number(data.summary.criticalBalances)}
-          note="Requieren atención"
-          tone="red"
-        />
+        <Link href="/admin/inventario?status=CRITICO" className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <MetricCard
+            icon={AlertTriangle}
+            label="Saldos críticos"
+            value={number(data.summary.criticalBalances)}
+            note="Requieren atención · ver detalle"
+            tone="red"
+          />
+        </Link>
       </div>
       <Filters filters={filters} data={data} />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_292px]">
@@ -2826,18 +3043,18 @@ export function InventoryAdminWorkspace({
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3">
             <div>
               <h2 className="text-[13px] font-black text-slate-700">Saldos por referencia</h2>
-              <p className="mt-1 text-[9px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-400">
                 Disponible = físico − reservado · actualizado desde PostgreSQL
               </p>
             </div>
-            <div className="ml-auto flex items-center gap-2 text-[9px] font-extrabold text-slate-400">
+            <div className="ml-auto flex items-center gap-2 text-[11px] font-extrabold text-slate-400">
               <FileClock className="h-3.5 w-3.5" />
               {dateTime(data.fetchedAt)}
             </div>
           </div>
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[980px] text-left">
-              <thead className="border-b border-slate-100 bg-slate-50 text-[8px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
+              <thead className="border-b border-slate-100 bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
                 <tr>
                   <th className="px-4 py-3">SKU</th>
                   <th className="px-3 py-3">Producto</th>
@@ -3004,13 +3221,13 @@ function MetricCard({
         <Icon className="h-[17px] w-[17px]" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
+        <p className="truncate text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
           {label}
         </p>
         <strong className="mt-1 block text-[22px] font-black tracking-[-0.04em] text-slate-900">
           {value}
         </strong>
-        <p className="mt-1 truncate text-[9px] text-slate-400">{note}</p>
+        <p className="mt-1 truncate text-[11px] text-slate-400">{note}</p>
       </div>
     </div>
   );
@@ -3063,7 +3280,7 @@ function RowActionMenu({ actions }: { actions: RowActions }) {
                   setOpen(false);
                   entry.action();
                 }}
-                className="block w-full rounded-md px-3 py-2 text-[9px] font-extrabold text-slate-600 hover:bg-slate-50"
+                className="block w-full rounded-md px-3 py-2 text-[11px] font-extrabold text-slate-600 hover:bg-slate-50"
               >
                 {entry.label}
               </button>
@@ -3081,12 +3298,12 @@ function inventoryProductOption(item: InventoryItem): ProductOption {
 
 function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActions }) {
   return (
-    <tr className="border-b border-slate-100 text-[10px] transition hover:bg-slate-50">
+    <tr className="border-b border-slate-100 text-[11px] transition hover:bg-slate-50">
       <td className="px-4 py-3 align-middle">
         <button
           type="button"
           onClick={actions.onOpen}
-          className="font-mono text-[10px] font-extrabold text-blue-600"
+          className="font-mono text-[11px] font-extrabold text-blue-600"
         >
           {item.sku}
         </button>
@@ -3108,19 +3325,19 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
             />
           </span>
           <span className="min-w-0">
-            <strong className="block truncate text-[10px] font-extrabold text-slate-700">
+            <strong className="block truncate text-[11px] font-extrabold text-slate-700">
               {item.productName}
             </strong>
-            <span className="mt-1 block truncate text-[9px] text-slate-400">{item.familyName}</span>
+            <span className="mt-1 block truncate text-[11px] text-slate-400">{item.familyName}</span>
           </span>
         </button>
       </td>
       <td className="px-3 py-3">
         <button type="button" onClick={actions.onOpen} className="text-left">
-          <span className="block text-[10px] font-extrabold text-slate-700">
+          <span className="block text-[11px] font-extrabold text-slate-700">
             {item.locationCode}
           </span>
-          <span className="mt-1 block text-[9px] text-slate-400">{item.locationName}</span>
+          <span className="mt-1 block text-[11px] text-slate-400">{item.locationName}</span>
         </button>
       </td>
       <td
@@ -3149,16 +3366,16 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
       </td>
       <td className="px-3 py-3">
         <span
-          className={`inline-flex rounded-md border px-2 py-1 text-[9px] font-extrabold ${statusClass(item.status)}`}
+          className={`inline-flex rounded-md border px-2 py-1 text-[11px] font-extrabold ${statusClass(item.status)}`}
         >
           {inventoryStatusLabels[item.status]}
         </span>
       </td>
       <td className="max-w-[150px] px-3 py-3">
-        <span className="block truncate text-[9px] font-extrabold text-slate-600">
+        <span className="block truncate text-[11px] font-extrabold text-slate-600">
           {item.lastMovementLabel || "Sin movimiento"}
         </span>
-        <span className="mt-1 block truncate text-[8px] text-slate-400">
+        <span className="mt-1 block truncate text-[11px] text-slate-400">
           {dateTime(item.lastMovementAt)}
         </span>
       </td>
@@ -3188,28 +3405,28 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           />
         </button>
         <button type="button" onClick={actions.onOpen} className="min-w-0 flex-1 text-left">
-          <p className="truncate text-[10px] font-extrabold text-slate-700">{item.productName}</p>
-          <p className="mt-1 font-mono text-[9px] text-slate-400">
+          <p className="truncate text-[11px] font-extrabold text-slate-700">{item.productName}</p>
+          <p className="mt-1 font-mono text-[11px] text-slate-400">
             {item.sku} · {item.locationCode}
           </p>
         </button>
         <span
-          className={`shrink-0 rounded-md border px-2 py-1 text-[8px] font-extrabold ${statusClass(item.status)}`}
+          className={`shrink-0 rounded-md border px-2 py-1 text-[11px] font-extrabold ${statusClass(item.status)}`}
         >
           {inventoryStatusLabels[item.status]}
         </span>
       </div>
       <div className="mt-3 grid grid-cols-4 gap-2 border-t border-slate-100 pt-3 text-center">
         <div>
-          <span className="block text-[8px] text-slate-400">Físico</span>
+          <span className="block text-[11px] text-slate-400">Físico</span>
           <strong className="text-[11px] text-slate-700">{number(item.onHand)}</strong>
         </div>
         <div>
-          <span className="block text-[8px] text-slate-400">Reservado</span>
+          <span className="block text-[11px] text-slate-400">Reservado</span>
           <strong className="text-[11px] text-slate-600">{number(item.reserved)}</strong>
         </div>
         <div>
-          <span className="block text-[8px] text-slate-400">Disponible</span>
+          <span className="block text-[11px] text-slate-400">Disponible</span>
           <strong
             className={`text-[11px] ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-600" : "text-emerald-600"}`}
           >
@@ -3217,7 +3434,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           </strong>
         </div>
         <div>
-          <span className="block text-[8px] text-slate-400">Mínimo</span>
+          <span className="block text-[11px] text-slate-400">Mínimo</span>
           <strong className="text-[11px] text-slate-600">
             {item.minimumStock === null ? "—" : number(item.minimumStock)}
           </strong>
@@ -3227,7 +3444,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
         <button
           type="button"
           onClick={actions.onOpen}
-          className="h-8 flex-1 rounded-lg border border-slate-200 text-[9px] font-extrabold text-slate-600"
+          className="h-8 flex-1 rounded-lg border border-slate-200 text-[11px] font-extrabold text-slate-600"
         >
           Ver detalle
         </button>
@@ -3235,7 +3452,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           <button
             type="button"
             onClick={actions.onKardex}
-            className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 text-[9px] font-extrabold text-blue-600"
+            className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 text-[11px] font-extrabold text-blue-600"
           >
             <FileClock className="h-3 w-3" />
             Kardex
@@ -3292,14 +3509,14 @@ function InventoryDetailDrawer({
             />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] font-extrabold text-blue-600">{item.sku}</p>
+            <p className="font-mono text-[11px] font-extrabold text-blue-600">{item.sku}</p>
             <h2
               id="inventory-detail-title"
               className="mt-1 truncate text-[16px] font-black text-slate-900"
             >
               {item.productName}
             </h2>
-            <p className="mt-1 text-[10px] text-slate-500">
+            <p className="mt-1 text-[11px] text-slate-500">
               {item.locationCode} · {item.locationName}
             </p>
           </div>
@@ -3332,7 +3549,7 @@ function InventoryDetailDrawer({
               role="tab"
               aria-selected={tab === entry.id}
               onClick={() => setTab(entry.id)}
-              className={`shrink-0 border-b-2 px-2.5 py-2.5 text-[9px] font-extrabold ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
+              className={`shrink-0 border-b-2 px-2.5 py-2.5 text-[11px] font-extrabold ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
             >
               {entry.label}
             </button>
@@ -3349,7 +3566,7 @@ function InventoryDetailDrawer({
                   ["Mínimo", item.minimumStock === null ? "Sin mínimo" : number(item.minimumStock)],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <span className="block text-[9px] text-slate-400">{label}</span>
+                    <span className="block text-[11px] text-slate-400">{label}</span>
                     <strong className="mt-1 block text-[15px] font-black text-slate-700">
                       {value}
                     </strong>
@@ -3357,24 +3574,24 @@ function InventoryDetailDrawer({
                 ))}
               </div>
               <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                   Estado actual
                 </p>
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <span
-                    className={`rounded-md border px-2 py-1 text-[9px] font-extrabold ${statusClass(item.status)}`}
+                    className={`rounded-md border px-2 py-1 text-[11px] font-extrabold ${statusClass(item.status)}`}
                   >
                     {inventoryStatusLabels[item.status]}
                   </span>
-                  <span className="text-[9px] text-slate-400">
+                  <span className="text-[11px] text-slate-400">
                     Último movimiento: {dateTime(item.lastMovementAt)}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-700">Actividad reciente</p>
+                <p className="text-[11px] font-black text-slate-700">Actividad reciente</p>
                 {movements.slice(0, 3).map((movement) => (
-                  <p key={movement.id} className="mt-2 text-[9px] text-slate-500">
+                  <p key={movement.id} className="mt-2 text-[11px] text-slate-500">
                     {movement.label} ·{" "}
                     {movement.entry
                       ? `+${number(movement.entry)}`
@@ -3385,7 +3602,7 @@ function InventoryDetailDrawer({
                   </p>
                 ))}
                 {!movements.length ? (
-                  <p className="mt-2 text-[9px] text-slate-400">
+                  <p className="mt-2 text-[11px] text-slate-400">
                     Sin movimientos recientes en el panel.
                   </p>
                 ) : null}
@@ -3394,7 +3611,7 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "kardex" ? (
             <div className="grid gap-3">
-              <p className="text-[10px] leading-5 text-slate-500">
+              <p className="text-[11px] leading-5 text-slate-500">
                 Consulta el Kardex inmutable por producto y local, con stock anterior/posterior,
                 disponible, actor y referencia.
               </p>
@@ -3402,7 +3619,7 @@ function InventoryDetailDrawer({
                 <button
                   type="button"
                   onClick={onKardex}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white"
                 >
                   <FileClock className="h-3.5 w-3.5" />
                   Abrir Kardex completo
@@ -3419,17 +3636,26 @@ function InventoryDetailDrawer({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`rounded-md border px-2 py-1 text-[8px] font-extrabold ${reservationStatusClass(reservation.status)}`}
+                      className={`rounded-md border px-2 py-1 text-[11px] font-extrabold ${reservationStatusClass(reservation.status)}`}
                     >
                       {reservationStatusLabels[reservation.status] || "Estado"}
                     </span>
                     <b className="text-[11px] text-slate-700">{number(reservation.quantity)} u.</b>
                   </div>
-                  <p className="mt-2 text-[9px] text-slate-500">
+                  <p className="mt-2 text-[11px] text-slate-500">
                     {reservationReferenceLabels[reservation.referenceType || ""] || "Referencia"} ·{" "}
-                    {reservation.referenceId || "Sin código"}
+                    {referenceHref(reservation.referenceType, reservation.referenceId) ? (
+                      <Link
+                        href={referenceHref(reservation.referenceType, reservation.referenceId) as string}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {reservation.referenceId}
+                      </Link>
+                    ) : (
+                      reservation.referenceId || "Sin código"
+                    )}
                   </p>
-                  <p className="mt-1 text-[9px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-400">
                     Expira: {dateTime(reservation.expiresAt)}
                     {reservation.reason ? ` · ${reservation.reason}` : ""}
                   </p>
@@ -3442,7 +3668,7 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "transfers" ? (
             <div className="grid gap-3">
-              <p className="text-[10px] leading-5 text-slate-500">
+              <p className="text-[11px] leading-5 text-slate-500">
                 Los traslados se muestran en el panel operativo y se procesan como movimientos
                 atómicos por referencia.
               </p>
@@ -3453,16 +3679,19 @@ function InventoryDetailDrawer({
                     className="rounded-lg border border-slate-100 bg-slate-50 p-3"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[9px] font-extrabold text-blue-600">
+                      <Link
+                        href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
+                        className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                      >
                         {transfer.id}
-                      </span>
+                      </Link>
                       <span
-                        className={`rounded-md border px-2 py-1 text-[8px] font-extrabold ${transferStatusClass(transfer.status)}`}
+                        className={`rounded-md border px-2 py-1 text-[11px] font-extrabold ${transferStatusClass(transfer.status)}`}
                       >
                         {transferStatusLabels[transfer.status] || "Estado"}
                       </span>
                     </div>
-                    <p className="mt-1 text-[9px] text-slate-500">
+                    <p className="mt-1 text-[11px] text-slate-500">
                       {transfer.sourceCode} → {transfer.destinationCode} · {number(transfer.units)}{" "}
                       unidades
                     </p>
@@ -3476,17 +3705,17 @@ function InventoryDetailDrawer({
           {tab === "configuration" ? (
             <div className="grid gap-3">
               <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                   Mínimo de alerta
                 </p>
                 <strong className="mt-1 block text-[20px] font-black text-slate-700">
                   {item.minimumStock === null ? "Sin mínimo" : number(item.minimumStock)}
                 </strong>
-                <p className="mt-2 text-[9px] leading-5 text-slate-500">
+                <p className="mt-2 text-[11px] leading-5 text-slate-500">
                   Un mínimo 0 es válido; NULL significa que no existe umbral configurado.
                 </p>
               </div>
-              <p className="text-[9px] text-slate-400">
+              <p className="text-[11px] text-slate-400">
                 La edición se realiza desde “Configurar mínimo” y no toca el físico ni el reservado.
               </p>
             </div>
@@ -3502,7 +3731,7 @@ function EmptyInventory() {
     <div className="grid justify-items-center gap-2 px-4 py-12 text-center">
       <Package className="h-7 w-7 text-slate-300" />
       <p className="text-[11px] font-extrabold text-slate-600">No hay saldos para estos filtros</p>
-      <p className="max-w-xs text-[10px] leading-5 text-slate-400">
+      <p className="max-w-xs text-[11px] leading-5 text-slate-400">
         Los productos sin saldo siguen siendo desconocidos; no se convierten automáticamente en
         stock cero.
       </p>
@@ -3516,13 +3745,14 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
   const [type, setType] = useState("WAREHOUSE");
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [message, setMessage] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
     try {
-      await postJson("/api/admin/inventario/locales", { code, name, type, address });
+      await postJson("/api/admin/inventario/locales", { code, name, type, address }, idempotencyKey);
       onSuccess();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo crear el local.");
@@ -3538,7 +3768,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
     >
       <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Código
             <input
               required
@@ -3549,7 +3779,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
               className="h-10 rounded-lg border border-slate-200 px-3 font-mono text-[11px] font-semibold text-slate-700"
             />
           </label>
-          <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+          <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
             Tipo
             <select
               required
@@ -3563,7 +3793,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
             </select>
           </label>
         </div>
-        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
           Nombre
           <input
             required
@@ -3574,7 +3804,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
             className="h-10 rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-700"
           />
         </label>
-        <label className="grid gap-1 text-[10px] font-extrabold text-slate-600">
+        <label className="grid gap-1 text-[11px] font-extrabold text-slate-600">
           Dirección (opcional)
           <input
             maxLength={240}
@@ -3585,7 +3815,7 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
         </label>
         {message ? (
           <p
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-bold text-rose-600"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-600"
             role="alert"
           >
             {message}
@@ -3595,14 +3825,14 @@ function LocationDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-[10px] font-extrabold text-slate-600"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-[11px] font-extrabold text-slate-600"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={busy || !code.trim() || !name.trim()}
-            className="h-10 rounded-lg bg-slate-900 px-4 text-[10px] font-extrabold text-white disabled:opacity-45"
+            className="h-10 rounded-lg bg-slate-900 px-4 text-[11px] font-extrabold text-white disabled:opacity-45"
           >
             {busy ? "Creando…" : "Crear local"}
           </button>
@@ -3624,7 +3854,7 @@ function MovementsRail({
           <FileClock className="h-4 w-4 text-blue-600" />
           <h2 className="text-[12px] font-black text-slate-700">Movimientos recientes</h2>
         </div>
-        <a href="#inventory-operations" className="text-[8px] font-extrabold text-blue-600">
+        <a href="#inventory-operations" className="text-[11px] font-extrabold text-blue-600">
           Ver todos
         </a>
       </div>
@@ -3646,14 +3876,20 @@ function MovementsRail({
                 <MovementIcon className="h-3 w-3" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[10px] font-bold text-slate-700">{movement.label}</p>
-                <p className="mt-0.5 truncate text-[8.5px] text-slate-400">
-                  {movement.sku} · {movement.productName}
+                <p className="truncate text-[11px] font-bold text-slate-700">{movement.label}</p>
+                <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                  <Link
+                    href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
+                    className="font-mono font-extrabold text-blue-600 hover:underline"
+                  >
+                    {movement.sku}
+                  </Link>
+                  {" "}· {movement.productName}
                 </p>
-                <p className="mt-0.5 text-[8px] text-slate-400">{dateTime(movement.createdAt)}</p>
+                <p className="mt-0.5 text-[11px] text-slate-400">{dateTime(movement.createdAt)}</p>
               </div>
               <strong
-                className={`shrink-0 text-[10px] ${positive ? "text-emerald-600" : negative ? "text-rose-600" : "text-slate-600"}`}
+                className={`shrink-0 text-[11px] ${positive ? "text-emerald-600" : negative ? "text-rose-600" : "text-slate-600"}`}
               >
                 {delta > 0 ? "+" : ""}
                 {number(delta)} uds
@@ -3662,7 +3898,7 @@ function MovementsRail({
           );
         })}
         {!movements.length ? (
-          <p className="p-3 text-center text-[10px] text-slate-400">
+          <p className="p-3 text-center text-[11px] text-slate-400">
             Sin movimientos registrados.
           </p>
         ) : null}
@@ -3684,33 +3920,33 @@ function LocationRail({ locations }: { locations: LocationSummary[] }) {
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="rounded-md border border-slate-200 px-2 py-1 text-[8px] font-extrabold text-blue-600"
+            className="min-h-8 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-extrabold text-blue-600"
           >
             Gestionar
           </button>
         </div>
-        <p className="mt-1 text-[9px] text-slate-400">Capacidad comprometida y disponible</p>
+        <p className="mt-1 text-[11px] text-slate-400">Capacidad comprometida y disponible</p>
       </div>
       <div className="grid gap-2 p-3">
         {locations.map((location) => (
           <div key={location.id} className="rounded-lg border border-slate-100 p-3">
             <div className="flex items-center justify-between gap-2">
-              <strong className="truncate text-[10px] text-slate-700">{location.name}</strong>
-              <span className="font-mono text-[9px] font-extrabold text-slate-400">
+              <strong className="truncate text-[11px] text-slate-700">{location.name}</strong>
+              <span className="font-mono text-[11px] font-extrabold text-slate-400">
                 {location.code}
               </span>
             </div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-center">
               <div>
-                <span className="block text-[8px] text-slate-400">Disp.</span>
+                <span className="block text-[11px] text-slate-400">Disp.</span>
                 <b className="text-[11px] text-emerald-600">{number(location.availableUnits)}</b>
               </div>
               <div>
-                <span className="block text-[8px] text-slate-400">Reserv.</span>
+                <span className="block text-[11px] text-slate-400">Reserv.</span>
                 <b className="text-[11px] text-slate-600">{number(location.reservedUnits)}</b>
               </div>
               <div>
-                <span className="block text-[8px] text-slate-400">Críticos</span>
+                <span className="block text-[11px] text-slate-400">Críticos</span>
                 <b
                   className={`text-[11px] ${location.criticalBalances ? "text-rose-600" : "text-slate-600"}`}
                 >
@@ -3722,11 +3958,11 @@ function LocationRail({ locations }: { locations: LocationSummary[] }) {
         ))}
         {!locations.length ? (
           <div className="grid gap-2 p-3 text-center">
-            <p className="text-[10px] text-slate-400">Aún no hay locales activos registrados.</p>
+            <p className="text-[11px] text-slate-400">Aún no hay locales activos registrados.</p>
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="mx-auto rounded-md bg-slate-900 px-3 py-2 text-[9px] font-extrabold text-white"
+              className="mx-auto rounded-md bg-slate-900 px-3 py-2 text-[11px] font-extrabold text-white"
             >
               Crear local
             </button>
@@ -3754,7 +3990,7 @@ function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
           <CircleAlert className="h-4 w-4 text-rose-500" />
           <h2 className="text-[12px] font-black text-slate-700">Alertas de atención</h2>
         </div>
-        <p className="mt-1 text-[9px] text-slate-400">
+        <p className="mt-1 text-[11px] text-slate-400">
           Sin inventar disponibilidad para referencias desconocidas
         </p>
       </div>
@@ -3763,42 +3999,48 @@ function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
           <div key={alert.id} className="rounded-lg border border-rose-200 bg-rose-50 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate font-mono text-[9px] font-extrabold text-slate-700">
+                <p className="truncate font-mono text-[11px] font-extrabold text-slate-700">
                   {alert.sku}
                 </p>
-                <p className="mt-1 truncate text-[10px] font-bold text-slate-600">
+                <p className="mt-1 truncate text-[11px] font-bold text-slate-600">
                   {alert.productName}
                 </p>
               </div>
               <span
-                className={`rounded-md border px-1.5 py-1 text-[8px] font-extrabold ${statusClass(alert.status)}`}
+                className={`rounded-md border px-1.5 py-1 text-[11px] font-extrabold ${statusClass(alert.status)}`}
               >
                 {inventoryStatusLabels[alert.status]}
               </span>
             </div>
-            <p className="mt-2 text-[9px] text-slate-400">
+            <p className="mt-2 text-[11px] text-slate-400">
               {alert.locationName} · {number(alert.available)} disponibles
               {alert.minimumStock === null
                 ? " · sin mínimo"
                 : ` · mínimo ${number(alert.minimumStock)}`}
             </p>
+            <Link
+              href={`/admin/compras?requestProductId=${encodeURIComponent(alert.productId)}&requestLocationId=${encodeURIComponent(alert.locationId)}#purchase-request-tools`}
+              className="mt-3 inline-flex min-h-8 items-center rounded-md border border-blue-200 bg-white px-2.5 text-[11px] font-extrabold text-blue-600 hover:border-blue-400"
+            >
+              Crear solicitud de compra
+            </Link>
           </div>
         ))}
         {!alerts.items.length ? (
           <div className="grid justify-items-center gap-2 p-4 text-center">
             <Check className="h-5 w-5 text-emerald-600" />
-            <p className="text-[10px] font-extrabold text-slate-600">Sin alertas de saldo</p>
+            <p className="text-[11px] font-extrabold text-slate-600">Sin alertas de saldo</p>
           </div>
         ) : null}
         <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-center">
           <div>
-            <span className="block text-[8px] text-slate-400">Reservas por expirar</span>
+            <span className="block text-[11px] text-slate-400">Reservas por expirar</span>
             <b className="text-[12px] text-amber-700">
               {number(alerts.counts.expiringReservations)}
             </b>
           </div>
           <div>
-            <span className="block text-[8px] text-slate-400">Traslados pendientes</span>
+            <span className="block text-[11px] text-slate-400">Traslados pendientes</span>
             <b className="text-[12px] text-blue-600">{number(alerts.counts.pendingTransfers)}</b>
           </div>
         </div>

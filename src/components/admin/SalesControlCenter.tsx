@@ -69,6 +69,16 @@ function limaDateTimeLocal(value: string | Date | null | undefined) {
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
 }
+function limaDateTime(value: string | Date | null | undefined) {
+  if (!value) return "N/D";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "N/D";
+  return new Intl.DateTimeFormat("es-PE", {
+    timeZone: "America/Lima",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
 function limaInputToIso(value: string) {
   if (!value) return null;
   const date = new Date(`${value}:00-05:00`);
@@ -274,7 +284,7 @@ export function SalesControlCenter({
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-3">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Ventas cobradas vs pendientes</h2>
           {primaryMoney ? (
-            <div className="flex flex-1 items-center gap-4 pt-3">
+            <div className="flex items-start gap-4 pt-3">
               <div className="relative flex h-24 w-24 shrink-0 items-center justify-center">
                 <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" fill="none" r="40" stroke="#f1f5f9" strokeWidth={16} />
@@ -323,7 +333,7 @@ export function SalesControlCenter({
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-3">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Ticket promedio</h2>
           {page.metrics.moneyByCurrency.length ? (
-            <div className="flex-1 space-y-2 pt-3">
+            <div className="space-y-2 pt-3">
               {page.metrics.moneyByCurrency.map((row) => (
                 <div key={row.currency} className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-slate-500">{row.currency}</span>
@@ -339,7 +349,7 @@ export function SalesControlCenter({
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-3">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Ventas por método de pago</h2>
           {page.metrics.paymentBreakdown.length ? (
-            <div className="flex-1 space-y-2.5 pt-3">
+            <div className="space-y-2.5 pt-3">
               {page.metrics.paymentBreakdown.map((row, index) => (
                 <div key={row.method} className="flex items-center text-xs">
                   <span className="w-20 truncate font-medium text-slate-700">{labelState(row.method)}</span>
@@ -360,7 +370,7 @@ export function SalesControlCenter({
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-3">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Ventas por canal</h2>
           {page.metrics.channelBreakdown.length ? (
-            <div className="flex-1 space-y-2.5 pt-3">
+            <div className="space-y-2.5 pt-3">
               {page.metrics.channelBreakdown.map((row, index) => (
                 <div key={row.channel} className="flex items-center text-xs">
                   <span className="w-20 truncate font-medium text-slate-700">{row.channel}</span>
@@ -419,7 +429,7 @@ export function SalesControlCenter({
           <table className="w-full min-w-[980px] text-left text-xs">
             <thead className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
-                {["Venta", "Cliente", "Monto", "Documentos", "Cobro", "Estado", "Canal", "Vendedor", "Fecha", ""].map((value) => (
+                {["Venta", "Cliente", "Monto", "Documentos", "Cobro", "Estado", "Canal", "Vendedor", "Fecha", "Acciones"].map((value) => (
                   <th key={value} className="px-3 py-3 font-medium">{value}</th>
                 ))}
               </tr>
@@ -463,7 +473,7 @@ export function SalesControlCenter({
                   </td>
                   <td className="px-3 py-3 text-slate-500">{row.channel ?? "N/D"}</td>
                   <td className="px-3 py-3 text-slate-500">{row.sellerName ?? "Sin asignar"}</td>
-                  <td className="px-3 py-3 text-slate-500">{new Date(row.createdAt).toLocaleDateString("es-PE")}</td>
+                  <td className="px-3 py-3 text-slate-500">{limaDateTime(row.createdAt).split(",")[0]}</td>
                   <td className="px-3 py-3 text-center">
                     <button onClick={() => setDetailId(row.id)} className="inline-flex rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label={`Ver ${row.code}`}>
                       <Eye className="h-4 w-4" />
@@ -989,7 +999,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
                 ["Vendedor", value(detail?.sellerName, "Sin asignar")],
                 ["Cotización", value(quote?.trackingCode, "Venta directa")],
                 ["Oportunidad", value(opportunity?.code)],
-                ["Fecha", sale.createdAt ? new Date(sale.createdAt).toLocaleString("es-PE") : "—"],
+                ["Fecha", limaDateTime(sale.createdAt)],
                 ["Subtotal", money(String(sale.currency), sale.subtotal)],
                 ["Descuento", money(String(sale.currency), sale.discountAmount)],
                 ...(canPaymentsView ? [["Saldo", money(String(sale.currency), balance)] as [string, string]] : []),
@@ -1180,7 +1190,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
                   <div key={String(entry.id ?? index)} className="border-b border-slate-100 p-3 text-[11px] last:border-b-0">
                     <p className="font-semibold text-slate-700">{value(entry.action ?? entry.eventType, "Actualización")}</p>
                     <p className="mt-1 text-slate-400">
-                      {value(entry.createdAt ? new Date(String(entry.createdAt)).toLocaleString("es-PE") : null)} · {value(entry.actorName ?? entry.actorId, "Sistema")}
+                      {value(entry.createdAt ? limaDateTime(String(entry.createdAt)) : null)} · {value(entry.actorName ?? entry.actorId, "Sistema")}
                     </p>
                     <p className="mt-1 text-slate-500">{value(entry.reason ?? entry.note, "Sin detalle adicional")}</p>
                   </div>

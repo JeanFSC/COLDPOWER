@@ -10,6 +10,10 @@ function escapeCsv(value: unknown) {
 
 export function toDashboardCsv(data: DashboardSnapshot, actor?: DashboardActor) {
   const rows: unknown[][] = [
+    ["contexto", "rango", data.filters.range ?? "month"],
+    ["contexto", "moneda", data.currency ?? "N/D"],
+    ["contexto", "desde", data.filters.from ?? ""],
+    ["contexto", "hasta", data.filters.to ?? ""],
     ["sección", "indicador", "valor"],
     ["resumen", "ventas confirmadas", data.sales],
     ["resumen", "ingresos reconocidos", data.revenue],

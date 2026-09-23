@@ -96,6 +96,7 @@ export function AdminReportsStitch({
   schedules,
   reportFilters,
   currentUserId,
+  canViewCatalog,
 }: {
   data: DashboardData | null;
   metrics: Array<{ label: string; value: string | number; note?: string; tone?: MetricTone }>;
@@ -105,6 +106,7 @@ export function AdminReportsStitch({
   schedules: ReportSchedule[];
   reportFilters: DashboardFilters;
   currentUserId: string;
+  canViewCatalog: boolean;
 }) {
   const currency = data?.currency;
   const previousSales = data?.previousSalesSeries.reduce((sum, row) => sum + row.total, 0) ?? 0;
@@ -453,9 +455,13 @@ export function AdminReportsStitch({
                       className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 py-3 text-[10px]"
                     >
                       <span className="font-semibold text-slate-400">{index + 1}</span>
-                      <span className="truncate font-medium text-slate-800" title={product.name}>
-                        {product.name}
-                      </span>
+                      {canViewCatalog ? (
+                        <Link href={`/admin/catalogo/${product.id}`} className="truncate font-medium text-slate-800 hover:text-blue-600" title={product.name}>
+                          {product.name}
+                        </Link>
+                      ) : (
+                        <span className="truncate font-medium text-slate-800" title={product.name}>{product.name}</span>
+                      )}
                       <span className="font-semibold text-slate-800">
                         {money(product.revenue, currency)}
                       </span>
@@ -467,12 +473,11 @@ export function AdminReportsStitch({
                   </p>
                 )}
               </div>
-              <Link
-                href="/admin/catalogo"
-                className="mt-4 inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700"
-              >
-                Ver todos los productos <ChevronRight className="ml-1 size-3.5" />
-              </Link>
+              {canViewCatalog ? (
+                <Link href="/admin/catalogo" className="mt-4 inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700">
+                  Ver todos los productos <ChevronRight className="ml-1 size-3.5" />
+                </Link>
+              ) : null}
             </article>
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">

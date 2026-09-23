@@ -7,6 +7,7 @@ import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { canInviteRole, getPendingInvitationsCount, listStaffInvitations } from "@/lib/user-administration";
 import { isAppRole, type AppRole } from "@/lib/roles";
 import { validateStaffInvitation } from "@/lib/staff-invitations";
+import { sanitizeAuditValue } from "@/lib/operational-semantics";
 
 export async function GET(request: Request) {
   try { await requireApiPermission("users.view"); return NextResponse.json(await listStaffInvitations(new URL(request.url).searchParams.get("query") ?? undefined)); }
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     const pending = await client.invitations.getInvitationList({ query: invitationData.email, status: "pending", limit: 1, offset: 0 });
     if (pending.data.length) return NextResponse.json({ error: "Ya existe una invitación pendiente para ese correo." }, { status: 409 });
     const created = await client.invitations.createInvitation({ emailAddress: invitationData.email, expiresInDays: 30, notify: true, publicMetadata: { role: invitationData.role, firstName, lastName }, redirectUrl: "/sign-up" });
-    await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "access.staff_invitation_created", entityType: "clerk_invitation", entityId: created.id, before: null, after: { email: invitationData.email, role: invitationData.role, firstName, lastName, status: "pending" }, metadata: { expiresInDays: 30 } });
+    await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "access.staff_invitation_created", entityType: "clerk_invitation", entityId: created.id, before: null, after: sanitizeAuditValue({ email: invitationData.email, role: invitationData.role, firstName, lastName, status: "pending" }) as Record<string, unknown>, metadata: sanitizeAuditValue({ expiresInDays: 30 }) as Record<string, unknown> });
     return NextResponse.json({ success: true, invitation: { id: created.id, emailAddress: created.emailAddress, role: invitationData.role }, pendingInvitations: await getPendingInvitationsCount() }, { status: 201 });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudo crear la invitación." }, { status: 409 }); }
 }

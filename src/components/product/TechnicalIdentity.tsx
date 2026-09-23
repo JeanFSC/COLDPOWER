@@ -1,5 +1,45 @@
 import { Badge } from "@/components/shared/Badge";
 import type { Product } from "@/types/product";
+
 type TechnicalIdentityProps = { product: Product };
-const statusLabel: Record<Product["status"], string> = { "in-stock": "Disponible", "low-stock": "Stock bajo", "on-request": "Consultar disponibilidad", "out-of-stock": "No disponible" };
-export function TechnicalIdentity({ product }: TechnicalIdentityProps) { return <div><div className="flex flex-wrap gap-2"><Badge variant="tech">{product.type}</Badge><Badge variant="neutral">{statusLabel[product.status]}</Badge>{product.sourceStatus ? <Badge variant="warning">Estado fuente: {product.sourceStatus}</Badge> : null}</div><p className="mt-5 text-sm font-bold uppercase tracking-[0.12em] text-primary">{product.brand || "Marca no indicada"}</p><h1 className="mt-2 font-display text-3xl font-black leading-tight tracking-tight text-dark sm:text-4xl">{product.name}</h1><p className="mt-4 text-base leading-7 text-gray-text">{product.shortDescription}</p><dl className="mt-6 grid gap-3 rounded-md border border-border bg-background p-4 sm:grid-cols-2"><div><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">SKU ColdPower</dt><dd className="mt-1 font-mono text-sm font-bold text-dark">{product.sku}</dd></div><div><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">Marca</dt><dd className="mt-1 text-sm font-bold text-dark">{product.brand || "No indicada en la fuente"}</dd></div><div><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">Categoría</dt><dd className="mt-1 text-sm font-bold text-dark">{product.category}</dd></div><div><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">Familia</dt><dd className="mt-1 text-sm font-bold text-dark">{product.family || "No indicada"}</dd></div><div><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">Estado comercial</dt><dd className="mt-1 text-sm font-bold text-dark">{statusLabel[product.status]}</dd></div></dl><section id="especificaciones" className="mt-8"><h2 className="font-display text-2xl font-black text-dark">Especificaciones técnicas</h2>{product.specs.length > 0 ? <div className="mt-4 overflow-hidden rounded-md border border-border"><dl className="divide-y divide-border">{product.specs.map((spec) => <div key={`${spec.label}-${spec.value}`} className="grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:gap-4"><dt className="text-sm font-bold text-gray-text">{spec.label}</dt><dd className="text-sm font-semibold text-dark sm:text-right">{spec.value}</dd></div>)}</dl></div> : <p className="mt-4 rounded-md border border-dashed border-border bg-white p-4 text-sm text-gray-text">La fuente no contiene especificaciones técnicas adicionales para esta referencia.</p>}</section></div>; }
+
+const statusLabel: Record<Product["status"], string> = {
+  "in-stock": "Disponible",
+  "low-stock": "Stock limitado",
+  "on-request": "Bajo consulta",
+  "out-of-stock": "No disponible",
+};
+
+export function TechnicalIdentity({ product }: TechnicalIdentityProps) {
+  const specs = product.specs.filter((spec) => spec.label?.trim() && spec.value?.trim());
+  const meta = [
+    ["SKU ColdPower", product.sku],
+    ["Marca", product.brand],
+    ["Categoría", product.category],
+    ["Familia", product.family],
+    ["Estado comercial", statusLabel[product.status]],
+  ].filter(([, value]) => value?.trim());
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {product.type?.trim() ? <Badge variant="tech">{product.type}</Badge> : null}
+        <Badge variant="neutral">{statusLabel[product.status]}</Badge>
+        {product.sourceStatus?.trim() ? <Badge variant="warning">Estado fuente: {product.sourceStatus}</Badge> : null}
+      </div>
+      {product.brand?.trim() ? <p className="mt-5 text-sm font-bold uppercase tracking-[0.12em] text-brand-secondary-600">{product.brand}</p> : null}
+      <h1 className="mt-2 font-display text-3xl font-black leading-tight tracking-tight text-dark sm:text-4xl">{product.name}</h1>
+      {product.shortDescription?.trim() ? <p className="mt-4 text-base leading-7 text-gray-text">{product.shortDescription}</p> : null}
+      <dl className="mt-6 grid gap-3 rounded-md border border-border bg-background p-4 sm:grid-cols-2">
+        {meta.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-[0.1em] text-gray-text">{label}</dt><dd className="mt-1 break-words text-sm font-bold text-dark">{value}</dd></div>)}
+      </dl>
+      {specs.length > 0 ? (
+        <section id="especificaciones" className="mt-8">
+          <h2 className="font-display text-2xl font-black text-dark">Especificaciones técnicas</h2>
+          <div className="mt-4 overflow-hidden rounded-md border border-border"><dl className="divide-y divide-border">{specs.map((spec) => <div key={`${spec.label}-${spec.value}`} className="grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:gap-4"><dt className="text-sm font-bold text-gray-text">{spec.label}</dt><dd className="text-sm font-semibold text-dark sm:text-right">{spec.value}</dd></div>)}</dl></div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+

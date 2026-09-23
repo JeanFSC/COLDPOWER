@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { CatalogUnavailable } from "@/components/catalog/CatalogUnavailable";
 import { SearchResults } from "@/components/catalog/SearchResults";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { getCatalogProducts } from "@/lib/catalog-repository";
+import { getCatalogProductBySku, getCatalogProducts } from "@/lib/catalog-repository";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Buscar productos",
@@ -19,6 +20,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const query = sanitizeQuery(getParam(params.q));
   const mode = getSearchMode(getParam(params.modo));
+  if (query) {
+    let exactProduct;
+    try {
+      exactProduct = await getCatalogProductBySku(query);
+    } catch (error) {
+      console.warn("[ColdPower] No se pudo resolver el SKU exacto.", error instanceof Error ? error.message : error);
+    }
+    if (exactProduct) redirect(`/producto/${exactProduct.slug}`);
+  }
   const results = await loadSearchResults(query);
 
   if (!results) {

@@ -34,7 +34,7 @@ test("CP-028 aplica guards y conserva los controles reales de usuarios", () => {
   assert.match(read("src/app/api/admin/usuarios/invitaciones/route.ts"), /users\.invite/);
   assert.match(usersPage, /<AdminUsersStitch/);
   assert.match(usersPage, /canInvite=\{can\(actor\.role, "users\.invite"\)\}/);
-  assert.match(usersPage, /canManage=\{can\(actor\.role, "users\.manage"\)\}/);
+  assert.match(usersPage, /canManage=\{can\(actor\.role, "roles\.manage"\)\}/);
   assert.match(usersView, /<UserRoleControl[\s\S]*status=\{detail\.user\.status as UserStatus\}/);
   assert.match(usersView, /<StaffInvitationForm[\s\S]*allowSuperadmin=\{allowSuperadmin\}/);
   assert.doesNotMatch(usersPage, /StaffInvitationForm/);

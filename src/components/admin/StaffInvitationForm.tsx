@@ -4,23 +4,21 @@ import { Mail, Send, UserPlus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSelect } from "@/components/admin/AdminSelect";
-import type { BusinessRole } from "@/lib/roles";
+import type { AppRole } from "@/lib/roles";
+import { staffRoleCatalog } from "@/lib/user-administration-contracts";
 
-export function StaffInvitationForm({ allowSuperadmin = false }: { allowSuperadmin?: boolean }) {
+type InvitationRole = Exclude<AppRole, "customer">;
+
+export function StaffInvitationForm({ allowSuperadmin = false, roles }: { allowSuperadmin?: boolean; roles?: Array<{ value: InvitationRole; label: string }> }) {
   const router = useRouter();
+  const roleOptions = (roles?.length ? roles : staffRoleCatalog).filter((option) => allowSuperadmin || option.value !== "SUPERADMIN");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<BusinessRole>("OPERACIONES_VENTAS");
+  const [role, setRole] = useState<InvitationRole>(roleOptions[0]?.value ?? "OPERACIONES_VENTAS");
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"error" | "success">("success");
   const [isPending, startTransition] = useTransition();
-  const roleOptions = [
-    { value: "GERENCIA", label: "Gerencia" },
-    { value: "OPERACIONES_VENTAS", label: "Operaciones y ventas" },
-    ...(allowSuperadmin ? [{ value: "SUPERADMIN", label: "Superadmin" }] : []),
-  ];
-
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
@@ -102,7 +100,7 @@ export function StaffInvitationForm({ allowSuperadmin = false }: { allowSuperadm
             ariaLabel="Rol inicial"
             options={roleOptions}
             value={role}
-            onValueChange={(value) => setRole(value as BusinessRole)}
+            onValueChange={(value) => setRole(value as InvitationRole)}
             disabled={isPending}
           />
         </div>

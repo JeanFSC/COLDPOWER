@@ -61,7 +61,7 @@ import { PurchaseActions } from "@/components/admin/PurchaseActions";
 import { PurchaseRequestActions } from "@/components/admin/PurchaseRequestActions";
 import { ReportScheduleControls } from "@/components/admin/ReportScheduleControls";
 import { TestIntegrationsButton, IntegrationRowMenu } from "@/components/admin/TestIntegrationsButton";
-import type { DocumentSeriesItem } from "@/components/admin/DocumentSeriesManager";
+import { DocumentSeriesManager, type DocumentSeriesItem } from "@/components/admin/DocumentSeriesManager";
 import { DiscardSettingsButton } from "@/components/admin/DiscardSettingsButton";
 import { NewLocationButton } from "@/components/admin/NewLocationButton";
 import { LocationRowMenu } from "@/components/admin/LocationRowMenu";
@@ -3036,6 +3036,9 @@ export function Tanda2Settings({
   documentSeries = [],
   previousActiveSeriesCount = 0,
   integrations = [],
+  canManageIntegrations = false,
+  loadError = null,
+  afterControls,
 }: {
   controls?: ReactNode;
   summary?: {
@@ -3058,6 +3061,9 @@ export function Tanda2Settings({
   documentSeries?: DocumentSeriesItem[];
   previousActiveSeriesCount?: number;
   integrations?: Array<{ id: string; key: string; label: string; description: string | null; category: string; lastCheckedStatus: string; lastCheckedAt: Date | string | null; lastCheckedMessage: string | null }>;
+  canManageIntegrations?: boolean;
+  loadError?: string | null;
+  afterControls?: ReactNode;
 }) {
   const connectedIntegrations = integrations.filter((row) => row.lastCheckedStatus === "CONNECTED").length;
   const activeSeries = documentSeries.filter((row) => row.active).length;
@@ -3068,6 +3074,7 @@ export function Tanda2Settings({
     .concat(integrations.filter((row) => !INTEGRATION_DISPLAY_ORDER.includes(row.key)));
   return (
     <div className="space-y-4">
+      {loadError ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800"><span>{loadError}</span><Link href="/admin/configuracion" className="rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-amber-800 hover:bg-amber-100">Reintentar</Link></div> : null}
       <T2PageHeader
         icon={Settings2}
         title="Configuración empresarial"
@@ -3077,7 +3084,7 @@ export function Tanda2Settings({
         <Action form="company-settings-form" type="submit" icon={Save}>
           Guardar cambios
         </Action>
-        <TestIntegrationsButton />
+        {canManageIntegrations ? <TestIntegrationsButton /> : null}
       </T2PageHeader>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Metric
@@ -3216,7 +3223,7 @@ export function Tanda2Settings({
                         <p className={`mt-0.5 truncate text-[9px] font-semibold ${muted}`}>{integration.description ?? integration.category}</p>
                       </div>
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold ${status.bg} ${status.ink}`}>{status.label}</span>
-                      <IntegrationRowMenu integrationKey={integration.key} />
+                      {canManageIntegrations ? <IntegrationRowMenu integrationKey={integration.key} /> : null}
                     </li>
                   );
                 })}
@@ -3251,10 +3258,19 @@ export function Tanda2Settings({
         </Panel>
       </div>
         );
-        return isValidElement(controls)
+        const renderedControls = isValidElement(controls)
           ? cloneElement(controls as ReactElement<{ belowGeneral?: ReactNode; belowBranding?: ReactNode }>, { belowGeneral: localesPanel, belowBranding: integrationsColumn })
           : controls;
+        return <>
+          {renderedControls}
+          {afterControls}
+        </>;
       })()}
+      <div id="company-operation" className="scroll-mt-24">
+        <Panel title="Series y documentos" subtitle="Prepara la numeración administrativa para los documentos del flujo empresarial.">
+          <DocumentSeriesManager series={documentSeries} />
+        </Panel>
+      </div>
     </div>
   );
 }

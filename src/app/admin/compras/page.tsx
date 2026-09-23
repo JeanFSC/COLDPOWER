@@ -16,7 +16,8 @@ import {
   getSupplierScorecard,
   getSupplierSpendRanking,
 } from "@/lib/purchases-repository";
-import { parsePurchasesFilters } from "@/lib/purchases-contract";
+import { PurchasesInvalidFilterError, parsePurchasesFilters, type PurchasesFilters } from "@/lib/purchases-contract";
+import { getInventoryProductOptions } from "@/lib/inventory-admin-service";
 import { PurchasesOperations } from "@/components/admin/PurchasesOperations";
 import { AdminPurchasesModule } from "@/components/admin/AdminPurchasesModule";
 
@@ -37,12 +38,22 @@ export default async function AdminComprasPage({
     else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
   }
   const db = getDb();
-  const purchaseFilters = parsePurchasesFilters(query);
+  let purchaseFilters: PurchasesFilters;
+  let filterNotice: string | undefined;
+  try {
+    purchaseFilters = parsePurchasesFilters(query);
+  } catch (error) {
+    if (!(error instanceof PurchasesInvalidFilterError)) throw error;
+    purchaseFilters = parsePurchasesFilters(new URLSearchParams());
+    filterNotice = "Algunos filtros de compras no eran válidos y se restablecieron a una vista segura.";
+  }
+  const requestPageValue = Number(query.get("requestPage") ?? "1");
+  const requestPageNumber = Number.isInteger(requestPageValue) && requestPageValue > 0 ? requestPageValue : 1;
   const [
     suppliers,
     activeLocations,
     purchasePage,
-    requestPage,
+    requestPageData,
     selectedRequest,
     selectedPurchase,
     categorySpend,
@@ -60,8 +71,8 @@ export default async function AdminComprasPage({
     getPurchasesPage(purchaseFilters),
     getPurchaseRequestsPage({
       status: query.get("requestStatus") ?? undefined,
-      page: 1,
-      pageSize: 25,
+      page: requestPageNumber,
+      pageSize: 5,
     }),
     query.get("requestId") ? getPurchaseRequestDetail(query.get("requestId")!) : Promise.resolve(null),
     query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
@@ -71,6 +82,11 @@ export default async function AdminComprasPage({
     getPurchaseAlerts(),
     getPurchasesKpiSeries(purchaseFilters),
   ]);
+  const requestProductId = query.get("requestProductId") ?? undefined;
+  const requestLocationId = query.get("requestLocationId") ?? undefined;
+  const prefilledProducts = requestProductId
+    ? await getInventoryProductOptions("", requestLocationId, requestProductId)
+    : [];
   const supplierOptions = suppliers.map((supplier) => ({
     id: supplier.id,
     name: supplier.name,
@@ -95,6 +111,7 @@ export default async function AdminComprasPage({
         locationName: selectedPurchase.location.name,
         items: selectedPurchase.items.map((item) => ({
           id: item.id,
+          productId: item.productId,
           skuSnapshot: item.skuSnapshot,
           productNameSnapshot: item.productNameSnapshot,
           quantityOrdered: item.quantityOrdered,
@@ -105,6 +122,7 @@ export default async function AdminComprasPage({
         receipts: selectedPurchase.receipts.map(({ receipt }) => ({
           id: receipt.id,
           code: receipt.code,
+          purchaseId: receipt.purchaseId,
           receivedAt: receipt.receivedAt,
           status: receipt.status,
         })),
@@ -115,7 +133,7 @@ export default async function AdminComprasPage({
       suppliers={supplierOptions}
       locations={activeLocations}
       purchasePage={purchasePage}
-      requestPage={requestPage}
+      requestPage={requestPageData}
       categorySpend={categorySpend}
       supplierRanking={supplierRanking}
       scorecard={scorecard}
@@ -124,14 +142,22 @@ export default async function AdminComprasPage({
       selectedRequest={selectedRequest}
       selectedPurchase={purchaseDetail}
       filters={purchaseFilters}
+      filterNotice={filterNotice}
       queryString={query.toString()}
       canManage={can(actor.role, "purchases.manage")}
+      canReceive={can(actor.role, "purchases.receive")}
+      canApprove={can(actor.role, "purchases.approve")}
+      canViewCosts={can(actor.role, "purchases.cost.view")}
       controls={
         <PurchasesOperations
           suppliers={supplierOptions}
           locations={activeLocations}
-          products={[]}
+          products={prefilledProducts}
           purchases={purchasePage.items}
+          canManage={can(actor.role, "purchases.manage")}
+          canReceive={can(actor.role, "purchases.receive")}
+          initialRequestProductId={requestProductId}
+          initialRequestLocationId={requestLocationId}
         />
       }
     />

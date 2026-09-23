@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import type { DashboardFilters } from "@/lib/dashboard-contract";
+import { allOperationalRoles, can, roleLabel, type AppRole } from "@/lib/roles";
 
 type ReportSchedule = {
   id: string;
@@ -19,16 +20,10 @@ type ReportSchedule = {
   lastRun: { status: string; finishedAt: string | Date | null; error: string | null } | null;
 };
 
-const roleOptions = [
-  ["SUPERADMIN", "Superadmin"],
-  ["GERENCIA", "Gerencia"],
-  ["OPERACIONES_VENTAS", "Operaciones y ventas"],
-  ["JEFATURA", "Jefatura"],
-  ["VENTAS", "Ventas"],
-  ["ALMACEN", "Almacén"],
-  ["COMPRAS", "Compras"],
-  ["REPORTES", "Reportes"],
-] as const;
+const roleOptions = allOperationalRoles
+  .map((role) => role as AppRole)
+  .filter((role) => can(role, "reports.view"))
+  .map((role) => [role, roleLabel(role)] as const);
 
 const field =
   "h-10 w-full rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-semibold text-[#304b66] outline-none focus:border-[#2277ee] focus:ring-2 focus:ring-[#dcecff]";
@@ -105,6 +100,7 @@ export function ReportScheduleControls({
   }
 
   async function cancel(id: string) {
+    if (!window.confirm("¿Cancelar esta programación de reportes? La acción quedará registrada y no ejecutará nuevos reportes.")) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -145,8 +141,8 @@ export function ReportScheduleControls({
               Se guardan con los filtros actuales y se entregarán primero en tu inbox interno.
             </p>
           </div>
-          <span className="rounded-full bg-[#fff5e8] px-2.5 py-1 text-[9px] font-extrabold text-[#a96216]">
-            Worker de ejecución pendiente
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-extrabold text-emerald-700">
+            Ejecución automática activa
           </span>
         </div>
         {message ? (

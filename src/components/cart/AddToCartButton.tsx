@@ -10,11 +10,12 @@ type AddToCartButtonProps = {
   // Only products with an active retail price can be bought; the rest are quote-only.
   purchasable: boolean;
   label?: string;
+  disabledLabel?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
 };
 
-export function AddToCartButton({ productId, purchasable, label = "Agregar al carrito", size = "sm", className }: AddToCartButtonProps) {
+export function AddToCartButton({ productId, purchasable, label = "Agregar al carrito", disabledLabel = "Solo cotizable", size = "sm", className }: AddToCartButtonProps) {
   const { addItem, pendingProductId } = useShoppingCart();
   const [feedback, setFeedback] = useState<"idle" | "added" | "failed">("idle");
   const pending = pendingProductId === productId;
@@ -27,9 +28,9 @@ export function AddToCartButton({ productId, purchasable, label = "Agregar al ca
 
   if (!purchasable) {
     return (
-      <Button type="button" variant="outline" size={size} className={className} disabled title="Este producto no tiene precio publicado. Solicítalo por cotización.">
+      <Button type="button" variant="outline" size={size} className={className} disabled title={disabledLabel === "Solo cotizable" ? "Este producto no tiene precio publicado. Solicítalo por cotización." : "Este producto no está disponible para compra en este momento."}>
         <Tag className="h-4 w-4" aria-hidden="true" />
-        Solo cotizable
+        {disabledLabel}
       </Button>
     );
   }

@@ -3,7 +3,7 @@
 import { ClerkFailed, ClerkLoaded, ClerkLoading, Show } from "@clerk/nextjs";
 import { MessageCircle, User, UserPlus, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { CatalogCategory } from "@/lib/catalog-repository";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { Button } from "@/components/shared/Button";
@@ -59,13 +59,29 @@ function AuthMobileActions({ onClose }: { onClose: () => void }) {
 
 export function MobileMenu({ id = "mobile-menu", isOpen, onClose, links, authEnabled = false, categories }: MobileMenuProps) {
   const publicCategories = categories.filter((category) => category.productCount > 0).slice(0, 8);
+  const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!isOpen) return;
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const firstFocusable = panelRef.current?.querySelector<HTMLElement>(focusableSelector);
+    firstFocusable?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>(focusableSelector)];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -79,7 +95,7 @@ export function MobileMenu({ id = "mobile-menu", isOpen, onClose, links, authEna
   return (
     <div id={id} className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú principal móvil">
       <button type="button" aria-label="Cerrar menú móvil" className="absolute inset-0 bg-dark/60" onClick={onClose} />
-      <aside className="absolute right-0 top-0 flex h-full w-[min(88vw,390px)] flex-col bg-white shadow-float">
+      <aside ref={panelRef} className="absolute right-0 top-0 flex h-full w-[min(88vw,390px)] flex-col bg-white shadow-float">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <BrandLogo compact />
           <button type="button" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-dark transition hover:border-primary hover:text-primary" onClick={onClose} aria-label="Cerrar menú">

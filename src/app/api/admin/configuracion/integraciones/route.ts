@@ -5,7 +5,7 @@ import { listIntegrations } from "@/lib/integrations";
 
 export async function GET() {
   try {
-    await requireApiPermission("company.settings.manage");
+    await requireApiPermission("integrations.manage");
     const integrations = await listIntegrations();
     return NextResponse.json({ integrations });
   } catch (error) {

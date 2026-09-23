@@ -67,6 +67,9 @@ const label: Record<string, string> = {
   AT_AGENCY: "En agencia",
   OUT_FOR_DELIVERY: "En reparto",
   EXCEPTION: "Incidencia de envío",
+  PICKUP: "Recojo en local",
+  DELIVERY: "Entrega a domicilio",
+  SHIPPING: "Envío por agencia",
 };
 const incidentTypeLabel: Record<string, string> = {
   PHYSICAL_SHORTAGE: "Faltante físico",
@@ -85,6 +88,24 @@ const STAGES = ["Pendiente", "Preparación", "Listo", "Entregado"] as const;
 
 function text(value: string | null | undefined) {
   return value ? (label[value] ?? value) : "N/D";
+}
+function limaDateTime(value: unknown) {
+  if (!value) return "N/D";
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return "N/D";
+  return new Intl.DateTimeFormat("es-PE", {
+    timeZone: "America/Lima",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+function historyTransition(row: Record<string, unknown>) {
+  const from = row.fromStatus ?? row.from;
+  const to = row.toStatus ?? row.to ?? row.status;
+  if (from != null || to != null) {
+    return `${from == null ? "Inicio" : text(String(from))} → ${to == null ? "Registro" : text(String(to))}`;
+  }
+  return "Registro";
 }
 function money(currency: string, value: string | number) {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(Number(value));
@@ -276,7 +297,7 @@ export function OrdersControlCenter({
                   "Entrega",
                   ...(canPaymentsView ? ["Pago"] : []),
                   "Local",
-                  "",
+                  "Acciones",
                 ].map((header) => (
                   <th key={header} className="px-3 py-3 font-medium">
                     {header}
@@ -326,7 +347,7 @@ export function OrdersControlCenter({
         <h2 className="text-sm font-bold tracking-tight text-slate-900">Centro de operaciones</h2>
         <p className="mt-1 text-xs text-slate-500">Prioriza picking, despacho, recojo e incidencias sin cambiar estados libremente.</p>
         <div className="mt-3 grid gap-4 lg:grid-cols-4">
-          <Queue title="Listos para preparar" rows={prepare} onOpen={setDetailId} icon={Package} />
+          <Queue title="Por preparar" rows={prepare} onOpen={setDetailId} icon={Package} />
           <Queue title="Listos para despacho" rows={dispatch} onOpen={setDetailId} icon={Truck} />
           <Queue title="Listos para recojo" rows={pickup} onOpen={setDetailId} icon={PackageCheck} />
           <Queue title="Incidencias" rows={incidents} onOpen={setDetailId} icon={AlertTriangle} />
@@ -837,11 +858,20 @@ function OrderDrawer({
                         {String(item.skuSnapshot)} · {String(item.productNameSnapshot)}
                       </p>
                       <p className="mt-1 text-[10.5px] text-slate-400">
-                        Solicitado {String(item.quantity)} · Preparado {String(item.pickedQuantity)} · Reserva{" "}
-                        {item.reservationId
-                          ? text(String(detail.reservations.find((reservation) => reservation.id === item.reservationId)?.status ?? "activa"))
-                          : "N/D"}
+                        Solicitado {String(item.quantity)} · Preparado {String(item.pickedQuantity)}
                       </p>
+                      {item.reservationId ? (
+                        (() => {
+                          const reservation = detail.reservations.find((candidate) => candidate.id === item.reservationId);
+                          return (
+                            <p className="mt-1 break-all text-[10.5px] font-medium text-violet-700">
+                              Reserva {String(reservation?.id ?? item.reservationId)} · {text(String(reservation?.status ?? "ACTIVE"))} · {String(reservation?.quantity ?? item.quantity)} unidades · {String(detail.location?.name ?? "Local N/D")}
+                            </p>
+                          );
+                        })()
+                      ) : (
+                        <p className="mt-1 text-[10.5px] font-medium text-slate-400">Sin reserva registrada</p>
+                      )}
                     </div>
                     {tab === "Preparación" && canManage && String(order?.status) === "PREPARING" ? (
                       <button
@@ -888,7 +918,7 @@ function OrderDrawer({
             <div className="grid gap-2">
               {detail.history.map((row) => (
                 <div key={String(row.id)} className="rounded-lg border border-slate-100 p-3 text-[11px] text-slate-500">
-                  {row.fromStatus ? `${text(String(row.fromStatus))} → ` : ""}{text(String(row.toStatus ?? row.status))} · {new Date(String(row.createdAt)).toLocaleString("es-PE")}
+                  {historyTransition(row)} · {limaDateTime(row.createdAt)}
                 </div>
               ))}
             </div>
@@ -897,6 +927,13 @@ function OrderDrawer({
               <div className="rounded-lg bg-slate-50 p-3 text-[11px] text-slate-500">
                 {text(String(order?.deliveryMethod))} · {text(String(order?.status))} · Local{" "}
                 {String(detail.location?.name ?? "N/D")}
+                <span className="mt-1 block text-slate-600">
+                  {order?.deliveryAddress
+                    ? `Dirección: ${String(order.deliveryAddress)}`
+                    : String(order?.deliveryMethod) === "PICKUP"
+                      ? "Recojo en el local seleccionado"
+                      : "Sin dirección registrada"}
+                </span>
               </div>
               {tab === "Entrega" ? (
                 detail.shipments[0] ? (
@@ -976,7 +1013,7 @@ function OrderDrawer({
                       </button>
                     ))
                   : null}
-                {canManage && ["IN_TRANSIT", "SHIPPED"].includes(String(order?.status)) ? (
+                {canManage && detail.shipments.length > 0 && ["IN_TRANSIT", "SHIPPED"].includes(String(order?.status)) ? (
                   <button type="button" disabled={busy} onClick={() => void advanceTracking()} className={secondaryButtonClass} title="Registra el siguiente evento del transportista (solo con el transportista de prueba)">
                     Avanzar seguimiento
                   </button>

@@ -73,6 +73,30 @@ function label(value: string | null | undefined) {
 function money(currency: string, value: string | number) {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(Number(value));
 }
+function amountsByCurrencyText(rows: Array<{ currency: string; net: string | number }>) {
+  if (!rows.length) return "N/D";
+  return rows
+    .map((row) => (rows.length === 1 ? money(row.currency, row.net) : `${row.currency} · ${money(row.currency, row.net)}`))
+    .join(" · ");
+}
+function limaDateTime(value: unknown) {
+  if (!value) return "N/D";
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return "N/D";
+  return new Intl.DateTimeFormat("es-PE", {
+    timeZone: "America/Lima",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+function paymentHistoryLabel(row: Record<string, unknown>) {
+  const from = row.fromStatus ?? row.from;
+  const to = row.toStatus ?? row.to;
+  if (from != null || to != null) {
+    return `${from == null ? "Inicio" : label(String(from))} → ${to == null ? "Registro" : label(String(to))}`;
+  }
+  return label(String(row.status ?? row.eventType ?? row.result ?? "Registro"));
+}
 function paymentCode(id: string) {
   return "PAGO-" + (id.split("-").at(-1) ?? id.slice(-8)).toUpperCase();
 }
@@ -136,10 +160,7 @@ export function PaymentsControlCenter({
   canManual: boolean;
 }) {
   const [detailId, setDetailId] = useState<string | null>(() => new URLSearchParams(queryString).get("paymentId"));
-  const confirmed =
-    page.metrics.amountsByCurrency
-      .map((row) => row.currency + " " + money(row.currency, row.net))
-      .join(" · ") || "N/D";
+  const confirmed = amountsByCurrencyText(page.metrics.amountsByCurrency);
   const reconciliationRate = page.metrics.reconciliationRate;
   const statusTotal = Math.max(1, page.metrics.total);
   const kpis: Array<{
@@ -153,7 +174,7 @@ export function PaymentsControlCenter({
     tone: "blue" | "orange" | "green" | "red" | "purple";
     sparkline: number[];
   }> = [
-    { key: "confirmed", label: "Monto confirmado", value: confirmed, note: "Neto de reembolsos exitosos · últimos 14 días", icon: BadgeCheck, iconBg: "bg-blue-50", iconInk: "text-blue-600", tone: "blue", sparkline: series.confirmedAmount },
+    { key: "confirmed", label: "Monto confirmado", value: confirmed, note: "Alcance actual · tendencia de los últimos 14 días", icon: BadgeCheck, iconBg: "bg-blue-50", iconInk: "text-blue-600", tone: "blue", sparkline: series.confirmedAmount },
     { key: "reconciled", label: "Órdenes conciliadas", value: String(page.metrics.reconciledOrders), note: "Conciliación por orden", icon: BadgeCheck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.confirmedCount },
     { key: "pending", label: "Pendientes", value: String(page.metrics.pending), note: "Pendiente o en revisión", icon: Clock, iconBg: "bg-amber-50", iconInk: "text-amber-600", tone: "orange", sparkline: series.pending },
     { key: "observed", label: "Observados", value: String(page.metrics.observed), note: "Diferencia, rechazo o error", icon: AlertTriangle, iconBg: "bg-red-50", iconInk: "text-red-600", tone: "red", sparkline: series.observed },
@@ -252,8 +273,8 @@ export function PaymentsControlCenter({
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Estado de pago</h2>
-          <div className="flex flex-1 flex-col items-center justify-center gap-8 py-4 sm:flex-row sm:justify-between sm:gap-12 sm:px-6">
-            <div className="relative flex h-52 w-52 shrink-0 items-center justify-center">
+          <div className="flex flex-col items-center gap-6 py-3 sm:flex-row sm:justify-between sm:gap-10 sm:px-4">
+            <div className="relative flex h-40 w-40 shrink-0 items-center justify-center sm:h-44 sm:w-44">
               <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" fill="none" r="14" stroke="#f1f5f9" strokeWidth={3.5} />
                 {donutSegments.map((segment) => (
@@ -282,13 +303,11 @@ export function PaymentsControlCenter({
         </div>
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Métodos de pago</h2>
-          <div className="flex flex-1 flex-col justify-center gap-5 py-2">
+          <div className="space-y-4 pt-3">
             {page.metrics.methodBreakdown.length ? (
               page.metrics.methodBreakdown.map((row) => {
                 const MethodIcon = methodIcon(row.method);
-                const total = row.confirmedAmountsByCurrency
-                  .map((amountRow) => amountRow.currency + " " + money(amountRow.currency, amountRow.net))
-                  .join(" · ") || "N/D";
+                const total = amountsByCurrencyText(row.confirmedAmountsByCurrency);
                 const share = row.confirmedAmountsByCurrency[0]
                   ? (row.confirmedAmountsByCurrency[0].net /
                       Math.max(
@@ -377,7 +396,7 @@ export function PaymentsControlCenter({
           <table className="w-full min-w-[1000px] text-left">
             <thead className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
-                {["Pago", "Cliente", "Pedido", "Monto", "Método", "Estado", "Conciliación", "Referencia", "Fecha", ""].map((heading) => (
+                {["Pago", "Cliente", "Pedido", "Monto", "Método", "Estado", "Conciliación", "Referencia", "Fecha", "Acciones"].map((heading) => (
                   <th key={heading} className="px-3 py-3 font-medium">
                     {heading}
                   </th>
@@ -667,7 +686,7 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
         <Badge value={item.refundRequired ? "REFUND_REQUIRED" : item.reconciliation} />
       </td>
       <td className="max-w-32 truncate px-3 py-3">{item.providerReference ?? "N/D"}</td>
-      <td className="px-3 py-3 text-slate-500">{new Date(item.createdAt).toLocaleDateString("es-PE")}</td>
+      <td className="px-3 py-3 text-slate-500">{limaDateTime(item.createdAt).split(",")[0]}</td>
       <td className="px-3 py-3">
         <button
           onClick={() => onOpen(item.id)}
@@ -741,6 +760,17 @@ function PaymentDrawer({
     Number(detail?.reconciliation.expectedAmount ?? 0) -
       Number(detail?.reconciliation.netReceivedAmount ?? 0),
   ).toFixed(2);
+  const orderStatus = String(detail?.order?.status ?? "");
+  const orderClosed = ["CANCELLED", "DELIVERED"].includes(orderStatus);
+  const providerPending =
+    String(payment?.methodType) === "PROVIDER" &&
+    ["PENDING", "UNDER_REVIEW"].includes(String(payment?.status));
+  const manualPaymentBlockedReason = orderClosed
+    ? "El pedido está cerrado; gestiona la devolución o el ajuste desde el flujo correspondiente."
+    : providerPending
+      ? "El pago del proveedor sigue pendiente; primero actualiza su estado."
+      : null;
+  const canConfirmManualPayment = Boolean(canManual && detail && Number(amountPending) > 0 && !orderClosed && !providerPending);
   const records =
     tab === "Intentos"
       ? (detail?.attempts ?? [])
@@ -907,7 +937,7 @@ function PaymentDrawer({
                   Actualizar estado
                 </button>
               ) : null}
-              {canManual && detail && Number(amountPending) > 0 ? (
+              {canConfirmManualPayment && detail ? (
                 <ManualPaymentControl
                   orderId={String(detail.order.id)}
                   amount={amountPending}
@@ -915,9 +945,14 @@ function PaymentDrawer({
                   onConfirmed={() => load()}
                 />
               ) : null}
+              {canManual && detail && Number(amountPending) > 0 && manualPaymentBlockedReason ? (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800">
+                  {manualPaymentBlockedReason}
+                </p>
+              ) : null}
               {canRefund && refundable ? (
                 <div className="rounded-xl border border-orange-200 bg-orange-50/40 p-3">
-                  <p className="text-[11px] font-bold text-orange-800">Reembolso</p>
+                  <p className="text-[11px] font-bold text-orange-800">Devolución manual</p>
                   <p className="mt-1 text-[10px] text-slate-500">
                     Original {money(currency, String(payment?.amount ?? 0))} · El backend valida el
                     saldo realmente reembolsable.
@@ -941,7 +976,7 @@ function PaymentDrawer({
                     onClick={() => void requestRefund()}
                     className="mt-2 rounded-lg border border-orange-500 px-3 py-2 text-xs font-bold text-orange-600 disabled:opacity-50"
                   >
-                    Solicitar reembolso
+                    Solicitar devolución
                   </button>
                 </div>
               ) : null}
@@ -954,8 +989,7 @@ function PaymentDrawer({
                     key={String(row.id)}
                     className="rounded-lg border border-slate-100 p-3 text-[11px] text-slate-600"
                   >
-                    {String(row.status ?? row.eventType ?? row.result ?? "Registro")} ·{" "}
-                    {new Date(String(row.createdAt)).toLocaleString("es-PE")}
+                    {paymentHistoryLabel(row)} · {limaDateTime(row.createdAt)}
                   </div>
                 ))
               ) : (

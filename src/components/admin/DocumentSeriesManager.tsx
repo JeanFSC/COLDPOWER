@@ -64,7 +64,11 @@ export function DocumentSeriesManager({ series }: { series: DocumentSeriesItem[]
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold leading-5 text-[#71869c]">Numeración interna para cotizaciones, pedidos, ventas y otros documentos del flujo operativo.</p>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold leading-5 text-slate-500">Series administrativas para cotizaciones, pedidos, ventas y otros documentos del flujo operativo.</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-amber-700">Configuración preparada: la numeración automática todavía no consume estas series.</p>
+        </div>
+        <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-[9px] font-extrabold text-amber-700">Sin uso automático</span>
         <button type="button" onClick={() => setOpen((current) => !current)} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#dce6ee] bg-white px-3 text-[11px] font-extrabold text-[#304b66] transition hover:border-[#2277ee] hover:text-[#2277ee]">
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Nueva serie

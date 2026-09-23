@@ -30,7 +30,7 @@ test("configuración: separación pública y administrativa", () => {
 test("configuración: historial, restauración, concurrencia, caché, secretos, auditoría y RBAC", () => {
   for (const file of ["src/app/api/admin/configuracion/route.ts", "src/app/api/admin/configuracion/historial/route.ts", "src/app/api/admin/configuracion/restaurar/route.ts", "drizzle/0028_cp045_company_settings.sql"]) assert.equal(existsSync(`${root}/${file}`), true, file);
   const route = read("src/app/api/admin/configuracion/route.ts");
-  assert.match(route, /company\.settings\.manage/);
+  assert.match(route, /settings\.business\.edit/);
   assert.match(route, /CompanySettingsConflictError/);
   assert.match(route, /companySettingsHistory/);
   assert.match(route, /revalidateTag/);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/shared/Button";
+import { trackCatalogEvent } from "@/lib/analytics";
 
 export type WhatsAppLeadItem = { name: string; sku?: string; quantity?: number };
 type Props = { children: ReactNode; title?: string; initialName?: string; initialPhone?: string; initialEmail?: string; productIds?: string[]; items?: WhatsAppLeadItem[]; className?: string; variant?: "primary" | "secondary" | "outline" | "ghost" | "whatsapp"; size?: "sm" | "md" | "lg"; disabled?: boolean; "aria-label"?: string };
@@ -20,7 +21,7 @@ export function WhatsAppLeadButton({ children, title, initialName = "", initialP
 
   async function submit() {
     setSubmitting(true); setError(""); const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
-    try { const response = await fetch("/api/whatsapp/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, phone, email, title, productIds, items }) }); const result = await response.json() as { url?: string; error?: string }; if (!response.ok || !result.url) throw new Error(result.error || "No se pudo registrar el lead."); if (popup) popup.location.href = result.url; else window.location.href = result.url; setOpen(false); } catch (submitError) { popup?.close(); setError(submitError instanceof Error ? submitError.message : "No se pudo registrar el lead."); } finally { setSubmitting(false); }
+    try { const response = await fetch("/api/whatsapp/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, phone, email, title, productIds, items }) }); const result = await response.json() as { url?: string; error?: string }; if (!response.ok || !result.url) throw new Error(result.error || "No se pudo registrar el lead."); if (popup) popup.location.href = result.url; else window.location.href = result.url; setOpen(false); trackCatalogEvent("whatsapp_clicked", { productCount: productIds.length || items.length }); } catch (submitError) { popup?.close(); setError(submitError instanceof Error ? submitError.message : "No se pudo registrar el lead."); } finally { setSubmitting(false); }
   }
 
   function openForm() { setName(initialName); setPhone(initialPhone); setEmail(initialEmail); setError(""); setOpen(true); }

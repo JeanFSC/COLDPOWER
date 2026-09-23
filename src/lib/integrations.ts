@@ -177,7 +177,10 @@ export async function testIntegration(key: string, actorId?: string): Promise<In
 
 export async function testAllIntegrations(actorId?: string): Promise<IntegrationRow[]> {
   await ensureIntegrationCatalog();
-  const results: IntegrationRow[] = [];
-  for (const definition of INTEGRATION_DEFINITIONS) results.push(await testIntegration(definition.key, actorId));
+  const settled = await Promise.allSettled(INTEGRATION_DEFINITIONS.map((definition) => testIntegration(definition.key, actorId)));
+  const results = settled.flatMap((entry) => entry.status === "fulfilled" ? [entry.value] : []);
+  const rejected = settled.filter((entry): entry is PromiseRejectedResult => entry.status === "rejected");
+  if (!results.length && rejected.length) throw new AggregateError(rejected.map((entry) => entry.reason), "No se pudo probar ninguna integración.");
+  if (rejected.length) console.error("ColdPower: algunas integraciones no pudieron probarse", rejected.map((entry) => entry.reason));
   return results;
 }
