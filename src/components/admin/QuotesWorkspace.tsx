@@ -306,17 +306,20 @@ export function QuotesWorkspace({
     setDialog(null);
     setActionError("");
   };
-  const performAction = async (path: string, body: Record<string, unknown>, success: string) => {
+  const performAction = async (path: string, method: "POST" | "PATCH", body: Record<string, unknown>, success: string) => {
     if (!detailId) return;
     setActionBusy(true);
     setActionError("");
     try {
+      const endpoint = method === "PATCH"
+        ? `/api/admin/cotizaciones/${encodeURIComponent(detailId)}`
+        : `/api/admin/cotizaciones${path}`;
       const response = await fetch(
-        `/api/admin/cotizaciones/${encodeURIComponent(detailId)}${path}`,
+        endpoint,
         {
-          method: "POST",
+          method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: JSON.stringify(method === "POST" ? { ...body, quoteId: detailId } : body),
         },
       );
       const payload = await response.json().catch(() => ({}));
@@ -332,25 +335,7 @@ export function QuotesWorkspace({
     }
   };
   const createVersion = async () => {
-    if (!detailId) return;
-    setActionBusy(true);
-    setActionError("");
-    try {
-      const response = await fetch(
-        `/api/admin/cotizaciones/${encodeURIComponent(detailId)}/version`,
-        { method: "POST" },
-      );
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok)
-        throw new Error(readApiError(payload, "No se pudo crear la nueva versión."));
-      setNotice("Nueva versión abierta para edición.");
-      await openDetail(detailId);
-      router.refresh();
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : "No se pudo crear la nueva versión.");
-    } finally {
-      setActionBusy(false);
-    }
+    await performAction("/version", "POST", {}, "Nueva versión abierta para edición.");
   };
 
   useEffect(() => {
@@ -1126,7 +1111,7 @@ function DetailDrawer({
   busy: boolean;
   error: string;
   setError: (error: string) => void;
-  performAction: (path: string, body: Record<string, unknown>, success: string) => Promise<void>;
+  performAction: (path: string, method: "POST" | "PATCH", body: Record<string, unknown>, success: string) => Promise<void>;
   createVersion: () => Promise<void>;
   can: (permission: string) => boolean;
   onEdited: () => void;
@@ -1286,7 +1271,7 @@ function DetailDrawer({
           close={() => setDialog(null)}
           busy={busy}
           error={error}
-          onSubmit={(body) => performAction("/send", body, "Envío registrado y versionado.")}
+          onSubmit={(body) => performAction("/send", "POST", body, "Envío registrado y versionado.")}
         />
       ) : dialog === "response" ? (
         <ActionDialog
@@ -1295,7 +1280,7 @@ function DetailDrawer({
           busy={busy}
           error={error}
           onSubmit={(body) =>
-            performAction("/response", body, "Respuesta registrada en el historial.")
+            performAction("/response", "POST", body, "Respuesta registrada en el historial.")
           }
         />
       ) : dialog === "followUp" ? (
@@ -1304,7 +1289,7 @@ function DetailDrawer({
           close={() => setDialog(null)}
           busy={busy}
           error={error}
-          onSubmit={(body) => performAction("/follow-up", body, "Seguimiento creado en CRM.")}
+          onSubmit={(body) => performAction("/follow-up", "POST", body, "Seguimiento creado en CRM.")}
         />
       ) : dialog === "cancel" ? (
         <ActionDialog
@@ -1315,6 +1300,7 @@ function DetailDrawer({
           onSubmit={(body) =>
             performAction(
               "",
+              "PATCH",
               { workflowStatus: "CANCELLED", reason: body.reason },
               "Cotización cancelada.",
             )

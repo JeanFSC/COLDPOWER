@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from "@/lib/api-errors";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { promotions } from "@/db/operations-schema";
+import { promotionApprovalChanges } from "@/lib/promotion-service";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
@@ -17,7 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const result = await getDb().transaction(async (tx) => {
       const [before] = await tx.select().from(promotions).where(eq(promotions.id, id)).limit(1);
       if (!before) throw new Error("PROMOTION_NOT_FOUND");
-      const [after] = await tx.update(promotions).set({ approvalStatus: decision, approvedBy: decision === "APPROVED" ? actor.userId : null, approvedAt: decision === "APPROVED" ? new Date() : null, updatedBy: actor.userId, updatedAt: new Date() }).where(eq(promotions.id, id)).returning();
+      const [after] = await tx.update(promotions).set(promotionApprovalChanges(decision, actor.userId)).where(eq(promotions.id, id)).returning();
       await tx.insert(auditLogs).values({ id: "audit-" + crypto.randomUUID(), actorId: actor.userId, actorRole: actor.role, action: decision === "APPROVED" ? "promotions.approved" : "promotions.rejected", entityType: "promotion", entityId: id, before, after, metadata: { decision } });
       return after;
     });

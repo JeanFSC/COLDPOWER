@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { validatePurchaseRequestConversionItems } from "@/lib/purchases-validation";
 
 export function PurchaseRequestActions({
   requestId,
@@ -20,7 +21,7 @@ export function PurchaseRequestActions({
   const [busy, setBusy] = useState(false);
   const [reason, setReason] = useState("");
   const [supplierId, setSupplierId] = useState("");
-  const [unitCost, setUnitCost] = useState("");
+  const [unitCosts, setUnitCosts] = useState<Record<string, string>>({});
   const [expectedDeliveryAt, setExpectedDeliveryAt] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
@@ -51,9 +52,15 @@ export function PurchaseRequestActions({
 
   async function convert() {
     const supplier = suppliers.find((item) => item.id === supplierId);
-    const amount = Number(unitCost);
-    if (!supplier || !locationId || !items.length || !Number.isFinite(amount) || amount <= 0) {
+    if (!supplier || !locationId || !items.length) {
       setMessage("Selecciona proveedor e ingresa un costo unitario válido.");
+      return;
+    }
+    let conversionItems: Array<{ productId: string; quantity: number; unitCost: string }>;
+    try {
+      conversionItems = validatePurchaseRequestConversionItems(items, unitCosts);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Ingresa un costo válido para cada línea.");
       return;
     }
     setBusy(true);
@@ -69,11 +76,7 @@ export function PurchaseRequestActions({
             locationId,
             currency: supplier.currency,
             expectedDeliveryAt: expectedDeliveryAt || null,
-            items: items.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantityRequested,
-              unitCost: amount.toFixed(2),
-            })),
+            items: conversionItems,
           }),
         },
       );
@@ -165,16 +168,23 @@ export function PurchaseRequestActions({
                 </option>
               ))}
           </select>
-          <input
-            value={unitCost}
-            onChange={(event) => setUnitCost(event.currentTarget.value)}
-            type="number"
-            min="0.01"
-            step="0.01"
-            placeholder="Costo unitario"
-            aria-label="Costo unitario para convertir solicitud"
-            className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px]"
-          />
+          <div className="grid gap-2 sm:col-span-2">
+            {items.map((item) => (
+              <label key={item.productId} className="grid gap-1 text-[10px] font-semibold text-slate-600">
+                <span>{item.productId} · {item.quantityRequested} unidades</span>
+                <input
+                  value={unitCosts[item.productId] ?? ""}
+                  onChange={(event) => setUnitCosts((current) => ({ ...current, [item.productId]: event.currentTarget.value }))}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Costo unitario"
+                  aria-label={`Costo unitario para ${item.productId}`}
+                  className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px]"
+                />
+              </label>
+            ))}
+          </div>
           <input
             value={expectedDeliveryAt}
             onChange={(event) => setExpectedDeliveryAt(event.currentTarget.value)}
@@ -185,7 +195,7 @@ export function PurchaseRequestActions({
         </div>
         <button
           type="button"
-          disabled={busy || !supplierId || !unitCost || !items.length}
+          disabled={busy || !supplierId || !items.length || items.some((item) => !unitCosts[item.productId]?.trim())}
           onClick={() => void convert()}
           className="rounded-full bg-[#159263] px-3 py-2 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >

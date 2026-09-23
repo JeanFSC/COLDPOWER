@@ -32,6 +32,7 @@ import {
   inventoryStatusLabels,
   type InventoryAdminFilters,
 } from "@/lib/inventory-admin-contract";
+import { isAdminOperableReservation } from "@/lib/inventory-domain";
 import type { InventoryMovementType } from "@/lib/inventory-types";
 
 type LocationSummary = {
@@ -2136,7 +2137,7 @@ function InventoryOperationsTabs({
                   <span className="text-[9px] text-slate-400">
                     {reservation.createdByName || "Sistema"} · {dateTime(reservation.createdAt)}
                   </span>
-                  {permissions.canReserve && reservation.status === "ACTIVE" ? (
+                  {permissions.canReserve && reservation.status === "ACTIVE" && isAdminOperableReservation(reservation.referenceType) ? (
                     <div className="flex gap-1">
                       <button
                         type="button"

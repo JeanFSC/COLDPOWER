@@ -15,6 +15,13 @@ function text(value: unknown, max: number) { return typeof value === "string" ? 
 function nullableText(value: unknown, max: number) { return text(value, max) || null; }
 function currency(value: unknown) { const result = text(value, 3).toUpperCase(); if (!/^[A-Z]{3}$/.test(result)) throw new Error("La moneda debe ser ISO de tres letras."); return result; }
 function positiveMoney(value: unknown) { const amount = Number(value); if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) throw new Error("El costo debe ser positivo y tener como máximo dos decimales."); return amount.toFixed(2); }
+export function validatePurchaseRequestConversionItems(items: Array<{ productId: string; quantityRequested: number }>, unitCosts: Record<string, unknown>) {
+  if (!items.length) throw new Error("La solicitud no tiene líneas para convertir.");
+  return items.map((item) => {
+    if (!item.productId || !Number.isInteger(item.quantityRequested) || item.quantityRequested <= 0) throw new Error("La línea de solicitud no es válida.");
+    return { productId: item.productId, quantity: item.quantityRequested, unitCost: positiveMoney(unitCosts[item.productId]) };
+  });
+}
 export function validateSupplierInput(input: unknown): SupplierInput {
   const value = input && typeof input === "object" ? input as Record<string, unknown> : {};
   const name = text(value.name, 180); const country = text(value.country, 2).toUpperCase(); const status = text(value.status, 20) || "ACTIVE";

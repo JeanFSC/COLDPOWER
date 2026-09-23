@@ -24,6 +24,17 @@ function audit(actor: Actor, action: string, entityType: string, entityId: strin
 
 type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; unitPrice: string; currency: string; lineTotal: string };
 type CommercialLine = ResolvedLine & { baseLineTotal: string; discountAmount: string; promotionIds: string[] };
+export function calculateCheckoutTotals(lines: Array<Pick<CommercialLine, "baseLineTotal" | "lineTotal">>) {
+  const cents = (value: string) => {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount < 0) throw new Error("CHECKOUT_LINE_TOTAL_INVALID");
+    return Math.round(amount * 100);
+  };
+  const subtotalCents = lines.reduce((sum, line) => sum + cents(line.baseLineTotal), 0);
+  const totalCents = lines.reduce((sum, line) => sum + cents(line.lineTotal), 0);
+  if (totalCents > subtotalCents) throw new Error("CHECKOUT_TOTAL_EXCEEDS_SUBTOTAL");
+  return { subtotal: (subtotalCents / 100).toFixed(2), discountAmount: ((subtotalCents - totalCents) / 100).toFixed(2), total: (totalCents / 100).toFixed(2) };
+}
 async function resolveLines(tx: Transaction, input: CheckoutInput, options: { enforcePublicSellability?: boolean } = {}) {
   const quantities = new Map<string, number>();
   for (const item of input.items) quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
@@ -117,7 +128,7 @@ async function createCheckoutOrderInTransaction(tx: Transaction, input: Checkout
     for (const line of lines) { const balance = balanceByProduct.get(line.productId); if (!balance) throw new Error(`INVENTORY_UNKNOWN: No hay saldo cuantitativo confirmado para ${line.sku} en ${location.name}.`); const available = balance.available - balance.reserved; if (available < line.quantity) throw new Error(`Stock insuficiente para ${line.sku} en ${location.name}.`); }
     const customer = await findOrCreateCustomer(tx, input, actor, options.customerId);
     const now = new Date(); const orderId = id("order"); const saleId = id("sale"); const code = `ORD-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`; const saleCode = `VTA-${crypto.randomUUID().slice(0, 10).toUpperCase()}`;
-    const subtotal = lines.reduce((sum, line) => sum + money(line.baseLineTotal), 0).toFixed(2); const discountAmount = lines.reduce((sum, line) => sum + money(line.discountAmount) * line.quantity, 0).toFixed(2); const total = Math.max(0, money(subtotal) - money(discountAmount)).toFixed(2); const currency = lines[0].currency;
+    const { subtotal, discountAmount, total } = calculateCheckoutTotals(lines); const currency = lines[0].currency;
     const [opportunity] = await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${code}`, customerId: customer.id, title: `Pedido ${code}`, origin: options.origin ?? "WEB", stage: "PAYMENT_PENDING", createdBy: actor.userId }).returning();
     await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: opportunity.id, fromStage: null, toStage: "PAYMENT_PENDING", changedBy: actor.userId ?? "anonymous", note: "Oportunidad creada desde checkout" });
     const [sale] = await tx.insert(sales).values({ id: saleId, code: saleCode, customerId: customer.id, opportunityId: opportunity.id, status: "CONFIRMED", sellerId: actor.userId, channel: options.channel ?? null, subtotal, discountAmount, total, currency, createdAt: now, updatedAt: now }).returning();

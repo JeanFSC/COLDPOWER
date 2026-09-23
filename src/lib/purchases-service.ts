@@ -26,6 +26,9 @@ function id(prefix: string) {
 function money(value: string | number) {
   return Number(Number(value).toFixed(2));
 }
+export function isPurchaseReceivableStatus(status: unknown): status is "PENDING" | "PARTIAL_RECEIVED" {
+  return status === "PENDING" || status === "PARTIAL_RECEIVED";
+}
 function audit(
   actor: Actor,
   action: string,
@@ -578,8 +581,8 @@ export async function receivePurchase(input: ReceiptInput, actor: Actor) {
       .where(eq(purchases.id, input.purchaseId))
       .for("update")
       .limit(1);
-    if (!purchase || purchase.status === "CANCELLED" || purchase.status === "RECEIVED")
-      throw new Error("La compra no admite una nueva recepción.");
+    if (!purchase || !isPurchaseReceivableStatus(purchase.status))
+      throw new Error("Solo se pueden recibir órdenes PENDING o PARTIAL_RECEIVED.");
     const purchaseLines = await tx
       .select()
       .from(purchaseItems)

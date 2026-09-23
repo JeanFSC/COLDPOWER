@@ -2,7 +2,7 @@
 import { getDb } from "@/db";
 import { isNull, lt, ne, or } from "drizzle-orm";
 import { auditLogs, inventoryBalances, inventoryMovements, inventoryReservations, products, transfers, transferItems } from "@/db/schema";
-import { applyInventoryOperation, availableQuantity, validateInventoryMovementMetadata, type InventoryOperation } from "@/lib/inventory-domain";
+import { applyInventoryOperation, availableQuantity, isAdminOperableReservation, validateInventoryMovementMetadata, type InventoryOperation } from "@/lib/inventory-domain";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { canTransitionTransfer } from "@/lib/inventory-workflow";
 
@@ -128,11 +128,12 @@ export async function consumeInventoryReservationInTransaction(tx: Transaction, 
   return balance;
 }
 
-export async function releaseInventoryReservation(reservationId: string, performedBy?: string, performedByRole?: string) { return getDb().transaction(async (tx) => { const [reservation] = await tx.select().from(inventoryReservations).where(eq(inventoryReservations.id, reservationId)).for("update").limit(1); if (!reservation || reservation.status !== "ACTIVE") throw new Error("La reserva no está activa."); const balance = await updateBalance(tx, { productId: reservation.productId, locationId: reservation.locationId, quantity: reservation.quantity, performedBy, performedByRole, referenceType: "reservation", referenceId: reservationId }, { type: "RESERVATION_RELEASE", quantity: reservation.quantity }); await tx.update(inventoryReservations).set({ status: "RELEASED", releasedAt: new Date() }).where(eq(inventoryReservations.id, reservationId)); await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: performedBy ?? null, actorRole: performedByRole ?? null, action: "inventory.reservation_released", entityType: "inventory_reservation", entityId: reservationId, before: { status: "ACTIVE" }, after: { status: "RELEASED" }, metadata: { quantity: reservation.quantity } }); return balance; }); }
+export async function releaseInventoryReservation(reservationId: string, performedBy?: string, performedByRole?: string) { return getDb().transaction(async (tx) => { const [reservation] = await tx.select().from(inventoryReservations).where(eq(inventoryReservations.id, reservationId)).for("update").limit(1); if (!reservation || reservation.status !== "ACTIVE") throw new Error("La reserva no está activa."); if (!isAdminOperableReservation(reservation.referenceType)) throw new Error("Las reservas de pedidos se operan desde Pedidos."); const balance = await updateBalance(tx, { productId: reservation.productId, locationId: reservation.locationId, quantity: reservation.quantity, performedBy, performedByRole, referenceType: "reservation", referenceId: reservationId }, { type: "RESERVATION_RELEASE", quantity: reservation.quantity }); await tx.update(inventoryReservations).set({ status: "RELEASED", releasedAt: new Date() }).where(eq(inventoryReservations.id, reservationId)); await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: performedBy ?? null, actorRole: performedByRole ?? null, action: "inventory.reservation_released", entityType: "inventory_reservation", entityId: reservationId, before: { status: "ACTIVE" }, after: { status: "RELEASED" }, metadata: { quantity: reservation.quantity } }); return balance; }); }
 export async function consumeInventoryReservation(reservationId: string, performedBy?: string, performedByRole?: string) {
   const result = await getDb().transaction(async (tx) => {
     const [reservation] = await tx.select().from(inventoryReservations).where(eq(inventoryReservations.id, reservationId)).for("update").limit(1);
     if (!reservation || reservation.status !== "ACTIVE") throw new Error("La reserva no está activa.");
+    if (!isAdminOperableReservation(reservation.referenceType)) throw new Error("Las reservas de pedidos se operan desde Pedidos.");
     const balance = await updateBalance(tx, { productId: reservation.productId, locationId: reservation.locationId, quantity: reservation.quantity, performedBy, performedByRole, referenceType: "reservation", referenceId: reservationId }, { type: "SALE", quantity: reservation.quantity, consumeReserved: true });
     await tx.update(inventoryReservations).set({ status: "CONSUMED", releasedAt: new Date() }).where(eq(inventoryReservations.id, reservationId));
     await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: performedBy ?? null, actorRole: performedByRole ?? null, action: "inventory.reservation_consumed", entityType: "inventory_reservation", entityId: reservationId, before: { status: "ACTIVE" }, after: { status: "CONSUMED" }, metadata: { quantity: reservation.quantity } });
@@ -163,5 +164,4 @@ export async function receiveTransfer(transferId: string, performedBy: string, p
   }
   return { transferId: result.transferId, itemCount: result.itemCount };
 }
-
 

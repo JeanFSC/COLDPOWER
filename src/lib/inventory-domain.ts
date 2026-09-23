@@ -25,6 +25,10 @@ export function reservationShouldExpire(status: string, expiresAt: Date | null |
   return status === "ACTIVE" && Boolean(expiresAt) && (expiresAt as Date).getTime() <= now.getTime();
 }
 
+export function isAdminOperableReservation(referenceType: unknown) {
+  return typeof referenceType !== "string" || referenceType.trim().toLowerCase() !== "order";
+}
+
 export function validateInventoryMovementMetadata(input: { type: InventoryMovementType | string; reason?: unknown; notes?: unknown; performedBy?: unknown }) {
   const reason = typeof input.reason === "string" ? input.reason.trim().slice(0, 240) : "";
   const notes = typeof input.notes === "string" ? input.notes.trim().slice(0, 500) : "";

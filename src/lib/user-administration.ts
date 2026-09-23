@@ -39,8 +39,55 @@ export async function getManagedUserDetail(id: string) { const user = await getM
 export type ClerkInvitationItem = { id: string; emailAddress: string; status: string; role: AppRole | null; firstName: string | null; lastName: string | null; createdAt: Date; updatedAt: Date; revoked: boolean };
 function mapInvitation(invitation: { id: string; emailAddress: string; status: string; publicMetadata: Record<string, unknown> | null; createdAt: number; updatedAt: number; revoked?: boolean }): ClerkInvitationItem { const role = invitation.publicMetadata && isAppRole(invitation.publicMetadata.role) ? invitation.publicMetadata.role : null; return { id: invitation.id, emailAddress: invitation.emailAddress, status: invitation.status, role, firstName: typeof invitation.publicMetadata?.firstName === "string" ? invitation.publicMetadata.firstName : null, lastName: typeof invitation.publicMetadata?.lastName === "string" ? invitation.publicMetadata.lastName : null, createdAt: new Date(invitation.createdAt), updatedAt: new Date(invitation.updatedAt), revoked: Boolean(invitation.revoked) }; }
 export async function listStaffInvitations(query?: string) { const response = await (await clerkClient()).invitations.getInvitationList({ status: "pending", query: query?.trim() || undefined, orderBy: "-created_at", limit: 100, offset: 0 }); return { items: response.data.map(mapInvitation), totalItems: Number(response.totalCount ?? response.data.length) }; }
-export async function cancelStaffInvitation(id: string) { return mapInvitation(await (await clerkClient()).invitations.revokeInvitation(id)); }
-export async function resendStaffInvitation(id: string) { const client = await clerkClient(); const response = await client.invitations.getInvitationList({ query: id, limit: 20, offset: 0 }); const current = response.data.find((item) => item.id === id); if (!current) throw new UserAdministrationError(404, "Invitación no encontrada o ya no está pendiente."); const created = await client.invitations.createInvitation({ emailAddress: current.emailAddress, expiresInDays: 30, notify: true, ignoreExisting: true, publicMetadata: current.publicMetadata ?? undefined, redirectUrl: "/sign-up" }); try { await client.invitations.revokeInvitation(current.id); } catch { /* La nueva invitación sigue visible y la discrepancia queda en auditoría. */ } return mapInvitation(created); }
+type InvitationListParams = { query?: string; status?: "pending"; limit: number; offset: number };
+export async function findStaffInvitationById<T extends { id: string }>(id: string, list: (params: InvitationListParams) => Promise<{ data: T[]; totalCount?: number }>) {
+  const limit = 100;
+  const targeted = await list({ query: id, status: "pending", limit, offset: 0 });
+  const exact = targeted.data.find((item) => item.id === id);
+  if (exact) return exact;
+
+  // Clerk's query is a filter, not a single-resource endpoint. Fall back to the
+  // pending pages so a valid invitation is not lost when the provider search is
+  // eventually consistent or treats the id as a text query.
+  for (let offset = 0; ; offset += limit) {
+    const page = await list({ status: "pending", limit, offset });
+    const match = page.data.find((item) => item.id === id);
+    if (match) return match;
+    const total = Number(page.totalCount ?? 0);
+    if (!page.data.length || page.data.length < limit || (total > 0 && offset + page.data.length >= total)) break;
+  }
+  return null;
+}
+
+export function assertStaffInvitationRoleAllowed(actorRole: AppRole, invitation: { publicMetadata?: unknown }) {
+  const metadata = invitation.publicMetadata;
+  const targetRole = metadata && typeof metadata === "object" && isAppRole((metadata as { role?: unknown }).role)
+    ? (metadata as { role: AppRole }).role
+    : null;
+  if (!targetRole || !canInviteRole(actorRole, targetRole)) throw new UserAdministrationError(403, "No tienes permiso para gestionar una invitación de este rol.");
+  return targetRole;
+}
+
+async function getPendingStaffInvitation(id: string) {
+  const client = await clerkClient();
+  const invitation = await findStaffInvitationById(id, (params) => client.invitations.getInvitationList(params));
+  if (!invitation) throw new UserAdministrationError(404, "Invitación no encontrada o ya no está pendiente.");
+  return { client, invitation };
+}
+
+export async function cancelStaffInvitation(id: string, actorRole: AppRole) {
+  const { client, invitation } = await getPendingStaffInvitation(id);
+  assertStaffInvitationRoleAllowed(actorRole, invitation);
+  return mapInvitation(await client.invitations.revokeInvitation(invitation.id));
+}
+
+export async function resendStaffInvitation(id: string, actorRole: AppRole) {
+  const { client, invitation } = await getPendingStaffInvitation(id);
+  assertStaffInvitationRoleAllowed(actorRole, invitation);
+  const created = await client.invitations.createInvitation({ emailAddress: invitation.emailAddress, expiresInDays: 30, notify: true, ignoreExisting: true, publicMetadata: invitation.publicMetadata ?? undefined, redirectUrl: "/sign-up" });
+  try { await client.invitations.revokeInvitation(invitation.id); } catch { /* La nueva invitación sigue visible y la discrepancia queda en auditoría. */ }
+  return mapInvitation(created);
+}
 // Nobody can hand out access they do not hold: the invited role's permissions must be a
 // subset of the inviter's. Only SUPERADMIN may create another SUPERADMIN.
 export function canInviteRole(actorRole: AppRole, targetRole: AppRole) { if (actorRole === "SUPERADMIN") return true; if (targetRole === "SUPERADMIN") return false; const held = new Set(permissionsForRole(actorRole)); const requested = permissionsForRole(targetRole); return requested.length > 0 && requested.every((permission) => held.has(permission)); }
