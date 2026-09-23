@@ -1,6 +1,6 @@
 ﻿import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { lt } from "drizzle-orm";
+import { isNull, lt, ne, or } from "drizzle-orm";
 import { auditLogs, inventoryBalances, inventoryMovements, inventoryReservations, products, transfers, transferItems } from "@/db/schema";
 import { applyInventoryOperation, availableQuantity, validateInventoryMovementMetadata, type InventoryOperation } from "@/lib/inventory-domain";
 import { notifyStaffOnce } from "@/lib/notifications-service";
@@ -96,7 +96,10 @@ export async function reserveInventoryBatch(inputs: InventoryReservationInput[])
 
 export async function expireInventoryReservations(performedBy?: string, performedByRole?: string, now = new Date()) {
   const expired = await getDb().transaction(async (tx) => {
-    const rows = await tx.select().from(inventoryReservations).where(and(eq(inventoryReservations.status, "ACTIVE"), lt(inventoryReservations.expiresAt, now))).for("update");
+    // Order reservations are never expired here: they are released only by cancelling the
+    // order (cancelExpiredUnpaidOrders), which locks the order row like the payment path does.
+    // Expiring them independently could release the stock of an order being paid concurrently.
+    const rows = await tx.select().from(inventoryReservations).where(and(eq(inventoryReservations.status, "ACTIVE"), lt(inventoryReservations.expiresAt, now), or(isNull(inventoryReservations.referenceType), ne(inventoryReservations.referenceType, "order")))).for("update");
     for (const reservation of rows) {
       await updateBalance(tx, { productId: reservation.productId, locationId: reservation.locationId, quantity: reservation.quantity, performedBy, performedByRole, referenceType: "reservation_expiry", referenceId: reservation.id, reason: "Reserva vencida", notes: "Liberación automática por fecha de expiración" }, { type: "RESERVATION_RELEASE", quantity: reservation.quantity });
       await tx.update(inventoryReservations).set({ status: "EXPIRED", releasedAt: now }).where(eq(inventoryReservations.id, reservation.id));

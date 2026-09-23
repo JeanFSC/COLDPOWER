@@ -206,7 +206,7 @@ export async function listOrdersPage(requestedPage = 1, requestedPageSize = 25) 
 }
 export async function listOrdersForUser(userId: string) { return getDb().select({ order: orders, payment: payments }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(payments, eq(payments.orderId, orders.id)).where(eq(customers.userId, userId)).orderBy(desc(orders.createdAt)).limit(200); }
 
-export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: { expectedVersion?: number; receivedBy?: string | null; idempotencyKey?: string | null } = {}) {
+export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: { expectedVersion?: number; expectedStatus?: OrderStatus; receivedBy?: string | null; idempotencyKey?: string | null } = {}) {
   const after = await getDb().transaction(async (tx) => {
     const [before] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
     if (!before) throw new Error("Pedido no encontrado.");
@@ -218,6 +218,7 @@ export async function changeOrderStatus(orderId: string, nextStatus: OrderStatus
       }
     }
     if (options.expectedVersion !== undefined && before.version !== options.expectedVersion) throw new Error("ORDER_VERSION_CONFLICT");
+    if (options.expectedStatus !== undefined && before.status !== options.expectedStatus) throw new Error("ORDER_STATUS_CONFLICT");
     if (nextStatus === "CANCELLED" && !reason?.trim()) throw new Error("CANCELLATION_REASON_REQUIRED");
     if (!canTransitionOrderForDelivery(before.status, nextStatus, before.deliveryMethod)) throw new Error(`Transición no permitida para ${before.deliveryMethod}: ${before.status} → ${nextStatus}.`);
     if (before.status === nextStatus) return before;
@@ -311,7 +312,9 @@ export async function cancelExpiredUnpaidOrders(now = new Date(), limit = 100) {
   const cancelled: string[] = [];
   for (const order of due) {
     try {
-      await changeOrderStatus(order.id, "CANCELLED", systemActor, "Pago no recibido dentro del plazo", { idempotencyKey: `expire:${order.id}` });
+      // expectedStatus is re-checked under the order row lock, which the payment path also takes:
+      // an order paid after it was listed here is left alone instead of being cancelled.
+      await changeOrderStatus(order.id, "CANCELLED", systemActor, "Pago no recibido dentro del plazo", { idempotencyKey: `expire:${order.id}`, expectedStatus: "PAYMENT_PENDING" });
       await getDb().transaction(async (tx) => {
         const open = await tx.select().from(payments).where(and(eq(payments.orderId, order.id), inArray(payments.status, ["PENDING", "UNDER_REVIEW"]))).for("update");
         for (const payment of open) {
