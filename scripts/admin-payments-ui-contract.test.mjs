@@ -6,16 +6,16 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("pagos: las acciones consultan proveedor y solicitan reembolso con confirmación", async () => {
-  const views = await read("src/components/admin/AdminCategoryViews.tsx");
+test("pagos: el centro vigente consulta proveedor, confirma y solicita reembolso", async () => {
   const page = await read("src/app/admin/pagos/page.tsx");
-  const actions = await read("src/components/admin/PaymentActions.tsx");
+  const workspace = await read("src/components/admin/PaymentsControlCenter.tsx");
+  const manual = await read("src/components/admin/ManualPaymentControl.tsx");
 
-  assert.match(views, /href="#payment-controls"/);
-  assert.match(views, /id="payment-controls"/);
-  assert.match(page, /PaymentActions/);
-  assert.match(actions, /\/api\/admin\/pagos\/\$\{paymentId\}\/status/);
-  assert.match(actions, /\/api\/admin\/pagos\/\$\{paymentId\}\/refund/);
-  assert.match(actions, /role=\{[^}]*"alert"/);
-  assert.match(actions, /Idempotency-Key/);
+  assert.match(page, /PaymentsControlCenter/);
+  assert.match(workspace, /ManualPaymentControl/);
+  assert.match(workspace, /\/api\/admin\/pagos\/" \+ encodeURIComponent\(paymentId\) \+ "\/status/);
+  assert.match(workspace, /\/api\/admin\/pagos\/" \+ encodeURIComponent\(paymentId\) \+ "\/refund/);
+  assert.match(workspace, /Idempotency-Key/);
+  assert.match(workspace, /role="alert"/);
+  assert.match(manual, /\/api\/admin\/pagos\/manual/);
 });

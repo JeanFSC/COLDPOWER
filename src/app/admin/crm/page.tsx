@@ -3,7 +3,7 @@ import { requirePermission } from "@/lib/auth";
 import { getCustomersPage } from "@/lib/customer-repository";
 import { parseCustomerFilters } from "@/lib/customer-contract";
 import { getPipelineBoard } from "@/lib/pipeline-repository";
-import { parsePipelineFilters } from "@/lib/pipeline-contract";
+import { parsePipelineDeepLink, parsePipelineFilters } from "@/lib/pipeline-contract";
 import { can } from "@/lib/roles";
 import { CrmOperations } from "@/components/admin/CrmOperations";
 import { CrmCreateForms } from "@/components/admin/CrmCreateForms";
@@ -39,6 +39,7 @@ export default async function AdminCrmPage({ searchParams }: { searchParams?: Pr
     if (typeof value === "string") pipelineParams.set(key, value);
     else if (Array.isArray(value) && value[0]) pipelineParams.set(key, value[0]);
   }
+  const deepLink = parsePipelineDeepLink(pipelineParams);
   const board = await getPipelineBoard(parsePipelineFilters(pipelineParams), { canManage: can(actor.role, "crm.manage"), canExport: can(actor.role, "crm.export") });
-  return <PipelineWorkspace board={board} queryString={pipelineParams.toString()} />;
+  return <PipelineWorkspace board={board} queryString={pipelineParams.toString()} deepLink={deepLink} />;
 }

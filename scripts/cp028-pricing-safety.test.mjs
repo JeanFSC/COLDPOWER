@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 const read = (file) => readFileSync(file, "utf8");
 const roles = read("src/lib/roles.ts");
 const pricingPage = read("src/app/admin/precios/page.tsx");
-const pricingUi = read("src/components/admin/PricingOperations.tsx");
+const pricingUi = read("src/components/admin/PricingWorkspace.tsx");
 const pricingApi = read("src/app/api/admin/precios/route.ts");
 const historyApi = read("src/app/api/admin/precios/historial/route.ts");
 

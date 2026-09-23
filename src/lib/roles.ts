@@ -56,10 +56,18 @@ const rolePermissions: Record<OperationalRole, readonly Permission[]> = {
   REPORTES: ["inventory.view", "reports.view", "reports.export", "audit.view", "audit.export", "inventory:read", "reports:read"],
 };
 
-const businessRoleLabels: Record<BusinessRole, string> = {
+const roleLabels: Record<AppRole, string> = {
   SUPERADMIN: "Superadmin",
   GERENCIA: "Gerencia",
   OPERACIONES_VENTAS: "Operaciones y ventas",
+  JEFATURA: "Jefatura",
+  ADMIN: "Administrador",
+  VENTAS: "Ventas",
+  ALMACEN: "Almacén",
+  COMPRAS: "Compras",
+  REPORTES: "Reportes",
+  admin: "Administrador legacy",
+  customer: "Cliente",
 };
 
 const businessRoleMap: Record<AppRole, BusinessRole | "CUSTOMER"> = {
@@ -91,8 +99,7 @@ export function toBusinessRole(role: AppRole): BusinessRole | "CUSTOMER" {
 }
 
 export function roleLabel(role: AppRole) {
-  const businessRole = toBusinessRole(role);
-  return businessRole === "CUSTOMER" ? "Cliente" : businessRoleLabels[businessRole];
+  return roleLabels[role];
 }
 
 type RoleClaims = { metadata?: { role?: unknown } | null; publicMetadata?: { role?: unknown } | null };

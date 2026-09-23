@@ -8,7 +8,7 @@ assert.equal(existsSync(join(root, "src/app/admin/catalogo/page.tsx")), true, "a
 assert.match(read("src/app/admin/layout.tsx"), /admin\/catalogo/);
 const page = read("src/app/admin/catalogo/page.tsx");
 for (const status of ["draft", "review", "published", "hidden"]) assert.match(page, new RegExp(status));
-assert.match(page, /getAdminCatalog|CatalogPublicationControl/);
+assert.match(page, /getAdminCatalogPage|AdminProductCatalog/);
 assert.match(page, /no existe borrado f[ií]sico|Publicar requiere|bloqueos editoriales/i);
 assert.doesNotMatch(page, /auto.?public|publicar todo|publicar autom[aá]ticamente/i);
 const service = read("src/lib/publication-service.ts");

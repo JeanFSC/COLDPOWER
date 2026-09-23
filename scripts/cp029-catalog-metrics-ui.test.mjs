@@ -7,7 +7,6 @@ const layout = await readFile("src/app/layout.tsx", "utf8");
 const header = await readFile("src/components/layout/Header.tsx", "utf8");
 const compareBar = await readFile("src/components/catalog/CompareBar.tsx", "utf8");
 const shell = await readFile("src/components/admin/AdminShell.tsx", "utf8");
-const dashboard = await readFile("src/components/admin/AdminDashboardView.tsx", "utf8");
 
 assert.match(page, /getAdminCatalogPage/);
 assert.match(page, /getAdminCatalogPage\(\{ page: 1, pageSize: 1 \}\)/, "global KPIs must be requested without page filters");
@@ -33,6 +32,5 @@ assert.match(compareBar, /usePathname/, "the compare bar must stay out of admin 
 assert.match(shell, /overflow-x-clip/);
 assert.match(shell, /C&J COLD IMPORT PERÚ E\.I\.R\.L\./);
 assert.match(workspace, /const panel = ["'][^\n]*min-w-0/);
-assert.match(dashboard, /grid grid-cols-1 gap-2[^\n]*sm:grid-cols-3/);
 
 console.log("CP-029 catalog global metrics UI regression: passed");

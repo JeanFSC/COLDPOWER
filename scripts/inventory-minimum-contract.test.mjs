@@ -12,5 +12,5 @@ test("mínimos de inventario son persistentes, protegidos y auditados", () => {
   assert.match(route, /inventoryBalances/);
   assert.match(route, /minimumStock/);
   assert.match(route, /auditLogs/);
-  assert.match(read("src/components/admin/InventoryOperations.tsx"), /minimos|mínimo|minimumStock/i);
+  assert.match(read("src/components/admin/InventoryAdminWorkspace.tsx"), /minimos|mínimo|minimumStock/i);
 });

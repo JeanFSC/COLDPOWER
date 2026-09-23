@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { Tanda2Home } from "@/components/admin/AdminTanda2Workspaces";
 import { getUnreadNotificationCount } from "@/lib/notifications-service";
-import { requireAdmin } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import { getHomeActivitySummary } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import { can, permissionsForRole } from "@/lib/roles";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminHomePage() {
-  const actor = await requireAdmin();
+  const actor = await requirePermission("dashboard.view");
   const [profileResult, unreadResult, dashboardResult, workspaceResult, preferencesResult, recentResult] = await Promise.allSettled([
     getDb().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, actor.userId)).limit(1),
     getUnreadNotificationCount(actor.userId),

@@ -18,7 +18,7 @@ test("public catalog never queries review as public", async () => {
 });
 
 test("admin runtime has no fixed historical date or security IP", async () => {
-  const source = `${await readIfPresent("src/components/admin/AdminCategoryViews.tsx")}\n${await read("src/components/admin/AdminDashboardView.tsx")}\n${await read("src/components/admin/AdminCharts.tsx")}`;
+  const source = `${await readIfPresent("src/components/admin/AdminCategoryViews.tsx")}\n${await read("src/components/admin/AdminTanda2Workspaces.tsx")}\n${await read("src/components/admin/AdminCharts.tsx")}`;
   assert.doesNotMatch(source, /25\s+may\.?\s*-\s*24\s+jun\.?\s*2024/i);
   assert.doesNotMatch(source, /190\.12\.45\.23/);
 });

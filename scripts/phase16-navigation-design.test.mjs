@@ -20,15 +20,18 @@ for (const token of [
 }
 
 const layout = read("src/app/layout.tsx");
-assert.match(layout, /IBM Plex Sans|IBM_Plex_Sans/, "layout should load IBM Plex Sans");
-assert.match(layout, /IBM Plex Mono|IBM_Plex_Mono/, "layout should load IBM Plex Mono");
+assert.match(layout, /next\/font\/google/, "layout should load fonts through next/font/google");
+assert.match(layout, /IBM_Plex_Sans/, "layout should configure IBM Plex Sans");
+assert.match(layout, /IBM_Plex_Mono/, "layout should configure IBM Plex Mono");
+assert.match(layout, /--font-ibm-plex-sans/, "layout should expose the IBM Plex Sans variable");
+assert.match(layout, /--font-ibm-plex-mono/, "layout should expose the IBM Plex Mono variable");
 
 const logo = read("src/components/shared/BrandLogo.tsx");
-assert.match(logo, /logo-coldpower\.png/, "BrandLogo should use the official logo asset");
+assert.match(logo, /logo-coldpower(?:-lockup)?\.png/, "BrandLogo should use the official logo asset");
 
 const header = read("src/components/layout/Header.tsx");
 assert.match(header, /TechnicalNav/, "Header should render the technical navigation");
-assert.match(header, /Busca por c[óo]digo, modelo, marca o especificaci[óo]n/, "search should use the technical placeholder");
+assert.match(header, /Busca por c(?:ó|o)digo, modelo, marca o producto/, "search should use the technical placeholder");
 assert.match(header, /Comparar|comparador/i, "header should expose comparison access");
 
 console.log("Phase 16 navigation and design foundation: PASS");

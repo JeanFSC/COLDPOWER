@@ -25,5 +25,5 @@ test("rutas CRM usan permisos y delegan mutaciones auditadas al servicio", () =>
   const service = read("src/lib/crm-service.ts");
   assert.match(service, /transaction/);
   assert.match(service, /auditLogs/);
-  assert.match(read("src/components/admin/CrmPipeline.tsx"), /draggable|onDrag|drop/i);
+  assert.match(read("src/components/admin/PipelineWorkspace.tsx"), /draggable|onDrag|drop/i);
 });

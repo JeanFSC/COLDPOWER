@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const source = await readFile("src/components/admin/AdminDashboardView.tsx", "utf8");
+const source = await readFile("src/components/admin/AdminTanda2Workspaces.tsx", "utf8");
 const reportPage = await readFile("src/app/admin/reportes/page.tsx", "utf8");
 const reportWorkspace = await readFile("src/components/admin/AdminCategoryViews.tsx", "utf8");
 

@@ -16,6 +16,7 @@ import {
   pipelineStageLabels,
   type PipelineBoardResponse,
   type PipelineCard,
+  type PipelineDeepLink,
   type PipelineFollowUpItem,
 } from "@/lib/pipeline-contract";
 import {
@@ -39,7 +40,11 @@ import {
   X,
 } from "lucide-react";
 
-type PipelineWorkspaceProps = { board: PipelineBoardResponse; queryString: string };
+type PipelineWorkspaceProps = {
+  board: PipelineBoardResponse;
+  queryString: string;
+  deepLink: PipelineDeepLink;
+};
 type BoardDate = Date | string | null;
 type Detail = PipelineCard & {
   notes?: string | null;
@@ -425,7 +430,7 @@ function Card({
   );
 }
 
-export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps) {
+export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWorkspaceProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -507,6 +512,43 @@ export function PipelineWorkspace({ board, queryString }: PipelineWorkspaceProps
     }, 0);
     return () => window.clearTimeout(timer);
   }, [searchParams]);
+
+  useEffect(() => {
+    const opportunityId = deepLink.opportunityId;
+    const taskId = deepLink.taskId;
+    if (!opportunityId && !taskId) return;
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      if (opportunityId) {
+        openDetail(opportunityId);
+        return;
+      }
+      void fetch(`/api/admin/tareas?taskId=${encodeURIComponent(taskId!)}`, {
+        cache: "no-store",
+        signal: controller.signal,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("TASK_DEEPLINK_UNAVAILABLE");
+          return response.json();
+        })
+        .then((payload: { task?: { opportunityId?: string | null } }) => {
+          if (payload.task?.opportunityId) {
+            openDetail(payload.task.opportunityId);
+            return;
+          }
+          setToast("La tarea no tiene una oportunidad asociada.");
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) setToast("No se pudo abrir la oportunidad de la tarea.");
+        });
+    }, 0);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [deepLink.opportunityId, deepLink.taskId]);
 
   useEffect(() => {
     if (!toast) return;

@@ -23,9 +23,23 @@ test("CP-028 declara los roles empresariales y separa a Bryan del control ejecut
 
 test("CP-028 filtra navegación y ofrece landing operativa", () => {
   const layout = read("src/app/admin/layout.tsx");
+  const landing = read("src/lib/admin-landing.ts");
   assert.match(layout, /can\(|hasPermission|permission/);
   assert.match(layout, /admin\/operaciones/);
   assert.match(layout, /reports\.view/);
   assert.match(layout, /users\.view/);
   assert.match(read("src/app/admin/operaciones/page.tsx"), /requirePermission/);
+  assert.match(landing, /can\(role, "dashboard\.view"\)[\s\S]*\/admin\/inicio/);
+  for (const [role, href] of [
+    ["OPERACIONES_VENTAS", "/admin/operaciones"],
+    ["ADMIN", "/admin/operaciones"],
+    ["VENTAS", "/admin/crm"],
+    ["ALMACEN", "/admin/inventario"],
+    ["COMPRAS", "/admin/compras"],
+    ["REPORTES", "/admin/reportes"],
+    ["admin", "/admin/operaciones"],
+  ]) {
+    assert.match(landing, new RegExp(`${role}:\\s*"${href.replaceAll("/", "\\/")}"`));
+  }
+  assert.match(landing, /\/admin\/sin-acceso/);
 });

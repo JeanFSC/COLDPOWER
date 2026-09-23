@@ -17,7 +17,7 @@ test("CP-033 inventory page is backed by the paginated database service", async 
 
 test("CP-033 inventory UI uses safe workflow controls and refreshes router state", async () => {
   const page = await read("src/components/admin/InventoryAdminWorkspace.tsx");
-  const workflow = await read("src/components/admin/TransferStatusControl.tsx");
+  const workflow = await read("src/components/admin/InventoryAdminWorkspace.tsx");
   const movements = await read("src/app/api/admin/inventario/movimientos/route.ts");
   assert.match(page, /Idempotency-Key/);
   assert.match(page, /api\/admin\/inventario\/kardex/);

@@ -6,13 +6,13 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("pedidos: la acción principal abre operaciones y los errores son visibles", async () => {
-  const views = await read("src/components/admin/AdminCategoryViews.tsx");
-  const status = await read("src/components/admin/OrderStatusControl.tsx");
-  const payment = await read("src/components/admin/ManualPaymentControl.tsx");
+test("pedidos: el control vigente mueve el ciclo y expone errores", async () => {
+  const page = await read("src/app/admin/pedidos/page.tsx");
+  const workspace = await read("src/components/admin/OrdersControlCenter.tsx");
 
-  assert.match(views, /href="#order-controls"/);
-  assert.match(views, /id="order-controls"/);
-  assert.match(status, /role="alert"|role=\{[^}]*"alert"/);
-  assert.match(payment, /role="alert"|role=\{[^}]*"alert"/);
+  assert.match(page, /OrdersControlCenter/);
+  assert.match(workspace, /Idempotency-Key/);
+  assert.match(workspace, /order-status/);
+  assert.match(workspace, /role="alert"/);
+  assert.match(workspace, /Confirmar entrega|Iniciar preparación/);
 });

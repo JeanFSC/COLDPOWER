@@ -141,9 +141,9 @@ select:focus-visible {
   --color-surface-card: var(--surface-card);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
-  --font-sans: "IBM Plex Sans", Arial, Helvetica, sans-serif;
-  --font-display: "IBM Plex Sans", Arial, Helvetica, sans-serif;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-display: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-ibm-plex-mono);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);

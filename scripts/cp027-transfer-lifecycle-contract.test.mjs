@@ -21,7 +21,7 @@ test("los traslados respetan el ciclo operativo y mueven stock al recibir", () =
   assert.match(inventoryService + transitionRoute, /transaction/);
 
   const adminPage = read("src/app/admin/inventario/page.tsx") + read("src/components/admin/InventoryAdminWorkspace.tsx");
-  assert.match(adminPage, /TransferStatusControl|Transferir stock|Registrar recepción/);
+  assert.match(adminPage, /Transferir stock|Registrar recepción/);
 });
 
 test("recibir un traslado ejecuta los movimientos Kardex", () => {

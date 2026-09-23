@@ -6,22 +6,18 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("ventas: las acciones de facturación y cancelación usan los endpoints reales", async () => {
+test("ventas: el centro vigente actualiza facturación y comunica errores", async () => {
   const page = await read("src/app/admin/ventas/page.tsx");
-  const actions = await read("src/components/admin/SalesActions.tsx");
+  const workspace = await read("src/components/admin/SalesControlCenter.tsx");
 
-  assert.match(page, /SalesActions/);
-  assert.match(page, /controls=/);
-  assert.match(actions, /api\/admin\/ventas\/\$\{encodeURIComponent\(saleId\)\}\/facturacion/);
-  assert.match(actions, /api\/admin\/ventas\/\$\{encodeURIComponent\(saleId\)\}/);
-  assert.match(actions, /role=\{messageKind === "error" \? "alert"/);
+  assert.match(page, /SalesControlCenter/);
+  assert.match(workspace, /api\/admin\/ventas\/\$\{encodeURIComponent\(saleId\)\}\/facturacion/);
+  assert.match(workspace, /invoiceStatus/);
+  assert.match(workspace, /role="alert"/);
 });
 
-test("ventas: las acciones rápidas no quedan como botones muertos", async () => {
-  const views = await read("src/components/admin/AdminCategoryViews.tsx");
-
-  assert.match(views, /sales-controls/);
-  assert.match(views, /Generar factura/);
-  assert.match(views, /Descargar reporte/);
-  assert.doesNotMatch(views, /key=\{String\(label\)\}[\s\S]*disabled[\s\S]*Acción pendiente de conexión/);
+test("ventas: las acciones rápidas navegan a operaciones reales", async () => {
+  const workspace = await read("src/components/admin/SalesControlCenter.tsx");
+  assert.match(workspace, /Ver por facturar|Facturación/);
+  assert.match(workspace, /api\/admin\/ventas/);
 });

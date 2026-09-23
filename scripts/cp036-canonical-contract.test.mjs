@@ -9,13 +9,13 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 test("CP-036 conserva estados canónicos y evita acciones legacy en la UI", () => {
   const workflow = read("src/lib/quote-workflow.ts");
   const workspace = read("src/components/admin/QuotesWorkspace.tsx");
-  const statusControl = read("src/components/admin/QuoteStatusControl.tsx");
 
   for (const status of ["DRAFT", "SENT", "FOLLOW_UP", "ACCEPTED", "REJECTED", "EXPIRED", "CONVERTED", "CANCELLED"]) {
     assert.match(workflow, new RegExp(status));
   }
   assert.match(workspace, /status === "ACCEPTED"/);
-  assert.doesNotMatch(statusControl, /<select/);
+  assert.match(workspace, /QuoteConversionControl/);
+  assert.doesNotMatch(workspace, /QuoteStatusControl/);
 });
 
 test("CP-036 convierte sólo desde la versión aceptada e idempotente", () => {
@@ -32,4 +32,3 @@ test("CP-036 convierte sólo desde la versión aceptada e idempotente", () => {
   assert.match(migration, /quote_versions/);
   assert.match(migration, /quote_discount_approvals/);
 });
-

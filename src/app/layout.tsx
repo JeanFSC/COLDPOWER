@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CompareBar } from "@/components/catalog/CompareBar";
 import { CompareProvider } from "@/components/catalog/CompareProvider";
@@ -17,7 +18,19 @@ import { getCatalogCategories, type CatalogCategory } from "@/lib/catalog-reposi
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 import "./globals.css";
 
-// IBM Plex Sans / IBM Plex Mono se sirven mediante la pila local para que el build no dependa de Google Fonts.
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-plex-sans",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -81,7 +94,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     </CartProvider>
   );
   return (
-    <html lang="es-PE" className="h-full antialiased">
+    <html
+      lang="es-PE"
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         {isAuthConfigured ? (
           <ClerkProvider

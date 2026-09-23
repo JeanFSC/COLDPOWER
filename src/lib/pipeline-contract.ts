@@ -81,9 +81,21 @@ export type PipelineFilters = {
   pageSize?: number;
 };
 
+export type PipelineDeepLink = {
+  opportunityId?: string;
+  taskId?: string;
+};
+
 function text(params: URLSearchParams, key: string) {
   const value = params.get(key)?.trim();
   return value || undefined;
+}
+
+export function parsePipelineDeepLink(params: URLSearchParams): PipelineDeepLink {
+  return {
+    opportunityId: text(params, "opportunityId"),
+    taskId: text(params, "taskId"),
+  };
 }
 
 function positive(params: URLSearchParams, key: string) {

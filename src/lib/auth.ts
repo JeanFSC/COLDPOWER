@@ -135,7 +135,7 @@ export async function requireAdmin() {
 
 export async function requirePermission(permission: Permission) {
   const context = await requireAdmin();
-  if (!can(context.role, permission)) redirect("/");
+  if (!can(context.role, permission)) redirect("/admin/sin-acceso");
   return context;
 }
 

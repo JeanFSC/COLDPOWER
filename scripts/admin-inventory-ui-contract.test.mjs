@@ -6,13 +6,20 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("inventario: las acciones abren controles y muestran movimientos y alertas reales", async () => {
-  const views = await read("src/components/admin/AdminCategoryViews.tsx");
+test("inventario: la vista vigente recibe datos persistentes y expone controles seguros", async () => {
+  const workspace = await read("src/components/admin/InventoryAdminWorkspace.tsx");
   const page = await read("src/app/admin/inventario/page.tsx");
 
-  assert.match(views, /href="#inventory-controls"/);
-  assert.match(views, /id="inventory-controls"/);
-  assert.match(views, /movements\?\.length/);
-  assert.match(views, /alerts\?\.length/);
-  assert.match(page, /movements=\{/);
+  assert.match(page, /InventoryAdminWorkspace/);
+  assert.match(page, /requirePermission\("inventory\.view"\)/);
+  assert.match(page, /getInventoryAdminPage\(filters\)/);
+  assert.match(page, /data=\{data\}/);
+  assert.match(page, /canAdjust: can\(actor\.role, "inventory\.adjust"\)/);
+  assert.match(page, /canKardex: can\(actor\.role, "inventory\.kardex\.view"\)/);
+  assert.match(workspace, /data\.operations\.movements/);
+  assert.match(workspace, /data\.alerts/);
+  assert.match(workspace, /InventoryOperationsTabs/);
+  assert.match(workspace, /Transferir stock/);
+  assert.match(workspace, /Registrar recepción/);
+  assert.match(workspace, /permissions\.canKardex/);
 });

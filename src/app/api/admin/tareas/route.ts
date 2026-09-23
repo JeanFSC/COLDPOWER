@@ -1,7 +1,30 @@
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { crmTasks } from "@/db/crm-schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { createTask, CrmDomainError, updateTaskStatus } from "@/lib/crm-service";
 import { taskStatuses, type TaskStatus } from "@/lib/crm-validation";
+
+export async function GET(request: Request) {
+  try {
+    await requireApiPermission("crm.view");
+    const taskId = new URL(request.url).searchParams.get("taskId")?.trim();
+    if (!taskId) return apiError("TASK_INVALID", "taskId es obligatorio.", 400);
+    const [task] = await getDb()
+      .select({ id: crmTasks.id, opportunityId: crmTasks.opportunityId })
+      .from(crmTasks)
+      .where(eq(crmTasks.id, taskId))
+      .limit(1);
+    if (!task || !task.opportunityId)
+      return apiError("TASK_OPPORTUNITY_NOT_FOUND", "La tarea no tiene una oportunidad asociada.", 404);
+    return apiSuccess({ task });
+  } catch (error) {
+    if (error instanceof ApiAuthorizationError)
+      return apiError("CRM_FORBIDDEN", "No tienes permiso para consultar tareas.", 403);
+    return apiError("TASK_LOOKUP_UNAVAILABLE", "No se pudo consultar la tarea.", 503);
+  }
+}
 
 export async function POST(request: Request) {
   try {

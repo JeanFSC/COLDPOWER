@@ -27,7 +27,7 @@ import {
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { Fragment, useEffect, useState, useTransition, type ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { roleLabel, type AppRole } from "@/lib/roles";
 
@@ -55,6 +55,7 @@ export type AdminNavItem = {
   href: string;
   label: string;
   icon: AdminNavIcon;
+  section?: string;
 };
 
 type AdminShellProps = {
@@ -64,6 +65,7 @@ type AdminShellProps = {
   showUserButton?: boolean;
   activeHref?: string;
   unreadNotificationsCount?: number;
+  showNotifications?: boolean;
 };
 
 type AdminSearchGroup = {
@@ -94,16 +96,16 @@ const iconMap: Record<AdminNavIcon, typeof LayoutDashboard> = {
 };
 
 const profileByRole: Record<string, { name: string; title: string; initial: string }> = {
-  SUPERADMIN: { name: "Superadmin", title: "Superadministrador", initial: "S" },
-  GERENCIA: { name: "Gerencia", title: "Gerencia", initial: "G" },
-  OPERACIONES_VENTAS: { name: "Operaciones y ventas", title: "Operaciones y ventas", initial: "O" },
-  JEFATURA: { name: "Gerencia", title: "Gerencia", initial: "G" },
-  ADMIN: { name: "Operaciones", title: "Operaciones y ventas", initial: "O" },
-  VENTAS: { name: "Ventas", title: "Operaciones y ventas", initial: "V" },
-  ALMACEN: { name: "Almacén", title: "Operaciones y ventas", initial: "A" },
-  COMPRAS: { name: "Compras", title: "Compras", initial: "C" },
-  REPORTES: { name: "Reportes", title: "Reportes", initial: "R" },
-  admin: { name: "Administrador", title: "Administrador", initial: "A" },
+  SUPERADMIN: { name: "Superadmin", title: roleLabel("SUPERADMIN"), initial: "S" },
+  GERENCIA: { name: "Gerencia", title: roleLabel("GERENCIA"), initial: "G" },
+  OPERACIONES_VENTAS: { name: "Operaciones y ventas", title: roleLabel("OPERACIONES_VENTAS"), initial: "O" },
+  JEFATURA: { name: "Gerencia", title: roleLabel("JEFATURA"), initial: "G" },
+  ADMIN: { name: "Operaciones", title: roleLabel("ADMIN"), initial: "O" },
+  VENTAS: { name: "Ventas", title: roleLabel("VENTAS"), initial: "V" },
+  ALMACEN: { name: "Almacén", title: roleLabel("ALMACEN"), initial: "A" },
+  COMPRAS: { name: "Compras", title: roleLabel("COMPRAS"), initial: "C" },
+  REPORTES: { name: "Reportes", title: roleLabel("REPORTES"), initial: "R" },
+  admin: { name: "Administrador", title: roleLabel("admin"), initial: "A" },
 };
 
 export function AdminShell({
@@ -113,6 +115,7 @@ export function AdminShell({
   showUserButton = true,
   activeHref,
   unreadNotificationsCount = 0,
+  showNotifications = true,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -210,9 +213,9 @@ export function AdminShell({
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Navegacion administrativa">
+        <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4" aria-label="Navegacion administrativa">
           <div className="grid gap-1">
-            {links.map((link) => {
+            {links.map((link, index) => {
               const Icon = iconMap[link.icon];
               const linkPath = link.href.split("?")[0];
               const currentQuery = searchParams.toString();
@@ -226,24 +229,30 @@ export function AdminShell({
                   (!queryScoped || currentQuery === linkQuery));
 
               return (
-                <Link
-                  key={`${link.href}-${link.label}`}
-                  href={link.href}
-                  onClick={() => { setIsMenuOpen(false); recordRecent(link.label, link.href); }}
-                  className={`flex min-h-9 items-center gap-3 rounded-lg px-2.5 text-[12px] font-semibold transition ${active ? "bg-[#102f51] text-white shadow-[0_4px_10px_rgba(16,47,81,0.16)]" : "text-[#49627d] hover:bg-[#f5f8fb] hover:text-[#102f51]"}`}
-                >
-                  <Icon
-                    className={`h-[17px] w-[17px] shrink-0 ${active ? "text-white" : "text-[#607894]"}`}
-                    strokeWidth={1.8}
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{link.label}</span>
-                </Link>
+                <Fragment key={`${link.href}-${link.label}`}>
+                  {link.section && link.section !== links[index - 1]?.section ? (
+                    <p className="mb-1 mt-4 px-2.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#91a3b3] first:mt-0">
+                      {link.section}
+                    </p>
+                  ) : null}
+                  <Link
+                    href={link.href}
+                    onClick={() => { setIsMenuOpen(false); recordRecent(link.label, link.href); }}
+                    className={`flex min-h-9 items-center gap-3 rounded-lg px-2.5 text-[12px] font-semibold transition ${active ? "bg-[#102f51] text-white shadow-[0_4px_10px_rgba(16,47,81,0.16)]" : "text-[#49627d] hover:bg-[#f5f8fb] hover:text-[#102f51]"}`}
+                  >
+                    <Icon
+                      className={`h-[17px] w-[17px] shrink-0 ${active ? "text-white" : "text-[#607894]"}`}
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{link.label}</span>
+                  </Link>
+                </Fragment>
               );
             })}
           </div>
         </nav>
-        <div className="mt-auto space-y-4 px-4 pb-4">
+        <div className="mt-auto shrink-0 space-y-4 px-4 pb-4">
           <details className="group rounded-xl bg-[#12395c] text-white shadow-[0_8px_20px_rgba(18,57,92,0.16)]">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-white/70">
               <span className="flex items-center gap-2">
@@ -334,18 +343,20 @@ export function AdminShell({
             ) : null}
           </label>
           <div className="ml-auto flex shrink-0 items-center gap-3">
-            <Link
-              href="/admin/notificaciones"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#173654] transition hover:bg-[#f4f7fa]"
-              aria-label="Ver notificaciones"
-            >
-              <Bell className="h-[19px] w-[19px]" strokeWidth={1.8} aria-hidden="true" />
-              {unreadNotificationsCount > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f97316] px-1 text-[10px] font-semibold text-white">
-                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                </span>
-              ) : null}
-            </Link>
+            {showNotifications ? (
+              <Link
+                href="/admin/notificaciones"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#173654] transition hover:bg-[#f4f7fa]"
+                aria-label="Ver notificaciones"
+              >
+                <Bell className="h-[19px] w-[19px]" strokeWidth={1.8} aria-hidden="true" />
+                {unreadNotificationsCount > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f97316] px-1 text-[10px] font-semibold text-white">
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
             <div className="hidden h-8 w-px bg-[#e8eef4] sm:block" />
             {showUserButton ? (
               <UserButton

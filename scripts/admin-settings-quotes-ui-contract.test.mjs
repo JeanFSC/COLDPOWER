@@ -17,12 +17,13 @@ test("configuración: las pestañas y la acción principal navegan a contenido r
   assert.match(form, /role=\{messageKind === "error" \? "alert"/);
 });
 
-test("cotizaciones: los errores de estado y conversión se anuncian al usuario", async () => {
-  const status = await read("src/components/admin/QuoteStatusControl.tsx");
+test("cotizaciones: el workspace vigente expone errores y conversión", async () => {
+  const workspace = await read("src/components/admin/QuotesWorkspace.tsx");
   const conversion = await read("src/components/admin/QuoteConversionControl.tsx");
 
-  assert.match(status, /role="alert"|role=\{[^}]*"alert"/);
-  assert.match(status, /"message"/);
+  assert.match(workspace, /QuoteConversionControl/);
+  assert.match(workspace, /role="alert"|role=\{[^}]*"alert"/);
+  assert.match(workspace, /message/);
   assert.match(conversion, /role="alert"|role=\{[^}]*"alert"/);
-  assert.match(conversion, /"message"/);
+  assert.match(conversion, /message/);
 });

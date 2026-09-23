@@ -21,12 +21,23 @@ test("CP-028 conserva usuarios desactivados y protege al Ãºltimo SUPERADMIN", 
   assert.match(userAdmin, /active|count|Ãºltimo|ultimo|conflict/i);
 });
 
-test("CP-028 aplica guards especÃ­ficos antes de cargar mÃ³dulos sensibles", () => {
-  assert.match(read("src/app/admin/page.tsx"), /requirePermission\(["']dashboard\.view["']\)/);
+test("CP-028 aplica guards y conserva los controles reales de usuarios", () => {
+  const adminPage = read("src/app/admin/page.tsx");
+  const usersPage = read("src/app/admin/usuarios/page.tsx");
+  const usersView = read("src/components/admin/AdminUsersStitch.tsx");
+  assert.match(adminPage, /requireAdmin/);
+  assert.match(adminPage, /getAdminLandingPath/);
+  assert.match(adminPage, /redirect\(/);
   assert.match(read("src/app/admin/auditoria/page.tsx"), /requirePermission\(["']audit\.view["']\)/);
   assert.match(read("src/app/admin/inventario/page.tsx"), /requirePermission\(["']inventory\.view["']\)/);
-  assert.match(read("src/app/admin/usuarios/page.tsx"), /requirePermission\(["']users\.view["']\)/);
+  assert.match(usersPage, /requirePermission\(["']users\.view["']\)/);
   assert.match(read("src/app/api/admin/usuarios/invitaciones/route.ts"), /users\.invite/);
-  assert.match(read("src/app/admin/usuarios/page.tsx"), /status=\{user\.status\}/);
+  assert.match(usersPage, /<AdminUsersStitch/);
+  assert.match(usersPage, /canInvite=\{can\(actor\.role, "users\.invite"\)\}/);
+  assert.match(usersPage, /canManage=\{can\(actor\.role, "users\.manage"\)\}/);
+  assert.match(usersView, /<UserRoleControl[\s\S]*status=\{detail\.user\.status as UserStatus\}/);
+  assert.match(usersView, /<StaffInvitationForm[\s\S]*allowSuperadmin=\{allowSuperadmin\}/);
+  assert.doesNotMatch(usersPage, /StaffInvitationForm/);
+  assert.doesNotMatch(usersPage, /status=\{user\.status\}/);
   assert.match(read("src/components/admin/UserRoleControl.tsx"), /SUSPENDED|Estado del usuario/);
 });

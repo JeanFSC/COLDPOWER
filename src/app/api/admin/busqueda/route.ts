@@ -81,9 +81,9 @@ export async function GET(request: Request) {
     return apiSuccess({
       groups: [
         group("products", "Productos", productRows.map((row) => ({ id: row.id, label: row.name || row.originalName, detail: [row.sku, row.category, row.family].filter(Boolean).join(" · "), href: `/admin/catalogo/${row.id}` }))),
-        group("customers", "Clientes", customerRows.map((row) => ({ id: row.id, label: row.name, detail: row.email || row.ruc || row.documentNumber || "Cliente", href: `/admin/clientes?query=${encodeURIComponent(row.name)}` }))),
+        group("customers", "Clientes", customerRows.map((row) => ({ id: row.id, label: row.name, detail: row.email || row.ruc || row.documentNumber || "Cliente", href: `/admin/clientes?customerId=${encodeURIComponent(row.id)}` }))),
         group("quotes", "Cotizaciones", quoteRows.map((row) => ({ id: row.id, label: row.trackingCode, detail: [row.name, row.productName || row.sku, row.status].filter(Boolean).join(" · "), href: `/admin/cotizaciones?query=${encodeURIComponent(row.trackingCode)}` }))),
-        group("opportunities", "Oportunidades", opportunityRows.map((row) => ({ id: row.id, label: row.code, detail: [row.title, row.customerName, row.stage].filter(Boolean).join(" · "), href: `/admin/oportunidades?query=${encodeURIComponent(row.code)}` }))),
+        group("opportunities", "Oportunidades", opportunityRows.map((row) => ({ id: row.id, label: row.code, detail: [row.title, row.customerName, row.stage].filter(Boolean).join(" · "), href: `/admin/crm?view=pipeline&opportunityId=${encodeURIComponent(row.id)}` }))),
         group("sales", "Ventas", saleRows.map((row) => ({ id: row.id, label: row.code, detail: [row.customerName, row.status].filter(Boolean).join(" · "), href: `/admin/ventas?query=${encodeURIComponent(row.code)}` }))),
         group("orders", "Pedidos", orderRows.map((row) => ({ id: row.id, label: row.code, detail: [row.customerName, row.status].filter(Boolean).join(" · "), href: `/admin/pedidos?query=${encodeURIComponent(row.code)}` }))),
       ].filter((item): item is NonNullable<typeof item> => Boolean(item)),
