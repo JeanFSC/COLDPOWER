@@ -4,6 +4,7 @@ import { cache } from "react";
 import { CatalogUnavailable } from "@/components/catalog/CatalogUnavailable";
 import { ProductDetail } from "@/components/product/ProductDetail";
 import { getCatalogProductBySlug } from "@/lib/catalog-repository";
+import { resolveProductImage } from "@/lib/product-image";
 import { evaluateProductPublication } from "@/lib/publication";
 import type { Product } from "@/types/product";
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const product = await getCachedProduct(slug);
     if (!product) return { title: "Producto no encontrado", robots: { index: false, follow: false } };
     const publication = evaluateProductPublication(product);
-    const image = product.images[0] ?? "/images/og/og-tienda.webp";
+    const image = resolveProductImage(product).src;
     return {
       title: product.name,
       description: product.shortDescription,
@@ -43,7 +44,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
   if (!product) notFound();
 
-  const image = product.images[0] ?? "/images/og/og-tienda.webp";
+  const image = resolveProductImage(product).src;
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -87,4 +88,3 @@ async function loadProduct(slug: string): Promise<Product | undefined | null> {
     return null;
   }
 }
-

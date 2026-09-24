@@ -7,6 +7,7 @@ import { MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/shared/Button";
 import { WhatsAppLeadButton } from "@/components/shared/WhatsAppLeadButton";
 import { cartSyncErrorMessage, useCart } from "@/components/cart/CartProvider";
+import { resolveProductImage } from "@/lib/product-image";
 
 type CartProduct = {
   id: string;
@@ -16,6 +17,8 @@ type CartProduct = {
   price: number | null;
   priceCurrency?: string | null;
   images: string[];
+  category: string;
+  family?: string;
 };
 
 export function CartQuotePanel() {
@@ -102,10 +105,13 @@ export function CartQuotePanel() {
       ) : (
         <>
           <div className="mt-5 grid gap-4">
-            {resolvedItems.map((item) => (
+            {resolvedItems.map((item) => {
+              const media = resolveProductImage(item.product);
+              return (
               <article key={item.productId} className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-md border border-border bg-background p-3">
                 <Link href={`/producto/${item.product.slug}`} className="relative aspect-square overflow-hidden rounded-md bg-white">
-                  <Image src={item.product.images[0] ?? "/images/product-placeholder-repuesto.svg"} alt={item.product.name} fill sizes="72px" className="object-cover" />
+                  <Image src={media.src} alt={item.product.name} fill sizes="72px" className="object-contain p-1" />
+                  {media.isReference ? <span className="absolute inset-x-1 bottom-1 truncate rounded bg-brand-primary-900/85 px-1 py-0.5 text-center text-[8px] font-bold text-white">Imagen referencial</span> : null}
                 </Link>
                 <div>
                   <Link href={`/producto/${item.product.slug}`} className="text-sm font-extrabold text-dark hover:text-primary">{item.product.name}</Link>
@@ -120,7 +126,8 @@ export function CartQuotePanel() {
                   </div>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
 
           <p className="mt-5 rounded-md border border-primary/20 bg-primary/10 p-4 text-xs font-semibold leading-5 text-gray-text">

@@ -17,6 +17,8 @@ export async function GET(request: Request) {
         slug: product.slug,
         name: product.name,
         brand: product.brand,
+        category: product.category,
+        family: product.family,
         sku: product.sku,
         price: product.price,
         priceCurrency: product.priceCurrency,

@@ -35,6 +35,7 @@ import {
 } from "@/lib/inventory-admin-contract";
 import { isAdminOperableReservation } from "@/lib/inventory-domain";
 import type { InventoryMovementType } from "@/lib/inventory-types";
+import { resolveProductImage } from "@/lib/product-image";
 
 type LocationSummary = {
   id: string;
@@ -3296,7 +3297,16 @@ function inventoryProductOption(item: InventoryItem): ProductOption {
   return { id: item.productId, sku: item.sku, name: item.productName, available: item.available };
 }
 
+function inventoryMedia(item: InventoryItem) {
+  return resolveProductImage({
+    images: item.mediaUrl ? [item.mediaUrl] : [],
+    family: item.familyName,
+    category: item.categoryName,
+  });
+}
+
 function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActions }) {
+  const media = inventoryMedia(item);
   return (
     <tr className="border-b border-slate-100 text-[11px] transition hover:bg-slate-50">
       <td className="px-4 py-3 align-middle">
@@ -3316,13 +3326,14 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
         >
           <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
             <Image
-              src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
+              src={media.src}
               alt=""
               fill
               sizes="36px"
               className="object-contain p-1"
               unoptimized
             />
+            {media.isReference ? <span className="absolute inset-x-0 bottom-0 truncate bg-slate-900/85 px-0.5 text-center text-[6px] font-extrabold leading-3 text-white">Imagen referencial</span> : null}
           </span>
           <span className="min-w-0">
             <strong className="block truncate text-[11px] font-extrabold text-slate-700">
@@ -3387,6 +3398,7 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
 }
 
 function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowActions }) {
+  const media = inventoryMedia(item);
   return (
     <article className="rounded-xl border border-slate-100 bg-slate-50 p-3">
       <div className="flex items-start gap-2.5">
@@ -3396,13 +3408,14 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
           className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-white"
         >
           <Image
-            src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
+            src={media.src}
             alt="Abrir detalle"
             fill
             sizes="40px"
             className="object-contain p-1"
             unoptimized
           />
+          {media.isReference ? <span className="absolute inset-x-0 bottom-0 truncate bg-slate-900/85 px-0.5 text-center text-[6px] font-extrabold leading-3 text-white">Imagen referencial</span> : null}
         </button>
         <button type="button" onClick={actions.onOpen} className="min-w-0 flex-1 text-left">
           <p className="truncate text-[11px] font-extrabold text-slate-700">{item.productName}</p>
@@ -3476,6 +3489,7 @@ function InventoryDetailDrawer({
   onClose: () => void;
   onKardex?: () => void;
 }) {
+  const media = inventoryMedia(item);
   const [tab, setTab] = useState<DetailTab>("summary");
   const reservations = data.operations.reservations.filter(
     (entry) => entry.sku === item.sku && entry.locationCode === item.locationCode,
@@ -3500,13 +3514,14 @@ function InventoryDetailDrawer({
         <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
           <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
             <Image
-              src={item.mediaUrl || "/images/product-placeholder-repuesto.svg"}
+              src={media.src}
               alt=""
               fill
               sizes="48px"
               className="object-contain p-1"
               unoptimized
             />
+            {media.isReference ? <span className="absolute inset-x-0 bottom-0 truncate bg-slate-900/85 px-0.5 text-center text-[7px] font-extrabold leading-3 text-white">Imagen referencial</span> : null}
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[11px] font-extrabold text-blue-600">{item.sku}</p>

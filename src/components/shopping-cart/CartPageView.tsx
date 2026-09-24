@@ -7,6 +7,7 @@ import { Button } from "@/components/shared/Button";
 import { useCart as useQuoteList } from "@/components/cart/CartProvider";
 import { useShoppingCart } from "@/components/shopping-cart/ShoppingCartProvider";
 import { formatProductPrice } from "@/lib/formatters";
+import { resolveProductImage } from "@/lib/product-image";
 
 const issueMessages = {
   UNAVAILABLE_ITEMS: "Hay referencias que ya no están disponibles en el catálogo. Quítalas para continuar.",
@@ -52,9 +53,10 @@ export function CartPageView() {
           <ul className="grid gap-4">
             {purchasableItems.map((item) => {
               const busy = pendingProductId === item.productId;
+              const media = resolveProductImage({ images: item.image ? [item.image] : [], family: item.family, category: item.category });
               return (
                 <li key={item.productId} className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 rounded-lg border border-border bg-white p-4 shadow-card sm:grid-cols-[96px_minmax(0,1fr)_auto]">
-                  <div className="relative aspect-square overflow-hidden rounded-md bg-background"><Image src={item.image ?? "/images/products/product-placeholder.webp"} alt={item.name} fill sizes="96px" className="object-contain p-2" /></div>
+                  <div className="relative aspect-square overflow-hidden rounded-md bg-background"><Image src={media.src} alt={item.name} fill sizes="96px" className="object-contain p-2" />{media.isReference ? <span className="absolute inset-x-1 bottom-1 truncate rounded bg-brand-primary-900/85 px-1 py-0.5 text-center text-[8px] font-bold text-white">Imagen referencial</span> : null}</div>
                   <div className="min-w-0">
                     {item.slug ? <Link href={`/producto/${item.slug}`} className="font-extrabold text-dark hover:text-brand-secondary-600">{item.name}</Link> : <p className="font-extrabold text-dark">{item.name}</p>}
                     <p className="mt-1 font-mono text-[11px] font-bold text-gray-text">{item.sku ? `SKU: ${item.sku}` : "Referencia retirada"}{item.brand ? ` · ${item.brand}` : ""}</p>
