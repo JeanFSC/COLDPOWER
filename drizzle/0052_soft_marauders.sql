@@ -1,0 +1,1 @@
+ALTER TABLE "company_settings" ADD COLUMN "legal_pages_published" boolean DEFAULT false NOT NULL;

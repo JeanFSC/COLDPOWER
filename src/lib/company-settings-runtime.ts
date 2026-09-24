@@ -25,6 +25,7 @@ function fallbackSettings(): CompanySettings {
     businessHours: company.schedule,
     website: company.domain,
     socials,
+    legalPagesPublished: false,
   });
 }
 

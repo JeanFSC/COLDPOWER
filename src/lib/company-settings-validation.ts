@@ -25,6 +25,7 @@ export type CompanySettingsInput = {
   guaranteeTerms: string | null;
   coverage: string | null;
   legalLinks: Record<string, string> | null;
+  legalPagesPublished: boolean;
   logoMediaId: string | null;
   faviconMediaId: string | null;
   primaryColor: string | null;
@@ -40,6 +41,12 @@ function optionalText(value: unknown, field: string, max = MAX_TEXT): string | n
   const clean = value.trim();
   if (clean.length > max) throw new Error(`${field} supera el máximo permitido.`);
   return clean || null;
+}
+
+function booleanFlag(value: unknown, field: string): boolean {
+  if (value === undefined || value === null) return false;
+  if (typeof value !== "boolean") throw new Error(`${field} debe ser booleano.`);
+  return value;
 }
 
 function textList(value: unknown, field: string): string[] | null {
@@ -117,7 +124,7 @@ export function validateCompanySettingsInput(body: unknown): CompanySettingsInpu
     ruc, country, department: optionalText(value.department, "department", 120), province: optionalText(value.province, "province", 120), district: optionalText(value.district, "district", 120), address: optionalText(value.address, "address"), phone: optionalText(value.phone, "phone", 40), phones: textList(value.phones, "phones"),
     whatsapp: optionalText(value.whatsapp, "whatsapp", 40), email, salesEmail, hours: optionalText(value.hours, "hours"), businessHours: optionalText(value.businessHours, "businessHours"), facebook: optionalText(value.facebook, "facebook", 500), instagram: optionalText(value.instagram, "instagram", 500), tiktok: optionalText(value.tiktok, "tiktok", 500), website: optionalText(value.website, "website", 500),
     socials: textMap(value.socials, "socials"), locations: locationsList(value.locations), paymentMethods: textList(value.paymentMethods, "paymentMethods"),
-    guaranteeTerms: optionalText(value.guaranteeTerms, "guaranteeTerms"), coverage: optionalText(value.coverage, "coverage"), legalLinks: textMap(value.legalLinks, "legalLinks"),
+    guaranteeTerms: optionalText(value.guaranteeTerms, "guaranteeTerms"), coverage: optionalText(value.coverage, "coverage"), legalLinks: textMap(value.legalLinks, "legalLinks"), legalPagesPublished: booleanFlag(value.legalPagesPublished, "legalPagesPublished"),
     logoMediaId: mediaId(value.logoMediaId, "logoMediaId"), faviconMediaId: mediaId(value.faviconMediaId, "faviconMediaId"), primaryColor: hexColor(value.primaryColor, "primaryColor"), secondaryColor: hexColor(value.secondaryColor, "secondaryColor"),
   };
 }
