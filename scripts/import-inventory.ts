@@ -1,9 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import * as schema from "../src/db/schema";
+import { createDbClient } from "../src/db";
 import { brands, categories, families, products } from "../src/db/schema";
 import { planProductSlugs, readImportRows, validateImportRows } from "./inventory-import.mjs";
 
@@ -108,8 +106,8 @@ async function importInventory(workbookPath: string, apply: boolean): Promise<Im
     return report;
   }
 
-  const pool = new Pool({ connectionString: databaseUrl });
-  const db = drizzle(pool, { schema });
+  const client = createDbClient({ databaseUrl });
+  const db = client.db;
 
   try {
     await db.transaction(async (tx) => {
@@ -173,7 +171,7 @@ async function importInventory(workbookPath: string, apply: boolean): Promise<Im
       }
     });
   } finally {
-    await pool.end();
+    await client.close();
   }
 
   return report;

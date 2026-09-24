@@ -1,8 +1,10 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import type { NeonDatabase } from "drizzle-orm/neon-serverless";
+import { migrate as migrateNeon } from "drizzle-orm/neon-serverless/migrator";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { migrate as migratePg } from "drizzle-orm/node-postgres/migrator";
+import { createDbClient, getDatabaseDriver, type DatabaseDriver } from "../src/db";
 import * as schema from "../src/db/schema";
 
 export function getMigrationFolder(root = process.cwd()) {
@@ -12,18 +14,23 @@ export function getMigrationFolder(root = process.cwd()) {
 export async function runMigrations(
   databaseUrl = process.env.DATABASE_URL?.trim(),
   root = process.cwd(),
+  driver: DatabaseDriver = getDatabaseDriver(),
 ) {
   if (!databaseUrl) {
     throw new Error("DATABASE_URL no está configurado; no se pueden aplicar migraciones.");
   }
 
-  const pool = new Pool({ connectionString: databaseUrl });
-  const db = drizzle(pool, { schema });
+  const client = createDbClient({ databaseUrl, driver });
 
   try {
-    await migrate(db, { migrationsFolder: getMigrationFolder(root) });
+    const migrations = { migrationsFolder: getMigrationFolder(root) };
+    if (driver === "pg") {
+      await migratePg(client.db as NodePgDatabase<typeof schema>, migrations);
+    } else {
+      await migrateNeon(client.db as NeonDatabase<typeof schema>, migrations);
+    }
   } finally {
-    await pool.end();
+    await client.close();
   }
 }
 

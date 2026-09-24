@@ -16,7 +16,10 @@ test("database schema is applied through the reproducible Drizzle migration runn
   ]);
 
   assert.match(runner, /drizzle-orm\/neon-serverless\/migrator/);
+  assert.match(runner, /drizzle-orm\/node-postgres\/migrator/);
   assert.match(runner, /migrationsFolder/);
-  assert.match(runner, /pool\.end\(\)/);
+  assert.match(runner, /client\.close\(\)/);
+  assert.match(runner, /getDatabaseDriver/);
   assert.match(packageJson, /"db:migrate"/);
+  assert.match(packageJson, /"db:local:migrate"/);
 });

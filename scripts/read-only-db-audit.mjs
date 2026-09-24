@@ -1,6 +1,6 @@
-import { Pool } from "@neondatabase/serverless";
+import { createDatabasePool } from "./database-pool.mjs";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = await createDatabasePool();
 
 const queries = {
   counts: `

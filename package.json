@@ -40,6 +40,9 @@
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:migrate": "dotenv -e .env.local -- tsx scripts/migrate-database.ts",
     "db:backup": "dotenv -e .env.local -- tsx scripts/backup-database.ts",
+    "db:local:migrate": "dotenv -e .env.localdb -- tsx scripts/migrate-database.ts",
+    "db:local:restore": "dotenv -e .env.localdb -- tsx scripts/restore-local-from-backup.ts",
+    "db:local:seed": "dotenv -e .env.localdb -- tsx scripts/seed-local.ts",
     "db:rebuild-product-slugs": "dotenv -e .env.local -- tsx scripts/rebuild-product-slugs.ts",
     "qa:inventory-db": "dotenv -e .env.local -- tsx scripts/qa-inventory-full.ts",
     "qa:inventory-data": "dotenv -e .env.local -- tsx scripts/qa-inventory-data.ts",
@@ -102,7 +105,9 @@
     "qa:visual-year": "dotenv -e .env.local -- node scripts/qa-visual-year.mjs",
     "seed:notifications-dev": "dotenv -e .env.local -- tsx scripts/seed-notifications-dev.ts",
     "seed:purchases-dev": "dotenv -e .env.local -- tsx scripts/seed-purchases-dev.ts",
-    "seed:team-activity-dev": "dotenv -e .env.local -- tsx scripts/seed-team-activity-dev.ts"
+    "seed:team-activity-dev": "dotenv -e .env.local -- tsx scripts/seed-team-activity-dev.ts",
+    "dev:local": "dotenv -e .env.localdb -- next dev --hostname 0.0.0.0 --port 3002",
+    "start:local": "dotenv -e .env.localdb -- next start --hostname 0.0.0.0 --port 3002"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.1",
@@ -112,6 +117,7 @@
     "geoip-lite": "^2.0.3",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
+    "pg": "^8.23.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "svix": "^1.99.1",
@@ -122,6 +128,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/geoip-lite": "^1.4.4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv-cli": "^11.0.0",

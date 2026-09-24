@@ -1,10 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool } from "@neondatabase/serverless";
 import { count, countDistinct, eq, gt } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import * as schema from "../src/db/schema";
+import { createDbClient } from "../src/db";
 import { brands, categories, families, products } from "../src/db/schema";
 
 export const EXPECTED_PRODUCT_COUNT = 1348;
@@ -69,8 +67,8 @@ export async function runInventoryQa(
     throw new Error("DATABASE_URL no está configurado; no se puede ejecutar el QA de inventario.");
   }
 
-  const pool = new Pool({ connectionString: databaseUrl });
-  const db = drizzle(pool, { schema });
+  const client = createDbClient({ databaseUrl });
+  const db = client.db;
 
   try {
     const [productSummary] = await db
@@ -104,7 +102,7 @@ export async function runInventoryQa(
       requiredCategoryCounts,
     });
   } finally {
-    await pool.end();
+    await client.close();
   }
 }
 

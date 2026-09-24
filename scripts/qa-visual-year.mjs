@@ -1,8 +1,8 @@
-import { Pool } from "@neondatabase/serverless";
+import { createDatabasePool } from "./database-pool.mjs";
 
 const fixture = process.env.CP_VISUAL_FIXTURE ?? "cp-visual-year-2026";
 const expectedMonths = Array.from({ length: 12 }, (_, index) => `2026-${String(index + 1).padStart(2, "0")}`);
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = await createDatabasePool();
 
 async function query(text) {
   const result = await pool.query(text);

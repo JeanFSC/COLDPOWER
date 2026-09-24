@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getDb } from "../src/db";
+import { closeDb, getDb } from "../src/db";
 import {
   brands,
   categories,
@@ -99,9 +99,13 @@ export async function writeLogicalBackup(root = process.cwd()) {
 }
 
 async function main() {
-  const { target, backup } = await writeLogicalBackup();
-  const counts = Object.fromEntries(Object.entries(backup.tables).map(([name, rows]) => [name, rows.length]));
-  console.log(JSON.stringify({ target, schemaVersion: backup.schemaVersion, counts }, null, 2));
+  try {
+    const { target, backup } = await writeLogicalBackup();
+    const counts = Object.fromEntries(Object.entries(backup.tables).map(([name, rows]) => [name, rows.length]));
+    console.log(JSON.stringify({ target, schemaVersion: backup.schemaVersion, counts }, null, 2));
+  } finally {
+    await closeDb();
+  }
 }
 
 const currentFile = fileURLToPath(import.meta.url);

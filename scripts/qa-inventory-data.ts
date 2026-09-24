@@ -1,10 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool } from "@neondatabase/serverless";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import * as schema from "../src/db/schema";
+import { createDbClient } from "../src/db";
 import { brands, categories, families, products } from "../src/db/schema";
 import { planProductSlugs, readImportRows, validateImportRows } from "./inventory-import.mjs";
 import { resolveInventoryWorkbookPath } from "./import-inventory";
@@ -216,8 +214,8 @@ export async function runInventoryDataIntegrity(
   }
 
   const { rows } = readImportRows(workbookPath) as unknown as { rows: InventorySourceRow[] };
-  const pool = new Pool({ connectionString: databaseUrl });
-  const db = drizzle(pool, { schema });
+  const client = createDbClient({ databaseUrl });
+  const db = client.db;
 
   try {
     const storedRows = await db
@@ -275,7 +273,7 @@ export async function runInventoryDataIntegrity(
 
     return evaluateInventoryDataIntegrity(rows, storedRows, EXPECTED_SOURCE_PRODUCT_COUNT);
   } finally {
-    await pool.end();
+    await client.close();
   }
 }
 
