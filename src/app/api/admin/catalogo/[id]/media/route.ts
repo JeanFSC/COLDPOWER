@@ -8,7 +8,7 @@ import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireApiPermission("catalog.product.edit");
+    const actor = await requireApiPermission("catalog.media.upload");
     const { id } = await params;
     const body = await request.json();
     const value = body && typeof body === "object" ? body as Record<string, unknown> : {};
@@ -17,12 +17,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const sortOrder = Number.isInteger(value.sortOrder) ? Number(value.sortOrder) : 0;
     if (!assetId) return apiError("CATALOG_VALIDATION_ERROR", "assetId es obligatorio.", 400);
     const result = await getDb().transaction(async (tx) => {
-      const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, id)).limit(1);
+      const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, id)).for("update").limit(1);
       const [asset] = await tx.select({ id: mediaAssets.id, status: mediaAssets.status, deletedAt: mediaAssets.deletedAt }).from(mediaAssets).where(eq(mediaAssets.id, assetId)).limit(1);
       if (!product) throw new Error("CATALOG_PRODUCT_NOT_FOUND");
       if (!asset || asset.status !== "ACTIVE" || asset.deletedAt) throw new Error("CATALOG_MEDIA_INVALID");
+      const replaced = slot === "primary" ? await tx.delete(mediaAssetUsages).where(and(eq(mediaAssetUsages.entityType, "product"), eq(mediaAssetUsages.entityId, id), eq(mediaAssetUsages.slot, "primary"))).returning({ assetId: mediaAssetUsages.assetId, slot: mediaAssetUsages.slot, sortOrder: mediaAssetUsages.sortOrder }) : [];
       const [usage] = await tx.insert(mediaAssetUsages).values({ id: `usage-${crypto.randomUUID()}`, assetId, entityType: "product", entityId: id, slot, sortOrder }).onConflictDoUpdate({ target: [mediaAssetUsages.assetId, mediaAssetUsages.entityType, mediaAssetUsages.entityId, mediaAssetUsages.slot], set: { sortOrder } }).returning();
-      await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_MEDIA_ASSOCIATED", entityType: "product", entityId: id, before: null, after: { assetId, slot, sortOrder }, metadata: null });
+      await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_MEDIA_ASSOCIATED", entityType: "product", entityId: id, before: replaced.length ? { replaced } : null, after: { assetId, slot, sortOrder }, metadata: null });
       return usage;
     });
     clearPublicCatalogRuntimeCache();
@@ -38,7 +39,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireApiPermission("catalog.product.edit");
+    const actor = await requireApiPermission("catalog.media.upload");
     const { id } = await params;
     const assetId = new URL(request.url).searchParams.get("assetId")?.trim();
     if (!assetId) return apiError("CATALOG_VALIDATION_ERROR", "assetId es obligatorio.", 400);

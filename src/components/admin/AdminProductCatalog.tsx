@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
 import {
   ArrowDownAZ,
   ArrowDownRight,
@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import type { CatalogQuality, CatalogQualityLevel } from "@/lib/catalog-quality";
 import type { PublicationStatus } from "@/lib/catalog-admin-contract";
+import { resolveProductImage } from "@/lib/product-image";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import { CatalogImportDialog } from "@/components/admin/CatalogImportDialog";
 import { DuplicateDecisionControl } from "@/components/admin/DuplicateDecisionControl";
@@ -45,7 +46,6 @@ import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 
 const panel =
   "min-w-0 rounded-[14px] border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
-const placeholderImage = "/images/product-placeholder-repuesto.svg";
 
 type Option = {
   id: string;
@@ -258,6 +258,7 @@ export type AdminProductCatalogProps = {
     canReview: boolean;
     canPricing: boolean;
     canInventory: boolean;
+    canMedia: boolean;
     canArchive: boolean;
   };
 };
@@ -347,24 +348,29 @@ function ProductThumbnail({
   item,
   size = 34,
 }: {
-  item: Pick<AdminCatalogItem, "name" | "media">;
+  item: Pick<AdminCatalogItem, "name" | "media" | "family" | "category">;
   size?: number;
 }) {
-  const src = item.media?.primaryUrl || placeholderImage;
+  const media = resolveProductImage({
+    images: item.media?.primaryUrl ? [item.media.primaryUrl] : [],
+    family: item.family,
+    category: item.category,
+  });
   return (
     <span
       className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f8fa]"
       style={{ width: size, height: size }}
-      title={item.media?.primaryUrl ? undefined : "Imagen pendiente"}
+      title={media.isReference ? "Imagen referencial" : undefined}
     >
       <Image
-        src={src}
-        alt={item.media?.altText || (item.media?.primaryUrl ? item.name : "Imagen pendiente")}
+        src={media.src}
+        alt={item.media?.altText || (media.isReference ? `Imagen referencial: ${item.name}` : item.name)}
         fill
         sizes={`${size}px`}
         className="object-contain p-1"
-        unoptimized={src.startsWith("/api/")}
+        unoptimized={media.src.startsWith("/api/")}
       />
+      {media.isReference ? <span className="absolute inset-x-0 bottom-0 truncate bg-[#102a43]/85 px-0.5 text-center text-[7px] font-extrabold leading-3 text-white">Imagen referencial</span> : null}
     </span>
   );
 }
@@ -702,6 +708,7 @@ function ProductDetailDrawer({
   const [categoryId, setCategoryId] = useState("");
   const [familyId, setFamilyId] = useState("");
   const [brandId, setBrandId] = useState("");
+  const [mediaBusy, setMediaBusy] = useState(false);
   useEffect(() => {
     if (!item) return;
     // The effect both subscribes to the selected product and resets the local editor.
@@ -743,6 +750,7 @@ function ProductDetailDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [item, onClose]);
   if (!item) return null;
+  const selectedProduct = item;
   const productId = item.id;
   const effectiveFamilies = options.families.filter(
     (family) => !categoryId || family.categoryId === categoryId,
@@ -771,6 +779,33 @@ function ProductDetailDrawer({
       setMessage(error instanceof Error ? error.message : "No se pudo guardar la ficha.");
     } finally {
       setBusy(false);
+    }
+  }
+  async function uploadAndAssociate(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+    setMediaBusy(true);
+    setMessage("");
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("altText", name.trim() || selectedProduct.name);
+      const uploadResponse = await fetch("/api/admin/media", { method: "POST", body: form });
+      const uploadResult = await uploadResponse.json() as { asset?: { id?: string; url?: string; altText?: string | null }; error?: string | { message?: string } };
+      const uploadError = typeof uploadResult.error === "string" ? uploadResult.error : uploadResult.error?.message;
+      if (!uploadResponse.ok || !uploadResult.asset?.id) throw new Error(uploadError || "No se pudo subir la imagen.");
+      const associateResponse = await fetch(`/api/admin/catalogo/${encodeURIComponent(productId)}/media`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ assetId: uploadResult.asset.id, slot: "primary", sortOrder: 0 }) });
+      const associateResult = await associateResponse.json() as { error?: string | { message?: string } };
+      const associateError = typeof associateResult.error === "string" ? associateResult.error : associateResult.error?.message;
+      if (!associateResponse.ok) throw new Error(associateError || "No se pudo asociar la imagen.");
+      setDetail((current) => current ? { ...current, media: [{ assetId: uploadResult.asset!.id!, primaryUrl: uploadResult.asset!.url || `/api/media/${uploadResult.asset!.id}`, altText: uploadResult.asset!.altText || name.trim() || selectedProduct.name, slot: "primary", sortOrder: 0 }, ...current.media.filter((asset) => asset.slot !== "primary")] } : current);
+      setMessage("Imagen subida y asociada como principal.");
+      onSaved();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo subir la imagen.");
+    } finally {
+      setMediaBusy(false);
     }
   }
   const detailTabs = [
@@ -962,6 +997,13 @@ function ProductDetailDrawer({
                 title="Imagen principal y galería"
                 hint="Los assets se administran desde Media Library. No se eliminan físicamente desde esta ficha."
               />
+              {permissions.canMedia ? (
+                <label className="grid gap-1 rounded-xl border border-[#cfe0f7] bg-[#f5f9ff] p-3 text-[10px] font-extrabold text-[#526b84]">
+                  Subir y asociar imagen principal
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" disabled={mediaBusy} onChange={(event) => void uploadAndAssociate(event)} className="text-[10px] font-semibold text-[#526b84] disabled:opacity-50" />
+                  <span className="font-normal text-[#8296a9]">Se guarda en la biblioteca, queda auditada y reemplaza el primary anterior.</span>
+                </label>
+              ) : <PermissionPanel allowed={false} message="No tienes permiso para subir media." />}
               <div className="grid gap-2 sm:grid-cols-2">
                 {detail.media.map((asset) => (
                   <div
@@ -1004,7 +1046,7 @@ function ProductDetailDrawer({
                 allowed={permissions.canPricing}
                 message="No tienes permiso para ver precios."
               />
-              {permissions.canPricing && detail.pricing ? (
+              {permissions.canPricing && detail.pricing?.some((price) => ["RETAIL", "WHOLESALE", "MINIMUM"].includes(price.priceType)) ? (
                 <div className="grid gap-2">
                   {detail.pricing
                     .filter((price) => ["RETAIL", "WHOLESALE", "MINIMUM"].includes(price.priceType))
@@ -1034,6 +1076,8 @@ function ProductDetailDrawer({
                       </div>
                     ))}
                 </div>
+              ) : permissions.canPricing ? (
+                <EmptyPanel icon={CircleDollarSign} title="Sin precio comercial" description="No hay un precio comercial confirmado para esta ficha." />
               ) : null}
             </section>
           ) : tab === "Inventario" ? (
@@ -1426,17 +1470,17 @@ function BulkWorkspace({
             <div className="mt-3 grid gap-2">
               <BulkAction
                 icon={Tag}
-                label="Asignar categoría"
-                description="Asignar o cambiar categoría"
-                disabled={!permissions.canEdit || !selected.length}
+                label="Editar categoría desde ficha"
+                description="No disponible en lote; usa la ficha editorial"
+                disabled
                 active={operation === "category"}
                 onClick={() => setOperation("category")}
               />
               <BulkAction
                 icon={UsersRound}
                 label="Asignar marca"
-                description="Asignar o cambiar marca"
-                disabled={!permissions.canEdit || !selected.length}
+                description="No disponible en lote; usa la ficha editorial"
+                disabled
                 active={operation === "brand"}
                 onClick={() => setOperation("brand")}
               />
@@ -1459,8 +1503,8 @@ function BulkWorkspace({
               <BulkAction
                 icon={Edit3}
                 label="Editar atributos"
-                description="Editar campos y atributos"
-                disabled={!permissions.canEdit || !selected.length}
+                description="No disponible en lote; usa la ficha editorial"
+                disabled
                 active={operation === "attributes"}
                 onClick={() => setOperation("attributes")}
               />

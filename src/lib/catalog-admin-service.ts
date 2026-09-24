@@ -760,7 +760,9 @@ export async function getAdminCatalogPage(filters: CatalogApiFilters = {}) {
   };
 }
 
-export async function getAdminCatalogProductDetail(id: string, includePricing: boolean) {
+export async function getAdminCatalogProductDetail(id: string, options: boolean | { includePricing: boolean; includeCost?: boolean }) {
+  const includePricing = typeof options === "boolean" ? options : options.includePricing;
+  const includeCost = typeof options === "boolean" ? options : options.includeCost === true;
   const db = getDb();
   const [product] = await db
     .select({
@@ -812,9 +814,9 @@ export async function getAdminCatalogProductDetail(id: string, includePricing: b
       unitOfMeasure: products.unitOfMeasure,
     })
     .from(products)
-    .innerJoin(categories, eq(products.categoryId, categories.id))
-    .innerJoin(families, eq(products.familyId, families.id))
-    .leftJoin(brands, eq(products.brandId, brands.id))
+    .innerJoin(categories, effectiveCategoryJoin())
+    .innerJoin(families, effectiveFamilyJoin())
+    .leftJoin(brands, effectiveBrandJoin())
     .where(eq(products.id, id))
     .limit(1);
   if (!product) throw new Error("CATALOG_PRODUCT_NOT_FOUND");
@@ -855,14 +857,14 @@ export async function getAdminCatalogProductDetail(id: string, includePricing: b
       ? db
           .select()
           .from(productPrices)
-          .where(eq(productPrices.productId, id))
+          .where(and(eq(productPrices.productId, id), includeCost ? undefined : inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"])))
           .orderBy(desc(productPrices.createdAt))
       : Promise.resolve([]),
     includePricing
       ? db
           .select()
           .from(priceHistory)
-          .where(eq(priceHistory.productId, id))
+          .where(and(eq(priceHistory.productId, id), includeCost ? undefined : inArray(priceHistory.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"])))
           .orderBy(desc(priceHistory.createdAt))
           .limit(50)
       : Promise.resolve([]),

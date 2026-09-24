@@ -29,7 +29,10 @@ test("taxonomía: unicidad, relaciones, soft delete, conteos y auditoría están
 test("taxonomía: contratos de listado, detalle, exportación y RBAC", () => {
   for (const file of ["src/app/api/admin/taxonomia/route.ts", "src/app/api/admin/taxonomia/[entity]/[id]/route.ts", "src/app/api/admin/taxonomia/export/route.ts", "src/app/admin/taxonomia/page.tsx"]) assert.equal(existsSync(`${root}/${file}`), true, file);
   assert.match(read("src/lib/taxonomy-admin.ts"), /catalog\.category\.manage/);
-  assert.match(read("src/app/api/admin/taxonomia/route.ts"), /catalog\.product\.edit/);
+  assert.match(read("src/app/api/admin/taxonomia/route.ts"), /requireTaxonomyAccess/);
+  assert.doesNotMatch(read("src/app/api/admin/taxonomia/route.ts"), /requireApiPermission\("catalog\.product\.edit"\)/);
+  assert.match(read("src/lib/taxonomy-access.ts"), /taxonomyPermission/);
+  assert.match(read("src/app/admin/taxonomia/page.tsx"), /requireTaxonomyPageAccess/);
   assert.match(read("src/app/api/admin/taxonomia/route.ts"), /TAXONOMY_INVALID_FILTER/);
   assert.match(read("src/app/api/admin/taxonomia/[entity]/[id]/route.ts"), /products/);
 });

@@ -1,11 +1,11 @@
-import { and, count, eq, sql } from "drizzle-orm";
-import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { eq, sql } from "drizzle-orm";
+import { ApiAuthorizationError } from "@/lib/auth";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { getDb } from "@/db";
-import { auditLogs, brands, categories, families, products } from "@/db/schema";
-import { getTaxonomyPage, isTaxonomyEntity, parseTaxonomyFilters, slugifyTaxonomy, taxonomyEntities, taxonomyPermission, TaxonomyInvalidFilterError, type TaxonomyEntity } from "@/lib/taxonomy-admin";
+import { auditLogs, brands, categories, families } from "@/db/schema";
+import { getTaxonomyPage, isTaxonomyEntity, parseTaxonomyFilters, slugifyTaxonomy, taxonomyEntities, TaxonomyInvalidFilterError, type TaxonomyEntity } from "@/lib/taxonomy-admin";
+import { requireTaxonomyAccess } from "@/lib/taxonomy-access";
 
-async function requireTaxonomyAccess(entity: TaxonomyEntity) { try { return await requireApiPermission(taxonomyPermission(entity)); } catch (error) { if (error instanceof ApiAuthorizationError) return requireApiPermission("catalog.product.edit"); throw error; } }
 function input(body: unknown) { if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("El cuerpo debe ser un objeto."); const value = body as Record<string, unknown>; const name = typeof value.name === "string" ? value.name.trim().slice(0, 160) : ""; const slug = typeof value.slug === "string" && value.slug.trim() ? slugifyTaxonomy(value.slug) : slugifyTaxonomy(name); const categoryId = typeof value.categoryId === "string" && value.categoryId.trim() ? value.categoryId.trim() : null; if (name.length < 2 || !slug) throw new Error("Nombre y slug válidos son obligatorios."); return { name, slug, categoryId }; }
 async function assertUnique(tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0], entity: TaxonomyEntity, name: string, slug: string, excludeId?: string) { const sameSlug = entity === "categories" ? await tx.select({ id: categories.id }).from(categories).where(sql`lower(${categories.slug}) = lower(${slug})`).limit(1) : entity === "families" ? await tx.select({ id: families.id }).from(families).where(sql`lower(${families.slug}) = lower(${slug})`).limit(1) : await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.slug}) = lower(${slug})`).limit(1); const sameName = entity === "categories" ? await tx.select({ id: categories.id }).from(categories).where(sql`lower(${categories.name}) = lower(${name})`).limit(1) : entity === "families" ? await tx.select({ id: families.id }).from(families).where(sql`lower(${families.name}) = lower(${name})`).limit(1) : await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.name}) = lower(${name})`).limit(1); if ((sameSlug[0] && sameSlug[0].id !== excludeId) || (sameName[0] && sameName[0].id !== excludeId)) throw new Error("Ya existe una entidad con ese nombre o slug (la comparación no distingue mayúsculas). "); }
 

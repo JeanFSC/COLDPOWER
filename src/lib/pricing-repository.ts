@@ -25,6 +25,13 @@ function activeWindow(now = new Date()): SQL {
   return and(eq(productPrices.active, true), eq(productPrices.status, "ACTIVE"), lte(productPrices.validFrom, now), or(isNull(productPrices.validUntil), gt(productPrices.validUntil, now)))!;
 }
 
+function effectiveCategoryJoin() { return or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!; }
+function effectiveFamilyJoin() { return or(eq(products.editorialFamilyId, families.id), and(isNull(products.editorialFamilyId), eq(products.familyId, families.id)))!; }
+function effectiveBrandJoin() { return or(eq(products.editorialBrandId, brands.id), and(isNull(products.editorialBrandId), eq(products.brandId, brands.id)))!; }
+function effectiveCategoryFilter(id: string) { return or(eq(products.editorialCategoryId, id), and(isNull(products.editorialCategoryId), eq(products.categoryId, id)))!; }
+function effectiveFamilyFilter(id: string) { return or(eq(products.editorialFamilyId, id), and(isNull(products.editorialFamilyId), eq(products.familyId, id)))!; }
+function effectiveBrandFilter(id: string) { return or(eq(products.editorialBrandId, id), and(isNull(products.editorialBrandId), eq(products.brandId, id)))!; }
+
 export async function getActiveRetailPrices(productIds: string[], now = new Date()) {
   if (!productIds.length) return new Map<string, { amount: number; currency: string }>();
   const rows = await getDb().select({ productId: productPrices.productId, amount: productPrices.amount, currency: productPrices.currency }).from(productPrices).where(and(inArray(productPrices.productId, productIds), eq(productPrices.priceType, "RETAIL"), activeWindow(now))).orderBy(desc(productPrices.createdAt));
@@ -63,9 +70,9 @@ function baseMetricConditions(filters: PricingFilters) {
   }
   if (filters.sku) conditions.push(ilike(products.sku, `%${filters.sku.trim()}%`));
   if (filters.productId) conditions.push(eq(products.id, filters.productId));
-  if (filters.categoryId) conditions.push(or(eq(products.categoryId, filters.categoryId), eq(products.editorialCategoryId, filters.categoryId))!);
-  if (filters.familyId) conditions.push(or(eq(products.familyId, filters.familyId), eq(products.editorialFamilyId, filters.familyId))!);
-  if (filters.brandId) conditions.push(or(eq(products.brandId, filters.brandId), eq(products.editorialBrandId, filters.brandId))!);
+  if (filters.categoryId) conditions.push(effectiveCategoryFilter(filters.categoryId));
+  if (filters.familyId) conditions.push(effectiveFamilyFilter(filters.familyId));
+  if (filters.brandId) conditions.push(effectiveBrandFilter(filters.brandId));
   return conditions;
 }
 
@@ -128,13 +135,13 @@ export async function getPricingPage(filters: PricingFilters = {}, options: { in
   }
   const where = conditions.length ? and(...conditions) : undefined;
   const [productRows, totalRows, facetRows] = await Promise.all([
-    db.select({ id: products.id, sku: products.sku, productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`, categoryId: categories.id, categoryName: categories.name, familyId: families.id, familyName: families.name, brandId: brands.id, brandName: brands.name, updatedAt: products.updatedAt }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(products.sku)).limit(pageSize).offset((page - 1) * pageSize),
-    db.select({ total: count(products.id) }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where),
+    db.select({ id: products.id, sku: products.sku, productName: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})`, categoryId: categories.id, categoryName: categories.name, familyId: families.id, familyName: families.name, brandId: brands.id, brandName: brands.name, updatedAt: products.updatedAt }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(where).orderBy(asc(products.sku)).limit(pageSize).offset((page - 1) * pageSize),
+    db.select({ total: count(products.id) }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(where),
     Promise.all([
-      db.selectDistinct({ id: categories.id, name: categories.name }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(categories.name)),
-      db.selectDistinct({ id: families.id, name: families.name }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(families.name)),
-      db.selectDistinct({ id: brands.id, name: brands.name }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(where).orderBy(asc(brands.name)),
-      db.selectDistinct({ status: productPrices.status }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(where, includeCost ? undefined : inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]))).orderBy(productPrices.status),
+      db.selectDistinct({ id: categories.id, name: categories.name }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(where).orderBy(asc(categories.name)),
+      db.selectDistinct({ id: families.id, name: families.name }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(where).orderBy(asc(families.name)),
+      db.selectDistinct({ id: brands.id, name: brands.name }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(where).orderBy(asc(brands.name)),
+      db.selectDistinct({ status: productPrices.status }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(and(where, includeCost ? undefined : inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]))).orderBy(productPrices.status),
     ]),
   ]);
   const productIds = productRows.map((row) => row.id);
@@ -161,8 +168,8 @@ export async function getPricingPage(filters: PricingFilters = {}, options: { in
   const totalItems = Number(totalRows[0]?.total ?? 0);
   const now = new Date();
   const [metricTotalRows, metricRows] = await Promise.all([
-    db.select({ total: count(products.id) }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(...baseMetricConditions(filters))),
-    db.select({ productId: productPrices.productId, priceType: productPrices.priceType, status: productPrices.status, active: productPrices.active, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil, wholesaleMinQty: productPrices.wholesaleMinQty }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, eq(products.categoryId, categories.id)).innerJoin(families, eq(products.familyId, families.id)).leftJoin(brands, eq(products.brandId, brands.id)).where(and(...baseMetricConditions(filters), inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]))),
+    db.select({ total: count(products.id) }).from(products).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(and(...baseMetricConditions(filters))),
+    db.select({ productId: productPrices.productId, priceType: productPrices.priceType, status: productPrices.status, active: productPrices.active, validFrom: productPrices.validFrom, validUntil: productPrices.validUntil, wholesaleMinQty: productPrices.wholesaleMinQty }).from(productPrices).innerJoin(products, eq(productPrices.productId, products.id)).innerJoin(categories, effectiveCategoryJoin()).innerJoin(families, effectiveFamilyJoin()).leftJoin(brands, effectiveBrandJoin()).where(and(...baseMetricConditions(filters), inArray(productPrices.priceType, ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL"]))),
   ]);
   const metricTotal = Number(metricTotalRows[0]?.total ?? 0);
   const retailProducts = new Set(metricRows.filter((row) => row.priceType === "RETAIL" && isPriceEffectiveAt(row, now)).map((row) => row.productId));

@@ -11,7 +11,7 @@ test("admin taxonomy module exposes CRUD, soft deactivation and audit", () => {
   const manager = read("src/components/admin/TaxonomyManager.tsx");
 
   for (const source of [route, entityRoute]) {
-    assert.match(source, /requireApiPermission/);
+    assert.match(source, /requireTaxonomyAccess/);
     assert.match(source, /auditLogs/);
   }
   assert.match(entityRoute, /active/);
@@ -19,4 +19,6 @@ test("admin taxonomy module exposes CRUD, soft deactivation and audit", () => {
   assert.match(page, /taxonom/i);
   assert.match(manager, /Familias|Marcas/);
   assert.ok(manager.includes("/api/admin/taxonomia"));
+  assert.match(read("src/lib/taxonomy-access.ts"), /requireApiPermission/);
+  assert.doesNotMatch(route, /catalog\.product\.edit/);
 });

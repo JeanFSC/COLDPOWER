@@ -98,6 +98,7 @@ export default async function AdminCatalogoPage({
         canReview: can(actor.role, "catalog.product.review"),
         canPricing: can(actor.role, "pricing.view"),
         canInventory: can(actor.role, "inventory.view"),
+        canMedia: can(actor.role, "catalog.media.upload"),
         canArchive: can(actor.role, "catalog.product.archive"),
       }}
     />

@@ -5,6 +5,7 @@ import { auditLogs, products } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { getAdminCatalogProductDetail } from "@/lib/catalog-admin-service";
+import { assertEditorialTaxonomy } from "@/lib/catalog-taxonomy-validation";
 import { clearPublicCatalogRuntimeCache } from "@/lib/catalog-repository";
 import { can } from "@/lib/roles";
 
@@ -24,8 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const actor = await requireApiPermission("catalog.product.view");
     const { id } = await params;
-    const canViewPricing = can(actor.role, "pricing.cost.view") && can(actor.role, "pricing.margin.view");
-    return NextResponse.json({ product: await getAdminCatalogProductDetail(id, canViewPricing) });
+    return NextResponse.json({ product: await getAdminCatalogProductDetail(id, { includePricing: can(actor.role, "pricing.view"), includeCost: can(actor.role, "pricing.cost.view") }) });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para ver el producto.", 403);
     if (error instanceof Error && error.message === "CATALOG_PRODUCT_NOT_FOUND") return apiError("CATALOG_PRODUCT_NOT_FOUND", "Producto no encontrado.", 404);
@@ -44,7 +44,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const input = parseProductEditorial(body);
     if (!input) return apiError("CATALOG_VALIDATION_ERROR", "No hay campos editoriales válidos.", 400);
     const result = await getDb().transaction(async (tx) => {
-      const [before] = await tx.select({ id: products.id, sku: products.sku, originalName: products.originalName, commercialName: products.commercialName, editorialDescription: products.editorialDescription, featured: products.featured, editorialCategoryId: products.editorialCategoryId, editorialFamilyId: products.editorialFamilyId, editorialBrandId: products.editorialBrandId }).from(products).where(eq(products.id, id)).limit(1);
+      const [before] = await tx.select({ id: products.id, sku: products.sku, originalName: products.originalName, commercialName: products.commercialName, editorialDescription: products.editorialDescription, featured: products.featured, categoryId: products.categoryId, familyId: products.familyId, brandId: products.brandId, editorialCategoryId: products.editorialCategoryId, editorialFamilyId: products.editorialFamilyId, editorialBrandId: products.editorialBrandId }).from(products).where(eq(products.id, id)).limit(1);
       if (!before) throw new Error("Producto no encontrado.");
       const afterValues: Partial<typeof products.$inferInsert> = { updatedAt: new Date() };
       if (input.commercialName !== undefined) afterValues.commercialName = input.commercialName;
@@ -53,6 +53,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (input.editorialCategoryId !== undefined) afterValues.editorialCategoryId = input.editorialCategoryId;
       if (input.editorialFamilyId !== undefined) afterValues.editorialFamilyId = input.editorialFamilyId;
       if (input.editorialBrandId !== undefined) afterValues.editorialBrandId = input.editorialBrandId;
+      await assertEditorialTaxonomy(tx, {
+        categoryId: input.editorialCategoryId !== undefined ? input.editorialCategoryId ?? before.categoryId : before.editorialCategoryId ?? before.categoryId,
+        familyId: input.editorialFamilyId !== undefined ? input.editorialFamilyId ?? before.familyId : before.editorialFamilyId ?? before.familyId,
+        brandId: input.editorialBrandId !== undefined ? input.editorialBrandId : before.editorialBrandId ?? before.brandId,
+        requireCategoryActive: input.editorialCategoryId !== undefined && input.editorialCategoryId !== null,
+        requireFamilyActive: input.editorialFamilyId !== undefined && input.editorialFamilyId !== null,
+        requireBrandActive: input.editorialBrandId !== undefined && input.editorialBrandId !== null,
+      });
       const [after] = await tx.update(products).set(afterValues).where(eq(products.id, id)).returning({ id: products.id, sku: products.sku, originalName: products.originalName, commercialName: products.commercialName, editorialDescription: products.editorialDescription, featured: products.featured, editorialCategoryId: products.editorialCategoryId, editorialFamilyId: products.editorialFamilyId, editorialBrandId: products.editorialBrandId });
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "PRODUCT_EDITORIAL_UPDATED", entityType: "product", entityId: id, before, after, metadata: null });
       return after;
@@ -63,6 +71,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (error instanceof ApiAuthorizationError) return apiError("CATALOG_FORBIDDEN", "No tienes permiso para editar productos.", 403);
     const message = error instanceof Error ? error.message : "No se pudo actualizar el producto.";
     if (message.includes("no encontrado")) return apiError("CATALOG_PRODUCT_NOT_FOUND", message, 404);
+    if (message === "CATALOG_TAXONOMY_INVALID") return apiError("CATALOG_VALIDATION_ERROR", "La categoría, familia o marca no existe, está inactiva o no respeta la jerarquía.", 400);
     return apiError("CATALOG_UNAVAILABLE", message, 409);
   }
 }

@@ -20,6 +20,8 @@ export default async function ProductAnalyticsPage({
   const actor = await requirePermission("catalog.product.edit");
   const canViewCost = can(actor.role, "pricing.cost.view");
   const canViewMargin = can(actor.role, "pricing.margin.view");
+  const canEditPricing = can(actor.role, "pricing.edit");
+  const canAdjustInventory = can(actor.role, "inventory.adjust");
   const { id } = await params;
   const query = (await searchParams) ?? {};
   const value = (key: string) => {
@@ -87,6 +89,8 @@ export default async function ProductAnalyticsPage({
         productId={id}
         currentPrice={data.currentPrice}
         inventory={data.inventory}
+        canEditPricing={canEditPricing}
+        canAdjustInventory={canAdjustInventory}
       />
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric

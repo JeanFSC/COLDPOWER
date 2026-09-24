@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { and, count, eq, sql } from "drizzle-orm";
-import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { ApiAuthorizationError } from "@/lib/auth";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { getDb } from "@/db";
 import { auditLogs, brands, categories, families, products } from "@/db/schema";
-import { getTaxonomyDetail, isTaxonomyEntity, slugifyTaxonomy, taxonomyPermission, type TaxonomyEntity } from "@/lib/taxonomy-admin";
+import { getTaxonomyDetail, isTaxonomyEntity, slugifyTaxonomy, type TaxonomyEntity } from "@/lib/taxonomy-admin";
+import { requireTaxonomyAccess } from "@/lib/taxonomy-access";
 
-async function requireTaxonomyAccess(entity: TaxonomyEntity) { try { return await requireApiPermission(taxonomyPermission(entity)); } catch (error) { if (error instanceof ApiAuthorizationError) return requireApiPermission("catalog.product.edit"); throw error; } }
 async function findRow(tx: any, entity: TaxonomyEntity, id: string) { return entity === "categories" ? tx.select().from(categories).where(eq(categories.id, id)).limit(1).then(([row]: any[]) => row) : entity === "families" ? tx.select().from(families).where(eq(families.id, id)).limit(1).then(([row]: any[]) => row) : tx.select().from(brands).where(eq(brands.id, id)).limit(1).then(([row]: any[]) => row); }
 async function assertUnique(tx: any, entity: TaxonomyEntity, name: string, slug: string, excludeId: string) { const sameSlug = entity === "categories" ? await tx.select({ id: categories.id }).from(categories).where(sql`lower(${categories.slug}) = lower(${slug})`).limit(1) : entity === "families" ? await tx.select({ id: families.id }).from(families).where(sql`lower(${families.slug}) = lower(${slug})`).limit(1) : await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.slug}) = lower(${slug})`).limit(1); const sameName = entity === "categories" ? await tx.select({ id: categories.id }).from(categories).where(sql`lower(${categories.name}) = lower(${name})`).limit(1) : entity === "families" ? await tx.select({ id: families.id }).from(families).where(sql`lower(${families.name}) = lower(${name})`).limit(1) : await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.name}) = lower(${name})`).limit(1); if ((sameSlug[0] && sameSlug[0].id !== excludeId) || (sameName[0] && sameName[0].id !== excludeId)) throw new Error("Ya existe una entidad con ese nombre o slug."); }
 

@@ -34,6 +34,7 @@ import { BulkPricingWorkspace } from "@/components/admin/BulkPricingWorkspace";
 import { PricingImportDialog } from "@/components/admin/PricingImportDialog";
 import type { PricingFilters, PricingItem, PricingListResponse, PricingPriceRecord, PricingPriceType } from "@/lib/pricing-contract";
 import { formatPrice, formatValidity, getPriceEffectiveStatus, getPriceDelta, pricingStatusLabels, pricingTypeLabels } from "@/lib/pricing-domain";
+import { resolveProductImage } from "@/lib/product-image";
 
 const panel = "min-w-0 rounded-2xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
 const muted = "text-slate-400";
@@ -60,7 +61,6 @@ type Props = {
   canManageDiscounts?: boolean;
 };
 
-const placeholderImage = "/images/product-placeholder-repuesto.svg";
 const typeOptions: Array<{ value: PricingPriceType | ""; label: string }> = [
   { value: "", label: "Todos los tipos" },
   { value: "RETAIL", label: "Minorista" },
@@ -122,9 +122,13 @@ function PriceCell({ price, label, accent }: { price: PricingPriceRecord | null 
 }
 
 function ProductThumb({ item, size = 42 }: { item: PricingItem; size?: number }) {
-  const src = item.media?.primaryUrl ?? placeholderImage;
-  const alt = item.media?.altText ?? (item.media ? item.productName : "Imagen pendiente");
-  return <span className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50" style={{ width: size, height: size }} title={item.media ? undefined : "Imagen pendiente"}><Image src={src} alt={alt} fill sizes={`${size}px`} className="object-contain p-1.5" unoptimized={src.startsWith("/api/")} /></span>;
+  const media = resolveProductImage({
+    images: item.media?.primaryUrl ? [item.media.primaryUrl] : [],
+    family: item.familyName,
+    category: item.categoryName,
+  });
+  const alt = item.media?.altText ?? (media.isReference ? `Imagen referencial: ${item.productName}` : item.productName);
+  return <span className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50" style={{ width: size, height: size }} title={media.isReference ? "Imagen referencial" : undefined}><Image src={media.src} alt={alt} fill sizes={`${size}px`} className="object-contain p-1.5" unoptimized={media.src.startsWith("/api/")} />{media.isReference ? <span className="absolute inset-x-0 bottom-0 truncate bg-slate-900/85 px-0.5 text-center text-[7px] font-extrabold leading-3 text-white">Imagen referencial</span> : null}</span>;
 }
 
 function SummaryCard({ label, value, note, icon: Icon, tone = "blue", onClick }: { label: string; value: number; note: string; icon: typeof Tag; tone?: "blue" | "orange" | "green" | "red"; onClick?: () => void }) {
@@ -161,7 +165,7 @@ function PriceEditor({ initialPrice, product, canManageCost, onSaved }: { initia
     setBusy(true); setError("");
     const body = { ...data, amount: String(data.amount ?? ""), wholesaleMinQty: data.wholesaleMinQty ? Number(data.wholesaleMinQty) : undefined, minimumAllowed: data.minimumAllowed || undefined, validFrom: data.validFrom || undefined, validUntil: data.validUntil || undefined, reason: String(data.reason ?? "").trim(), idempotencyKey: crypto.randomUUID() };
     try {
-      const response = await fetch(isNew ? "/api/admin/precios" : scheduleMode ? "/api/admin/precios/reemplazar" : `/api/admin/precios/${initialPrice.id}`, { method: isNew ? "POST" : scheduleMode ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(isNew ? { ...body, productId: product?.productId } : scheduleMode ? { ...body, id: initialPrice.id } : body) });
+      const response = await fetch(isNew ? "/api/admin/precios" : scheduleMode ? "/api/admin/precios/reemplazar" : `/api/admin/precios/${initialPrice.id}`, { method: isNew ? "POST" : scheduleMode ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(isNew ? { ...body, productId: product?.productId } : scheduleMode ? { ...body, priceId: initialPrice.id } : body) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message ?? "No se pudo guardar el precio.");
       onSaved();
