@@ -379,6 +379,7 @@ export const companySettings = pgTable(
     guaranteeTerms: text("guarantee_terms"),
     coverage: text("coverage"),
     legalLinks: jsonb("legal_links").$type<Record<string, string>>(),
+    legalPagesPublished: boolean("legal_pages_published").notNull().default(false),
     logoMediaId: text("logo_media_id"),
     faviconMediaId: text("favicon_media_id"),
     primaryColor: text("primary_color"),

@@ -20,7 +20,7 @@ export const permissions = [
   "payments.view", "payments.review", "payments.manual.confirm", "payments.refund", "payments.webhook.manage", "payments.export", "purchases.view", "purchases.receive", "purchases.approve", "purchases.cost.view", "purchases.cost.manage",
   "reports.view", "reports.export", "audit.view", "audit.export", "audit.sensitive.view",
   "users.view", "users.invite", "users.manage", "users.export", "roles.view", "roles.manage",
-  "settings.business.edit", "settings.technical.edit", "integrations.manage", "operations.view", "operations.assign", "notifications.manage", "notifications.preferences", "promotions.export",
+  "settings.business.edit", "settings.legal.publish", "settings.technical.edit", "integrations.manage", "operations.view", "operations.assign", "notifications.manage", "notifications.preferences", "promotions.export",
   "catalog.product.edit", "catalog.product.publish", "catalog.media.upload", "cms.edit", "inventory.adjust", "inventory.transfer", "inventory.reserve", "pricing.edit", "pricing.cost.view", "pricing.discount.approve", "crm.manage", "sales.manage", "orders.manage", "payments.manage", "purchases.manage", "notifications.view", "promotions.manage", "company.settings.manage", "catalog:publish", "catalog:review", "quote:manage", "inventory:read", "inventory:adjust", "inventory:transfer", "inventory:reserve", "reports:read", "roles:manage",
 ] as const;
 export type Permission = (typeof permissions)[number];

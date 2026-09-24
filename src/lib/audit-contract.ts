@@ -84,7 +84,7 @@ const ACTION_LABELS: Record<string, string> = {
   "access.user_role_changed": "Cambió el rol", "access.user_deactivated": "Desactivó el usuario",
   "access.user_deletion_blocked": "Bloqueó una baja de usuario", "access.session_created": "Inició sesión",
   "audit.exported": "Exportó auditoría", "clerk.webhook_processed": "Procesó evento de Clerk",
-  "company.settings_restored": "Restauró configuración", "company.settings_updated": "Actualizó configuración",
+  "company.settings_restored": "Restauró configuración", "company.settings_updated": "Actualizó configuración", "company.legal_pages_publication_updated": "Cambió publicación legal",
   "crm.lead_created_from_quote": "Creó un lead desde cotización", "crm.pipeline_exported": "Exportó el pipeline",
   "crm.whatsapp_lead_created": "Creó un lead desde WhatsApp", "customers.exported": "Exportó clientes",
   "inventory.location_created": "Creó un almacén", "inventory.minimum_stock_updated": "Actualizó el stock mínimo",

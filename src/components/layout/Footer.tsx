@@ -32,7 +32,11 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
   const currentYear = new Date().getFullYear();
   const publicCategories = categories.filter((category) => category.productCount > 0).slice(0, 5);
   const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
-  const legalLinks = Object.entries(settings.legalLinks ?? {});
+  const configuredLegalLinks = Object.entries(settings.legalLinks ?? {});
+  const requiredLegalLinks = [["Términos y condiciones", "/terminos"], ["Política de privacidad", "/privacidad"]] as const;
+  const legalLinks = settings.legalPagesPublished
+    ? [...requiredLegalLinks, ...configuredLegalLinks.filter(([label, href]) => !requiredLegalLinks.some(([requiredLabel, requiredHref]) => requiredLabel === label || requiredHref === href))]
+    : [];
   const socialLinks = Object.entries(settings.socials ?? {}).filter(([key, value]) => Boolean(value && key in socialMeta));
   const paymentMethods = getPaymentMethodLabels(settings.paymentMethods);
 

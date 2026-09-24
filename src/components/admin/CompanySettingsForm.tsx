@@ -13,7 +13,7 @@ type CompanySettings = {
   phone?: string | null; phones?: string[] | null; whatsapp?: string | null; email?: string | null; salesEmail?: string | null;
   hours?: string | null; businessHours?: string | null; facebook?: string | null; instagram?: string | null; tiktok?: string | null;
   website?: string | null; socials?: Record<string, string> | null; locations?: Array<{ name: string; address?: string }> | null;
-  paymentMethods?: string[] | null; guaranteeTerms?: string | null; coverage?: string | null; legalLinks?: Record<string, string> | null;
+  paymentMethods?: string[] | null; guaranteeTerms?: string | null; coverage?: string | null; legalLinks?: Record<string, string> | null; legalPagesPublished?: boolean | null;
   logoMediaId?: string | null; faviconMediaId?: string | null; primaryColor?: string | null; secondaryColor?: string | null;
   version?: number;
 };
@@ -26,7 +26,7 @@ type FormState = {
   legalName: string; tradeName: string; commercialName: string; ruc: string; country: string; department: string; province: string;
   district: string; address: string; phone: string; phones: string; whatsapp: string; email: string; salesEmail: string; hours: string;
   businessHours: string; facebook: string; instagram: string; tiktok: string; website: string; socialRows: KeyValueRow[]; locationRows: LocationRow[];
-  paymentMethods: string; guaranteeTerms: string; coverage: string; legalLinkRows: KeyValueRow[];
+  paymentMethods: string; guaranteeTerms: string; coverage: string; legalLinkRows: KeyValueRow[]; legalPagesPublished: boolean;
   logoMediaId: string; faviconMediaId: string; primaryColor: string; secondaryColor: string;
 };
 
@@ -34,7 +34,7 @@ const emptyState: FormState = {
   version: 0,
   legalName: "", tradeName: "", commercialName: "", ruc: "", country: "", department: "", province: "", district: "", address: "",
   phone: "", phones: "", whatsapp: "", email: "", salesEmail: "", hours: "", businessHours: "", facebook: "", instagram: "",
-  tiktok: "", website: "", socialRows: [], locationRows: [], paymentMethods: "", guaranteeTerms: "", coverage: "", legalLinkRows: [],
+  tiktok: "", website: "", socialRows: [], locationRows: [], paymentMethods: "", guaranteeTerms: "", coverage: "", legalLinkRows: [], legalPagesPublished: false,
   logoMediaId: "", faviconMediaId: "", primaryColor: "", secondaryColor: "",
 };
 
@@ -48,7 +48,7 @@ function toState(settings: CompanySettings, version = settings.version ?? 0): Fo
     email: settings.email ?? "", salesEmail: settings.salesEmail ?? "", hours: settings.hours ?? "", businessHours: settings.businessHours ?? "",
     facebook: settings.facebook ?? "", instagram: settings.instagram ?? "", tiktok: settings.tiktok ?? "", website: settings.website ?? "",
     socialRows: keyValueRows(settings.socials), locationRows: (settings.locations ?? []).map((location) => ({ name: location.name ?? "", address: location.address ?? "" })), paymentMethods: settings.paymentMethods?.join("\n") ?? "",
-    guaranteeTerms: settings.guaranteeTerms ?? "", coverage: settings.coverage ?? "", legalLinkRows: keyValueRows(settings.legalLinks),
+    guaranteeTerms: settings.guaranteeTerms ?? "", coverage: settings.coverage ?? "", legalLinkRows: keyValueRows(settings.legalLinks), legalPagesPublished: settings.legalPagesPublished === true,
     logoMediaId: settings.logoMediaId ?? "", faviconMediaId: settings.faviconMediaId ?? "", primaryColor: settings.primaryColor ?? "", secondaryColor: settings.secondaryColor ?? "",
   };
 }
@@ -58,7 +58,7 @@ const colorInputClass = "h-10 w-full max-w-[140px] rounded-lg border border-slat
 const extendedInputClass = "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
 const extendedTextAreaClass = "min-h-28 w-full rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
 
-export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGeneral?: ReactNode; belowBranding?: ReactNode } = {}) {
+export function CompanySettingsForm({ belowGeneral, belowBranding, canPublishLegalPages = false }: { belowGeneral?: ReactNode; belowBranding?: ReactNode; canPublishLegalPages?: boolean } = {}) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(emptyState);
   const [initialForm, setInitialForm] = useState<FormState>(emptyState);
@@ -125,6 +125,7 @@ export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGene
         socials: Object.fromEntries(form.socialRows.filter((row) => row.key.trim() && row.value.trim()).map((row) => [row.key.trim(), row.value.trim()])),
         paymentMethods: lines(form.paymentMethods), guaranteeTerms: form.guaranteeTerms, coverage: form.coverage,
         legalLinks: Object.fromEntries(form.legalLinkRows.filter((row) => row.key.trim() && row.value.trim()).map((row) => [row.key.trim(), row.value.trim()])),
+        ...(canPublishLegalPages ? { legalPagesPublished: form.legalPagesPublished } : {}),
         logoMediaId: form.logoMediaId || null, faviconMediaId: form.faviconMediaId || null, primaryColor: form.primaryColor || null, secondaryColor: form.secondaryColor || null,
       };
       const response = await fetch("/api/admin/configuracion", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -271,6 +272,19 @@ export function CompanySettingsForm({ belowGeneral, belowBranding }: { belowGene
         </div>
       </div>
     </details>
+    {canPublishLegalPages ? <section id="company-legal-publication" className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-[15px] font-extrabold text-dark">Publicación legal</h2>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600">Activa las páginas legales después de completar y validar los campos marcados como [DEFINIR]. El cambio queda registrado en auditoría.</p>
+        </div>
+        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-amber-800">Solo SUPERADMIN</span>
+      </div>
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-white p-4">
+        <input type="checkbox" checked={form.legalPagesPublished} onChange={(event) => setForm((current) => ({ ...current, legalPagesPublished: event.target.checked }))} className="mt-0.5 h-4 w-4 accent-primary" />
+        <span><span className="block text-sm font-extrabold text-dark">Publicar páginas legales</span><span className="mt-1 block text-xs leading-5 text-gray-text">Mientras esté desactivado, las rutas devuelven 404 y el footer no muestra enlaces legales.</span></span>
+      </label>
+    </section> : null}
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white p-4 shadow-card"><button type="submit" disabled={busy || !isDirty} className="rounded-md bg-primary px-5 py-2.5 text-sm font-extrabold text-white disabled:opacity-50">{busy ? "Guardando…" : "Guardar configuración"}</button><button type="button" disabled={!isDirty || busy} onClick={() => { setForm(initialForm); setMessage(""); }} className="rounded-md border border-border px-4 py-2.5 text-sm font-extrabold text-dark disabled:opacity-50">Descartar cambios</button>{isDirty ? <span className="text-xs font-semibold text-[#9a5c16]">Cambios sin guardar</span> : null}{message ? <p className="text-sm font-bold text-dark" role={messageKind === "error" ? "alert" : "status"} aria-live={messageKind === "error" ? "assertive" : "polite"}>{message}</p> : null}</div>
   </form>;
 }
