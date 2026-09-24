@@ -14,8 +14,10 @@ test("public UI contract follows the approved storefront anatomy", async () => {
     read("src/components/product/TransactionBox.tsx"),
     read("src/components/shopping-cart/CartPageView.tsx"),
   ]);
-  assert.match(home, /<Hero\s*\/>/);
-  assert.match(hero, /submitLabel="Buscar"/);
+  assert.match(home, /<Hero\s+settings=\{settings\}\s*\/>/);
+  assert.match(hero, /home-v2-hero-hvac\.webp/);
+  assert.match(hero, /href="\/cotizacion"/);
+  assert.match(hero, /href="\/catalogo"/);
   assert.match(catalog, /CatalogHero/);
   assert.match(card, /SKU:/);
   assert.doesNotMatch(card, /Ver ficha/);
@@ -54,4 +56,3 @@ test("public copy does not expose infrastructure or invented catalog content", a
   assert.doesNotMatch(source, /La potencia que mantiene|Repuestos para un mayor mañana/i);
   assert.doesNotMatch(source, /undefined|NaN/);
 });
-

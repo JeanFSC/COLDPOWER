@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Circle, CircleDot, MapPin, PackageCheck, Truck, XCircle } from "lucide-react";
@@ -86,6 +87,10 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                   <h2 className="flex items-center gap-2 font-display text-xl font-black text-dark"><Truck className="h-5 w-5 text-primary" aria-hidden="true" />Seguimiento del envío</h2>
                   {shipment?.provider === "mock" ? <span className="rounded-pill border border-dashed border-warning px-2.5 py-0.5 text-xs font-bold text-warning">Seguimiento de prueba</span> : null}
                 </div>
+                <figure className="relative mt-4 h-36 overflow-hidden rounded-md border border-border bg-surface-page sm:h-44">
+                  <Image src="/images/info/despacho-repuestos.webp" alt="Repuestos HVAC embalados para despacho desde el almacén." fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
+                  <figcaption className="absolute bottom-3 left-3 rounded-pill bg-brand-primary-900/85 px-3 py-1.5 text-[11px] font-bold text-white">Imagen referencial</figcaption>
+                </figure>
                 {shipment ? (
                   <>
                     <p className="mt-3 text-sm text-gray-text">{shipment.carrier} · Guía <span className="font-mono font-bold text-dark">{shipment.trackingNumber}</span>{shipment.estimatedDeliveryAt && shipment.status !== "DELIVERED" ? ` · Estimado ${formatDateTime(shipment.estimatedDeliveryAt)}` : ""}</p>

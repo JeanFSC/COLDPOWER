@@ -12,7 +12,7 @@ export function PromoBanner() {
           className="group relative block min-h-[250px] overflow-hidden rounded-2xl bg-brand-primary-900 sm:min-h-[290px]"
         >
           <Image
-            src="/images/home-v2-brand-trust.png"
+            src="/images/home/home-v2-brand-trust.webp"
             alt="Compresor hermético para un proyecto de climatización"
             fill
             sizes="100vw"

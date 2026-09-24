@@ -87,6 +87,9 @@ a.channel:hover { border-color: #9cc6e8; box-shadow: 0 5px 14px rgba(15,111,174,
 .formMessageError { background: #fff0ee; color: #b42318; }
 .helpColumn { display: grid; gap: 1rem; }
 .helpCard, .brandsCard { border-radius: 1rem; padding: 1.35rem; }
+.helpVisual { position: relative; aspect-ratio: 16 / 9; margin: -0.1rem -0.1rem 1.15rem; overflow: hidden; border-radius: .75rem; background: #eaf4fb; }
+.helpVisualImage { object-fit: cover; object-position: center; }
+.helpVisualBadge { position: absolute; bottom: .65rem; left: .65rem; border-radius: 999px; background: rgba(11, 45, 78, .86); color: #fff; padding: .35rem .55rem; font-size: .62rem; font-weight: 800; }
 .cardTitle { margin: .45rem 0 0; color: var(--brand-primary-900); font-size: 1.05rem; font-weight: 850; letter-spacing: -.02em; line-height: 1.2; }
 .infoList { display: grid; gap: .65rem; margin: 1.15rem 0 0; border-radius: .7rem; background: #edf6fd; padding: .85rem .8rem; list-style: none; }
 .infoList li { display: flex; align-items: center; gap: .65rem; color: #486b8e; font-size: .73rem; line-height: 1.25; }

@@ -24,12 +24,12 @@ test("cabecera única mantiene búsqueda, cuenta, cotización y carrito", () => 
 
 test("home prioriza búsqueda real y no conserva copy decorativo", () => {
   const hero = read("src/components/home/Hero.tsx");
-  assert.match(hero, /Encuentra tu repuesto por código/);
-  assert.match(hero, /submitLabel="Buscar"/);
-  assert.match(hero, /R404A|Embraco|6871JB1103H/);
+  const header = read("src/components/layout/Header.tsx");
+  assert.match(header, /href="\/buscar"/);
+  assert.match(hero, /href="\/cotizacion"/);
+  assert.match(hero, /href="\/catalogo"/);
   assert.doesNotMatch(hero, /La potencia que mantiene|Repuestos para un mayor maÃ±ana|Repuestos para un mayor mañana/);
-  assert.ok(exists("public/images/home/hero-tecnico-hvac.webp"));
-  assert.ok(exists("public/images/home/hero-tecnico-hvac-mobile.webp"));
+  assert.ok(exists("public/images/home/home-v2-hero-hvac.webp"));
 });
 
 test("tarjetas muestran identidad comercial y una sola CTA", () => {
@@ -41,6 +41,7 @@ test("tarjetas muestran identidad comercial y una sola CTA", () => {
     assert.match(source, /AddToCartButton/);
     assert.match(source, /AddToQuoteButton/);
     assert.doesNotMatch(source, /Ver ficha/);
+    assert.match(source, /Precio bajo cotiz/);
   }
   assert.match(read("src/components/catalog/ProductGrid.tsx"), /grid-cols-2/);
 });
@@ -101,7 +102,12 @@ test("imágenes públicas optimizadas y logo real están disponibles", () => {
   const assets = [
     "public/brand/logo-coldpower-lockup.webp",
     "public/brand/logo-coldpower-lockup-light.webp",
-    "public/images/home/hero-tecnico-hvac.webp",
+    "public/images/home/home-v2-hero-hvac.webp",
+    "public/images/home/home-v2-brand-trust.webp",
+    "public/images/home/placa-equipo.webp",
+    "public/images/info/asesor-mostrador.webp",
+    "public/images/info/despacho-repuestos.webp",
+    "public/images/404/repuesto-perdido.webp",
     "public/images/categories/refrigeracion.webp",
     "public/images/products/product-placeholder.webp",
     "public/images/og/og-tienda.webp",

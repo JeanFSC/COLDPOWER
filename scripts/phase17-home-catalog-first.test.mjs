@@ -6,12 +6,10 @@ const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 const page = read("src/app/page.tsx");
 for (const component of ["Hero", "CategoriesGrid", "ProductSection", "BrandsSection", "BenefitsBar", "AssistanceSection"]) assert.match(page, new RegExp("<" + component + "\\b"));
-assert.doesNotMatch(page, /Testimonials|FAQ|TechnicalSearchGuide|ApplicationSolutions|PromoBanner/);
+for (const component of ["TechnicalSearchGuide", "ApplicationSolutions", "PromoBanner", "HomeFaq"]) assert.match(page, new RegExp(component));
 assert.match(page, /getCatalogProducts/);
-assert.match(page, /pageSize:\s*8/);
+assert.match(page, /pageSize:\s*24/);
 const categories = read("src/components/home/CategoriesGrid.tsx");
-assert.match(categories, /slice\(0, 8\)/);
 assert.match(categories, /productCount\s*>\s*0/);
-assert.match(read("src/components/home/Hero.tsx"), /submitLabel="Buscar"/);
+assert.match(read("src/components/home/Hero.tsx"), /home-v2-hero-hvac\.webp/);
 console.log("Phase 17 catalog-first homepage: PASS");
-

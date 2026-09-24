@@ -1,13 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { CompareToggle } from "@/components/catalog/CompareToggle";
 import { ProductMedia } from "@/components/catalog/ProductMedia";
-import { Button } from "@/components/shared/Button";
 import { formatProductPrice } from "@/lib/formatters";
 
 type HomeProductCardProps = { product: Product; priority?: boolean };
@@ -35,8 +31,7 @@ export function HomeProductCard({ product, priority = false }: HomeProductCardPr
   const productHref = "/producto/" + product.slug;
   const criticalSpec = product.specs.find((spec) => spec.label && spec.value);
   const availability = availabilityLabel(product);
-  const isUnavailable =
-    product.availabilityStatus === "out_of_stock" || product.status === "out-of-stock";
+  const isPurchasable = product.price !== null && product.availabilityStatus !== "out_of_stock" && product.status !== "out-of-stock";
 
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-white transition hover:-translate-y-0.5 hover:border-brand-secondary-600 hover:shadow-card">
@@ -54,10 +49,10 @@ export function HomeProductCard({ product, priority = false }: HomeProductCardPr
             className="rounded-t-xl"
           />
         </Link>
-        <div className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-brand-primary-900 shadow-card">
+        <div className="absolute left-3 top-3 z-10 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-brand-primary-900 shadow-card">
           {availability}
         </div>
-        <div className="absolute right-3 top-3">
+        <div className="absolute bottom-3 right-3 z-10">
           <CompareToggle productId={product.id} />
         </div>
       </div>
@@ -91,28 +86,25 @@ export function HomeProductCard({ product, priority = false }: HomeProductCardPr
             }
           >
             {product.price === null
-              ? "Consultar precio"
+              ? "Precio bajo cotización"
               : formatProductPrice(product.price, product.priceCurrency ?? "PEN")}
           </p>
-          <div className="mt-3 grid gap-2">
-            <Button href={productHref} variant="outline" size="sm" className="w-full">
-              <span>Ver ficha</span>
-              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-            {!isUnavailable && product.price !== null ? (
+          <div className="mt-3">
+            {isPurchasable ? (
               <AddToCartButton
                 productId={product.id}
                 purchasable
-                label="Agregar"
+                label="Agregar al carrito"
                 className="w-full"
               />
-            ) : null}
+            ) : (
             <AddToQuoteButton
               productId={product.id}
-              label="Solicitar cotización"
-              variant={product.price === null ? "primary" : "outline"}
+              label="Cotizar"
+              variant="primary"
               className="w-full"
             />
+            )}
           </div>
         </div>
       </div>

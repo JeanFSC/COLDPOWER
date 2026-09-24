@@ -112,6 +112,10 @@ export function ContactPage({ settings, brands, assets, initialMessage }: Contac
           <ContactForm initialMessage={initialMessage} />
           <aside className={styles.helpColumn}>
             <div className={styles.helpCard}>
+              <figure className={styles.helpVisual}>
+                <Image src="/images/info/asesor-mostrador.webp" alt="Asesor de ColdPower ayudando a identificar un repuesto en el mostrador." fill sizes="(min-width: 1024px) 25vw, 100vw" className={styles.helpVisualImage} />
+                <figcaption className={styles.helpVisualBadge}>Imagen referencial</figcaption>
+              </figure>
               <p className={styles.cardEyebrow}>Para ayudarte mejor</p>
               <h2 className={styles.cardTitle}>¿Qué información puedes enviarnos?</h2>
               <p className={styles.cardIntro}>Entre más detalles nos compartas, podremos asesorarte mejor y enviarte una cotización más precisa.</p>

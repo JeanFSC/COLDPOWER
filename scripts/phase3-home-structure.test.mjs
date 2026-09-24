@@ -16,9 +16,9 @@ for (const file of [
 const page = read("src/app/page.tsx");
 for (const component of ["Hero", "CategoriesGrid", "ProductSection", "BenefitsBar", "BrandsSection", "AssistanceSection"]) assert.match(page, new RegExp("<" + component + "\\b"));
 assert.match(page, /getCatalogProducts/);
-assert.match(page, /pageSize: 8/);
-assert.doesNotMatch(page, /TechnicalSearchGuide|ApplicationSolutions|PromoBanner|Testimonials|HomeFaq/);
-assert.match(read("src/components/home/Hero.tsx"), /submitLabel="Buscar"/);
+assert.match(page, /pageSize: 24/);
+for (const component of ["TechnicalSearchGuide", "ApplicationSolutions", "PromoBanner", "HomeFaq"]) assert.match(page, new RegExp(component));
+assert.match(read("src/components/home/Hero.tsx"), /home-v2-hero-hvac\.webp/);
+assert.match(read("src/components/home/Hero.tsx"), /href="\/cotizacion"/);
 assert.match(read("src/components/catalog/ProductCard.tsx"), /SKU:|criticalSpec/);
 console.log("Phase 3 current catalog-first homepage contract: PASS");
-

@@ -26,6 +26,14 @@ export default async function AdminHomePage() {
     listRecentAdminItems(actor.userId),
   ]);
 
+  if (dashboardResult.status === "rejected" || workspaceResult.status === "rejected") {
+    console.error("ColdPower: no se pudo cargar el resumen del inicio administrativo", {
+      dashboard: dashboardResult.status === "rejected" ? dashboardResult.reason : undefined,
+      workspace: workspaceResult.status === "rejected" ? workspaceResult.reason : undefined,
+    });
+    throw new Error("ADMIN_HOME_DATA_UNAVAILABLE");
+  }
+
   const actorName = profileResult.status === "fulfilled" ? profileResult.value[0]?.name ?? profileResult.value[0]?.email ?? null : null;
   const unreadCount = unreadResult.status === "fulfilled" ? unreadResult.value : 0;
   const data = dashboardResult.status === "fulfilled" ? dashboardResult.value : null;

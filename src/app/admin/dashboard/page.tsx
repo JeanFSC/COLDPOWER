@@ -30,6 +30,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   ]);
   const data = dashboardResult.status === "fulfilled" ? dashboardResult.value : null;
   const filterOptions = optionsResult.status === "fulfilled" ? optionsResult.value : null;
-  if (dashboardResult.status === "rejected") console.error("ColdPower: no se pudo cargar el dashboard", dashboardResult.reason);
+  if (dashboardResult.status === "rejected") {
+    console.error("ColdPower: no se pudo cargar el dashboard", dashboardResult.reason);
+    throw new Error("ADMIN_DASHBOARD_DATA_UNAVAILABLE");
+  }
   return <Tanda2Dashboard role={actor.role} data={data} filterOptions={filterOptions} loadedAt={loadedAt} />;
 }

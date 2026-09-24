@@ -12,7 +12,7 @@ export function Hero({ settings }: HeroProps) {
   return (
     <section className="relative isolate min-h-[430px] overflow-hidden border-b border-border bg-white" data-home-block="hero">
       <Image
-        src="/images/home-v2-hero-hvac.png"
+        src="/images/home/home-v2-hero-hvac.webp"
         alt="Equipos de refrigeración y climatización en una instalación técnica"
         fill
         priority

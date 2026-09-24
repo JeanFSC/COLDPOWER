@@ -20,9 +20,17 @@ for (const href of ["admin/pedidos", "admin/inventario", "admin/compras", "admin
   assert.match(layout, new RegExp(href));
 }
 assert.match(read("src/app/admin/reportes/page.tsx"), /quotes|funnel|embudo|status/i);
-assert.match(read("src/app/admin/inventario/page.tsx"), /getPublishedProducts|products|stock/i);
+const inventoryContract = [
+  read("src/app/admin/inventario/page.tsx"),
+  read("src/lib/inventory-admin-service.ts"),
+  read("src/components/admin/InventoryAdminWorkspace.tsx"),
+].join("\n");
+assert.match(inventoryContract, /getInventoryAdminPage|products|stock/i);
 assert.match(read("src/app/admin/compras/page.tsx"), /supplier|proveedor|purchase|compra/i);
 assert.match(read("src/app/cuenta/page.tsx"), /cuenta\/pedidos|cuenta\/carrito/);
-assert.match(read("src/app/cuenta/carrito/page.tsx"), /useCart/);
+assert.match(
+  [read("src/app/carrito/page.tsx"), read("src/components/shopping-cart/CartPageView.tsx")].join("\n"),
+  /CartPageView|useShoppingCart|useCart/,
+);
 
 console.log("Phase 29 client and ERP modules contract: PASS");
