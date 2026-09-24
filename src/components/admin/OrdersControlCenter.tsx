@@ -151,11 +151,14 @@ export function OrdersControlCenter({
     const params = new URLSearchParams(queryString);
     const directId = params.get("orderId");
     if (directId) return directId;
+    const saleId = params.get("saleId");
+    const quoteId = params.get("quoteId");
+    const customerId = params.get("customerId");
     const ownerItem = page.items.find(
       (item) =>
-        item.saleId === params.get("saleId") ||
-        item.quoteId === params.get("quoteId") ||
-        item.customerId === params.get("customerId"),
+        (saleId !== null && item.saleId === saleId) ||
+        (quoteId !== null && item.quoteId === quoteId) ||
+        (customerId !== null && item.customerId === customerId),
     );
     return ownerItem?.id ?? null;
   });

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
 import { getProductAnalytics } from "@/lib/product-analytics";
+import { getAdminCatalogProductDetail } from "@/lib/catalog-admin-service";
 import { ProductCommercialEditor } from "@/components/admin/ProductCommercialEditor";
+import { ProductMediaManager } from "@/components/admin/ProductMediaManager";
 
 export const metadata: Metadata = {
   title: "Análisis del producto | Panel admin ColdPower",
@@ -49,6 +51,7 @@ export default async function ProductAnalyticsPage({
         Producto no encontrado.
       </div>
     );
+  const mediaDetail = await getAdminCatalogProductDetail(id, false);
   return (
     <div>
       <Link href="/admin/catalogo" className="text-sm font-bold text-primary hover:underline">
@@ -92,6 +95,15 @@ export default async function ProductAnalyticsPage({
         canEditPricing={canEditPricing}
         canAdjustInventory={canAdjustInventory}
       />
+      <section className="mt-6 rounded-md border border-border bg-white p-5">
+        <ProductMediaManager
+          key={id}
+          productId={id}
+          productName={data.product.name}
+          initialMedia={mediaDetail.media}
+          canEdit={can(actor.role, "catalog.media.upload")}
+        />
+      </section>
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric
           label="Ventas hoy"

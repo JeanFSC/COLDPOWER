@@ -13,7 +13,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const [activeImage, setActiveImage] = useState(media.images[0]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-media-state={media.isReference ? "placeholder" : "primary"}>
       <div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-white p-5 shadow-card">
         <Image src={activeImage} alt={product.name} fill priority sizes="(min-width: 1024px) 560px, 100vw" className="object-contain p-4" />
         {media.isReference ? <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-pill bg-brand-primary-900/85 px-3 py-1.5 text-xs font-bold text-white"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />Imagen referencial</span> : null}
