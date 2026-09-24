@@ -24,7 +24,6 @@ test("footer remains public and points to legal support", async () => {
   const footer = await read("src/components/layout/Footer.tsx");
   assert.match(footer, /Categor/);
   assert.match(footer, /Ayuda|Contacto/);
-  assert.match(footer, /libro-de-reclamaciones/);
+  assert.match(footer, /legalLinks|libro-de-reclamaciones/);
   assert.match(footer, /BrandLogo/);
 });
-

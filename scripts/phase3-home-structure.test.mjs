@@ -8,17 +8,18 @@ for (const file of [
   "src/components/home/Hero.tsx",
   "src/components/home/CategoriesGrid.tsx",
   "src/components/home/ProductSection.tsx",
-  "src/components/home/BenefitsBar.tsx",
   "src/components/home/BrandsSection.tsx",
-  "src/components/home/AssistanceSection.tsx",
+  "src/components/home/NewArrivalsSection.tsx",
+  "src/components/home/HomeProductTabs.tsx",
   "src/components/catalog/ProductCard.tsx",
 ]) assert.equal(existsSync(join(root, file)), true, file);
 const page = read("src/app/page.tsx");
-for (const component of ["Hero", "CategoriesGrid", "ProductSection", "BenefitsBar", "BrandsSection", "AssistanceSection"]) assert.match(page, new RegExp("<" + component + "\\b"));
+for (const component of ["Hero", "CategoriesGrid", "ProductSection", "BrandsSection", "NewArrivalsSection"]) assert.match(page, new RegExp("<" + component + "\\b"));
 assert.match(page, /getCatalogProducts/);
-assert.match(page, /pageSize: 24/);
-for (const component of ["TechnicalSearchGuide", "ApplicationSolutions", "PromoBanner", "HomeFaq"]) assert.match(page, new RegExp(component));
-assert.match(read("src/components/home/Hero.tsx"), /home-v2-hero-hvac\.webp/);
+assert.match(page, /pageSize: 48/);
+for (const component of ["TechnicalSearchGuide", "ApplicationSolutions", "PromoBanner"]) assert.match(page, new RegExp(component));
+assert.match(read("src/components/home/ProductSection.tsx"), /HomeProductTabs/);
+assert.match(read("src/components/home/Hero.tsx"), /home-espejo\/hero-desktop\.webp/);
 assert.match(read("src/components/home/Hero.tsx"), /href="\/cotizacion"/);
-assert.match(read("src/components/catalog/ProductCard.tsx"), /SKU:|criticalSpec/);
+assert.match(read("src/components/home/HomeProductCard.tsx"), /Cód\.|formatProductPrice/);
 console.log("Phase 3 current catalog-first homepage contract: PASS");

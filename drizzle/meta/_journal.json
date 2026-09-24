@@ -358,6 +358,13 @@
       "when": 1790195304404,
       "tag": "0050_rainy_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1790233627720,
+      "tag": "0051_minor_firebrand",
+      "breakpoints": true
     }
   ]
 }

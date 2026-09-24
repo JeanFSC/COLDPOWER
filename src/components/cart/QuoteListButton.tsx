@@ -6,12 +6,10 @@ import { Button } from "@/components/shared/Button";
 import { cn } from "@/lib/utils";
 import { useCart as useQuoteList } from "@/components/cart/CartProvider";
 
-// Quote list entry point (/cotizacion), with the number of references waiting to be quoted.
 export function QuoteListButton({ className, compact = false, showCount = false }: { className?: string; compact?: boolean; showCount?: boolean }) {
   const { totalQuantity } = useQuoteList();
   const label = totalQuantity > 0 ? `Cotización con ${totalQuantity} referencia${totalQuantity === 1 ? "" : "s"}` : "Solicitar cotización";
   const badge = totalQuantity > 99 ? "99+" : totalQuantity;
-  const hasVisibleCount = showCount || totalQuantity > 0;
 
   if (compact) {
     return (
@@ -25,8 +23,8 @@ export function QuoteListButton({ className, compact = false, showCount = false 
   return (
     <Button href="/cotizacion" variant="outline" size="sm" className={className} aria-label={label}>
       <PackageSearch className="h-4 w-4" aria-hidden="true" />
-      <span>Cotización</span>
-      {hasVisibleCount && totalQuantity > 0 ? <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-secondary-600 px-1.5 text-[11px] font-black leading-none text-white">{badge}</span> : null}
+      <span>{showCount ? `Cotización (${badge})` : "Cotización"}</span>
+      {!showCount && totalQuantity > 0 ? <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-secondary-600 px-1.5 text-[11px] font-black leading-none text-white">{badge}</span> : null}
     </Button>
   );
 }

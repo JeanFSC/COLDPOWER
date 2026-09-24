@@ -265,7 +265,7 @@ function ContactForm({ initialMessage }: { initialMessage?: string }) {
       <div className={styles.fileRow}>
         <Paperclip aria-hidden="true" />
         <div className={styles.fileCopy}><strong>Adjuntar foto o referencia <em>(opcional)</em></strong><span>{file ? `${file.name} · ${formatFileSize(file.size)}` : "Puedes subir una imagen del repuesto, etiqueta o modelo."}</span></div>
-        {file ? <button type="button" className={styles.fileRemove} onClick={() => chooseFile(null)} aria-label="Quitar archivo adjunto"><X aria-hidden="true" /></button> : <><input ref={fileInput} id="contact-file" type="file" className={styles.visuallyHidden} accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => chooseFile(event.target.files?.[0] ?? null)} /><button type="button" className={styles.fileButton} onClick={() => fileInput.current?.click()}><Upload aria-hidden="true" /> Seleccionar archivo</button></>}
+        {file ? <button type="button" className={styles.fileRemove} onClick={() => chooseFile(null)} aria-label="Quitar archivo adjunto"><X aria-hidden="true" /></button> : <><input ref={fileInput} id="contact-file" aria-label="Adjuntar foto o referencia" type="file" className={styles.visuallyHidden} accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => chooseFile(event.target.files?.[0] ?? null)} /><button type="button" className={styles.fileButton} onClick={() => fileInput.current?.click()}><Upload aria-hidden="true" /> Seleccionar archivo</button></>}
       </div>
       {errors.attachment ? <p className={styles.fieldError} role="alert">{errors.attachment}</p> : null}
       <div className={styles.formBottom}>

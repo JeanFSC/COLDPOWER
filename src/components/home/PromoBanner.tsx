@@ -1,43 +1,43 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2, MessageCircle, PackageCheck, ShieldCheck } from "lucide-react";
+import type { CompanySettings } from "@/lib/company-settings";
 
-export function PromoBanner() {
+const benefits = [
+  { label: "Asesoría técnica especializada", icon: ShieldCheck },
+  { label: "Productos originales y alternativos", icon: CheckCircle2 },
+  { label: "Envíos a todo el Perú", icon: PackageCheck },
+  { label: "Soporte por WhatsApp", icon: MessageCircle, whatsapp: true },
+] as const;
+
+export function PromoBanner({ settings }: { settings?: CompanySettings }) {
+  const coverage = settings?.coverage?.trim() || "Envíos a todo el Perú";
+  const labels = benefits.map((benefit) => benefit.label === "Envíos a todo el Perú" ? coverage : benefit.label);
+
   return (
-    <section className="bg-surface-page py-10 sm:py-14" data-home-block="promo-banner">
-      <div className="cp-container">
-        <Link
-          href="/contacto?motivo=proyecto"
-          prefetch={false}
-          className="group relative block min-h-[250px] overflow-hidden rounded-2xl bg-brand-primary-900 sm:min-h-[290px]"
-        >
-          <Image
-            src="/images/home/home-v2-brand-trust.webp"
-            alt="Compresor hermético para un proyecto de climatización"
-            fill
-            sizes="100vw"
-            className="object-cover object-center transition duration-500 group-hover:scale-[1.02]"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-brand-primary-900 via-brand-primary-900/90 to-brand-primary-900/10"
-            aria-hidden="true"
-          />
-          <div className="relative flex min-h-[250px] max-w-[610px] flex-col justify-center px-6 py-8 sm:min-h-[290px] sm:px-12">
-            <p className="font-mono text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary">
-              Proyectos y climatización
-            </p>
-            <h2 className="mt-3 font-display text-3xl font-black leading-tight text-white sm:text-4xl">
-              Tu proyecto, nuestro respaldo
-            </h2>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-gray-light">
-              Cuéntanos qué equipo necesitas resolver y recibe orientación comercial para el
-              siguiente paso.
-            </p>
-            <span className="mt-6 inline-flex w-fit items-center gap-2 rounded-pill bg-primary px-5 py-3 text-sm font-extrabold text-white">
-              Hablar con un asesor <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </span>
+    <section className="home-section home-section-soft home-promo-section" data-home-block="promo-banner">
+      <div className="home-promo-card">
+        <Image src="/images/home-espejo/banner-navy.webp" alt="Instalación técnica de refrigeración" fill sizes="(min-width: 1280px) 1760px, 100vw" className="home-promo-image" />
+        <div className="home-promo-shade" aria-hidden="true" />
+        <div className="home-promo-content home-container">
+          <div className="home-promo-copy">
+            <h2>Tu proyecto, nuestro respaldo</h2>
+            <p>Repuestos, asesoría y soluciones para que tu operación nunca se detenga.</p>
+            <Link href="/cotizacion" className="home-button home-button-orange">Solicitar cotización <ArrowRight aria-hidden="true" /></Link>
           </div>
-        </Link>
+        </div>
+        <div className="home-promo-benefits" aria-label="Beneficios de ColdPower">
+          {benefits.map((benefit, index) => {
+            const Icon = benefit.icon;
+            const isWhatsapp = "whatsapp" in benefit && benefit.whatsapp;
+            return (
+            <span key={labels[index]} className={isWhatsapp ? "is-whatsapp" : ""}>
+              <Icon aria-hidden="true" />
+              {labels[index]}
+            </span>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

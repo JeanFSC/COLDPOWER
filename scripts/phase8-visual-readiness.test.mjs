@@ -13,7 +13,7 @@ for (const file of [
 for (const file of [
   "public/brand/logo-coldpower-lockup.webp",
   "public/brand/logo-coldpower-lockup-light.webp",
-  "public/images/home/home-v2-hero-hvac.webp",
+  "public/images/home-espejo/hero-desktop.webp",
   "public/images/home/home-v2-brand-trust.webp",
   "public/images/categories/refrigeracion.webp",
   "public/images/products/product-placeholder.webp",
@@ -26,5 +26,5 @@ for (const file of publicRasterFiles) assert.ok(statSync(join(root, "public", St
 assert.match(read("src/components/shared/BrandLogo.tsx"), /logo-coldpower-lockup\.webp/);
 assert.match(read("src/components/home/Hero.tsx"), /priority/);
 assert.match(read("src/app/globals.css"), /prefers-reduced-motion/);
-assert.match(read("src/app/page.tsx"), /HomeFaq/);
+assert.match(read("src/app/page.tsx"), /NewArrivalsSection|AssistanceSection/);
 console.log("Phase 8 visual and asset readiness contract: PASS");

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, Menu, Percent } from "lucide-react";
 import type { CatalogCategory } from "@/lib/catalog-repository";
 
 const technicalLinks = [
@@ -17,49 +17,17 @@ export function TechnicalNav({ categories = [] }: { categories?: CatalogCategory
     .filter((category) => category.productCount > 0)
     .slice(0, 8)
     .map((category) => ({ label: category.name, href: `/categoria/${category.slug}` }));
-  const links = [
-    ...dynamicLinks,
-    ...technicalLinks.filter((link) => !dynamicLinks.some((dynamicLink) => dynamicLink.href === link.href)),
-  ].slice(0, 8);
+  const links = [...technicalLinks, ...dynamicLinks.filter((link) => !technicalLinks.some((item) => item.href === link.href))].slice(0, 7);
 
   return (
-    <nav
-      aria-label="Navegación técnica; desplázate horizontalmente para ver más opciones"
-      className="relative min-w-0 overflow-hidden border-t border-border bg-white"
-      data-testid="technical-nav"
-    >
-      <div className="mx-auto flex min-w-0 max-w-[1320px] gap-2 overflow-x-auto px-4 py-2 pr-14 [scrollbar-width:none] lg:px-6 lg:pr-14">
-        <Link
-          href="/catalogo"
-          prefetch={false}
-          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-brand-primary-900 px-3 text-xs font-extrabold text-white transition hover:bg-brand-secondary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-secondary-600"
-        >
-          Todas las categorías
-          <ChevronDown className="h-4 w-4" aria-hidden="true" />
-        </Link>
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            prefetch={false}
-            className="inline-flex h-9 shrink-0 items-center rounded-md px-3 text-xs font-semibold text-text-secondary transition hover:bg-surface-page hover:text-brand-secondary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-secondary-600"
-          >
-            {link.label}
-          </Link>
-        ))}
-        <Link
-          href="/catalogo?vista=marcas"
-          prefetch={false}
-          className="inline-flex h-9 shrink-0 items-center rounded-md px-3 text-xs font-semibold text-text-secondary transition hover:bg-surface-page hover:text-brand-secondary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-secondary-600"
-        >
-          Marcas
-        </Link>
-      </div>
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-14 items-center justify-end bg-gradient-to-l from-white via-white/95 to-transparent pr-2 lg:flex xl:hidden"
-        aria-hidden="true"
-      >
-        <ChevronRight className="h-4 w-4 text-text-secondary" />
+    <nav aria-label="Navegación técnica" className="home-category-nav" data-testid="technical-nav">
+      <div className="home-wide-container home-category-nav-inner">
+        <Link href="/catalogo" prefetch={false} className="home-all-categories"><Menu aria-hidden="true" />Todas las categorías<ChevronDown aria-hidden="true" /></Link>
+        <div className="home-category-links">
+          {links.map((link) => <Link key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
+          <Link href="/catalogo?vista=marcas" prefetch={false}>Marcas</Link>
+        </div>
+        <Link href="/catalogo?vista=ofertas" prefetch={false} className="home-offers-link"><span>Ofertas</span><Percent aria-hidden="true" /></Link>
       </div>
     </nav>
   );

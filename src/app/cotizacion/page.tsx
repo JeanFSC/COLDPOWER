@@ -7,7 +7,7 @@ import { SectionTitle } from "@/components/shared/SectionTitle";
 import { getCatalogProductBySlug, getCatalogStats } from "@/lib/catalog-repository";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Solicitar cotizacion",

@@ -6,6 +6,8 @@ import { CompareProvider } from "@/components/catalog/CompareProvider";
 import { AppChrome } from "@/components/layout/AppChrome";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { TechnicalNav } from "@/components/layout/TechnicalNav";
+import { TopBar } from "@/components/layout/TopBar";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { ShoppingCartProvider } from "@/components/shopping-cart/ShoppingCartProvider";
 import { PreviewBanner } from "@/components/shared/PreviewBanner";
@@ -75,7 +77,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           publicBefore={
             <>
               <PreviewBanner />
+              <TopBar />
               <Header authEnabled={isAuthConfigured} categories={categories} />
+              <TechnicalNav categories={categories} />
             </>
           }
           publicAfter={

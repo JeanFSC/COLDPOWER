@@ -1,38 +1,22 @@
-import { MessageCircle, Truck } from "lucide-react";
+import { ArrowRightLeft, Cog, MessageCircle, Truck } from "lucide-react";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 import { createWhatsAppLink } from "@/lib/whatsapp";
 
 export async function TopBar() {
   const settings = await getPublicCompanySettings();
-  const whatsappHref = settings.whatsapp
-    ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." })
-    : null;
-  const coverage = settings.coverage?.trim() || "Despachos coordinados";
+  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
 
   return (
-    <div className="bg-primary text-white">
-      <div className="cp-container flex min-h-8 items-center justify-between gap-4 overflow-hidden py-1.5 text-[11px] font-semibold">
-        <div className="flex min-w-0 items-center gap-3 overflow-x-auto whitespace-nowrap">
-          <span className="inline-flex items-center gap-1.5">
-            <Truck className="h-3.5 w-3.5" aria-hidden="true" />
-            {coverage}
-          </span>
-          <span className="hidden h-3.5 w-px bg-white/35 sm:block" aria-hidden="true" />
-          <span className="hidden sm:inline">Catálogo técnico especializado</span>
-          <span className="hidden h-3.5 w-px bg-white/35 md:block" aria-hidden="true" />
-          <span className="hidden md:inline">Asesoría comercial especializada</span>
+    <div className="home-utility-bar">
+      <div className="home-wide-container home-utility-inner">
+        <div className="home-utility-items">
+          <span><Truck aria-hidden="true" />Envíos a todo el Perú</span>
+          <i aria-hidden="true" />
+          <span><ArrowRightLeft aria-hidden="true" />Repuestos originales y alternativos</span>
+          <i aria-hidden="true" />
+          <span><Cog aria-hidden="true" />Asesoría técnica especializada</span>
         </div>
-        {whatsappHref ? (
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap hover:text-brand-primary-900"
-          >
-            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
-            ¿Necesitas ayuda? Escríbenos por WhatsApp
-          </a>
-        ) : null}
+        <a href={whatsappHref} target={whatsappHref.startsWith("http") ? "_blank" : undefined} rel={whatsappHref.startsWith("http") ? "noreferrer" : undefined} className="home-utility-whatsapp"><MessageCircle aria-hidden="true" />¿Necesitas ayuda? Escríbenos por WhatsApp</a>
       </div>
     </div>
   );

@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { ApplicationSolutions } from "@/components/home/ApplicationSolutions";
-import { AssistanceSection } from "@/components/home/AssistanceSection";
-import { BenefitsBar } from "@/components/home/BenefitsBar";
 import { BrandsSection } from "@/components/home/BrandsSection";
 import { CategoriesGrid } from "@/components/home/CategoriesGrid";
 import { Hero } from "@/components/home/Hero";
-import { HomeFaq } from "@/components/home/HomeFaq";
+import { NewArrivalsSection } from "@/components/home/NewArrivalsSection";
 import { ProductSection } from "@/components/home/ProductSection";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { TechnicalSearchGuide } from "@/components/home/TechnicalSearchGuide";
@@ -18,7 +16,7 @@ import {
 import { loadPublishedCms } from "@/lib/public-cms";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "ColdPower | Catálogo técnico HVAC",
@@ -33,6 +31,8 @@ export default async function Home() {
     getPublicCompanySettings(),
   ]);
 
+  const orderedProducts = orderHomeProducts(catalogData.products);
+
   return (
     <>
       <Hero settings={settings} />
@@ -41,17 +41,12 @@ export default async function Home() {
         catalogUnavailable={catalogData.unavailable}
       />
       {cms ? <PublishedCmsBlocks blocks={cms.blocks} slot="after_categories" /> : null}
-      <ProductSection
-        products={catalogData.products}
-        catalogUnavailable={catalogData.unavailable}
-      />
+      <ProductSection products={orderedProducts} catalogUnavailable={catalogData.unavailable} />
       <TechnicalSearchGuide />
-      <BenefitsBar settings={settings} />
-      <PromoBanner />
+      <PromoBanner settings={settings} />
       <ApplicationSolutions />
       <BrandsSection brands={catalogData.brands} />
-      <AssistanceSection settings={settings} />
-      <HomeFaq />
+      <NewArrivalsSection products={orderedProducts.slice(6, 12)} settings={settings} />
     </>
   );
 }
@@ -60,7 +55,7 @@ async function loadCatalogHomeData() {
   try {
     const [categories, catalog, brands] = await Promise.all([
       getCatalogCategories(),
-      getCatalogProducts({ pageSize: 24 }),
+      getCatalogProducts({ pageSize: 48, sort: "updated" }),
       getCatalogBrands(),
     ]);
     return { categories, products: catalog.products, brands, unavailable: false };
@@ -71,4 +66,43 @@ async function loadCatalogHomeData() {
     );
     return { categories: [], products: [], brands: [], unavailable: true };
   }
+}
+
+function orderHomeProducts(products: Awaited<ReturnType<typeof getCatalogProducts>>["products"]) {
+  const rules = [
+    /motocompresor|compresor(?!a)/i,
+    /motor.*vent|ventilador/i,
+    /control|termostat/i,
+    /refrigerante/i,
+    /h[eé]lice|ventilador/i,
+    /v[aá]lvula/i,
+    /presostat/i,
+    /tarjeta/i,
+    /bomba.*drenaje|drenaje/i,
+    /condensador/i,
+    /rel[eé]|protector/i,
+    /filtro.*secador/i,
+  ];
+  const used = new Set<string>();
+  const selected: typeof products = [];
+
+  for (const rule of rules) {
+    const match = products.find(
+      (product) => !used.has(product.id) && rule.test(`${product.name} ${product.family ?? ""}`),
+    );
+    if (match) {
+      used.add(match.id);
+      selected.push(match);
+    }
+  }
+
+  for (const product of products) {
+    if (selected.length >= 24) break;
+    if (!used.has(product.id)) {
+      used.add(product.id);
+      selected.push(product);
+    }
+  }
+
+  return selected;
 }

@@ -309,7 +309,7 @@ export function AdminShell({
             <input
               value={commandQuery}
               onChange={(event) => setCommandQuery(event.currentTarget.value)}
-              className="h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#8aa0b6] focus:border-[#3986c0] focus:ring-2 focus:ring-[#3986c0]/10"
+              className="h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489] focus:border-[#3986c0] focus:ring-2 focus:ring-[#3986c0]/10"
               placeholder="Buscar productos, clientes, pedidos, cotizaciones..."
               aria-label="Buscar en el panel administrativo"
               onKeyDown={(event) => {
@@ -330,7 +330,7 @@ export function AdminShell({
               }}
             />
             <span
-              className={`pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#8aa0b6] sm:flex ${isNavigating ? "opacity-0" : ""}`}
+              className={`pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#5f7489] sm:flex ${isNavigating ? "opacity-0" : ""}`}
             >
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">Ctrl</kbd>
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">K</kbd>
@@ -371,7 +371,7 @@ export function AdminShell({
             )}
             <div className="hidden leading-tight sm:block">
               <p className="text-[11px] font-extrabold text-[#173654]">{profile.name}</p>
-              <p className="mt-1 text-[9px] font-semibold text-[#8195aa]">{profile.title}</p>
+              <p className="mt-1 text-[9px] font-semibold text-[#607894]">{profile.title}</p>
             </div>
             <ChevronDown className="hidden h-4 w-4 text-[#6c8298] sm:block" aria-hidden="true" />
           </div>
@@ -379,13 +379,13 @@ export function AdminShell({
         {isCommandOpen ? (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-[#102a43]/25 px-4 pt-[12vh]" role="presentation" onMouseDown={() => setIsCommandOpen(false)}>
             <section className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce6ee] bg-white shadow-[0_22px_60px_rgba(16,42,67,0.22)]" role="dialog" aria-modal="true" aria-label="Paleta de comandos" onMouseDown={(event) => event.stopPropagation()}>
-              <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setIsCommandOpen(false); }} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#8aa0b6]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#8aa0b6]">Esc</kbd></div>
+              <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setIsCommandOpen(false); }} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#5f7489]">Esc</kbd></div>
               <nav className="max-h-[55vh] overflow-y-auto p-2" aria-label="Resultados y módulos disponibles">
                 {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-semibold text-[#91a3b3]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
-                {isSearchPending ? <p className="px-3 py-3 text-[11px] font-semibold text-[#8195aa]">Buscando entidades…</p> : null}
+                {isSearchPending ? <p className="px-3 py-3 text-[11px] font-semibold text-[#607894]">Buscando entidades…</p> : null}
                 {searchState === "unavailable" ? <p className="px-3 py-3 text-[11px] font-semibold text-[#b45309]">Búsqueda de entidades no disponible.</p> : null}
                 {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[10px] font-semibold text-[#91a3b3]">{link.href}</span></Link>; })}</div> : null}
-                {!visibleSearchGroups.length && !isSearchPending && searchState === "ready" && !commandLinks.length ? <p className="px-3 py-5 text-center text-[11px] font-semibold text-[#8195aa]">No hay coincidencias con permisos disponibles.</p> : null}
+                {!visibleSearchGroups.length && !isSearchPending && searchState === "ready" && !commandLinks.length ? <p className="px-3 py-5 text-center text-[11px] font-semibold text-[#607894]">No hay coincidencias con permisos disponibles.</p> : null}
               </nav>
             </section>
           </div>

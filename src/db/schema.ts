@@ -1213,3 +1213,19 @@ export const catalogMetricSnapshots = pgTable("catalog_metric_snapshots", {
   duplicateProducts: integer("duplicate_products").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+export const newsletterSubscribers = pgTable(
+  "newsletter_subscribers",
+  {
+    id: text("id").primaryKey(),
+    email: varchar("email", { length: 180 }).notNull(),
+    status: text("status").notNull().default("SUBSCRIBED"),
+    source: text("source").notNull().default("HOME_FOOTER"),
+    consentAt: timestamp("consent_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    emailUnique: uniqueIndex("newsletter_subscribers_email_unique").on(table.email),
+    statusIndex: index("newsletter_subscribers_status_idx").on(table.status),
+  }),
+);

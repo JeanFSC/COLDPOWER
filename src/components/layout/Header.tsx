@@ -4,7 +4,7 @@ import { ClerkFailed, ClerkLoaded, ClerkLoading, Show, UserButton } from "@clerk
 import { Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import type { CatalogCategory } from "@/lib/catalog-repository";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { SearchBar } from "@/components/shared/SearchBar";
@@ -12,39 +12,28 @@ import { MobileMenu } from "@/components/layout/MobileMenu";
 import { CartButton } from "@/components/cart/CartButton";
 import { QuoteListButton } from "@/components/cart/QuoteListButton";
 
-const navLinks = [
-  { label: "Inicio", href: "/" },
-  { label: "Catálogo", href: "/catalogo" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Nosotros", href: "/nosotros" },
-  { label: "Contacto", href: "/contacto" },
-] as const;
-
-const searchPlaceholder = "Busca por SKU, modelo o marca";
+const searchPlaceholder = "Busca por código, modelo, marca o producto...";
 
 function SignedOutAccountAction() {
   return (
-    <Link href="/sign-in" className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-brand-primary-900 transition hover:bg-surface-page hover:text-brand-secondary-600">
-      <UserRound className="h-4 w-4" aria-hidden="true" />
-      <span>Mi cuenta</span>
+    <Link href="/sign-in" className="home-account-action">
+      <UserRound aria-hidden="true" />
+      <span><strong>Mi cuenta</strong><small>Ingresar</small></span>
     </Link>
   );
 }
 
 function AuthAccountAction() {
-  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
-  if (!mounted) return <span className="h-10 w-28 animate-pulse rounded-md bg-surface-page" aria-label="Cargando sesión" />;
-
   return (
     <>
-      <ClerkLoading><span className="h-10 w-28 animate-pulse rounded-md bg-surface-page" aria-label="Cargando sesión" /></ClerkLoading>
+      <ClerkLoading><SignedOutAccountAction /></ClerkLoading>
       <ClerkFailed><SignedOutAccountAction /></ClerkFailed>
       <ClerkLoaded>
         <Show when="signed-in">
           <div className="flex items-center gap-2">
-            <Link href="/cuenta" className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-brand-primary-900 transition hover:bg-surface-page hover:text-brand-secondary-600">
-              <UserRound className="h-4 w-4" aria-hidden="true" />
-              <span>Mi cuenta</span>
+            <Link href="/cuenta" className="home-account-action">
+              <UserRound aria-hidden="true" />
+              <span><strong>Mi cuenta</strong><small>Ver cuenta</small></span>
             </Link>
             <UserButton />
           </div>
@@ -63,44 +52,28 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
 
   return (
     <>
-      <header className="sticky top-0 z-40 min-w-0 border-b border-border bg-white/95 shadow-card backdrop-blur">
-        <div className="cp-container">
-          <div className="flex min-h-[72px] min-w-0 items-center gap-3 py-3">
-            <BrandLogo size="sm" className="min-w-0" />
-            <div className="hidden min-w-0 flex-1 lg:block">
-              {isHome ? (
-                <Link href="/buscar" aria-label="Abrir búsqueda" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
-                  <Search className="h-5 w-5" aria-hidden="true" />
-                </Link>
-              ) : (
-                <SearchBar id="desktop-search" compact showCompactSubmit placeholder={searchPlaceholder} className="min-w-0" />
-              )}
-            </div>
-            <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
-              {!isAuthPage ? (authEnabled ? <AuthAccountAction /> : <SignedOutAccountAction />) : null}
-              <QuoteListButton showCount />
-              <CartButton showLabel />
-            </div>
-            <div className="ml-auto flex items-center gap-2 lg:hidden">
-              {isHome ? (
-                <Link href="/buscar" aria-label="Abrir búsqueda" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
-                  <Search className="h-5 w-5" aria-hidden="true" />
-                </Link>
-              ) : null}
-              <Link href="/cuenta" aria-label="Abrir Mi cuenta" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600">
-                <UserRound className="h-5 w-5" aria-hidden="true" />
-              </Link>
-              <QuoteListButton compact className="h-11 w-11" />
-              <CartButton className="h-11 w-11" />
-              <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border text-brand-primary-900 transition hover:border-brand-secondary-600 hover:text-brand-secondary-600" aria-label="Abrir menú móvil" aria-expanded={isMenuOpen} aria-controls="mobile-menu" onClick={() => setIsMenuOpen(true)}>
-                <Menu className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
+      <header className="home-header">
+        <div className="home-wide-container home-header-inner">
+          <BrandLogo size="lg" className="home-header-logo" />
+          <div className="home-header-search hidden lg:block">
+            <SearchBar id="desktop-search" placeholder={searchPlaceholder} compact={false} showCompactSubmit={false} iconOnlySubmit />
           </div>
-          {!isHome ? <SearchBar id="mobile-search" placeholder={searchPlaceholder} className="pb-3 lg:hidden" /> : null}
+          <div className="home-header-actions">
+            <QuoteListButton showCount className="home-quote-button" />
+            {!isAuthPage ? (authEnabled ? <AuthAccountAction /> : <SignedOutAccountAction />) : null}
+            <CartButton showLabel className="home-cart-button" />
+          </div>
+          <div className="home-mobile-actions">
+            {isHome ? <Link href="/buscar" aria-label="Buscar" className="home-mobile-icon"><Search aria-hidden="true" /></Link> : null}
+            <Link href="/cuenta" aria-label="Abrir Mi cuenta" className="home-mobile-icon"><UserRound aria-hidden="true" /></Link>
+            <QuoteListButton compact className="home-mobile-icon" />
+            <CartButton className="home-mobile-icon" />
+            <button type="button" className="home-mobile-icon" aria-label="Abrir menú móvil" aria-expanded={isMenuOpen} aria-controls="mobile-menu" onClick={() => setIsMenuOpen(true)}><Menu aria-hidden="true" /></button>
+          </div>
         </div>
+        {!isHome ? <div className="home-mobile-search lg:hidden"><SearchBar id="mobile-search" placeholder={searchPlaceholder} /></div> : null}
       </header>
-      <MobileMenu id="mobile-menu" isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} links={[...navLinks]} authEnabled={authEnabled} categories={categories} />
+      <MobileMenu id="mobile-menu" isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} links={[{ label: "Inicio", href: "/" }, { label: "Catálogo", href: "/catalogo" }, { label: "FAQ", href: "/faq" }, { label: "Nosotros", href: "/nosotros" }, { label: "Contacto", href: "/contacto" }]} authEnabled={authEnabled} categories={categories} />
     </>
   );
 }

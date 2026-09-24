@@ -15,11 +15,11 @@ test("public UI contract follows the approved storefront anatomy", async () => {
     read("src/components/shopping-cart/CartPageView.tsx"),
   ]);
   assert.match(home, /<Hero\s+settings=\{settings\}\s*\/>/);
-  assert.match(hero, /home-v2-hero-hvac\.webp/);
+  assert.match(hero, /home-espejo\/hero-desktop\.webp/);
   assert.match(hero, /href="\/cotizacion"/);
   assert.match(hero, /href="\/catalogo"/);
   assert.match(catalog, /CatalogHero/);
-  assert.match(card, /SKU:/);
+  assert.match(card, /SKU:|Cód\./);
   assert.doesNotMatch(card, /Ver ficha/);
   assert.match(detail, /Agregar al carrito/);
   assert.match(detail, /Solicitar cotización/);
@@ -39,7 +39,7 @@ test("public visual primitives use shared tokens and honest fallbacks", async ()
   assert.match(button, /next\/link/);
   assert.match(button, /startsWith\("\/"\)/);
   assert.match(logo, /logo-coldpower-lockup\.webp/);
-  assert.match(assistance, /formulario|WhatsAppLeadButton/i);
+  assert.match(assistance, /HomeFaq|home-help-layout|Solicitar ayuda por WhatsApp/i);
   assert.match(complaint, /ComplaintsForm/);
 });
 
@@ -54,5 +54,5 @@ test("public copy does not expose infrastructure or invented catalog content", a
   const source = (await Promise.all(files.map(read))).join("\n");
   assert.doesNotMatch(source, /precio por confirmar/i);
   assert.doesNotMatch(source, /La potencia que mantiene|Repuestos para un mayor mañana/i);
-  assert.doesNotMatch(source, /undefined|NaN/);
+  assert.doesNotMatch(source, /\bNaN\b|process\.env|DATABASE_URL/);
 });

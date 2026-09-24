@@ -1,76 +1,34 @@
-import { ArrowRight, Mail, MessageCircle, PhoneCall, Upload } from "lucide-react";
-import { Button } from "@/components/shared/Button";
-import { WhatsAppLeadButton } from "@/components/shared/WhatsAppLeadButton";
-import { SectionTitle } from "@/components/shared/SectionTitle";
+import Link from "next/link";
+import { ArrowRight, Camera, ClipboardList, FileCode2, MessageCircle, ScanLine } from "lucide-react";
 import type { CompanySettings } from "@/lib/company-settings";
+import { HomeFaq } from "@/components/home/HomeFaq";
+import { createWhatsAppLink } from "@/lib/whatsapp";
+
+const adviceSteps = [
+  { label: "Envíanos una foto", icon: Camera },
+  { label: "Indica modelo", icon: ScanLine },
+  { label: "Comparte el código", icon: FileCode2 },
+  { label: "Cuéntanos tu proyecto", icon: ClipboardList },
+] as const;
 
 export function AssistanceSection({ settings }: { settings: CompanySettings }) {
-  const phone = settings.phones?.[0]?.trim();
-  const email = settings.email?.trim();
+  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito ayuda para encontrar un repuesto." }) : "/contacto?motivo=no-encontre";
 
   return (
-    <section className="bg-white py-10 sm:py-14" data-home-block="assistance">
-      <div className="cp-container grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-        <div>
-          <SectionTitle
-            eyebrow="Asesoría técnica"
-            title="¿No encuentras el repuesto que necesitas?"
-            description="Envíanos el modelo, código o una foto de la placa. El equipo comercial revisará el requerimiento y te indicará el siguiente paso."
-          />
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button href="/contacto?motivo=no-encontre" size="md">
-              <Upload className="h-4 w-4" aria-hidden="true" />
-              Solicitar ayuda
-            </Button>
-            <WhatsAppLeadButton title="Asistencia técnica" variant="whatsapp" size="md">
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              Consultar por WhatsApp
-            </WhatsAppLeadButton>
-          </div>
+    <div className="home-help-layout" data-home-block="assistance">
+      <HomeFaq />
+      <div className="home-advice-block">
+        <h2 className="home-help-title">¿No encuentras el repuesto que necesitas?</h2>
+        <p className="home-help-subtitle">Nuestro equipo te ayuda a ubicarlo. Envíanos el modelo, una foto o la especificación técnica.</p>
+        <div className="home-advice-grid">
+          {adviceSteps.map(({ label, icon: Icon }) => (
+            <span key={label} className="home-advice-card"><Icon aria-hidden="true" /><strong>{label}</strong></span>
+          ))}
         </div>
-        <div className="rounded-2xl border border-border bg-surface-page p-6">
-          <p className="font-mono text-xs font-extrabold uppercase tracking-[0.14em] text-brand-secondary-600">
-            Canales disponibles
-          </p>
-          <div className="mt-5 grid gap-4 text-sm text-text-secondary">
-            {phone ? (
-              <a
-                className="flex items-center gap-3 font-semibold hover:text-brand-secondary-600"
-                href={"tel:" + phone.replace(/\s/g, "")}
-              >
-                <PhoneCall className="h-5 w-5 text-brand-secondary-600" aria-hidden="true" />
-                {phone}
-              </a>
-            ) : null}
-            {email ? (
-              <a
-                className="flex items-center gap-3 break-all font-semibold hover:text-brand-secondary-600"
-                href={"mailto:" + email}
-              >
-                <Mail className="h-5 w-5 shrink-0 text-brand-secondary-600" aria-hidden="true" />
-                {email}
-              </a>
-            ) : null}
-            {!phone && !email ? (
-              <p className="flex items-start gap-3">
-                <ArrowRight
-                  className="mt-0.5 h-5 w-5 shrink-0 text-brand-secondary-600"
-                  aria-hidden="true"
-                />
-                Usa el formulario para enviar tu requerimiento.
-              </p>
-            ) : (
-              <p className="flex items-start gap-3">
-                <ArrowRight
-                  className="mt-0.5 h-5 w-5 shrink-0 text-brand-secondary-600"
-                  aria-hidden="true"
-                />
-                Incluye el código o modelo para agilizar la revisión.
-              </p>
-            )}
-          </div>
-        </div>
+        <Link href={whatsappHref} target={whatsappHref.startsWith("http") ? "_blank" : undefined} rel={whatsappHref.startsWith("http") ? "noreferrer" : undefined} className="home-button home-button-orange home-help-button">
+          <MessageCircle aria-hidden="true" />Solicitar ayuda por WhatsApp <ArrowRight aria-hidden="true" />
+        </Link>
       </div>
-    </section>
+    </div>
   );
 }

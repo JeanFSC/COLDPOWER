@@ -8,6 +8,7 @@ type SearchBarProps = {
   compact?: boolean;
   showCompactSubmit?: boolean;
   submitLabel?: string;
+  iconOnlySubmit?: boolean;
 };
 
 export function SearchBar({
@@ -18,6 +19,7 @@ export function SearchBar({
   compact = false,
   showCompactSubmit = false,
   submitLabel = "Buscar",
+  iconOnlySubmit = false,
 }: SearchBarProps) {
   return (
     <form action={action} className={`flex min-w-0 items-center gap-2 ${className}`}>
@@ -30,10 +32,10 @@ export function SearchBar({
         <button
           type="submit"
           aria-label={submitLabel}
-          className={compact ? "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-secondary-600 text-white transition hover:bg-brand-primary-900" : "inline-flex h-14 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-extrabold text-brand-primary-900 transition hover:bg-primary-hover"}
+          className={compact || iconOnlySubmit ? "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-secondary-600 text-white transition hover:bg-brand-primary-900" : "inline-flex h-14 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-extrabold text-brand-primary-900 transition hover:bg-primary-hover"}
         >
-          <Search className={compact ? "h-5 w-5" : "hidden"} aria-hidden="true" />
-          <span className={compact ? "sr-only" : ""}>{submitLabel}</span>
+          <Search className={compact || iconOnlySubmit ? "h-5 w-5" : "hidden"} aria-hidden="true" />
+          <span className={compact || iconOnlySubmit ? "sr-only" : ""}>{submitLabel}</span>
         </button>
       ) : null}
     </form>

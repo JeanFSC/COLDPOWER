@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="flex flex-1 flex-col p-3.5">
         <Link href={productHref} prefetch={false} className="flex flex-1 flex-col" aria-label="Abrir ficha del producto">
           {product.brand ? <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-brand-secondary-600">{product.brand}</p> : null}
-          <h3 className="mt-2 line-clamp-3 text-sm font-extrabold leading-5 text-dark group-hover:text-brand-secondary-600">{product.name}</h3>
+          <h2 className="mt-2 line-clamp-3 text-sm font-extrabold leading-5 text-dark group-hover:text-brand-secondary-600">{product.name}</h2>
           <p className="mt-2 font-mono text-[10px] font-semibold text-text-secondary">SKU: {product.sku}</p>
           {criticalSpec ? <span className="mt-3 inline-flex w-fit max-w-full truncate rounded-pill border border-brand-secondary-600/20 bg-brand-secondary-600/5 px-2.5 py-1 text-[11px] font-bold text-brand-primary-900">{criticalSpec.label}: {criticalSpec.value}</span> : null}
           <div className="mt-auto pt-4">

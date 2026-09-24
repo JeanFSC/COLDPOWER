@@ -1,66 +1,31 @@
-import { ArrowUpRight, Building2, Home, Snowflake, Wrench } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { SectionTitle } from "@/components/shared/SectionTitle";
+import { ArrowRight } from "lucide-react";
 
 const solutions = [
-  {
-    label: "Refrigeración comercial",
-    description: "Explora referencias para equipos de frío.",
-    icon: Building2,
-    query: "refrigeracion-comercial",
-  },
-  {
-    label: "Cámaras frigoríficas",
-    description: "Busca componentes para temperatura controlada.",
-    icon: Snowflake,
-    query: "camaras-frigorificas",
-  },
-  {
-    label: "Aire acondicionado",
-    description: "Encuentra partes y herramientas de climatización.",
-    icon: Home,
-    query: "aire-acondicionado",
-  },
-  {
-    label: "Mantenimiento e instalación",
-    description: "Consulta herramientas y consumibles técnicos.",
-    icon: Wrench,
-    query: "mantenimiento",
-  },
+  { label: "Refrigeración comercial", description: "Exhibidoras, vitrinas, cuartos fríos", image: "job-refrigeracion-comercial.webp", query: "refrigeracion-comercial" },
+  { label: "Cámaras frigoríficas", description: "Paneles, unidades, control", image: "job-camaras-frigorificas.webp", query: "camaras-frigorificas" },
+  { label: "Aire acondicionado", description: "Residencial y comercial", image: "job-aire-acondicionado.webp", query: "aire-acondicionado" },
+  { label: "Línea blanca", description: "Refrigeradoras, lavadoras, cocinas", image: "job-linea-blanca.webp", query: "linea-blanca" },
+  { label: "Industria alimentaria", description: "Proceso y conservación", image: "job-industria-alimentaria.webp", query: "industria-alimentaria" },
+  { label: "Mantenimiento y servicio", description: "Herramientas y consumibles", image: "job-mantenimiento-servicio.webp", query: "mantenimiento" },
 ] as const;
 
 export function ApplicationSolutions() {
   return (
-    <section className="bg-surface-page py-10 sm:py-14" data-home-block="application-solutions">
-      <div className="cp-container">
-        <SectionTitle
-          eyebrow="Soluciones por sector"
-          title="Busca por el trabajo que necesitas resolver"
-          description="Accesos directos a la búsqueda del catálogo y a la orientación comercial."
-        />
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {solutions.map(({ label, description, icon: Icon, query }) => (
-            <Link
-              key={label}
-              href={"/catalogo?aplicacion=" + query}
-              prefetch={false}
-              className="group flex min-h-32 items-start gap-4 rounded-xl border border-border bg-white p-5 transition hover:-translate-y-0.5 hover:border-brand-secondary-600 hover:shadow-card"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-secondary-600/10 text-brand-secondary-600">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="min-w-0">
-                <span className="flex items-start gap-2 text-base font-extrabold text-brand-primary-900">
-                  <span>{label}</span>
-                  <ArrowUpRight
-                    className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-secondary-600"
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="mt-2 block text-sm leading-5 text-text-secondary">
-                  {description}
-                </span>
-              </span>
+    <section className="home-section home-section-white home-solutions" data-home-block="application-solutions">
+      <div className="home-container">
+        <div className="home-section-heading">
+          <div>
+            <h2 className="home-section-title">Busca por el trabajo que necesitas resolver</h2>
+            <p className="home-section-subtitle">Soluciones para cada tipo de proyecto o equipo</p>
+          </div>
+        </div>
+        <div className="home-solutions-grid">
+          {solutions.map(({ label, description, image, query }) => (
+            <Link key={label} href={`/catalogo?aplicacion=${query}`} prefetch={false} className="home-solution-card group">
+              <div className="home-solution-image"><Image src={`/images/home-espejo/${image}`} alt={label} fill sizes="(min-width: 1280px) 16vw, 45vw" className="object-cover transition duration-300 group-hover:scale-105" /></div>
+              <div className="home-solution-copy"><strong>{label}</strong><small>{description}</small><ArrowRight aria-hidden="true" /></div>
             </Link>
           ))}
         </div>

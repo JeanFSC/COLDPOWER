@@ -11,7 +11,7 @@ export function PreviewBanner() {
   }
 
   return (
-    <div role="status" aria-live="polite" className="bg-warning text-dark">
+    <div role="status" aria-live="polite" className="bg-warning text-white">
       <div className="mx-auto max-w-7xl px-4 py-1.5 text-center text-xs font-semibold lg:px-8">
         Vista previa privada — datos comerciales de prueba. No es el sitio de producción.
       </div>

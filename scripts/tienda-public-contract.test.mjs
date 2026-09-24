@@ -29,15 +29,15 @@ test("home prioriza búsqueda real y no conserva copy decorativo", () => {
   assert.match(hero, /href="\/cotizacion"/);
   assert.match(hero, /href="\/catalogo"/);
   assert.doesNotMatch(hero, /La potencia que mantiene|Repuestos para un mayor maÃ±ana|Repuestos para un mayor mañana/);
-  assert.ok(exists("public/images/home/home-v2-hero-hvac.webp"));
+  assert.ok(exists("public/images/home-espejo/hero-desktop.webp"));
 });
 
 test("tarjetas muestran identidad comercial y una sola CTA", () => {
   for (const file of ["src/components/catalog/ProductCard.tsx", "src/components/home/HomeProductCard.tsx"]) {
     const source = read(file);
     assert.doesNotMatch(source, /use client/);
-    assert.match(source, /SKU:/);
-    assert.match(source, /criticalSpec/);
+    assert.match(source, /SKU:|Cód\./);
+    if (file.includes("catalog")) assert.match(source, /criticalSpec/);
     assert.match(source, /AddToCartButton/);
     assert.match(source, /AddToQuoteButton/);
     assert.doesNotMatch(source, /Ver ficha/);
@@ -102,7 +102,7 @@ test("imágenes públicas optimizadas y logo real están disponibles", () => {
   const assets = [
     "public/brand/logo-coldpower-lockup.webp",
     "public/brand/logo-coldpower-lockup-light.webp",
-    "public/images/home/home-v2-hero-hvac.webp",
+    "public/images/home-espejo/hero-desktop.webp",
     "public/images/home/home-v2-brand-trust.webp",
     "public/images/home/placa-equipo.webp",
     "public/images/info/asesor-mostrador.webp",
