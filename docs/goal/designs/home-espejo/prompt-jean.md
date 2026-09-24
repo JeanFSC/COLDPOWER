@@ -1,90 +1,1001 @@
-# PROMPT MAESTRO — REPRODUCCIÓN 1:1 DEL HOME DE COLDPOWER (prompt íntegro de Jean, 2026-09-24; formato compactado, todas las reglas, textos y cifras intactos)
-
-Imagen objetivo: `docs/goal/designs/home-espejo/referencia.png` (984 × 1599 px).
-
-## OBJETIVO
+Sí. Este prompt ya no es “diseña algo parecido”. Es un prompt de REPRODUCCIÓN 1:1. La imagen que acabamos de generar debe adjuntarse junto con este texto y tratarse como objetivo visual exacto.
+Copia esto tal cual:
+PROMPT MAESTRO — REPRODUCCIÓN 1:1 DEL HOME DE COLDPOWER
+OBJETIVO
 REPRODUCE EXACTAMENTE la interfaz web completa mostrada en la imagen adjunta.
-La imagen adjunta NO ES UNA REFERENCIA CONCEPTUAL. NO ES UNA INSPIRACIÓN. NO ES UNA DIRECCIÓN ARTÍSTICA. Es el TARGET VISUAL FINAL.
-Reconstruir ESA MISMA PÁGINA, conservando prácticamente 1:1: composición; estructura; orden de bloques; proporciones; alturas; anchos; grids; cantidad de columnas; cantidad de productos visibles; tamaños de imágenes; densidad; espaciados; fondos; bordes; radios; tipografía; pesos; colores; jerarquía; posiciones; banners; cards; navegación; CTA; iconografía; ritmo visual; footer.
-NO rediseñar. NO mejorar creativamente. NO simplificar. NO reinterpretar. NO crear otra versión. NO mover secciones. NO eliminar secciones. NO añadir secciones. NO convertir el diseño en otro estilo.
+La imagen adjunta NO ES UNA REFERENCIA CONCEPTUAL.
+La imagen adjunta NO ES UNA INSPIRACIÓN.
+La imagen adjunta NO ES UNA DIRECCIÓN ARTÍSTICA.
+La imagen adjunta es el TARGET VISUAL FINAL.
+Tu tarea consiste en reconstruir ESA MISMA PÁGINA, conservando prácticamente 1:1:
 
-## REGLA ABSOLUTA
+
+composición;
+
+estructura;
+
+orden de bloques;
+
+proporciones;
+
+alturas;
+
+anchos;
+
+grids;
+
+cantidad de columnas;
+
+cantidad de productos visibles;
+
+tamaños de imágenes;
+
+densidad;
+
+espaciados;
+
+fondos;
+
+bordes;
+
+radios;
+
+tipografía;
+
+pesos;
+
+colores;
+
+jerarquía;
+
+posiciones;
+
+banners;
+
+cards;
+
+navegación;
+
+CTA;
+
+iconografía;
+
+ritmo visual;
+
+footer.
+NO debes rediseñar.
+NO debes mejorar creativamente.
+NO debes simplificar.
+NO debes reinterpretar.
+NO debes crear otra versión.
+NO debes mover secciones.
+NO debes eliminar secciones.
+NO debes añadir secciones.
+NO debes convertir el diseño en otro estilo.
+REGLA ABSOLUTA
 SI EXISTE UNA DIFERENCIA ENTRE ESTE PROMPT Y LO QUE VISUALMENTE APARECE EN LA IMAGEN ADJUNTA, LA IMAGEN ADJUNTA TIENE PRIORIDAD VISUAL.
+1. FORMATO FINAL
+Generar UNA SOLA CAPTURA FULL-PAGE DESKTOP.
+Mantener exactamente la relación vertical de la imagen proporcionada.
+La referencia actual tiene aproximadamente:
+984 × 1599 px
+Relación:
+ancho / alto ≈ 0.615
+Si generas en alta resolución, utilizar preferentemente:
+1920 × 3120 px aproximadamente
+manteniendo el mismo ratio y la misma distribución.
+NO generar:
 
-## 1. FORMATO FINAL
-Captura full-page desktop con la relación vertical de la referencia (≈ 984 × 1599, ancho/alto ≈ 0.615; en alta resolución ≈ 1920 × 3120). Sin mockup de monitor, browser chrome, pestañas, marco, perspectiva ni variantes: únicamente la página web completa.
 
-## 2. ANCHO
-Usar prácticamente todo el ancho comercial útil (a 1920: contenido útil aprox. 1500–1650 px). Márgenes laterales similares a la referencia. NO container de 1200 px. NO dejar columnas vacías.
+mockup dentro de monitor;
 
-## 3. DENSIDAD
-Ecommerce técnico con ALTA DENSIDAD VISUAL CONTROLADA: llena, comercial, abundante, activa, fácil de recorrer. NO vacía, minimalista, SaaS, corporativa, editorial ni dashboard. Mayoría: PRODUCTO, FOTOGRAFÍA, CATEGORÍA, BANNER, CTA. No párrafos.
+browser chrome;
 
-## 4. PALETA EXACTA
-Navy profundo #082A47 · Azul ColdPower #0B64D8 / #1677FF · Naranja comercial #FF8A00 / #FF9F0A · Blanco #FFFFFF · Fondo gris azulado #F5F8FB · Borde #E1E8F0. Verde solo positivo/WhatsApp. Rojo solo precios/ofertas/alertas.
+pestañas;
 
-## 5. TIPOGRAFÍA
-Sans-serif moderna tipo Inter / Manrope / Geist / Plus Jakarta Sans. Titulares 750–850; body 400–500; producto 600–700; precio 700–800. NO serif, futurista, industrial agresiva ni monospace en títulos.
+escritorio;
 
-## 6. BARRA SUPERIOR NARANJA
-Primera franja, altura pequeña, naranja intenso, contenido centrado: "🚚 Envíos a todo el Perú | ↻ Repuestos originales y alternativos | ⚙ Asesoría técnica especializada". Derecha: "¿Necesitas ayuda? Escríbenos por WhatsApp". Texto pequeño blanco (utility bar).
+marco exterior;
 
-## 7. HEADER PRINCIPAL
-Fondo blanco, una fila. Izquierda: logo ColdPower (≈14–16% del ancho útil). Centro: buscador grande (elemento principal), placeholder "Busca por código, modelo, marca o producto...", lupa, botón azul al final. Derecha, en orden: [Cotización (0)] botón naranja con icono documento; [Mi cuenta] icono usuario + segunda línea "Ingresar"; [Carrito (0)] icono + contador.
+perspectiva;
 
-## 8. BARRA DE CATEGORÍAS
-Blanca, bordes sutiles. Primero botón navy "☰ Todas las categorías"; luego: Compresores · Refrigeración · Aire acondicionado · Motores y ventiladores · Controles · Herramientas · Repuestos · Marcas; a la derecha "Ofertas %" con fondo naranja. Todo el ancho útil.
+isométrico;
 
-## 9–16. HERO
-- Justo después del nav; altura ≈ 420–460 px a 1920; ≈40% texto / 60% imagen, fondo fotográfico extendido casi a todo el ancho.
-- Fondo fotográfico premium realista (refrigeración/HVAC, azul frío), integrado, no foto dentro de card.
-- Derecha/centro: condensadora HVAC grande, segunda unidad, ventiladores, compresor negro hermético protagonista, manifold, controlador digital, tuberías de cobre, motores. Fotorealista, sin deformaciones, sin tubos imposibles, sin fusionar productos.
-- Copy izquierda: eyebrow "REPUESTOS Y SOLUCIONES TÉCNICAS" (pequeño, blanco, tracking amplio). H1 en tres líneas: "Todo para refrigeración" / "y aire acondicionado" (blanco) / "en un solo lugar" (naranja), grande y dominante.
-- Beneficios (icono + texto, horizontales): "Miles de productos" · "Asesoría técnica especializada" · "Marcas líderes y garantía".
-- CTA: naranja "Solicitar cotización →" + blanco "Explorar catálogo", misma altura.
-- Arriba derecha: manuscrito azul "Tu proyecto, nuestro respaldo" con acento naranja.
-- Card derecha blanca redondeada con iconos azules: Refrigeración comercial · Aire acondicionado · Línea blanca · Industria alimentaria.
+presentación;
 
-## 17–19. CATEGORÍAS
-Fondo blanco. Título "Encuentra por línea de producto", subtítulo "Explora nuestras principales categorías", derecha "Ver todas las categorías →". 8 categorías en una fila, cards compactas (≈65% imagen / 35% texto), en orden: Compresores (compresor hermético negro) · Refrigeración (rollo de cobre + manifold) · Aire acondicionado (split blanco) · Motores y ventiladores (motor con ventilador) · Controles (controlador digital) · Herramientas (manifold + herramientas HVAC) · Repuestos (componentes negros/metálicos) · Línea blanca (lavadora + refrigeradora). Fotos realistas sobre fondo claro.
+varias pantallas.
+Debe ser únicamente:
+LA PÁGINA WEB COMPLETA.
+2. ANCHO
+La interfaz debe utilizar prácticamente todo el ancho comercial útil.
+En 1920 px conceptuales:
+contenido útil aproximado:
+1500–1650 px
+Los márgenes laterales deben sentirse similares a la referencia:
 
-## 20–25. "REFERENCIAS PARA EMPEZAR"
-Título + subtítulo "Productos más buscados para tus proyectos"; derecha tabs pill: Más vendidos (activo azul) · Nuevos ingresos · En oferta · Recomendados. EXACTAMENTE 6 product cards por fila, misma altura, fondo blanco, borde 1px gris claro, radio 14–16 px, sin sombra pesada, imagen ≈45–50% de la card. Tipos visibles: Compresor Embraco · Motor ventilador YDK · Controlador Dixell · Refrigerante R404A · Hélice de ventilador · Válvula de expansión Danfoss. Orden de card: badge opcional, imagen, nombre, código/SKU, marca, precio (rojo, p. ej. "S/ 1,250.00" — placeholder de diseño, no precio real), CTA naranja full width "🛒 Agregar", corazón outline arriba a la derecha.
 
-## 26–27. "AVANZA CON EL DATO QUE YA TIENES"
-Subtítulo "Encuentra más rápido la referencia que necesitas". Seis accesos pequeños en una fila: Modelo del equipo · Marca y ficha · Medida exacta · Código o SKU · Por aplicación · Habla con un asesor. Cada uno: icono azul, título, microejemplo, flecha. Altura reducida.
+suficientes para ordenar;
 
-## 28–30. BANNER NAVY PRINCIPAL
-Casi ancho completo, fondo navy. Izquierda: "Tu proyecto, nuestro respaldo" + "Repuestos, asesoría y soluciones para que tu operación nunca se detenga." + botón naranja "Solicitar cotización →". Centro/derecha: composición HVAC + compresor + instalación industrial + tuberías integrada al fondo. Panel derecho con 4 filas: Asesoría técnica especializada · Productos originales y alternativos · Envíos a todo el Perú · Soporte por WhatsApp.
+no enormes;
 
-## 31–32. "BUSCA POR EL TRABAJO QUE NECESITAS RESOLVER"
-Subtítulo "Soluciones para cada tipo de proyecto o equipo". 6 cards en una fila: Refrigeración comercial · Cámaras frigoríficas · Aire acondicionado · Línea blanca · Industria alimentaria · Mantenimiento y servicio. Foto dominante arriba, título, microtexto de una línea, flecha azul.
+no como landing corporativa estrecha.
+NO utilizar container de 1200 px.
+NO dejar una gran columna vacía a derecha o izquierda.
+3. DENSIDAD
+La página es un ecommerce técnico con ALTA DENSIDAD VISUAL CONTROLADA.
+Debe sentirse:
 
-## 33. MARCAS
-"Navega por fabricante" / "Las mejores marcas del mercado" / derecha "Ver todas →". Fila de logos: Embraco · Danfoss · Dixell · Copeland · LG · YORK · SAMSUNG · Midea · HITACHI · Panasonic (composición visual de referencia).
 
-## 34–36. NUEVOS INGRESOS + RAIL
-"Nuevos ingresos" / "Las últimas referencias en nuestro catálogo". Izquierda ≈75%: 6 product cards compactas con badge azul "Nuevo", precio rojo, botón naranja (Presostato · Tarjeta electrónica · Bomba de drenaje · Condensador · Relé/protector · Filtro secador). Derecha: dos banners verticales apilados — (1) naranja: "OFERTAS del MES", "Equipos, repuestos y herramientas", manifold/herramientas/compresor, botón blanco "Ver ofertas →"; (2) navy: "Herramientas y equipos de instalación", "Todo para un trabajo profesional", herramientas HVAC, botón blanco "Ver productos →".
+llena;
 
-## 37–39. AYUDA ANTES DEL FOOTER
-Izquierda FAQ: "Antes de solicitar tu cotización" / "Te ayudamos a preparar tu solicitud" + accordions: ¿Qué información debo enviar? · ¿Los repuestos son originales? · ¿Cuánto demora la respuesta?. Centro asesoría: "¿No encuentras el repuesto que necesitas?" + subtexto ≤2 líneas + 4 pasos con icono (Envíanos una foto · Indica modelo · Comparte el código · Cuéntanos tu proyecto) + botón "Solicitar ayuda por WhatsApp →".
+comercial;
 
-## 40–43. FOOTER
-Navy profundo, inmediatamente después. Cinco áreas: (1) logo + "Repuestos para refrigeración, aire acondicionado y línea blanca. Tu proyecto, nuestro respaldo." + Facebook/Instagram/LinkedIn/YouTube; (2) Categorías; (3) Ayuda; (4) Mi cuenta (títulos naranja + links); (5) Contáctanos: teléfono, email, Lima, Perú, botón verde "Escríbenos por WhatsApp". Newsletter a la derecha: "Recibe novedades y ofertas", input "Tu correo electrónico", botón flecha azul, "Sin spam. Solo información relevante.". Bottom: línea, "© 2025 ColdPower. Todos los derechos reservados." / Términos y condiciones | Política de privacidad | Mapa del sitio.
+abundante;
 
-## 44. PROPORCIONES VERTICALES
-Utility+Header+Nav 7% · Hero 14% · Categorías 9% · Productos iniciales 15% · Búsqueda guiada 6% · Banner principal 8% · Necesidades 8% · Marcas 5% · Nuevos+promos 15% · FAQ+asesoría 7% · Footer 10%.
+activa;
 
-## 45–51. ESPACIADO, CARDS, BORDES, RADIOS, SOMBRAS, ICONOS, IMÁGENES
-Secciones 24–40 px de padding vertical; grandes cambios máx. 48–56 px (no 100–150). Variación entre tipos de card. Bordes #E3EAF2. Radios: products 14–16, categorías 12–14, banners 14–18, botones 10–12. Sombras mínimas. Line icons azules/navy, naranja solo donde corresponda. Imágenes tipo fotografía ecommerce, fondo limpio, objeto recortado, sin renders deformados ni abstractos.
+fácil de recorrer.
+NO debe sentirse:
 
-## 52. PROHIBIDO
-Cambiar el orden; eliminar la barra naranja o el buscador; hero minimalista o fullscreen; reemplazar fotos por iconos; reducir categorías a 4 o productos a 3–4 por fila; tarjetas gigantes; cards oscuras para todo; landing corporativa; misión/historia; estadísticas; dashboard; gráficos; IA; personas hablando; stock charts; testimonials; reviews; estrellas; párrafos grandes; gradientes violetas; glassmorphism; blobs; círculos decorativos; composición futurista; cambiar la paleta navy/naranja; grandes espacios vacíos; estrechar el contenido; navegación diferente; footer pequeño; mover Ofertas fuera del rail de Nuevos ingresos; convertir "Avanza con el dato..." en tarjetas grandes; convertir "Busca por el trabajo..." en solo iconos.
 
-## 53–59. FIDELIDAD Y VALIDACIÓN
-Cada sección debe coincidir con la referencia en posición vertical, ancho, altura, número de columnas, número de elementos, peso visual, color dominante, densidad, tipo de imagen, cantidad de texto y CTA. Hero: texto izquierda, equipos derecha, compresor protagonista, manuscrito arriba derecha, card de aplicaciones derecha, CTA abajo izquierda, beneficios bajo el H1. Productos: 6 cards iguales con CTA naranja. Nuevos ingresos: productos izquierda + 2 banners apilados derecha (no carrusel). Footer grande, navy, rico en navegación.
-Checklist: ¿superponibles?; ¿hero en la misma zona y peso?; ¿mismo ritmo hero → categorías → productos → guía → banner → aplicaciones → marcas → nuevos+ofertas → FAQ → footer?; ¿8 categorías?; ¿6 productos?; ¿productos > textos?; ¿rail promocional derecho?; ¿se siente la MISMA página?
-Tolerancia: ±5% tamaño y spacing, diferencias fotográficas inevitables. No aceptable: otro hero, distribución, número de columnas, orden, footer, densidad, paleta, jerarquía o composición.
+vacía;
 
-## 60. INSTRUCCIÓN FINAL ABSOLUTA
-NO DISEÑES UN NUEVO HOME PARA COLDPOWER. RECONSTRUYE EL HOME QUE APARECE EN LA IMAGEN ADJUNTA. LA IMAGEN ES EL RESULTADO QUE QUIERO, NO UNA REFERENCIA. NO APORTES UNA INTERPRETACIÓN PERSONAL. NO CAMBIES LA ARQUITECTURA VISUAL. NO SIMPLIFIQUES. NO AÑADAS. NO ELIMINES. EL RESULTADO FINAL DEBE PODER COLOCARSE AL LADO DE LA IMAGEN ORIGINAL Y PARECER LA MISMA INTERFAZ RECREADA EN MAYOR RESOLUCIÓN.
+minimalista extrema;
+
+SaaS;
+
+corporativa;
+
+editorial;
+
+dashboard.
+La mayor parte de la página debe ser:
+PRODUCTO
+FOTOGRAFÍA
+CATEGORÍA
+BANNER
+CTA
+No párrafos.
+4. PALETA EXACTA
+Base:
+NAVY PROFUNDO
+#082A47 aprox.
+
+AZUL COLDPOWER
+#0B64D8
+#1677FF
+
+NARANJA COMERCIAL
+#FF8A00
+#FF9F0A
+
+BLANCO
+#FFFFFF
+
+FONDO GRIS AZULADO
+#F5F8FB
+
+BORDE
+#E1E8F0
+Verde únicamente en elementos positivos/WhatsApp.
+Rojo únicamente en precios/ofertas/alertas cuando corresponda.
+5. TIPOGRAFÍA
+Usar sans-serif moderna, limpia y comercial.
+Sensación equivalente a:
+Inter
+Manrope
+Geist
+Plus Jakarta Sans
+Titulares:
+font-weight: 750–850
+Body:
+400–500
+Producto:
+600–700
+Precio:
+700–800
+NO usar serif.
+NO usar futurista.
+NO usar industrial agresiva.
+NO usar monospace para títulos.
+6. BARRA SUPERIOR NARANJA
+Primera franja de toda la página.
+Altura pequeña.
+Color:
+naranja intenso
+Contenido centrado horizontalmente.
+Izquierda/centro:
+🚚 Envíos a todo el Perú
+|
+↻ Repuestos originales y alternativos
+|
+⚙ Asesoría técnica especializada
+Derecha:
+¿Necesitas ayuda?
+Escríbenos por WhatsApp
+Texto pequeño blanco.
+Debe sentirse como utility bar ecommerce.
+7. HEADER PRINCIPAL
+Debajo de la barra naranja.
+Fondo:
+blanco
+Una sola fila principal.
+IZQUIERDA
+Logo ColdPower.
+El logo debe ocupar aproximadamente:
+14–16% del ancho del header útil
+No demasiado grande.
+CENTRO
+Buscador horizontal grande.
+Debe ser el elemento principal del header.
+Placeholder:
+Busca por código, modelo, marca o producto...
+Icono de lupa.
+Botón azul cuadrado/redondeado al final.
+DERECHA
+En este orden:
+[ Cotización (0) ]
+[ Mi cuenta ]
+[ Carrito (0) ]
+Cotización:
+
+
+botón naranja;
+
+icono documento;
+
+texto blanco.
+Mi cuenta:
+
+
+icono usuario;
+
+texto navy;
+
+segunda línea pequeña “Ingresar”.
+Carrito:
+
+
+icono carrito;
+
+contador.
+8. BARRA DE CATEGORÍAS
+Debajo del header.
+Fondo blanco.
+Borde superior/inferior muy sutil.
+Primer elemento:
+botón navy:
+☰ Todas las categorías
+Después, horizontalmente:
+Compresores
+Refrigeración
+Aire acondicionado
+Motores y ventiladores
+Controles
+Herramientas
+Repuestos
+Marcas
+Último elemento destacado a la derecha:
+Ofertas %
+con fondo naranja.
+La barra debe ocupar todo el ancho útil.
+9. HERO — ESTRUCTURA EXACTA
+El Hero comienza inmediatamente después del nav.
+Altura aproximada:
+420–460 px conceptuales a 1920
+Debe ser ancho.
+No muy alto.
+Composición aproximada:
+40% texto
+60% imagen
+Pero el fondo fotográfico se extiende visualmente por casi todo el ancho.
+10. HERO — FONDO
+Fondo fotográfico premium, realista.
+Ambiente:
+
+
+refrigeración;
+
+HVAC;
+
+climatización;
+
+equipamiento profesional;
+
+profundidad de campo ligera;
+
+exterior/instalación técnica elegante.
+Dominante:
+azul frío.
+Debe integrarse con el diseño, no parecer una foto insertada dentro de una card.
+11. HERO — IMÁGENES
+En lado derecho y centro:
+mostrar una composición profesional con:
+
+
+unidad condensadora HVAC grande;
+
+segunda unidad;
+
+ventiladores;
+
+compresor negro hermético protagonista;
+
+manifold;
+
+controlador digital;
+
+tuberías de cobre;
+
+motores/componentes.
+Los equipos deben ser fotorealistas.
+NO deformarlos.
+NO inventar tubos imposibles.
+NO fusionar productos.
+12. HERO — COPY
+En lado izquierdo.
+Eyebrow:
+REPUESTOS Y SOLUCIONES TÉCNICAS
+Pequeño.
+Blanco.
+Tracking amplio.
+H1
+Exactamente estructura visual de tres líneas:
+Todo para refrigeración
+y aire acondicionado
+en un solo lugar
+Primera y segunda línea:
+blanco.
+Tercera:
+naranja.
+Debe ser grande y dominante.
+13. HERO — BENEFICIOS
+Debajo del H1.
+Tres items horizontales.
+Cada item:
+icono + texto.
+1
+Miles de
+productos
+2
+Asesoría técnica
+especializada
+3
+Marcas líderes
+y garantía
+Mantener misma densidad y distribución que referencia.
+14. HERO — CTA
+Debajo.
+Botón naranja:
+Solicitar cotización →
+Botón blanco:
+Explorar catálogo
+Misma altura.
+Naranja protagonista.
+15. HERO — SLOGAN DERECHO
+En parte superior derecha:
+texto manuscrito azul:
+Tu proyecto,
+nuestro respaldo
+Subrayado/acento naranja.
+Debe parecer exactamente como detalle editorial del diseño.
+16. HERO — CARD DERECHA
+Pequeña card blanca semitransparente / sólida.
+Tres-cuatro ítems:
+Refrigeración comercial
+Aire acondicionado
+Línea blanca
+Industria alimentaria
+Iconos azules.
+Card redondeada.
+17. SECCIÓN CATEGORÍAS
+Fondo blanco.
+Título izquierda:
+Encuentra por línea de producto
+Subtítulo pequeño:
+Explora nuestras principales categorías
+Derecha:
+Ver todas las categorías →
+18. GRID DE CATEGORÍAS
+Mostrar 8 categorías en una sola fila desktop, exactamente como referencia.
+Las cards son relativamente compactas.
+Cada una:
+65% imagen aproximadamente
+35% texto
+CATEGORÍAS VISIBLES
+En este orden:
+Compresores
+Refrigeración
+Aire acondicionado
+Motores y ventiladores
+Controles
+Herramientas
+Repuestos
+Línea blanca
+19. IMÁGENES DE CATEGORÍA
+Deben ser fotografías realistas sobre fondos claros.
+Compresores
+Compresor hermético negro.
+Refrigeración
+Rollo de cobre + manifold/componentes.
+Aire acondicionado
+Unidad split blanca.
+Motores y ventiladores
+Motor con ventilador.
+Controles
+Controlador digital.
+Herramientas
+Manifold + herramientas HVAC.
+Repuestos
+Composición de componentes negros/metálicos.
+Línea blanca
+Lavadora + refrigeradora o electrodomésticos blancos.
+20. PRODUCTOS — “REFERENCIAS PARA EMPEZAR”
+Inmediatamente después.
+Título:
+Referencias para empezar
+Subtítulo:
+Productos más buscados para tus proyectos
+Derecha:
+tabs tipo pill:
+Más vendidos
+Nuevos ingresos
+En oferta
+Recomendados
+Más vendidos activo en azul.
+21. GRID DE PRODUCTOS
+Mostrar EXACTAMENTE 6 product cards por fila.
+No 4.
+No 5.
+No 7.
+En este diseño desktop:
+6.
+22. PRODUCT CARDS
+Todas la misma altura.
+Fondo blanco.
+Border 1px gris claro.
+Radio:
+14–16 px
+Sin sombra pesada.
+Imagen ocupa aproximadamente:
+45–50%
+de la card.
+23. PRODUCTOS VISIBLES EN PRIMERA FILA
+Mantener visualmente estos tipos:
+Compresor Embraco
+Motor ventilador YDK
+Controlador Dixell
+Refrigerante R404A
+Hélice de ventilador
+Válvula de expansión Danfoss
+24. CARD — INFORMACIÓN
+Orden:
+badge opcional
+imagen
+nombre
+código/SKU
+marca
+precio
+CTA
+Precio rojo.
+Ejemplo visual:
+S/ 1,250.00
+IMPORTANTE:
+Para diseño visual, estos precios pueden ser placeholders de diseño.
+No deben interpretarse como precios reales de producción.
+25. CARD — CTA
+Botón naranja full width interno:
+🛒 Agregar
+Corazón outline arriba a la derecha.
+26. FRANJA “AVANZA CON EL DATO QUE YA TIENES”
+Inmediatamente después de productos.
+Título:
+Avanza con el dato que ya tienes
+Subtítulo:
+Encuentra más rápido la referencia que necesitas
+27. SEIS ACCESOS HORIZONTALES
+Una sola fila.
+Cards pequeñas.
+En este orden:
+Modelo del equipo
+Marca y ficha
+Medida exacta
+Código o SKU
+Por aplicación
+Habla con un asesor
+Cada una:
+
+
+icono azul;
+
+título;
+
+microejemplo;
+
+flecha.
+Altura reducida.
+28. BANNER NAVY PRINCIPAL
+Debajo.
+Un banner horizontal de ancho casi completo.
+Fondo navy.
+Parte izquierda:
+Tu proyecto, nuestro respaldo
+Subtexto:
+Repuestos, asesoría y soluciones para que tu operación nunca se detenga.
+Botón naranja:
+Solicitar cotización →
+29. IMAGEN DEL BANNER
+Centro/derecha:
+gran composición de:
+
+
+HVAC;
+
+compresor;
+
+instalación industrial;
+
+tuberías.
+Integrada al fondo.
+No como imagen aparte.
+30. BENEFICIOS DEL BANNER
+Panel claro/navy derecho con 4 filas:
+Asesoría técnica especializada
+Productos originales y alternativos
+Envíos a todo el Perú
+Soporte por WhatsApp
+Iconos azules/verdes.
+31. SECCIÓN “BUSCA POR EL TRABAJO QUE NECESITAS RESOLVER”
+Título:
+Busca por el trabajo que necesitas resolver
+Subtítulo:
+Soluciones para cada tipo de proyecto o equipo
+32. GRID DE NECESIDADES
+Mostrar 6 cards en una fila.
+En este orden:
+Refrigeración comercial
+Cámaras frigoríficas
+Aire acondicionado
+Línea blanca
+Industria alimentaria
+Mantenimiento y servicio
+Cada card:
+
+
+foto dominante arriba;
+
+título;
+
+microtexto máximo una línea;
+
+flecha azul.
+33. MARCAS
+Título:
+Navega por fabricante
+Subtexto:
+Las mejores marcas del mercado
+Derecha:
+Ver todas →
+Una fila horizontal de logos.
+Visualmente:
+Embraco
+Danfoss
+Dixell
+Copeland
+LG
+YORK
+SAMSUNG
+Midea
+HITACHI
+Panasonic
+Usarlos solo como composición visual de referencia.
+34. NUEVOS INGRESOS
+Título:
+Nuevos ingresos
+Subtítulo:
+Las últimas referencias en nuestro catálogo
+35. GRID NUEVOS
+Lado izquierdo:
+aprox. 75%.
+Mostrar 6 product cards compactas.
+Ejemplos visuales:
+Presostato
+Tarjeta electrónica
+Bomba de drenaje
+Condensador
+Relé/protector
+Filtro secador
+Cada card con badge azul:
+Nuevo
+Precio rojo.
+Botón naranja.
+36. RAIL DERECHO DE PROMOCIONES
+A la derecha de “Nuevos ingresos”.
+Dos banners verticales apilados.
+BANNER 1
+Fondo naranja intenso.
+Texto grande blanco:
+OFERTAS
+del MES
+Subcopy:
+Equipos, repuestos
+y herramientas
+Imágenes:
+
+
+manifold;
+
+herramientas;
+
+compresor.
+Botón blanco:
+Ver ofertas →
+BANNER 2
+Fondo navy.
+Texto:
+Herramientas
+y equipos de instalación
+Subcopy:
+Todo para un trabajo
+profesional
+Visual:
+
+
+manifold;
+
+destornilladores;
+
+pinzas;
+
+ventilador;
+
+herramientas HVAC.
+Botón blanco:
+Ver productos →
+37. BLOQUE INFERIOR DE AYUDA
+Antes del footer.
+Dos columnas principales.
+38. COLUMNA IZQUIERDA — FAQ
+Título:
+Antes de solicitar tu cotización
+Subtítulo:
+Te ayudamos a preparar tu solicitud
+Tres accordions:
+¿Qué información debo enviar?
+¿Los repuestos son originales?
+¿Cuánto demora la respuesta?
+39. COLUMNA CENTRAL — ASESORÍA
+Título:
+¿No encuentras el repuesto que necesitas?
+Subtexto máximo dos líneas.
+Debajo:
+cuatro pequeños pasos/iconos:
+Envíanos una foto
+Indica modelo
+Comparte el código
+Cuéntanos tu proyecto
+Botón naranja/WhatsApp:
+Solicitar ayuda por WhatsApp →
+40. FOOTER
+Fondo navy profundo.
+Debe comenzar inmediatamente después.
+41. FOOTER — ESTRUCTURA
+Cinco áreas horizontales desktop.
+Columna 1
+Logo ColdPower blanco/azul.
+Texto:
+Repuestos para refrigeración, aire acondicionado
+y línea blanca. Tu proyecto, nuestro respaldo.
+Iconos sociales:
+Facebook
+Instagram
+LinkedIn
+YouTube
+Columna 2
+Título naranja:
+Categorías
+Links.
+Columna 3
+Título naranja:
+Ayuda
+Links.
+Columna 4
+Título naranja:
+Mi cuenta
+Links.
+Columna 5
+Título naranja:
+Contáctanos
+Phone.
+Email.
+Lima, Perú.
+Botón verde:
+Escríbenos por WhatsApp
+42. NEWSLETTER
+Extremo derecho/sector superior footer:
+Recibe novedades y ofertas
+Input:
+Tu correo electrónico
+Botón flecha azul.
+Microcopy:
+Sin spam. Solo información relevante.
+Si el ancho lo exige, integrarlo dentro de la quinta zona.
+43. FOOTER BOTTOM
+Línea separadora.
+Izquierda:
+© 2025 ColdPower. Todos los derechos reservados.
+Derecha:
+Términos y condiciones
+|
+Política de privacidad
+|
+Mapa del sitio
+44. PROPORCIONES VERTICALES
+Mantener aproximadamente esta distribución respecto de toda la página:
+Utility + Header + Nav           7%
+
+Hero                            14%
+
+Categorías                       9%
+
+Productos iniciales             15%
+
+Búsqueda guiada                  6%
+
+Banner principal                 8%
+
+Necesidades                      8%
+
+Marcas                           5%
+
+Nuevos + promos                 15%
+
+FAQ + asesoría                   7%
+
+Footer                           10%
+Ajustar mínimamente si hace falta, pero conservar la sensación visual de la referencia.
+45. ESPACIADO
+NO generar grandes espacios verticales.
+Secciones:
+24–40 px
+de padding vertical visual relativo.
+Grandes cambios:
+máximo:
+48–56 px
+No 100–150 px.
+La referencia es densa.
+46. CARDS
+No hacer todas iguales.
+Debe existir variación entre:
+
+
+categorías;
+
+productos;
+
+quick paths;
+
+aplicaciones;
+
+banners;
+
+promociones;
+
+FAQ.
+47. BORDES
+Muy ligeros.
+#E3EAF2
+48. RADIOS
+Products:
+14–16px
+Category cards:
+12–14px
+Banners:
+14–18px
+Botones:
+10–12px
+49. SOMBRAS
+Mínimas.
+No floating SaaS.
+50. ICONOGRAFÍA
+Line icons coherentes.
+Azules/navy.
+Naranja solo donde corresponda.
+51. IMÁGENES
+Todas deben parecer:
+
+
+fotografías ecommerce;
+
+fondo limpio;
+
+iluminación profesional;
+
+objeto claramente recortado.
+No renders deformados.
+No imágenes abstractas.
+52. NO HACER
+ABSOLUTAMENTE PROHIBIDO:
+NO cambiar el orden de las secciones.
+
+NO eliminar la barra naranja.
+
+NO eliminar el buscador.
+
+NO hacer hero minimalista.
+
+NO reemplazar fotografías con iconos.
+
+NO reducir categorías a 4.
+
+NO reducir productos a 3 o 4 por fila.
+
+NO convertir productos en tarjetas gigantes.
+
+NO hacer cards oscuras para todo.
+
+NO hacer una landing corporativa.
+
+NO hacer una sección de misión.
+
+NO hacer una sección de historia.
+
+NO añadir estadísticas.
+
+NO añadir dashboard.
+
+NO añadir gráficos.
+
+NO añadir IA.
+
+NO añadir personas hablando.
+
+NO añadir stock charts.
+
+NO añadir testimonials.
+
+NO añadir reviews.
+
+NO añadir estrellas.
+
+NO añadir grandes párrafos.
+
+NO añadir gradients violetas.
+
+NO añadir glassmorphism.
+
+NO añadir blobs.
+
+NO añadir círculos decorativos.
+
+NO añadir una composición futurista.
+
+NO cambiar navy/naranja por otra paleta.
+
+NO convertir el Hero en una foto fullscreen.
+
+NO dejar grandes espacios vacíos.
+
+NO estrechar el contenido.
+
+NO crear navegación diferente.
+
+NO hacer el footer pequeño.
+
+NO mover Ofertas fuera del rail derecho de Nuevos ingresos.
+
+NO convertir la sección “Avanza con el dato...” en tarjetas grandes.
+
+NO convertir “Busca por el trabajo...” en iconos únicamente.
+53. REGLA DE FIDELIDAD
+Evalúa cada sección contra la imagen original.
+Debe coincidir en:
+posición vertical
+ancho
+altura
+número de columnas
+número de elementos
+peso visual
+color dominante
+densidad
+tipo de imagen
+cantidad de texto
+CTA
+No basta con que ambas páginas contengan las mismas secciones.
+Deben VERSE prácticamente iguales.
+54. NO REINTERPRETAR EL HERO
+Muy importante.
+El Hero debe mantener:
+texto izquierda
+equipos derecha
+compresor protagonista
+slogan manuscrito arriba derecha
+card de aplicaciones derecha
+CTA abajo izquierda
+beneficios debajo del H1
+No cambiar esta composición.
+55. NO REINTERPRETAR LOS PRODUCTOS
+Debe haber 6 cards.
+Mismo tamaño.
+Misma proporción.
+Misma altura.
+Mismos CTA naranja.
+Misma presencia fotográfica.
+56. NO REINTERPRETAR “NUEVOS INGRESOS”
+Debe ser:
+productos a izquierda
++
+2 banners comerciales apilados a derecha
+No transformarlo en carousel full width.
+57. NO REINTERPRETAR EL FOOTER
+Debe ser grande, navy, comercial y rico en navegación.
+No convertirlo en footer minimalista de dos líneas.
+58. CRITERIO FINAL DE VALIDACIÓN
+Antes de producir la imagen, compara mentalmente tu resultado contra la imagen adjunta.
+Haz estas preguntas:
+1
+¿Puedo superponer ambas capturas y reconocer prácticamente la misma distribución?
+Si NO:
+CORREGIR.
+2
+¿El Hero está en la misma zona y tiene el mismo peso?
+Si NO:
+CORREGIR.
+3
+¿Hay exactamente el mismo ritmo:
+hero
+categorías
+productos
+guía
+banner
+aplicaciones
+marcas
+nuevos+ofertas
+FAQ
+footer
+?
+Si NO:
+CORREGIR.
+4
+¿Hay 8 categorías en la primera fila?
+Si NO:
+CORREGIR.
+5
+¿Hay 6 productos en la principal?
+Si NO:
+CORREGIR.
+6
+¿Los productos ocupan más espacio que los textos?
+Si NO:
+CORREGIR.
+7
+¿Nuevos ingresos tiene un rail promocional derecho?
+Si NO:
+CORREGIR.
+8
+¿El diseño se siente como la MISMA PÁGINA y no otra interpretación de ColdPower?
+Si NO:
+DESCARTAR Y REHACER ANTES DEL RENDER.
+59. TOLERANCIA VISUAL
+Aceptable:
+±5% tamaño
+±5% spacing
+pequeñas diferencias fotográficas inevitables
+NO aceptable:
+otro Hero
+otra distribución
+otro número de columnas
+otro orden
+otro footer
+otra densidad
+otra paleta
+otra jerarquía
+otra composición
+60. INSTRUCCIÓN FINAL ABSOLUTA
+NO DISEÑES UN NUEVO HOME PARA COLDPOWER. RECONSTRUYE EL HOME QUE APARECE EN LA IMAGEN ADJUNTA. LA IMAGEN ES EL RESULTADO QUE QUIERO, NO UNA REFERENCIA. TU TRABAJO CONSISTE EN COPIAR SU ESTRUCTURA VISUAL, COMPOSICIÓN, DENSIDAD, PROPORCIONES, JERARQUÍA, SECCIONES, CARDS, PRODUCTOS, BANNERS, PALETA Y RITMO DE LA FORMA MÁS FIEL POSIBLE. NO APORTES UNA INTERPRETACIÓN PERSONAL. NO CAMBIES LA ARQUITECTURA VISUAL. NO SIMPLIFIQUES. NO AÑADAS. NO ELIMINES. EL RESULTADO FINAL DEBE PODER COLOCARSE AL LADO DE LA IMAGEN ORIGINAL Y PARECER LA MISMA INTERFAZ RECREADA EN MAYOR RESOLUCIÓN.
+ÚLTIMA ORDEN
+Genera una sola captura full-page del Home.
+No expliques nada.
+No entregues variantes.
+No entregues texto adicional.
+Solo genera la reproducción visual final.
