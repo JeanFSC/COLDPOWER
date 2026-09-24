@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const allowIframePreview = process.env.COLDPOWER_ALLOW_IFRAME_PREVIEW === "true";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["dev.coldpower.pe"],
+  allowedDevOrigins: ["dev.coldpower.pe", "127.0.0.1", "localhost"],
   // geoip-lite reads its bundled .dat files via a path relative to its own module
   // location at require-time; bundling it rewrites that path and breaks the lookup
   // (see node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/serverExternalPackages.md).
