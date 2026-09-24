@@ -200,6 +200,7 @@ export function AdminShell({
         />
       ) : null}
       <aside
+        aria-label="Navegación lateral administrativa"
         className={`fixed inset-y-0 left-0 z-50 flex ${sidebarWidth} flex-col border-r border-[#e6edf3] bg-white transition-transform duration-200 xl:translate-x-0 ${isMenuOpen ? "translate-x-0" : "-translate-x-full xl:translate-x-0"}`}
       >
         <div className="flex h-[76px] shrink-0 items-center border-b border-[#eef2f6] px-5">
@@ -231,7 +232,7 @@ export function AdminShell({
               return (
                 <Fragment key={`${link.href}-${link.label}`}>
                   {link.section && link.section !== links[index - 1]?.section ? (
-                    <p className="mb-1 mt-4 px-2.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#91a3b3] first:mt-0">
+                    <p className="mb-1 mt-4 px-2.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#526578] first:mt-0">
                       {link.section}
                     </p>
                   ) : null}
@@ -277,7 +278,7 @@ export function AdminShell({
               </Link>
             </div>
           </details>
-          <div className="flex items-start gap-2 px-1 text-[10px] text-[#66809c]">
+          <div className="flex items-start gap-2 px-1 text-[10px] text-[#526578]">
             <span
               className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#20bf6b] ring-4 ring-[#e8f8ef]"
               aria-hidden="true"
@@ -351,7 +352,7 @@ export function AdminShell({
               >
                 <Bell className="h-[19px] w-[19px]" strokeWidth={1.8} aria-hidden="true" />
                 {unreadNotificationsCount > 0 ? (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f97316] px-1 text-[10px] font-semibold text-white">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#b45309] px-1 text-[10px] font-semibold text-white">
                     {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
                   </span>
                 ) : null}

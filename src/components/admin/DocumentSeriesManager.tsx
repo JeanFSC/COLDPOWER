@@ -124,7 +124,7 @@ export function DocumentSeriesManager({ series }: { series: DocumentSeriesItem[]
           </table>
         </div>
       ) : (
-        <p className="rounded-lg border border-dashed border-[#dce6ee] p-4 text-center text-[11px] font-semibold text-[#8296a9]">Sin series registradas. Crea la primera para numerar tus documentos.</p>
+        <p className="rounded-lg border border-dashed border-[#dce6ee] p-4 text-center text-[11px] font-semibold text-[#526578]">Sin series registradas. Crea la primera para numerar tus documentos.</p>
       )}
     </div>
   );

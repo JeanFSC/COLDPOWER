@@ -1,31 +1,28 @@
 [CmdletBinding()]
 param()
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$pgRoot = Join-Path $env:USERPROFILE "pg17"
-$dataDir = Join-Path $env:USERPROFILE "pgdata-coldpower"
-$binDir = Join-Path $pgRoot "pgsql\bin"
-$initDb = Join-Path $binDir "initdb.exe"
-$pgCtl = Join-Path $binDir "pg_ctl.exe"
+$serviceName = "postgresql-18-coldpower"
+$pgRoot = "C:\PostgreSQL\18"
+$dataDir = Join-Path $pgRoot "data"
+$binDir = Join-Path $pgRoot "bin"
 $psql = Join-Path $binDir "psql.exe"
 $createdb = Join-Path $binDir "createdb.exe"
-$serverLog = Join-Path $dataDir "server.log"
 $passwordFile = Join-Path $env:USERPROFILE "pg-local-coldpower-password.txt"
 $envLocalDb = Join-Path $projectRoot ".env.localdb"
 $databaseName = "coldpower"
 $databaseUser = "coldpower"
 $hostName = "127.0.0.1"
-$port = "5432"
+$port = 5433
 
-foreach ($requiredPath in @($initDb, $pgCtl, $psql, $createdb)) {
-  if (-not (Test-Path -LiteralPath $requiredPath)) {
-    throw "Falta el binario de PostgreSQL: $requiredPath. Descarga y extrae el ZIP oficial en $pgRoot."
+foreach ($requiredPath in @($psql, $createdb)) {
+  if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
+    throw "Falta el binario de PostgreSQL 18: $requiredPath. Verifica la instalación en $pgRoot."
   }
 }
-
-New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
 
 function Get-LocalPassword {
   if (Test-Path -LiteralPath $passwordFile) {
@@ -46,18 +43,19 @@ function Get-LocalPassword {
   return "coldpower-local-2026"
 }
 
-if (-not (Test-Path -LiteralPath (Join-Path $dataDir "PG_VERSION"))) {
-  $localPassword = Get-LocalPassword
-  [System.IO.File]::WriteAllText($passwordFile, $localPassword)
-  & $initDb -D $dataDir -U $databaseUser --pwfile=$passwordFile --encoding=UTF8 --locale=C --auth=md5
-  if ($LASTEXITCODE -ne 0) { throw "initdb terminó con código $LASTEXITCODE." }
-  Write-Host "Cluster PostgreSQL local inicializado en $dataDir."
+$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+if (-not $service) {
+  throw "No existe el servicio '$serviceName'. Instala PostgreSQL 18 como servicio antes de iniciar la base local."
 }
 
-$statusOutput = & $pgCtl status -D $dataDir 2>&1
-if ($LASTEXITCODE -ne 0) {
-  & $pgCtl start -D $dataDir -l $serverLog -o "-h $hostName -p $port" -w
-  if ($LASTEXITCODE -ne 0) { throw "pg_ctl no pudo iniciar PostgreSQL. Revisa $serverLog." }
+Write-Warning "Start-Service puede requerir una consola de PowerShell ejecutada como Administrador."
+if ($service.Status -ne [System.ServiceProcess.ServiceControllerStatus]::Running) {
+  try {
+    Start-Service -Name $serviceName
+    $service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Running, [TimeSpan]::FromSeconds(30))
+  } catch {
+    throw "No se pudo iniciar '$serviceName'. Ejecuta este script como Administrador y revisa el servicio: $($_.Exception.Message)"
+  }
 }
 
 $localPassword = Get-LocalPassword
@@ -75,4 +73,4 @@ try {
   Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
 }
 
-Write-Host "PostgreSQL local activo: $hostName`:$port/$databaseName (usuario $databaseUser)."
+Write-Host "PostgreSQL local activo mediante el servicio ${serviceName}: $hostName`:$port/$databaseName (usuario $databaseUser)."

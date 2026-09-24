@@ -87,7 +87,7 @@ export function ComplaintsForm() {
       <label className="flex items-start gap-3 text-xs font-semibold leading-5 text-text-secondary"><input name="consent" value="true" type="checkbox" required className="mt-1 h-4 w-4 rounded border-border accent-brand-secondary-600" /><span>Declaro que la información proporcionada es verdadera y autorizo su uso para atender esta solicitud.</span></label>
       {errors.consent ? <span className="-mt-3 text-xs font-semibold text-danger">{errors.consent}</span> : null}
       {message && state === "error" ? <p className="rounded-md border border-danger/25 bg-danger/5 px-3 py-2 text-sm font-semibold text-danger" role="alert">{message}</p> : null}
-      <button type="submit" disabled={state === "sending"} className="inline-flex h-12 items-center justify-center rounded-pill bg-primary px-5 text-sm font-extrabold text-brand-primary-900 shadow-card transition hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-60">{state === "sending" ? "Registrando…" : "Enviar solicitud"}</button>
+      <button type="submit" disabled={state === "sending"} className="inline-flex h-12 items-center justify-center rounded-pill bg-primary px-5 text-sm font-extrabold text-white shadow-card transition hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-60">{state === "sending" ? "Registrando…" : "Enviar solicitud"}</button>
     </form>
   );
 }

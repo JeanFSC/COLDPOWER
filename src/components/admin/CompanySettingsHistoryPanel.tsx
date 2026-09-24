@@ -87,7 +87,7 @@ export function CompanySettingsHistoryPanel({ currentVersion }: { currentVersion
         <div className="space-y-1">
           {items.length ? items.map((item) => (
             <button key={item.id} type="button" onClick={() => setSelectedVersion(item.version)} className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left ${selectedVersion === item.version ? "border-blue-200 bg-blue-50 text-blue-700" : "border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200"}`}>
-              <span><span className="block text-[11px] font-bold">Versión {item.version}</span><span className="mt-0.5 block text-[10px] text-slate-400">{new Date(item.createdAt).toLocaleString("es-PE")}</span></span>
+              <span><span className="block text-[11px] font-bold">Versión {item.version}</span><span className="mt-0.5 block text-[10px]">{new Date(item.createdAt).toLocaleString("es-PE")}</span></span>
               <span className="text-[10px] font-semibold">{item.actorRole ?? "Sistema"}</span>
             </button>
           )) : <p className="rounded-lg border border-dashed border-slate-200 p-3 text-center text-[11px] text-slate-400">No hay versiones guardadas.</p>}

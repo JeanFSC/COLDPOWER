@@ -460,7 +460,7 @@ export function PaymentsControlCenter({
                     : "rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
                 }
               >
-                {title} <span className="ml-1 text-[11px] opacity-70">{count}</span>
+                {title} <span className="ml-1 text-[11px] text-current">{count}</span>
               </Link>
             ))}
           </div>
@@ -571,7 +571,7 @@ function Pager({ page, total, query }: { page: number; total: number; query: str
       </span>
       {total > 1 ? (
         <nav aria-label="Paginación de pagos" className="flex items-center gap-1">
-          <Link href={href(Math.max(1, page - 1))} className="rounded p-1 text-slate-400 hover:text-slate-600">
+          <Link href={href(Math.max(1, page - 1))} className="rounded p-1 text-slate-500 hover:text-slate-700" aria-label="Página anterior">
             <ChevronLeft className="h-4 w-4" />
           </Link>
           {pageNumbers(page, total).map((value) => (
@@ -588,7 +588,7 @@ function Pager({ page, total, query }: { page: number; total: number; query: str
               {value}
             </Link>
           ))}
-          <Link href={href(Math.min(total, page + 1))} className="rounded p-1 text-slate-400 hover:text-slate-600">
+          <Link href={href(Math.min(total, page + 1))} className="rounded p-1 text-slate-500 hover:text-slate-700" aria-label="Página siguiente">
             <ChevronRight className="h-4 w-4" />
           </Link>
         </nav>
@@ -607,7 +607,7 @@ function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (
   const observed = item.status === "REJECTED" || item.status === "ERROR" || item.reconciliation === "UNDERPAID" || item.reconciliation === "OVERPAID";
   const accent = refundRequired ? "border-orange-200" : observed ? "border-red-200" : "border-amber-200";
   const badge = refundRequired ? "bg-orange-50 text-orange-700 border-orange-200" : observed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-600 border-amber-200";
-  const buttonColor = refundRequired ? "bg-orange-500 hover:bg-orange-600" : observed ? "bg-red-500 hover:bg-red-600" : "bg-orange-500 hover:bg-orange-600";
+  const buttonColor = refundRequired ? "bg-orange-700 hover:bg-orange-800" : observed ? "bg-red-700 hover:bg-red-800" : "bg-orange-700 hover:bg-orange-800";
   return (
     <div className={`flex flex-col justify-between rounded-xl border ${accent} bg-white p-4 shadow-2xs`}>
       <div>

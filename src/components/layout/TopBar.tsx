@@ -7,7 +7,7 @@ export async function TopBar() {
   const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
 
   return (
-    <div className="home-utility-bar">
+    <div className="home-utility-bar" role="region" aria-label="Información de servicio">
       <div className="home-wide-container home-utility-inner">
         <div className="home-utility-items">
           <span><Truck aria-hidden="true" />Envíos a todo el Perú</span>

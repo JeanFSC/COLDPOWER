@@ -39,8 +39,13 @@ function buildConditions(query: CatalogQuery, publicOnly = query.publicOnly !== 
   const conditions: SQL[] = publicOnly ? [...publicConditions()] : [];
   const search = query.query?.trim();
   if (search) {
-    const pattern = `%${search}%`;
-    conditions.push(or(ilike(products.sku, pattern), ilike(products.originalName, pattern), ilike(products.normalizedName, pattern), ilike(products.commercialName, pattern), ilike(products.productType, pattern), ilike(products.modelCode, pattern), ilike(products.application, pattern), ilike(products.refrigerant, pattern), ilike(products.voltage, pattern), ilike(products.power, pattern), ilike(products.capacitance, pattern), ilike(products.dimensions, pattern), ilike(products.length, pattern), ilike(products.connectionSize, pattern), ilike(categories.name, pattern), ilike(families.name, pattern), ilike(brands.name, pattern))!);
+    const fields = [products.sku, products.originalName, products.normalizedName, products.commercialName, products.productType, products.modelCode, products.application, products.refrigerant, products.voltage, products.power, products.capacitance, products.dimensions, products.length, products.connectionSize, categories.name, families.name, brands.name];
+    const terms = search.split(/\s+/).filter(Boolean);
+    const termConditions = terms.map((term) => {
+      const variants = new Set([term, term.replace(/u/gi, "µ"), term.replace(/µ/g, "u")]);
+      return or(...[...variants].flatMap((variant) => fields.map((field) => ilike(field, `%${variant}%`))))!;
+    });
+    conditions.push(and(...termConditions)!);
   }
   if (query.categorySlug) conditions.push(eq(categories.slug, query.categorySlug));
   if (query.familySlug) conditions.push(eq(families.slug, query.familySlug));

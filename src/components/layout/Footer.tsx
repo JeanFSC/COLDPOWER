@@ -34,8 +34,9 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
   const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
   const configuredLegalLinks = Object.entries(settings.legalLinks ?? {});
   const requiredLegalLinks = [["Términos y condiciones", "/terminos"], ["Política de privacidad", "/privacidad"]] as const;
+  const complaintLink = ["Libro de reclamaciones", "/libro-de-reclamaciones"] as const;
   const legalLinks = settings.legalPagesPublished
-    ? [...requiredLegalLinks, ...configuredLegalLinks.filter(([label, href]) => !requiredLegalLinks.some(([requiredLabel, requiredHref]) => requiredLabel === label || requiredHref === href))]
+    ? [...requiredLegalLinks, ...configuredLegalLinks.filter(([label, href]) => ![...requiredLegalLinks, complaintLink].some(([requiredLabel, requiredHref]) => requiredLabel === label || requiredHref === href))]
     : [];
   const socialLinks = Object.entries(settings.socials ?? {}).filter(([key, value]) => Boolean(value && key in socialMeta));
   const paymentMethods = getPaymentMethodLabels(settings.paymentMethods);
@@ -75,7 +76,7 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
       <div className="home-footer-bottom">
         <div className="home-wide-container">
           <p>© {currentYear} ColdPower. Todos los derechos reservados.</p>
-          <div>{legalLinks.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}<Link href="/mapa-del-sitio">Mapa del sitio</Link></div>
+          <div>{legalLinks.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}<Link href={complaintLink[1]}>{complaintLink[0]}</Link><a href="/sitemap.xml">Mapa del sitio</a></div>
         </div>
       </div>
     </footer>

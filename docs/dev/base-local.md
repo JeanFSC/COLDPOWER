@@ -1,36 +1,42 @@
 # Base local de ColdPower
 
-Este entorno usa PostgreSQL 17 portable en Windows y no modifica ni consulta la configuración de Neon. Los binarios y los datos viven fuera del repositorio:
+La base local usa PostgreSQL 18 instalado como servicio de Windows. Este clúster es independiente de cualquier entorno remoto y es la única base autorizada para la QA local.
 
-- Binarios: `C:\Users\jean_\pg17\pgsql\bin`
-- Cluster: `C:\Users\jean_\pgdata-coldpower`
-- Endpoint: `postgres://coldpower:<contraseña-local>@127.0.0.1:5432/coldpower`
+- Servicio: `postgresql-18-coldpower`
+- Binarios: `C:\PostgreSQL\18\bin`
+- Datos: `C:\PostgreSQL\18\data`
+- Endpoint: `postgres://coldpower:<contraseña-local>@127.0.0.1:5433/coldpower`
 - Entorno de la aplicación: `.env.localdb` (ignorado por Git)
 
-## Primera preparación
+La instalación portátil de PostgreSQL 17 quedó apagada y fuera de uso. No se debe iniciar con `pg_ctl`, ni reutilizar `C:\Users\jean_\pg17` o el puerto `5432`.
 
-El ZIP oficial de EnterpriseDB PostgreSQL 17 para Windows x64 se descarga en `C:\Users\jean_\pg17\` y se extrae allí. La estructura esperada es `C:\Users\jean_\pg17\pgsql\bin`.
+## Estado, arranque y parada
 
-Inicializa e inicia el cluster con:
+Los scripts consultan y controlan el servicio con `Get-Service`, `Start-Service` y `Stop-Service`:
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\pg-local-status.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\pg-local-start.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\pg-local-stop.ps1
 ```
 
-El script crea el cluster con usuario `coldpower`, UTF-8, locale `C`, autenticación por contraseña y la base `coldpower`. La contraseña local se conserva fuera del repo en `C:\Users\jean_\pg-local-coldpower-password.txt`.
+El estado no requiere elevación. El arranque y la parada pueden requerir una consola de PowerShell ejecutada como Administrador; los scripts muestran una advertencia y explican el error si Windows rechaza la operación.
+
+El servicio ya contiene el clúster y escucha en `127.0.0.1:5433`. El script de arranque comprueba los binarios, inicia el servicio si hace falta y verifica que exista la base `coldpower`; no inicializa otro clúster ni crea datos fuera de `C:\PostgreSQL\18\data`.
+
+La contraseña local se conserva fuera del repositorio en `C:\Users\jean_\pg-local-coldpower-password.txt`. Como alternativa, el arranque acepta `CP_PG_LOCAL_PASSWORD` o lee la contraseña de `DATABASE_URL` en `.env.localdb`.
 
 ## Orden reproducible
 
-Desde la raíz del repo:
+Desde la raíz del repo, con `DATABASE_URL` de `.env.localdb`:
 
 ```powershell
 corepack pnpm db:local:migrate
 corepack pnpm db:local:restore
 corepack pnpm db:local:seed
-corepack pnpm dev:local
 ```
 
-`db:local:restore` usa por defecto `tmp/backups/cp025-pre-migration-2026-09-23T23-19-56-959Z.json`, exige que `DATABASE_URL` sea `localhost`, `127.0.0.1` o `::1`, conserva los IDs, slugs y SKU, y verifica las filas restauradas contra el backup.
+`db:local:restore` usa por defecto `tmp/backups/cp025-pre-migration-2026-09-23T23-19-56-959Z.json`, exige que `DATABASE_URL` sea local, conserva los IDs, slugs y SKU, y verifica las filas restauradas contra el backup.
 
 El seed local ejecuta, en este orden:
 
@@ -45,20 +51,20 @@ El seed local ejecuta, en este orden:
 
 Todos los seeds requieren `--confirm-dev-mock`, están bloqueados en producción y usan IDs deterministas. Sus datos son fixtures de desarrollo no operativas; no representan ventas, inventario, pagos ni promociones comerciales reales.
 
-## Arranque y parada
+## Servidor local y QA
+
+El script `dev:local` existente usa el puerto `3002` para desarrollo. Ese puerto pertenece a otro flujo y no debe tocarse durante la QA de este ticket.
+
+La QA final usa un build de producción con `.env.localdb` en el puerto `3003`:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\pg-local-status.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\pg-local-stop.ps1
+corepack pnpm build
+$env:CP_DEV_AUTH_BYPASS = "true"
+$env:CP_DEV_AUTH_ALLOWED_HOSTS = "localhost:3003,127.0.0.1:3003"
+corepack pnpm exec dotenv -e .env.localdb -- next start --hostname 0.0.0.0 --port 3003
 ```
 
-Para la revisión de la aplicación:
-
-```powershell
-corepack pnpm dev:local
-```
-
-La aplicación queda en `http://localhost:3002` y hereda el bypass de autenticación de desarrollo copiado desde `.env.local`.
+El usuario de prueba se define por turno con `CP_DEV_AUTH_USER_ID`; al cambiar de rol se reinicia el servidor. No usar los puertos `3000`, `3002` ni `3007`, y no apuntar la QA a una base remota.
 
 ## Conteos del backup restaurado
 
@@ -77,8 +83,8 @@ La aplicación queda en `http://localhost:3002` y hereda el bypass de autenticac
 
 ## Riesgos y límites
 
-- La base local no es una réplica completa de Neon: el backup corresponde a una revisión anterior y los seeds agregan fixtures para módulos posteriores.
+- La base local no es una réplica completa de un entorno remoto: el backup corresponde a una revisión anterior y los seeds agregan fixtures para módulos posteriores.
 - Repetir los seeds es idempotente por diseño, pero restaurar no elimina filas adicionales creadas por fixtures.
-- El puerto `5432` debe estar libre y el puerto de Next local es `3002`.
-- Borrar `C:\Users\jean_\pgdata-coldpower` elimina la base local y su contraseña; `.env.localdb` deberá regenerarse o actualizarse antes de iniciar de nuevo.
-- `.env.local` permanece sin cambios y sigue siendo el entorno de Neon para los comandos existentes.
+- PostgreSQL local debe escucharse solo en `127.0.0.1:5433`; el puerto `5432` pertenece a la configuración obsoleta v17.
+- Detener o eliminar `C:\PostgreSQL\18\data` elimina el clúster local; antes de hacerlo, genera un respaldo manual y confirma que `.env.localdb` siga apuntando a `127.0.0.1:5433`.
+- Los respaldos no son automáticos: no hay limpieza por antigüedad ni tarea programada activa.

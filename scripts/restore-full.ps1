@@ -4,7 +4,8 @@ param(
   [string]$BackupPath,
   [string]$SourceDatabaseUrl = $env:DATABASE_URL,
   [string]$RestoreDatabaseName = "coldpower_restore_test",
-  [string]$PgBinPath = "C:\Users\jean_\pg17\pgsql\bin",
+  [string]$PgBinPath = "C:\PostgreSQL\18\bin",
+  [int]$Port = 5433,
   [switch]$Recreate
 )
 
@@ -67,7 +68,15 @@ function Get-TableCounts {
   return $counts
 }
 
+if ($Port -lt 1 -or $Port -gt 65535) {
+  throw "Port debe estar entre 1 y 65535."
+}
+
 $sourceUri = Get-LocalDatabaseUri $SourceDatabaseUrl
+$sourceBuilder = [UriBuilder]$sourceUri
+$sourceBuilder.Port = $Port
+$sourceDatabaseUrl = $sourceBuilder.Uri.AbsoluteUri
+$sourceUri = [Uri]$sourceDatabaseUrl
 $resolvedBackupPath = (Resolve-Path -LiteralPath $BackupPath -ErrorAction Stop).Path
 $pgRestore = Join-Path $PgBinPath "pg_restore.exe"
 $createdb = Join-Path $PgBinPath "createdb.exe"
@@ -86,22 +95,23 @@ if ($RestoreDatabaseName -notmatch "^[A-Za-z_][A-Za-z0-9_]*$") {
 $targetBuilder = [UriBuilder]$sourceUri
 $targetBuilder.Path = "/$RestoreDatabaseName"
 $targetBuilder.Query = ""
+$targetBuilder.Port = $Port
 $targetDatabaseUrl = $targetBuilder.Uri.AbsoluteUri
 
-$sourceCounts = Get-TableCounts $psql $SourceDatabaseUrl
+$sourceCounts = Get-TableCounts $psql $sourceDatabaseUrl
 $escapedDatabaseName = $RestoreDatabaseName.Replace("'", "''")
-$exists = @(Invoke-Psql $psql $SourceDatabaseUrl "SELECT 1 FROM pg_database WHERE datname = '$escapedDatabaseName';")
+$exists = @(Invoke-Psql $psql $sourceDatabaseUrl "SELECT 1 FROM pg_database WHERE datname = '$escapedDatabaseName';")
 if ($exists.Count -gt 0 -and $exists[0] -eq "1") {
   if (-not $Recreate) {
     throw "La base $RestoreDatabaseName ya existe. Usa -Recreate solo para recrear esta base de prueba local."
   }
-  & $dropdb "--if-exists" "--maintenance-db=$SourceDatabaseUrl" $RestoreDatabaseName
+  & $dropdb "--if-exists" "--maintenance-db=$sourceDatabaseUrl" $RestoreDatabaseName
   if ($LASTEXITCODE -ne 0) {
     throw "dropdb terminó con código $LASTEXITCODE."
   }
 }
 
-& $createdb "--maintenance-db=$SourceDatabaseUrl" $RestoreDatabaseName
+& $createdb "--maintenance-db=$sourceDatabaseUrl" $RestoreDatabaseName
 if ($LASTEXITCODE -ne 0) {
   throw "createdb terminó con código $LASTEXITCODE."
 }
@@ -125,6 +135,7 @@ foreach ($table in $allTables) {
 $result = [ordered]@{
   backup = $resolvedBackupPath
   sourceHost = $sourceUri.Host
+  sourcePort = $Port
   restoredDatabase = $RestoreDatabaseName
   tableCount = $allTables.Count
   counts = [ordered]@{}

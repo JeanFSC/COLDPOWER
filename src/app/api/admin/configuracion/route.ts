@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
   try { actor = await requireApiPermission("settings.business.edit"); } catch (error) { if (error instanceof ApiAuthorizationError) return apiError("COMPANY_SETTINGS_FORBIDDEN", "No tienes permiso para modificar configuración.", 403); throw error; }
   let body: unknown; try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
   const value = plainObject(body); if (!value) return apiError("COMPANY_SETTINGS_INVALID", "Configuración empresarial inválida.", 400);
-  if (Object.prototype.hasOwnProperty.call(value, "legalPagesPublished") && !can(actor.role, "settings.legal.publish")) return apiError("COMPANY_SETTINGS_LEGAL_PUBLISH_FORBIDDEN", "Solo SUPERADMIN puede publicar las pÃ¡ginas legales.", 403);
+  if (Object.prototype.hasOwnProperty.call(value, "legalPagesPublished") && !can(actor.role, "settings.legal.publish")) return apiError("COMPANY_SETTINGS_LEGAL_PUBLISH_FORBIDDEN", "Solo SUPERADMIN puede publicar las páginas legales.", 403);
   try {
     const expected = expectedVersion(value);
     const saved = await getDb().transaction(async (tx) => {

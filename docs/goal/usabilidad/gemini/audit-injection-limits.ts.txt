@@ -1,0 +1,122 @@
+async function runLimitsAudit() {
+  console.log("=== INICIANDO AUDITORÍA DE DATOS LÍMITE E INYECCIÓN ===");
+  const baseUrl = "http://localhost:3007";
+
+  const testCases = [
+    // 1. Cotización: XSS en nombre
+    {
+      name: "Cotización con payload XSS en nombre y mensaje",
+      url: `${baseUrl}/api/cotizacion`,
+      method: "POST",
+      body: {
+        name: "<script>alert('xss')</script>Juan Pérez",
+        customerType: "natural",
+        documentNumber: "12345678",
+        phone: "987654321",
+        email: "test@coldpower.pe",
+        department: "LIMA",
+        province: "LIMA",
+        district: "MIRAFLORES",
+        preferredContact: "whatsapp",
+        consent: true,
+        message: "<b>Mensaje con tags html y caracteres especiales & % $ # @ ! ()</b>",
+      },
+    },
+    // 2. Cotización: SQL Injection en documentNumber
+    {
+      name: "Cotización con SQL Injection en documento",
+      url: `${baseUrl}/api/cotizacion`,
+      method: "POST",
+      body: {
+        name: "Carlos Test",
+        customerType: "natural",
+        documentNumber: "' OR 1=1 --",
+        phone: "987654321",
+        department: "LIMA",
+        province: "LIMA",
+        district: "LIMA",
+        preferredContact: "whatsapp",
+        consent: true,
+        message: "Necesito cotización urgente para compresor",
+      },
+    },
+    // 3. Checkout: Cantidad 0
+    {
+      name: "Checkout con cantidad 0",
+      url: `${baseUrl}/api/checkout`,
+      method: "POST",
+      body: {
+        items: [{ productId: "product-cp-ref-cap-0412", quantity: 0 }],
+        deliveryMethod: "PICKUP",
+        locationId: "loc-principal",
+        name: "Comprador Cero",
+        phone: "987654321",
+        address: "Av Principal 123",
+        idempotencyKey: `test-zero-${Date.now()}`,
+      },
+    },
+    // 4. Checkout: Cantidad negativa (-5)
+    {
+      name: "Checkout con cantidad negativa (-5)",
+      url: `${baseUrl}/api/checkout`,
+      method: "POST",
+      body: {
+        items: [{ productId: "product-cp-ref-cap-0412", quantity: -5 }],
+        deliveryMethod: "PICKUP",
+        locationId: "loc-principal",
+        name: "Comprador Negativo",
+        phone: "987654321",
+        address: "Av Principal 123",
+        idempotencyKey: `test-neg-${Date.now()}`,
+      },
+    },
+    // 5. Checkout: Cantidad excesiva (99999)
+    {
+      name: "Checkout con cantidad gigante (99999)",
+      url: `${baseUrl}/api/checkout`,
+      method: "POST",
+      body: {
+        items: [{ productId: "product-cp-ref-cap-0412", quantity: 99999 }],
+        deliveryMethod: "PICKUP",
+        locationId: "loc-principal",
+        name: "Comprador Gigante",
+        phone: "987654321",
+        address: "Av Principal 123",
+        idempotencyKey: `test-giant-${Date.now()}`,
+      },
+    },
+    // 6. Checkout: Inyección de precios en payload cliente (unitPrice)
+    {
+      name: "Checkout intentando sobreescribir precio (unitPrice: 0.01)",
+      url: `${baseUrl}/api/checkout`,
+      method: "POST",
+      body: {
+        items: [{ productId: "product-cp-ref-cap-0412", quantity: 1, unitPrice: 0.01 }],
+        deliveryMethod: "PICKUP",
+        locationId: "loc-principal",
+        name: "Comprador Hacker",
+        phone: "987654321",
+        address: "Av Principal 123",
+        idempotencyKey: `test-hack-${Date.now()}`,
+      },
+    },
+  ];
+
+  for (const tc of testCases) {
+    console.log(`\nProbando: ${tc.name}...`);
+    try {
+      const res = await fetch(tc.url, {
+        method: tc.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tc.body),
+      });
+      const data = await res.json().catch(() => null);
+      console.log(`Status: ${res.status}`);
+      console.log("Respuesta:", JSON.stringify(data).slice(0, 200));
+    } catch (e) {
+      console.error("Error en request:", e);
+    }
+  }
+}
+
+runLimitsAudit();

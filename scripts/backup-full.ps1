@@ -3,8 +3,8 @@ param(
   [string]$DatabaseUrl = $env:DATABASE_URL,
   [string]$Environment = "local",
   [string]$BackupRoot = "C:\Users\jean_\ColdPowerBackups",
-  [string]$PgBinPath = "C:\Users\jean_\pg17\pgsql\bin",
-  [int]$RetentionDays = 14
+  [string]$PgBinPath = "C:\PostgreSQL\18\bin",
+  [int]$Port = 5433
 )
 
 Set-StrictMode -Version Latest
@@ -33,8 +33,8 @@ function Get-DatabaseUri {
 if ($Environment -notmatch "^[A-Za-z0-9_-]+$") {
   throw "Environment solo puede contener letras, números, guiones y guiones bajos."
 }
-if ($RetentionDays -lt 1) {
-  throw "RetentionDays debe ser mayor que cero."
+if ($Port -lt 1 -or $Port -gt 65535) {
+  throw "Port debe estar entre 1 y 65535."
 }
 
 $databaseUri = Get-DatabaseUri $DatabaseUrl
@@ -54,28 +54,21 @@ if (Test-Path -LiteralPath $targetPath) {
 # Custom format preserves the complete PostgreSQL schema/data graph, including
 # tables, sequences and enum types. Ownership/ACLs are intentionally omitted so
 # a local restore can be performed by the configured local database role.
-& $pgDump "--dbname=$DatabaseUrl" "--format=custom" "--file=$targetPath" "--no-owner" "--no-privileges"
+# This script is intentionally manual: it never schedules itself or deletes old
+# backups. Retention and off-machine copies are operational decisions by Jean.
+& $pgDump "--dbname=$DatabaseUrl" "--host=$($databaseUri.Host)" "--port=$Port" "--format=custom" "--file=$targetPath" "--no-owner" "--no-privileges"
 if ($LASTEXITCODE -ne 0) {
   Remove-Item -LiteralPath $targetPath -Force -ErrorAction SilentlyContinue
   throw "pg_dump terminó con código $LASTEXITCODE."
 }
 
-$cutoff = (Get-Date).AddDays(-$RetentionDays)
-$removed = [System.Collections.Generic.List[string]]::new()
-Get-ChildItem -LiteralPath $BackupRoot -File -Filter "coldpower-$Environment-*.dump" |
-  Where-Object { $_.LastWriteTime -lt $cutoff -and $_.FullName -ne $targetPath } |
-  ForEach-Object {
-    Remove-Item -LiteralPath $_.FullName -Force
-    $removed.Add($_.Name)
-  }
-
 $result = [ordered]@{
   target = $targetPath
   environment = $Environment
   databaseHost = $databaseUri.Host
+  databasePort = $Port
   createdAt = (Get-Date).ToUniversalTime().ToString("o")
   sizeBytes = (Get-Item -LiteralPath $targetPath).Length
-  retentionDays = $RetentionDays
-  removedExpiredBackups = @($removed)
+  manual = $true
 }
 $result | ConvertTo-Json -Depth 4

@@ -1,0 +1,271 @@
+import { getDb } from "../../../../src/db";
+import {
+  users,
+  quotes,
+  quoteItems,
+  quoteStatusHistory,
+  sales,
+  saleItems,
+  orders,
+  orderItems,
+  orderStatusHistory,
+  payments,
+  paymentStatusHistory,
+  inventoryBalances,
+  inventoryMovements,
+  inventoryReservations,
+  products,
+  productPrices,
+  categories,
+  auditLogs,
+} from "../../../../src/db/combined-schema";
+import { eq, desc, sql, and, isNull } from "drizzle-orm";
+import { can, permissionsForRole, type AppRole, type Permission } from "../../../../src/lib/roles";
+
+interface AuditResult {
+  id: string;
+  category: "SEGURIDAD_RBAC" | "SECUENCIA" | "FINANCIERO" | "INVENTARIO" | "TIEMPO_LIMA" | "DATOS_LIMITE";
+  title: string;
+  passed: boolean;
+  expected: string;
+  actual: string;
+  severity: "P0" | "P1" | "P2" | "P3";
+  fileLocation?: string;
+  details?: unknown;
+}
+
+const results: AuditResult[] = [];
+
+async function runRigorAudit() {
+  console.log("=== INICIANDO AUDITORÍA DE RIGOR EXTREMO (GEMINI INDEPENDIENTE) ===");
+  const db = getDb();
+
+  // ---------------------------------------------------------
+  // 1. AUDITORÍA RBAC: Matriz de Permisos Teórica vs Código
+  // ---------------------------------------------------------
+  console.log("\n--- 1. Verificando matriz de permisos RBAC ---");
+  
+  // Almacén NO debe tener permiso de pagos ni de ventas
+  const almacenCanPayments = can("ALMACEN", "payments.view" as Permission) || can("ALMACEN", "payments.refund" as Permission);
+  results.push({
+    id: "RIGOR-RBAC-01",
+    category: "SEGURIDAD_RBAC",
+    title: "Almacén no debe tener permisos de pagos",
+    passed: !almacenCanPayments,
+    expected: "ALMACEN no puede ver ni operar pagos",
+    actual: almacenCanPayments ? "ALMACEN tiene permisos de pagos" : "ALMACEN no tiene acceso a pagos",
+    severity: "P1",
+    fileLocation: "src/lib/roles.ts:54",
+  });
+
+  // Ventas NO debe poder ajustar inventario (solo ALMACEN / SUPERADMIN / GERENCIA)
+  const ventasCanAdjustInventory = can("VENTAS", "inventory.adjust" as Permission);
+  results.push({
+    id: "RIGOR-RBAC-02",
+    category: "SEGURIDAD_RBAC",
+    title: "Ventas no debe poder hacer ajustes de inventario",
+    passed: !ventasCanAdjustInventory,
+    expected: "VENTAS no puede ajustar inventario directamente",
+    actual: ventasCanAdjustInventory ? "VENTAS tiene permiso inventory.adjust" : "VENTAS no tiene inventory.adjust",
+    severity: "P1",
+    fileLocation: "src/lib/roles.ts:51-53",
+  });
+
+  // Reportes NO debe poder editar productos ni cambiar precios
+  const reportesCanEdit = can("REPORTES", "catalog.product.edit" as Permission) || can("REPORTES", "pricing.edit" as Permission);
+  results.push({
+    id: "RIGOR-RBAC-03",
+    category: "SEGURIDAD_RBAC",
+    title: "Reportes tiene acceso exclusivamente de lectura/exportación",
+    passed: !reportesCanEdit,
+    expected: "REPORTES no puede editar catálogo ni precios",
+    actual: reportesCanEdit ? "REPORTES tiene permisos de edición" : "REPORTES solo tiene lectura/exportación",
+    severity: "P1",
+    fileLocation: "src/lib/roles.ts:56",
+  });
+
+  // Compras NO debe poder despachar pedidos ni cancelar ventas
+  const comprasCanOrders = can("COMPRAS", "orders.manage" as Permission) || can("COMPRAS", "sales.cancel" as Permission);
+  results.push({
+    id: "RIGOR-RBAC-04",
+    category: "SEGURIDAD_RBAC",
+    title: "Compras no puede gestionar pedidos ni cancelar ventas",
+    passed: !comprasCanOrders,
+    expected: "COMPRAS no tiene orders.manage ni sales.cancel",
+    actual: comprasCanOrders ? "COMPRAS tiene permisos sobre pedidos/ventas" : "COMPRAS restringido a abastecimiento",
+    severity: "P1",
+    fileLocation: "src/lib/roles.ts:55",
+  });
+
+  // ---------------------------------------------------------
+  // 2. AUDITORÍA FINANCIERA & MONTOS (SQL)
+  // ---------------------------------------------------------
+  console.log("\n--- 2. Verificando consistencia de montos en base de datos ---");
+
+  const allOrders = await db.select().from(orders);
+  console.log(`Órdenes encontradas en DB: ${allOrders.length}`);
+
+  let ordersMismatchCount = 0;
+  for (const order of allOrders) {
+    const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    const itemsSum = items.reduce((acc, it) => acc + Number(it.lineTotal), 0);
+    const orderSubtotal = Number(order.subtotal);
+    const orderDiscount = Number(order.discountAmount);
+    const orderTotal = Number(order.total);
+
+    const expectedTotal = Math.round((orderSubtotal - orderDiscount) * 100) / 100;
+    if (Math.abs(orderTotal - expectedTotal) > 0.01) {
+      ordersMismatchCount++;
+      console.error(`Mismatch en orden ${order.code}: subtotal=${orderSubtotal}, desc=${orderDiscount}, total=${orderTotal}, esperado=${expectedTotal}`);
+    }
+  }
+
+  results.push({
+    id: "RIGOR-FIN-01",
+    category: "FINANCIERO",
+    title: "Consistencia de montos de pedidos: subtotal - descuento == total",
+    passed: ordersMismatchCount === 0,
+    expected: "Total exacto igual a subtotal menos descuento en todas las órdenes",
+    actual: `${ordersMismatchCount} órdenes con discrepancia aritmética`,
+    severity: "P0",
+    fileLocation: "src/lib/sales-service.ts:34-38",
+  });
+
+  results.push({
+    id: "RIGOR-FIN-02",
+    category: "FINANCIERO",
+    title: "Desglose fiscal del IGV (18%) en órdenes y ventas",
+    passed: false,
+    expected: "La orden y venta deben desglosar base imponible e IGV (18%) conforme a normativa peruana",
+    actual: "Las tablas orders y sales solo guardan subtotal y total sin discriminación ni cálculo de IGV",
+    severity: "P2",
+    fileLocation: "src/db/sales-schema.ts:30-80",
+  });
+
+  // ---------------------------------------------------------
+  // 3. AUDITORÍA DE INVENTARIO: Saldos, Reservas y Movimientos
+  // ---------------------------------------------------------
+  console.log("\n--- 3. Verificando integridad del inventario ---");
+
+  const negativeBalances = await db
+    .select()
+    .from(inventoryBalances)
+    .where(sql`${inventoryBalances.onHand} < 0 or ${inventoryBalances.reserved} < 0 or ${inventoryBalances.available} < 0`);
+
+  results.push({
+    id: "RIGOR-INV-01",
+    category: "INVENTARIO",
+    title: "Inexistencia de stock físico o disponible negativo",
+    passed: negativeBalances.length === 0,
+    expected: "Ningún registro con on_hand < 0, reserved < 0 o available < 0",
+    actual: `${negativeBalances.length} saldos de inventario en negativo`,
+    severity: "P0",
+    fileLocation: "src/lib/inventory-service.ts",
+    details: negativeBalances.map((b) => ({ productId: b.productId, onHand: b.onHand, reserved: b.reserved, available: b.available })),
+  });
+
+  const inconsistentBalances = await db
+    .select()
+    .from(inventoryBalances)
+    .where(sql`${inventoryBalances.available} != (${inventoryBalances.onHand} - ${inventoryBalances.reserved})`);
+
+  results.push({
+    id: "RIGOR-INV-02",
+    category: "INVENTARIO",
+    title: "Consistencia de ecuación de inventario: disponible == físico - reservado",
+    passed: inconsistentBalances.length === 0,
+    expected: "available == on_hand - reserved en todos los almacenes",
+    actual: `${inconsistentBalances.length} balances con fórmula de disponible inconsistente`,
+    severity: "P0",
+    fileLocation: "src/lib/inventory-service.ts",
+  });
+
+  // ---------------------------------------------------------
+  // 4. AUDITORÍA DE TRANSICIONES ILEGALES EN PEDIDOS
+  // ---------------------------------------------------------
+  console.log("\n--- 4. Verificando transiciones ilegales en pedidos ---");
+
+  const deliveredOrders = await db.select().from(orders).where(eq(orders.status, "DELIVERED"));
+  let deliveredWithoutDispatch = 0;
+  for (const o of deliveredOrders) {
+    const history = await db.select().from(orderStatusHistory).where(eq(orderStatusHistory.orderId, o.id));
+    const hasDispatched = history.some((h) => h.toStatus === "DISPATCHED" || h.fromStatus === "DISPATCHED");
+    if (!hasDispatched && history.length > 1) {
+      deliveredWithoutDispatch++;
+    }
+  }
+
+  results.push({
+    id: "RIGOR-SEC-01",
+    category: "SECUENCIA",
+    title: "Pedidos entregados deben haber pasado por despacho",
+    passed: deliveredWithoutDispatch === 0,
+    expected: "Todo pedido DELIVERED registra etapa previa DISPATCHED",
+    actual: `${deliveredWithoutDispatch} pedidos entregados sin historial de despacho previo`,
+    severity: "P1",
+    fileLocation: "src/lib/sales-service.ts",
+  });
+
+  const cancelledOrdersWithPaidPayment = await db
+    .select()
+    .from(orders)
+    .innerJoin(payments, eq(payments.orderId, orders.id))
+    .where(and(eq(orders.status, "CANCELLED"), eq(payments.status, "APPROVED")));
+
+  results.push({
+    id: "RIGOR-SEC-02",
+    category: "SECUENCIA",
+    title: "Inexistencia de pagos aprobados en pedidos cancelados sin reembolso",
+    passed: cancelledOrdersWithPaidPayment.length === 0,
+    expected: "No deben coexistir pedidos CANCELLED con payments APPROVED sin resolución",
+    actual: `${cancelledOrdersWithPaidPayment.length} pedidos cancelados con cobros aprobados`,
+    severity: "P0",
+    fileLocation: "src/lib/payment-service.ts",
+  });
+
+  // ---------------------------------------------------------
+  // 5. AUDITORÍA DE CATÁLOGO Y BÚSQUEDA
+  // ---------------------------------------------------------
+  console.log("\n--- 5. Verificando catálogo público y capacidades de búsqueda ---");
+  
+  const [totalCatalog] = await db.select({ count: sql<number>`count(*)` }).from(products);
+  const [publishedCatalog] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(products)
+    .where(eq(products.publicationStatus, "published"));
+
+  console.log(`Total productos en catálogo: ${totalCatalog.count}`);
+  console.log(`Total productos publicados públicamente: ${publishedCatalog.count}`);
+
+  results.push({
+    id: "RIGOR-CAT-01",
+    category: "DATOS_LIMITE",
+    title: "Volumen de catálogo público publicado",
+    passed: Number(publishedCatalog.count) > 0,
+    expected: "Catálogo debe tener productos publicados accesibles",
+    actual: `${publishedCatalog.count} de ${totalCatalog.count} productos publicados`,
+    severity: "P1",
+    fileLocation: "src/lib/catalog-repository.ts:34-36",
+  });
+
+  // Imprimir reporte de resultados
+  console.log("\n=== RESUMEN DE PRUEBAS DE RIGOR ===");
+  console.table(
+    results.map((r) => ({
+      ID: r.id,
+      Categoría: r.category,
+      Resultado: r.passed ? "APROBADO" : "FALLÓ",
+      Severidad: r.severity,
+      Título: r.title,
+    }))
+  );
+
+  return results;
+}
+
+runRigorAudit()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("Error fatal en auditoría:", err);
+    process.exit(1);
+  });

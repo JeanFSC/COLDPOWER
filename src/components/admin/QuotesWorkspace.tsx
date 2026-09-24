@@ -216,9 +216,9 @@ function acceptedValue(items: QuoteListItem[]) {
     : "Por cotizar";
 }
 function statusTone(status: string) {
-  if (status === "ACCEPTED") return "border-emerald-600/25 bg-emerald-600/10 text-emerald-600";
+  if (status === "ACCEPTED") return "border-emerald-600/25 bg-emerald-600/10 text-emerald-700";
   if (status === "REJECTED" || status === "EXPIRED" || status === "CANCELLED")
-    return "border-rose-600/20 bg-rose-600/10 text-rose-600";
+    return "border-rose-600/20 bg-rose-600/10 text-rose-700";
   if (status === "CONVERTED") return "border-blue-600/20 bg-blue-600/10 text-blue-600";
   if (status === "FOLLOW_UP") return "border-amber-600/25 bg-amber-600/10 text-[#a15c00]";
   return "border-[#dbe8f3] bg-[#f5f9fc] text-[#45627c]";
@@ -410,7 +410,7 @@ export function QuotesWorkspace({
     .sort((a, b) => new Date(a.validUntil!).getTime() - new Date(b.validUntil!).getTime())
     .slice(0, 5);
   return (
-    <main className="min-h-full bg-[#f7fafc] px-4 pb-12 pt-7 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-[#f7fafc] px-4 pb-12 pt-7 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1550px]">
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
           <div>
@@ -420,7 +420,7 @@ export function QuotesWorkspace({
             <h1 className="mt-2 font-display text-3xl font-black tracking-[-0.03em] text-slate-900 sm:text-[36px]">
               Gestión de cotizaciones
             </h1>
-            <p className="mt-2 text-sm text-[#71869b]">
+            <p className="mt-2 text-sm text-[#526578]">
               Controla propuestas, respuestas y conversiones con trazabilidad completa.
             </p>
           </div>
@@ -500,7 +500,7 @@ export function QuotesWorkspace({
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="h-11 w-full rounded-xl border border-[#e2ebf2] bg-[#fbfdff] pl-10 pr-3 text-sm outline-none placeholder:text-[#9aaebe] focus:border-blue-600"
+              className="h-11 w-full rounded-xl border border-[#e2ebf2] bg-[#fbfdff] pl-10 pr-3 text-sm outline-none placeholder:text-[#526578] focus:border-blue-600"
               placeholder="Buscar por código, cliente, SKU, modelo o correo…"
               aria-label="Buscar cotizaciones"
             />
@@ -556,7 +556,7 @@ export function QuotesWorkspace({
             <button
               type="button"
               onClick={() => router.push("/admin/cotizaciones")}
-              className="h-11 rounded-xl px-3 text-sm font-bold text-[#71869b] hover:bg-[#f5f8fa]"
+              className="h-11 rounded-xl px-3 text-sm font-bold text-[#526578] hover:bg-[#f5f8fa]"
             >
               Limpiar
             </button>
@@ -564,7 +564,7 @@ export function QuotesWorkspace({
         </form>
         {notice ? (
           <div
-            className="mt-4 flex items-center justify-between rounded-xl border border-emerald-600/20 bg-emerald-600/5 px-4 py-3 text-sm font-semibold text-emerald-600"
+            className="mt-4 flex items-center justify-between rounded-xl border border-emerald-600/20 bg-emerald-600/5 px-4 py-3 text-sm font-semibold text-emerald-700"
             role="status"
           >
             {notice}
@@ -578,7 +578,7 @@ export function QuotesWorkspace({
             <div className="flex items-center justify-between border-b border-[#e7eef4] px-5 py-4">
               <div>
                 <h2 className="font-display text-lg font-black text-slate-900">Bandeja comercial</h2>
-                <p className="mt-1 text-xs text-[#8195a8]">
+                <p className="mt-1 text-xs text-[#526578]">
                   {page.totalItems} registros · ordenados por última actualización
                 </p>
               </div>
@@ -592,7 +592,7 @@ export function QuotesWorkspace({
             </div>
             <div className="hidden md:block">
               <table className="w-full text-left">
-                <thead className="bg-[#fbfdff] text-[10px] font-extrabold uppercase tracking-[0.11em] text-[#8ca0b1]">
+                <thead className="bg-[#fbfdff] text-[10px] font-extrabold uppercase tracking-[0.11em] text-[#526578]">
                   <tr>
                     <th className="px-5 py-3">Cotización</th>
                     <th className="px-3 py-3">Cliente</th>
@@ -603,7 +603,7 @@ export function QuotesWorkspace({
                     <th className="px-3 py-3">Responsable</th>
                     <th className="px-3 py-3">Próxima acción</th>
                     <th className="px-3 py-3">Actualizada</th>
-                    <th className="px-4 py-3" aria-label="Acciones" />
+                    <th className="px-4 py-3"><span className="sr-only">Acciones</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf2f6]">
@@ -628,7 +628,7 @@ export function QuotesWorkspace({
               onChange={(next) => pushParams({ page: String(next) })}
             />
           </section>
-          <aside className="grid content-start gap-5">
+          <aside className="grid content-start gap-5" aria-label="Resumen de cotizaciones">
             <div className="rounded-2xl border border-[#dde8f1] bg-white p-5 shadow-[0_8px_26px_rgba(16,42,67,0.04)]">
               <div className="flex items-center justify-between">
                 <div>
@@ -652,7 +652,7 @@ export function QuotesWorkspace({
                     className="group flex items-center gap-3 text-left"
                   >
                     <span
-                      className={`grid h-8 w-8 place-items-center rounded-full text-xs font-black ${index === 0 ? "bg-[#fff0e4] text-[#ec7a21]" : index === 4 ? "bg-[#e7f8ee] text-emerald-600" : "bg-[#edf4ff] text-blue-600"}`}
+                      className={`grid h-8 w-8 place-items-center rounded-full text-xs font-black ${index === 0 ? "bg-[#fff0e4] text-[#92400e]" : index === 4 ? "bg-[#e7f8ee] text-emerald-700" : "bg-[#edf4ff] text-blue-600"}`}
                     >
                       {item.count}
                     </span>
@@ -660,7 +660,7 @@ export function QuotesWorkspace({
                       <span className="block text-sm font-bold text-slate-900 group-hover:text-blue-600">
                         {item.label}
                       </span>
-                      <span className="block text-[11px] text-[#8aa0b2]">
+                      <span className="block text-[11px] text-[#526578]">
                         {index < 3 ? "En proceso" : index === 3 ? "Decisión cliente" : "Resultado"}
                       </span>
                     </span>
@@ -670,12 +670,12 @@ export function QuotesWorkspace({
               </div>
               <div className="mt-5 border-t border-[#edf2f6] pt-4">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#8195a8]">Valor aceptado</span>
+                  <span className="text-[#526578]">Valor aceptado</span>
                   <strong className="text-slate-900">{acceptedValue(page.items)}</strong>
                 </div>
                 <div className="mt-3 flex justify-between text-xs">
-                  <span className="text-[#8195a8]">Seguimientos vencidos</span>
-                  <strong className={page.summary.followUps.overdue ? "text-rose-600" : "text-slate-900"}>
+                  <span className="text-[#526578]">Seguimientos vencidos</span>
+                  <strong className={page.summary.followUps.overdue ? "text-rose-700" : "text-slate-900"}>
                     {page.summary.followUps.overdue}
                   </strong>
                 </div>
@@ -712,12 +712,12 @@ export function QuotesWorkspace({
                           <span className="block truncate text-xs font-bold text-slate-900">
                             {quote.name}
                           </span>
-                          <span className="block text-[10px] text-[#8aa0b2]">
+                          <span className="block text-[10px] text-[#526578]">
                             {quote.trackingCode} · {dateLabel(quote.validUntil)}
                           </span>
                         </span>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${daysLeft <= 1 ? "bg-rose-50 text-rose-600" : daysLeft <= 3 ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-600"}`}
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${daysLeft <= 1 ? "bg-rose-50 text-rose-700" : daysLeft <= 3 ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-600"}`}
                         >
                           {daysLeft <= 0 ? "Hoy" : `${daysLeft} ${daysLeft === 1 ? "día" : "días"}`}
                         </span>
@@ -725,7 +725,7 @@ export function QuotesWorkspace({
                     );
                   })
                 ) : (
-                  <p className="rounded-lg border border-dashed border-[#dde8f1] p-3 text-center text-xs text-[#8aa0b2]">
+                  <p className="rounded-lg border border-dashed border-[#dde8f1] p-3 text-center text-xs text-[#526578]">
                     Sin vencimientos próximos.
                   </p>
                 )}
@@ -737,7 +737,7 @@ export function QuotesWorkspace({
                   <BellRing size={17} />
                 </IconBox>
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#cc741f]">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#92500c]">
                     Recomendación
                   </p>
                   <h2 className="mt-1 font-display text-lg font-black text-slate-900">
@@ -761,7 +761,7 @@ export function QuotesWorkspace({
                     className="flex items-center justify-between rounded-lg bg-white/80 px-3 py-2 text-left text-xs font-bold text-[#705d4d]"
                   >
                     <span>{alert.label}</span>
-                    <span className="rounded-full bg-[#fff0dc] px-2 py-0.5 text-[#cc741f]">
+                    <span className="rounded-full bg-[#fff0dc] px-2 py-0.5 text-[#92500c]">
                       {alert.count}
                     </span>
                   </button>
@@ -781,7 +781,7 @@ export function QuotesWorkspace({
                   Ruta de una cotización
                 </h2>
               </div>
-              <span className="text-xs font-bold text-[#8aa0b2]">{page.summary.open} abiertas</span>
+              <span className="text-xs font-bold text-[#526578]">{page.summary.open} abiertas</span>
             </div>
             <div className="mt-6 grid gap-2 sm:grid-cols-5">
               {flow.map((item, index) => (
@@ -794,7 +794,7 @@ export function QuotesWorkspace({
                     </span>
                     <div>
                       <p className="text-xs font-extrabold text-slate-900">{item.label}</p>
-                      <p className="text-[11px] text-[#8aa0b2]">{item.count} registros</p>
+                      <p className="text-[11px] text-[#526578]">{item.count} registros</p>
                     </div>
                   </div>
                   {index < flow.length - 1 ? (
@@ -816,17 +816,17 @@ export function QuotesWorkspace({
                 <h2 className="mt-1 font-display text-lg font-black text-slate-900">Buenas prácticas</h2>
               </div>
             </div>
-            <ul className="mt-4 grid gap-3 text-xs leading-5 text-[#617990]">
+            <ul className="mt-4 grid gap-3 text-xs leading-5 text-[#526578]">
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Enviar siempre una
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-700" /> Enviar siempre una
                 versión con vigencia y moneda definidas.
               </li>
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Convertir sólo la
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-700" /> Convertir sólo la
                 versión que el cliente aceptó.
               </li>
               <li className="flex gap-2">
-                <Check size={15} className="mt-0.5 shrink-0 text-emerald-600" /> Registrar respuesta y
+                <Check size={15} className="mt-0.5 shrink-0 text-emerald-700" /> Registrar respuesta y
                 siguiente acción en CRM.
               </li>
             </ul>
@@ -867,7 +867,7 @@ export function QuotesWorkspace({
           can={can}
         />
       ) : null}
-    </main>
+    </div>
   );
 }
 
@@ -889,9 +889,9 @@ function KpiCard({
   title?: string;
 }) {
   const iconTone = {
-    orange: "bg-amber-50 text-amber-600",
-    yellow: "bg-amber-50 text-amber-600",
-    green: "bg-emerald-50 text-emerald-600",
+    orange: "bg-amber-50 text-amber-800",
+    yellow: "bg-amber-50 text-amber-800",
+    green: "bg-emerald-50 text-emerald-700",
     purple: "bg-purple-50 text-purple-600",
   }[tone];
   return (
@@ -924,7 +924,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
           <span className="font-mono text-xs font-extrabold text-blue-600">
             {quote.trackingCode}
           </span>
-          <span className="mt-1 block text-[11px] text-[#8aa0b2]">
+          <span className="mt-1 block text-[11px] text-[#526578]">
             v{quote.currentVersion || 1} · {quote.preferredContact || "Contacto"}
           </span>
         </button>
@@ -932,7 +932,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
       <td className="px-3 py-4">
         <button type="button" onClick={() => onOpen(quote.id)} className="max-w-[160px] text-left">
           <span className="block truncate text-sm font-extrabold text-slate-900">{quote.name}</span>
-          <span className="mt-1 block truncate text-[11px] text-[#8aa0b2]">
+          <span className="mt-1 block truncate text-[11px] text-[#526578]">
             {quote.email || quote.phone || "Sin contacto"}
           </span>
         </button>
@@ -941,7 +941,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
         <span className="block max-w-[190px] truncate text-xs font-semibold text-[#415d75]">
           {quote.itemsPreview[0]?.name || quote.productName || "Consulta general"}
         </span>
-        <span className="mt-1 block text-[11px] text-[#8aa0b2]">
+        <span className="mt-1 block text-[11px] text-[#526578]">
           {quote.itemCount} {quote.itemCount === 1 ? "producto" : "productos"}
         </span>
       </td>
@@ -949,7 +949,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
         <span className="whitespace-nowrap text-sm font-black text-slate-900">
           {amount(quote.currency, quote.total)}
         </span>
-        <span className="mt-1 block text-[10px] text-[#8aa0b2]">
+        <span className="mt-1 block text-[10px] text-[#526578]">
           {quote.currency || "Moneda pendiente"}
         </span>
       </td>
@@ -958,7 +958,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
       </td>
       <td className="px-3 py-4">
         <span
-          className={`text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-rose-600" : "text-[#536f87]"}`}
+          className={`text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-rose-700" : "text-[#536f87]"}`}
         >
           {quote.validUntil ? dateLabel(quote.validUntil) : "Por definir"}
         </span>
@@ -973,7 +973,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
           {quote.nextAction || (quote.workflowStatus === "ACCEPTED" ? "Convertir" : "Por definir")}
         </span>
       </td>
-      <td className="px-3 py-4 whitespace-nowrap text-xs text-[#8195a8]">
+      <td className="px-3 py-4 whitespace-nowrap text-xs text-[#526578]">
         {dateLabel(quote.updatedAt)}
       </td>
       <td className="px-4 py-4">
@@ -1014,11 +1014,11 @@ function QuoteMobileCard({
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#edf2f6] pt-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-[#8aa0b2]">Importe</p>
+          <p className="text-[10px] uppercase tracking-wide text-[#526578]">Importe</p>
           <p className="mt-1 text-sm font-black text-slate-900">{amount(quote.currency, quote.total)}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-[#8aa0b2]">Actualizada</p>
+          <p className="text-[10px] uppercase tracking-wide text-[#526578]">Actualizada</p>
           <p className="mt-1 text-xs font-bold text-[#536f87]">{dateLabel(quote.updatedAt)}</p>
         </div>
       </div>
@@ -1034,7 +1034,7 @@ function EmptyState({ onNew }: { onNew?: () => void }) {
       <h3 className="mt-4 font-display text-lg font-black text-slate-900">
         No hay cotizaciones para estos filtros
       </h3>
-      <p className="mt-2 max-w-sm text-sm text-[#8195a8]">
+      <p className="mt-2 max-w-sm text-sm text-[#526578]">
         Prueba otra búsqueda o crea una cotización cuando tengas un cliente y una necesidad
         comercial reales.
       </p>
@@ -1064,7 +1064,7 @@ function Pagination({
   if (totalItems === 0) return null;
   return (
     <div className="flex items-center justify-between border-t border-[#e7eef4] px-5 py-4">
-      <p className="text-xs text-[#8195a8]">
+      <p className="text-xs text-[#526578]">
         Página <strong className="text-slate-900">{page}</strong> de{" "}
         <strong className="text-slate-900">{totalPages}</strong>
       </p>
@@ -1073,7 +1073,8 @@ function Pagination({
           type="button"
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-[#dfe9f1] text-[#71869b] disabled:opacity-40"
+          aria-label="Página anterior"
+          className="grid h-8 w-8 place-items-center rounded-lg border border-[#dfe9f1] text-[#526578] disabled:opacity-40"
         >
           <ChevronLeft size={15} />
         </button>
@@ -1081,7 +1082,8 @@ function Pagination({
           type="button"
           disabled={page >= totalPages}
           onClick={() => onChange(page + 1)}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-[#dfe9f1] text-[#71869b] disabled:opacity-40"
+          aria-label="Página siguiente"
+          className="grid h-8 w-8 place-items-center rounded-lg border border-[#dfe9f1] text-[#526578] disabled:opacity-40"
         >
           <ChevronRight size={15} />
         </button>
@@ -1130,7 +1132,7 @@ function DrawerShell({
           <button
             type="button"
             onClick={close}
-            className="grid h-9 w-9 place-items-center rounded-lg text-[#8195a8] hover:bg-[#f1f6fa] hover:text-slate-900"
+            className="grid h-9 w-9 place-items-center rounded-lg text-[#526578] hover:bg-[#f1f6fa] hover:text-slate-900"
             aria-label="Cerrar"
           >
             <X size={19} />
@@ -1179,7 +1181,7 @@ function DetailDrawer({
   if (loading || !detail)
     return (
       <DrawerShell eyebrow="Cotización" title="Cargando detalle…" close={close}>
-        <div className="grid flex-1 place-items-center text-sm text-[#8195a8]">
+        <div className="grid flex-1 place-items-center text-sm text-[#526578]">
           <RefreshCw className="animate-spin" size={20} />
         </div>
       </DrawerShell>
@@ -1204,7 +1206,7 @@ function DetailDrawer({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7eef4] px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
             <StatusBadge status={status} />
-            <span className="text-xs text-[#8195a8]">Actualizada {dateLabel(quote.updatedAt)}</span>
+            <span className="text-xs text-[#526578]">Actualizada {dateLabel(quote.updatedAt)}</span>
           </div>
           <div className="flex items-center gap-2">
             <a
@@ -1230,7 +1232,7 @@ function DetailDrawer({
               type="button"
               key={item.key}
               onClick={() => setTab(item.key)}
-              className={`whitespace-nowrap border-b-2 px-2 py-3 text-xs font-extrabold ${tab === item.key ? "border-blue-600 text-blue-600" : "border-transparent text-[#8195a8]"}`}
+              className={`whitespace-nowrap border-b-2 px-2 py-3 text-xs font-extrabold ${tab === item.key ? "border-blue-600 text-blue-600" : "border-transparent text-[#526578]"}`}
             >
               {item.label}
             </button>
@@ -1253,7 +1255,7 @@ function DetailDrawer({
       <div className="border-t border-[#e7eef4] bg-[#fbfdff] p-4 sm:p-5">
         {error ? (
           <p
-            className="mb-3 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-xs font-semibold text-rose-600"
+            className="mb-3 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-xs font-semibold text-rose-700"
             role="alert"
           >
             {error}
@@ -1431,7 +1433,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
       <div className="rounded-xl border border-[#e0eaf2] bg-[#fbfdff] p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-900">Productos cotizados</h3>
-          <span className="text-xs font-bold text-[#8195a8]">{detail.items.length} líneas</span>
+          <span className="text-xs font-bold text-[#526578]">{detail.items.length} líneas</span>
         </div>
         <div className="mt-3 grid gap-2">
           {detail.items.length ? (
@@ -1442,7 +1444,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-slate-900">{item.productNameSnapshot}</p>
-                  <p className="text-[11px] text-[#8195a8]">
+                  <p className="text-[11px] text-[#526578]">
                     {item.skuSnapshot} · x{item.quantity}
                   </p>
                 </div>
@@ -1452,7 +1454,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
               </div>
             ))
           ) : (
-            <p className="text-sm text-[#8195a8]">Aún no hay productos.</p>
+            <p className="text-sm text-[#526578]">Aún no hay productos.</p>
           )}
         </div>
       </div>
@@ -1463,7 +1465,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
       </div>
       {quote.message ? (
         <div>
-          <h3 className="text-xs font-extrabold uppercase tracking-wide text-[#8195a8]">
+          <h3 className="text-xs font-extrabold uppercase tracking-wide text-[#526578]">
             Nota comercial
           </h3>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#536f87]">
@@ -1569,7 +1571,7 @@ function PricingTab({
       ) : null}
       {version ? (
         <div className="overflow-hidden rounded-xl border border-[#e0eaf2]">
-          <div className="grid grid-cols-[1fr_75px_105px] gap-2 bg-[#fbfdff] px-3 py-3 text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">
+          <div className="grid grid-cols-[1fr_75px_105px] gap-2 bg-[#fbfdff] px-3 py-3 text-[10px] font-extrabold uppercase tracking-wide text-[#526578]">
             <span>Producto</span>
             <span>Cant.</span>
             <span className="text-right">Total</span>
@@ -1638,12 +1640,12 @@ function VersionsTab({ detail }: { detail: Detail }) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-black text-slate-900">Versión v{version.versionNumber}</p>
-                <p className="mt-1 text-xs text-[#8195a8]">
+                <p className="mt-1 text-xs text-[#526578]">
                   Creada {dateLabel(version.createdAt, true)}
                 </p>
               </div>
               <span
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${version.status === "ACCEPTED" ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-600" : "border-[#dbe8f3] bg-[#f5f9fc] text-[#536f87]"}`}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${version.status === "ACCEPTED" ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-700" : "border-[#dbe8f3] bg-[#f5f9fc] text-[#536f87]"}`}
               >
                 {version.status === "ACCEPTED"
                   ? "Aceptada"
@@ -1653,7 +1655,7 @@ function VersionsTab({ detail }: { detail: Detail }) {
               </span>
             </div>
             <div className="mt-3 flex justify-between text-xs">
-              <span className="text-[#8195a8]">
+              <span className="text-[#526578]">
                 {version.items?.length || 0} productos · {version.currency || "Moneda pendiente"}
               </span>
               <strong className="text-slate-900">{amount(version.currency, version.total)}</strong>
@@ -1703,7 +1705,7 @@ function Timeline({
       </span>
       <div className="min-w-0">
         <p className="text-sm font-black text-slate-900">{title}</p>
-        <p className="mt-1 text-[11px] font-semibold text-[#8195a8]">{meta}</p>
+        <p className="mt-1 text-[11px] font-semibold text-[#526578]">{meta}</p>
         {body ? <p className="mt-2 text-xs leading-5 text-[#536f87]">{body}</p> : null}
       </div>
     </div>
@@ -1712,7 +1714,7 @@ function Timeline({
 function Info({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">{label}</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#526578]">{label}</p>
       <p className={`mt-1 truncate text-sm font-bold text-slate-900 ${mono ? "font-mono" : ""}`}>
         {value}
       </p>
@@ -1730,14 +1732,14 @@ function Metric({
 }) {
   return (
     <div className="rounded-xl border border-[#e0eaf2] p-3">
-      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#8aa0b2]">{label}</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#526578]">{label}</p>
       <p className={`mt-1 text-sm font-black ${accent ? "text-blue-600" : "text-slate-900"}`}>{value}</p>
     </div>
   );
 }
 function EmptyInline({ text }: { text: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-[#d8e5ee] px-4 py-8 text-center text-sm text-[#8195a8]">
+    <p className="rounded-xl border border-dashed border-[#d8e5ee] px-4 py-8 text-center text-sm text-[#526578]">
       {text}
     </p>
   );
@@ -1801,7 +1803,7 @@ function ActionDialog({
             <h3 className="mt-1 font-display text-xl font-black text-slate-900">{heading}</h3>
           </div>
           <button type="button" onClick={close} aria-label="Cerrar">
-            <X size={18} className="text-[#8195a8]" />
+            <X size={18} className="text-[#526578]" />
           </button>
         </div>
         {kind === "send" ? (
@@ -1928,7 +1930,7 @@ function ActionDialog({
           </label>
         )}
         {error ? (
-          <p className="mt-4 text-xs font-semibold text-rose-600" role="alert">
+          <p className="mt-4 text-xs font-semibold text-rose-700" role="alert">
             {error}
           </p>
         ) : null}
@@ -2146,7 +2148,7 @@ function NewQuoteDrawer({
         <label className="mt-6 grid gap-2 text-sm font-bold text-slate-900">
           Cliente
           {customer ? (
-            <span className="flex items-center justify-between rounded-lg border border-emerald-600/20 bg-emerald-600/5 px-3 py-3 text-sm text-emerald-600">
+            <span className="flex items-center justify-between rounded-lg border border-emerald-600/20 bg-emerald-600/5 px-3 py-3 text-sm text-emerald-700">
               {customer.name}
               {lockedCustomer ? null : (
                 <button
@@ -2183,7 +2185,7 @@ function NewQuoteDrawer({
                       className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                     >
                       <span className="block font-bold text-slate-900">{item.name}</span>
-                      <span className="text-[#8195a8]">
+                      <span className="text-[#526578]">
                         {item.documentNumber || item.email || item.phone || "Sin identificador"}
                       </span>
                     </button>
@@ -2226,7 +2228,7 @@ function NewQuoteDrawer({
               <PackageSearch size={16} className="shrink-0 text-blue-600" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
-                <p className="font-mono text-[10px] text-[#8195a8]">{line.sku}</p>
+                <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
               </div>
               <input
                 aria-label={`Cantidad ${line.sku}`}
@@ -2249,7 +2251,7 @@ function NewQuoteDrawer({
                 onClick={() =>
                   setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-[#9aaebe] hover:text-rose-600"
+                className="text-[#526578] hover:text-rose-700"
                 aria-label={`Quitar ${line.sku}`}
               >
                 <X size={16} />
@@ -2291,7 +2293,7 @@ function NewQuoteDrawer({
         </label>
         {error ? (
           <p
-            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-600"
+            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-700"
             role="alert"
           >
             {error}
@@ -2430,7 +2432,7 @@ function EditQuoteDrawer({
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
-                <p className="font-mono text-[10px] text-[#8195a8]">{line.sku}</p>
+                <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
               </div>
               <input
                 aria-label={`Cantidad ${line.sku}`}
@@ -2453,7 +2455,7 @@ function EditQuoteDrawer({
                 onClick={() =>
                   setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-[#9aaebe] hover:text-rose-600"
+                className="text-[#526578] hover:text-rose-700"
                 aria-label={`Quitar ${line.sku}`}
               >
                 <X size={16} />
@@ -2495,7 +2497,7 @@ function EditQuoteDrawer({
         </label>
         {error ? (
           <p
-            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-600"
+            className="mt-5 rounded-lg border border-rose-600/20 bg-rose-600/5 p-3 text-sm font-semibold text-rose-700"
             role="alert"
           >
             {error}

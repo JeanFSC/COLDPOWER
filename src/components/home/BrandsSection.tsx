@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, SearchX } from "lucide-react";
 import type { CatalogBrand } from "@/lib/catalog-repository";
 
-const brandColors = ["#0b64d8", "#e34a24", "#1554b5", "#264c9b", "#c82037", "#1164a5", "#153f94", "#0879a8", "#202d45", "#174c9f"];
+const brandColors = ["#0b64d8", "#b9381d", "#1554b5", "#264c9b", "#c82037", "#1164a5", "#153f94", "#0879a8", "#202d45", "#174c9f"];
 
 export function BrandsSection({ brands }: { brands: CatalogBrand[] }) {
   const publicBrands = brands.filter((brand) => brand.productCount > 0).slice(0, 8);

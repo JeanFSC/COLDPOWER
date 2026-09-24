@@ -1,25 +1,28 @@
 [CmdletBinding()]
 param()
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$dataDir = Join-Path $env:USERPROFILE "pgdata-coldpower"
-$pgCtl = Join-Path $env:USERPROFILE "pg17\pgsql\bin\pg_ctl.exe"
+$serviceName = "postgresql-18-coldpower"
 
-if (-not (Test-Path -LiteralPath $dataDir)) {
-  Write-Host "PostgreSQL local no está inicializado: $dataDir"
-  exit 0
-}
-if (-not (Test-Path -LiteralPath $pgCtl)) {
-  throw "Falta pg_ctl.exe: $pgCtl"
-}
-
-& $pgCtl status -D $dataDir *> $null
-if ($LASTEXITCODE -ne 0) {
-  Write-Host "PostgreSQL local ya estaba detenido."
+$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+if (-not $service) {
+  Write-Host "PostgreSQL local no está instalado como servicio: $serviceName"
   exit 0
 }
 
-& $pgCtl stop -D $dataDir -m fast -w
-if ($LASTEXITCODE -ne 0) { throw "pg_ctl no pudo detener PostgreSQL." }
-Write-Host "PostgreSQL local detenido."
+Write-Warning "Stop-Service puede requerir una consola de PowerShell ejecutada como Administrador."
+if ($service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Stopped) {
+  Write-Host "PostgreSQL local ya estaba detenido ($serviceName)."
+  exit 0
+}
+
+try {
+  Stop-Service -Name $serviceName
+  $service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Stopped, [TimeSpan]::FromSeconds(30))
+} catch {
+  throw "No se pudo detener '$serviceName'. Ejecuta este script como Administrador y revisa el servicio: $($_.Exception.Message)"
+}
+
+Write-Host "PostgreSQL local detenido mediante el servicio $serviceName."

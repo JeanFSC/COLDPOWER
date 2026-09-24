@@ -26,7 +26,7 @@ type LinkButtonProps = ButtonBaseProps &
 export type ButtonProps = NativeButtonProps | LinkButtonProps;
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-brand-primary-900 shadow-card hover:bg-primary-hover",
+  primary: "bg-primary text-white shadow-card hover:bg-primary-hover",
   secondary: "bg-dark-secondary text-white hover:bg-dark",
   outline: "border border-border bg-white text-dark hover:border-primary hover:text-primary",
   ghost: "bg-transparent text-dark hover:bg-dark/5",

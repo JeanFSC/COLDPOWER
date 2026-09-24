@@ -282,7 +282,7 @@ const movementBadgeColors: Record<string, string> = {
 function statusClass(status: keyof typeof inventoryStatusLabels) {
   switch (status) {
     case "CRITICO":
-      return "border-rose-200 bg-rose-50 text-rose-600";
+      return "border-rose-200 bg-rose-50 text-rose-700";
     case "AGOTADO":
       return "border-rose-300 bg-rose-50 text-rose-700";
     case "SIN_MINIMO":
@@ -731,7 +731,7 @@ function GlobalMovementsDrawer({
                     </span>
                     <Link
                       href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                      className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                     >
                       {movement.sku}
                     </Link>
@@ -747,7 +747,7 @@ function GlobalMovementsDrawer({
                   <p>
                     <span className="font-extrabold text-slate-600">Referencia:</span>{" "}
                     {movement.referenceHref ? (
-                      <Link href={movement.referenceHref} className="text-blue-600 hover:underline">
+                    <Link href={movement.referenceHref} className="text-blue-600 underline">
                         {movement.referenceLabel}
                       </Link>
                     ) : (
@@ -764,7 +764,7 @@ function GlobalMovementsDrawer({
                   <span className="block text-emerald-700">
                     {movement.entry ? `+${number(movement.entry)}` : "—"}
                   </span>
-                  <span className="mt-1 block text-rose-600">
+                  <span className="mt-1 block text-rose-700">
                     {movement.exit ? `-${number(movement.exit)}` : "—"}
                   </span>
                   {movement.reservedDelta ? (
@@ -1780,7 +1780,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
                           </span>
                           <span className="mt-1 block text-slate-400">
                             {movement.referenceHref ? (
-                              <a href={movement.referenceHref} className="text-blue-600 hover:underline">
+                              <a href={movement.referenceHref} className="text-blue-600 underline">
                                 {movement.referenceLabel}
                               </a>
                             ) : (
@@ -1993,7 +1993,7 @@ function InventoryOperationsTabs({
                       </span>
                       <Link
                         href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                        className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                        className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                       >
                         {movement.sku}
                       </Link>
@@ -2005,7 +2005,7 @@ function InventoryOperationsTabs({
                       {movement.locationCode} · {movement.locationName}
                       {movement.referenceLabel ? " · " : ""}
                       {movement.referenceHref ? (
-                        <Link href={movement.referenceHref} className="text-blue-600 hover:underline">
+                        <Link href={movement.referenceHref} className="text-blue-600 underline">
                           {movement.referenceLabel}
                         </Link>
                       ) : (
@@ -2077,7 +2077,7 @@ function InventoryOperationsTabs({
                   <p className="font-mono text-[11px] font-extrabold text-blue-600">
                     <Link
                       href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
-                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                      className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                     >
                       {transfer.id}
                     </Link>
@@ -2247,7 +2247,7 @@ function InventoryOperationsTabs({
                   <p className="font-mono text-[11px] font-extrabold text-blue-600">
                     <Link
                       href={`/admin/catalogo?productId=${encodeURIComponent(reservation.productId)}`}
-                      className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                      className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                     >
                       {reservation.sku}
                     </Link>
@@ -2268,7 +2268,7 @@ function InventoryOperationsTabs({
                     {referenceHref(reservation.referenceType, reservation.referenceId) ? (
                       <Link
                         href={referenceHref(reservation.referenceType, reservation.referenceId) as string}
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600 underline"
                       >
                         {reservation.referenceId}
                       </Link>
@@ -3066,7 +3066,7 @@ export function InventoryAdminWorkspace({
                   <th className="px-3 py-3 text-right">Mínimo</th>
                   <th className="px-3 py-3">Estado</th>
                   <th className="px-3 py-3">Último movimiento</th>
-                  <th className="px-3 py-3" />
+                  <th className="px-3 py-3"><span className="sr-only">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -3364,7 +3364,7 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
         {number(item.reserved)}
       </td>
       <td
-        className={`px-3 py-3 text-right text-[11px] font-black ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-600" : "text-emerald-600"}`}
+        className={`px-3 py-3 text-right text-[11px] font-black ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-700" : "text-emerald-700"}`}
         title="Disponible = físico − reservado"
       >
         {number(item.available)}
@@ -3441,7 +3441,7 @@ function InventoryCard({ item, actions }: { item: InventoryItem; actions: RowAct
         <div>
           <span className="block text-[11px] text-slate-400">Disponible</span>
           <strong
-            className={`text-[11px] ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-600" : "text-emerald-600"}`}
+            className={`text-[11px] ${item.status === "CRITICO" || item.status === "AGOTADO" ? "text-rose-700" : "text-emerald-700"}`}
           >
             {number(item.available)}
           </strong>
@@ -3662,7 +3662,7 @@ function InventoryDetailDrawer({
                     {referenceHref(reservation.referenceType, reservation.referenceId) ? (
                       <Link
                         href={referenceHref(reservation.referenceType, reservation.referenceId) as string}
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600 underline"
                       >
                         {reservation.referenceId}
                       </Link>
@@ -3696,7 +3696,7 @@ function InventoryDetailDrawer({
                     <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
-                        className="font-mono text-[11px] font-extrabold text-blue-600 hover:underline"
+                        className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                       >
                         {transfer.id}
                       </Link>
@@ -3895,7 +3895,7 @@ function MovementsRail({
                 <p className="mt-0.5 truncate text-[11px] text-slate-400">
                   <Link
                     href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                    className="font-mono font-extrabold text-blue-600 hover:underline"
+                    className="font-mono font-extrabold text-blue-600 underline"
                   >
                     {movement.sku}
                   </Link>
@@ -3963,7 +3963,7 @@ function LocationRail({ locations }: { locations: LocationSummary[] }) {
               <div>
                 <span className="block text-[11px] text-slate-400">Críticos</span>
                 <b
-                  className={`text-[11px] ${location.criticalBalances ? "text-rose-600" : "text-slate-600"}`}
+                  className={`text-[11px] ${location.criticalBalances ? "text-rose-700" : "text-slate-600"}`}
                 >
                   {number(location.criticalBalances)}
                 </b>
@@ -4027,7 +4027,7 @@ function AlertRail({ alerts }: { alerts: InventoryAdminPageData["alerts"] }) {
                 {inventoryStatusLabels[alert.status]}
               </span>
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">
+            <p className="mt-2 text-[11px] text-slate-600">
               {alert.locationName} · {number(alert.available)} disponibles
               {alert.minimumStock === null
                 ? " · sin mínimo"

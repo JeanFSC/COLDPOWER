@@ -6,12 +6,15 @@ import test from "node:test";
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
-test("el respaldo completo usa pg_dump custom, retención y los binarios pg17", () => {
+test("el respaldo completo usa pg_dump custom, PostgreSQL 18, puerto 5433 y operación manual", () => {
   const source = read("scripts/backup-full.ps1");
   assert.match(source, /pg_dump\.exe/);
   assert.match(source, /format=custom/);
   assert.match(source, /ColdPowerBackups/);
-  assert.match(source, /RetentionDays/);
+  assert.match(source, /C:\\PostgreSQL\\18\\bin/);
+  assert.match(source, /\[int\]\$Port = 5433/);
+  assert.doesNotMatch(source, /RetentionDays|retentionDays/);
+  assert.match(source, /never schedules itself or deletes old/);
   assert.match(source, /coldpower-\$Environment-\$timestamp\.dump/);
   assert.match(source, /tables, sequences and enum types/i);
 });
@@ -22,6 +25,9 @@ test("la restauración completa solo permite localhost y compara tablas", () => 
   assert.match(source, /127\.0\.0\.1/);
   assert.match(source, /coldpower_restore_test/);
   assert.match(source, /pg_restore\.exe/);
+  assert.match(source, /C:\\PostgreSQL\\18\\bin/);
+  assert.match(source, /\[int\]\$Port = 5433/);
+  assert.match(source, /sourceBuilder\.Port = \$Port/);
   assert.match(source, /information_schema\.tables/);
   assert.match(source, /differences/);
   assert.match(source, /single-transaction/);

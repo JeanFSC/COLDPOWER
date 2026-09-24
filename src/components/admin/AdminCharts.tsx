@@ -360,6 +360,6 @@ export function AdminSparkline({ tone = "blue", data, ariaLabel = "Tendencia del
       title={ariaLabel}
     />
   ) : (
-    <div className={`${className} border-b border-dashed border-[#dce6ee]`} aria-label={ariaLabel} title={ariaLabel} />
+    <div className={`${className} border-b border-dashed border-[#dce6ee]`} role="img" aria-label={ariaLabel} title={ariaLabel} />
   );
 }

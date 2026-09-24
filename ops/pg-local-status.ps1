@@ -1,31 +1,36 @@
 [CmdletBinding()]
 param()
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$dataDir = Join-Path $env:USERPROFILE "pgdata-coldpower"
-$pgCtl = Join-Path $env:USERPROFILE "pg17\pgsql\bin\pg_ctl.exe"
+$serviceName = "postgresql-18-coldpower"
+$pgRoot = "C:\PostgreSQL\18"
+$dataDir = Join-Path $pgRoot "data"
+$binDir = Join-Path $pgRoot "bin"
 $hostName = "127.0.0.1"
-$port = 5432
+$port = 5433
 
-Write-Host "Binarios: $(Join-Path $env:USERPROFILE 'pg17\pgsql\bin')"
+Write-Host "Servicio:  $serviceName"
+Write-Host "Binarios: $binDir"
 Write-Host "Datos:    $dataDir"
-Write-Host "Endpoint: $hostName`:$port/coldpower"
+Write-Host "Endpoint: postgres://coldpower:<contraseña-local>@$hostName`:$port/coldpower"
 
+$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+if (-not $service) {
+  Write-Host "Estado:   no instalado"
+  exit 0
+}
+
+Write-Host "Estado:   $($service.Status)"
+Write-Host "Inicio:   $($service.StartType)"
 if (-not (Test-Path -LiteralPath $dataDir)) {
-  Write-Host "Estado:   no inicializado"
-  exit 0
-}
-if (-not (Test-Path -LiteralPath $pgCtl)) {
-  Write-Host "Estado:   faltan binarios"
-  exit 1
+  Write-Warning "No existe el directorio de datos esperado: $dataDir"
 }
 
-$statusOutput = & $pgCtl status -D $dataDir 2>&1
-if ($LASTEXITCODE -eq 0) {
-  Write-Host "Estado:   activo"
-  $statusOutput | ForEach-Object { Write-Host $_ }
-  exit 0
+$listener = Get-NetTCPConnection -LocalAddress $hostName -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($listener) {
+  Write-Host "Puerto:   escuchando (PID $($listener.OwningProcess))"
+} else {
+  Write-Host "Puerto:   sin escucha en $hostName`:$port"
 }
-
-Write-Host "Estado:   detenido"
