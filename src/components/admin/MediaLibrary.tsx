@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Asset = { id: string; url: string; originalFilename: string; mimeType: string; byteSize: number; altText: string | null; usageCount?: number };
 
@@ -18,7 +18,7 @@ export function MediaLibrary() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAlt, setEditingAlt] = useState("");
 
-  async function load(nextPage = page) {
+  const load = useCallback(async (nextPage = 1) => {
     const params = new URLSearchParams({ page: String(nextPage), pageSize: "24" });
     if (query.trim()) params.set("query", query.trim());
     const response = await fetch(`/api/admin/media?${params.toString()}`, { cache: "no-store" });
@@ -28,13 +28,13 @@ export function MediaLibrary() {
     setPage(nextPage);
     setTotalPages(result.totalPages ?? 1);
     setTotalItems(result.totalItems ?? (result.items ?? result.assets ?? []).length);
-  }
+  }, [query]);
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void load(1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [query]);
+  }, [load]);
   async function upload() {
     if (!file) return;
     setBusy(true);

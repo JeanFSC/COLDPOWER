@@ -40,7 +40,9 @@ test("las rutas de autenticación muestran estados reales de Clerk", async () =>
   assert.match(proxy, /signUpUrl: authConfig\.signUpUrl/);
   assert.match(header, /ClerkLoading/);
   assert.match(header, /ClerkLoaded/);
-  assert.match(header, /Cargando sesión/);
+  // Header keeps a useful signed-out account action while Clerk loads or
+  // fails. The previous copy assertion no longer described the live fallback.
+  assert.match(header, /ClerkLoading><SignedOutAccountAction/);
   assert.match(mobileMenu, /ClerkLoading/);
   assert.match(mobileMenu, /ClerkLoaded/);
 });

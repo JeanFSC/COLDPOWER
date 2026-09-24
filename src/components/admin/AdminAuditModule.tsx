@@ -538,6 +538,7 @@ export function AuditModule({
   );
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars -- retained visual draft is not wired to the live audit route. */
 function AuditModuleStitchDraft({
   metrics,
   trend,
@@ -716,6 +717,7 @@ function AuditModuleStitchDraft({
   );
 }
 
+/* eslint-enable @typescript-eslint/no-unused-vars */
 function RestrictedNotice() {
   return (
     <div className="flex items-center gap-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3.5 text-[11px] text-slate-500">

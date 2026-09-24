@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   ArrowDownAZ,
   ArrowDownRight,
@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import type { CatalogQuality, CatalogQualityLevel } from "@/lib/catalog-quality";
 import type { PublicationStatus } from "@/lib/catalog-admin-contract";
+import { ProductMediaManager } from "@/components/admin/ProductMediaManager";
 import { resolveProductImage } from "@/lib/product-image";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import { CatalogImportDialog } from "@/components/admin/CatalogImportDialog";
@@ -375,6 +376,75 @@ function ProductThumbnail({
   );
 }
 
+function ProductChecklist({
+  item,
+}: {
+  item: Pick<AdminCatalogItem, "name" | "media" | "family" | "category">;
+}) {
+  const resolvedImage = resolveProductImage({
+    images: item.media?.primaryUrl ? [item.media.primaryUrl] : [],
+    family: item.family,
+    category: item.category,
+  });
+  const checks = [
+    { label: "Nombre", ok: Boolean(item.name.trim()) },
+    { label: "Familia", ok: Boolean(item.family.trim()) },
+    { label: "Categoría", ok: Boolean(item.category.trim()) },
+    {
+      label: item.media?.primaryUrl ? "Imagen real" : "Placeholder",
+      ok: Boolean(resolvedImage.src),
+    },
+  ];
+  const completed = checks.filter((check) => check.ok).length;
+  return (
+    <div
+      className="min-w-[128px]"
+      aria-label={`Checklist ${completed} de ${checks.length}: ${checks.map((check) => `${check.label} ${check.ok ? "completo" : "pendiente"}`).join(", ")}`}
+    >
+      <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+        {checks.map((check) => {
+          const Icon = check.ok ? CircleCheck : CircleAlert;
+          return (
+            <span
+              key={check.label}
+              title={`${check.label}: ${check.ok ? "completo" : "pendiente"}`}
+              className={`inline-flex items-center gap-1 text-[8px] font-extrabold ${check.ok ? "text-[#159263]" : "text-[#d94848]"}`}
+            >
+              <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{check.label}</span>
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SelectionToggle({
+  checked,
+  label,
+  onToggle,
+}: {
+  checked: boolean;
+  label: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onToggle}
+      className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-[3px] border border-[#9db0c1] bg-white text-[9px] font-black leading-none text-white transition hover:border-[#2277ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2277ee]/30"
+    >
+      <span className={checked ? "grid h-full w-full place-items-center rounded-[2px] bg-[#2277ee]" : ""} aria-hidden="true">
+        {checked ? "✓" : ""}
+      </span>
+    </button>
+  );
+}
+
 function QualityDonut({ quality }: { quality: CatalogSummary["quality"] }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -708,7 +778,6 @@ function ProductDetailDrawer({
   const [categoryId, setCategoryId] = useState("");
   const [familyId, setFamilyId] = useState("");
   const [brandId, setBrandId] = useState("");
-  const [mediaBusy, setMediaBusy] = useState(false);
   useEffect(() => {
     if (!item) return;
     // The effect both subscribes to the selected product and resets the local editor.
@@ -779,33 +848,6 @@ function ProductDetailDrawer({
       setMessage(error instanceof Error ? error.message : "No se pudo guardar la ficha.");
     } finally {
       setBusy(false);
-    }
-  }
-  async function uploadAndAssociate(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-    event.currentTarget.value = "";
-    if (!file) return;
-    setMediaBusy(true);
-    setMessage("");
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("altText", name.trim() || selectedProduct.name);
-      const uploadResponse = await fetch("/api/admin/media", { method: "POST", body: form });
-      const uploadResult = await uploadResponse.json() as { asset?: { id?: string; url?: string; altText?: string | null }; error?: string | { message?: string } };
-      const uploadError = typeof uploadResult.error === "string" ? uploadResult.error : uploadResult.error?.message;
-      if (!uploadResponse.ok || !uploadResult.asset?.id) throw new Error(uploadError || "No se pudo subir la imagen.");
-      const associateResponse = await fetch(`/api/admin/catalogo/${encodeURIComponent(productId)}/media`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ assetId: uploadResult.asset.id, slot: "primary", sortOrder: 0 }) });
-      const associateResult = await associateResponse.json() as { error?: string | { message?: string } };
-      const associateError = typeof associateResult.error === "string" ? associateResult.error : associateResult.error?.message;
-      if (!associateResponse.ok) throw new Error(associateError || "No se pudo asociar la imagen.");
-      setDetail((current) => current ? { ...current, media: [{ assetId: uploadResult.asset!.id!, primaryUrl: uploadResult.asset!.url || `/api/media/${uploadResult.asset!.id}`, altText: uploadResult.asset!.altText || name.trim() || selectedProduct.name, slot: "primary", sortOrder: 0 }, ...current.media.filter((asset) => asset.slot !== "primary")] } : current);
-      setMessage("Imagen subida y asociada como principal.");
-      onSaved();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo subir la imagen.");
-    } finally {
-      setMediaBusy(false);
     }
   }
   const detailTabs = [
@@ -997,47 +1039,16 @@ function ProductDetailDrawer({
                 title="Imagen principal y galería"
                 hint="Los assets se administran desde Media Library. No se eliminan físicamente desde esta ficha."
               />
-              {permissions.canMedia ? (
-                <label className="grid gap-1 rounded-xl border border-[#cfe0f7] bg-[#f5f9ff] p-3 text-[10px] font-extrabold text-[#526b84]">
-                  Subir y asociar imagen principal
-                  <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" disabled={mediaBusy} onChange={(event) => void uploadAndAssociate(event)} className="text-[10px] font-semibold text-[#526b84] disabled:opacity-50" />
-                  <span className="font-normal text-[#8296a9]">Se guarda en la biblioteca, queda auditada y reemplaza el primary anterior.</span>
-                </label>
-              ) : <PermissionPanel allowed={false} message="No tienes permiso para subir media." />}
-              <div className="grid gap-2 sm:grid-cols-2">
-                {detail.media.map((asset) => (
-                  <div
-                    key={`${asset.assetId}-${asset.sortOrder}`}
-                    className="flex items-center gap-3 rounded-xl border border-[#edf2f6] p-2"
-                  >
-                    <span className="relative h-12 w-12 overflow-hidden rounded-lg bg-[#f5f8fa]">
-                      <Image
-                        src={asset.primaryUrl}
-                        alt={asset.altText || "Asset de producto"}
-                        fill
-                        sizes="48px"
-                        className="object-contain p-1"
-                        unoptimized={asset.primaryUrl.startsWith("/api/")}
-                      />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[10px] font-bold text-[#304b66]">
-                        {asset.slot === "primary" ? "Imagen principal" : "Galería"}
-                      </p>
-                      <p className="truncate text-[9px] text-[#8296a9]">
-                        {asset.altText || "Sin texto alternativo"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {!detail.media.length ? (
-                  <EmptyPanel
-                    icon={ImageIcon}
-                    title="Imagen pendiente"
-                    description="No hay imágenes activas asociadas a esta ficha."
-                  />
-                ) : null}
-              </div>
+            <ProductMediaManager
+              key={productId}
+              productId={productId}
+                productName={name.trim() || selectedProduct.name}
+                initialMedia={detail.media}
+                canEdit={permissions.canMedia}
+                onChanged={(media) =>
+                  setDetail((current) => (current ? { ...current, media } : current))
+                }
+              />
             </section>
           ) : tab === "Comercial" ? (
             <section className="grid gap-4">
@@ -1360,7 +1371,7 @@ function BulkWorkspace({
           title: "Publicar seleccionados",
           description:
             "Se ejecutará un preflight de publicación real antes de permitir persistir cualquier cambio.",
-          cta: "Revisar publicación",
+          cta: "Publicar seleccionados",
           tone: "orange",
         },
         review: {
@@ -1371,10 +1382,10 @@ function BulkWorkspace({
           tone: "orange",
         },
         hide: {
-          title: "Ocultar seleccionados",
+          title: "Despublicar seleccionados",
           description:
             "Retira las referencias de la vista pública sin eliminarlas del catálogo ni del historial.",
-          cta: "Ocultar productos",
+          cta: "Despublicar productos",
           tone: "orange",
         },
       }[operation]
@@ -1589,7 +1600,7 @@ function BulkWorkspace({
                   className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#ff830e] text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="h-3.5 w-3.5" />
-                  Revisar publicación
+                  Publicar seleccionados
                 </button>
               ) : null}
               {permissions.canReview ? (
@@ -1609,7 +1620,7 @@ function BulkWorkspace({
                   disabled={!selected.length}
                   className="h-9 rounded-lg border border-[#dce6ee] px-3 text-[10px] font-extrabold text-[#526b84] disabled:opacity-40"
                 >
-                  Ocultar productos
+                  Despublicar
                 </button>
               ) : null}
             </div>
@@ -2097,6 +2108,11 @@ export function AdminProductCatalog({
   }
   async function requestBulk(action: "publish" | "review" | "hide") {
     if (!selectedIds.length) return;
+    if (
+      action === "hide" &&
+      !window.confirm("¿Despublicar los productos seleccionados? Seguirán disponibles en el catálogo interno.")
+    )
+      return;
     setBusyAction(true);
     setToast("");
     try {
@@ -2318,7 +2334,7 @@ export function AdminProductCatalog({
                   disabled={!selectedIds.length}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[10px] font-bold text-[#304b66] hover:bg-[#f4f7fa] disabled:opacity-40"
                 >
-                  Publicar productos seleccionados
+                  Publicar seleccionados
                 </button>
                 <button
                   type="button"
@@ -2340,7 +2356,7 @@ export function AdminProductCatalog({
                   disabled={!selectedIds.length}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[10px] font-bold text-[#304b66] hover:bg-[#f4f7fa] disabled:opacity-40"
                 >
-                  Ocultar productos seleccionados
+                  Despublicar seleccionados
                 </button>
               </div>
             ) : null}
@@ -2561,11 +2577,10 @@ export function AdminProductCatalog({
         <section className={`${panel} min-w-0 overflow-hidden`}>
           <div className="flex flex-wrap items-center gap-2 border-b border-[#edf2f6] px-3 py-2.5">
             <label className="inline-flex items-center gap-2 text-[10px] font-semibold text-[#8296a9]">
-              <input
-                type="checkbox"
+              <SelectionToggle
                 checked={allVisibleSelected}
-                onChange={toggleAll}
-                aria-label="Seleccionar productos visibles"
+                onToggle={toggleAll}
+                label="Seleccionar productos visibles"
               />
               {selected.length ? `${selected.length} seleccionados` : "0 seleccionados"}
             </label>
@@ -2577,7 +2592,7 @@ export function AdminProductCatalog({
                   disabled={!permissions.canPublish || busyAction}
                   className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dce6ee] px-2.5 text-[9px] font-extrabold text-[#526b84] disabled:opacity-40"
                 >
-                  Acciones masivas
+                  Publicar seleccionados
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
                 <button
@@ -2594,7 +2609,7 @@ export function AdminProductCatalog({
                   onClick={() => void requestBulk("hide")}
                   className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dce6ee] px-2.5 text-[9px] font-extrabold text-[#526b84] disabled:opacity-40"
                 >
-                  Más acciones
+                  Despublicar
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               </>
@@ -2615,6 +2630,7 @@ export function AdminProductCatalog({
                   <SortHeader label="Estado" sort="status" queryString={queryString} />
                   <th className="px-3 py-3">Precio</th>
                   <th className="px-3 py-3">Stock</th>
+                  <th className="px-3 py-3">Checklist</th>
                   <th className="px-3 py-3">Calidad</th>
                   <th className="w-12 px-3 py-3">Acciones</th>
                 </tr>
@@ -2637,12 +2653,10 @@ export function AdminProductCatalog({
                     className="cursor-pointer border-b border-[#f0f4f7] text-[10px] transition hover:bg-[#fbfdff] focus-within:bg-[#fbfdff] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2277ee]"
                   >
                     <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
+                      <SelectionToggle
                         checked={selectedIds.includes(item.id)}
-                        onChange={() => toggle(item.id)}
-                        onClick={(event) => event.stopPropagation()}
-                        aria-label={`Seleccionar ${item.name}`}
+                        onToggle={() => toggle(item.id)}
+                        label={`Seleccionar ${item.name}`}
                       />
                     </td>
                     <td className="px-3 py-3 align-middle">
@@ -2695,6 +2709,9 @@ export function AdminProductCatalog({
                           {stockLabel(item.stock)}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-3 py-3 align-middle">
+                      <ProductChecklist item={item} />
                     </td>
                     <td className="px-3 py-3">
                       <QualityBadge quality={item.quality} />

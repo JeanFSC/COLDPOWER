@@ -1,11 +1,10 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { canInviteRole, getPendingInvitationsCount, listStaffInvitations } from "@/lib/user-administration";
-import { isAppRole, type AppRole } from "@/lib/roles";
 import { validateStaffInvitation } from "@/lib/staff-invitations";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 
