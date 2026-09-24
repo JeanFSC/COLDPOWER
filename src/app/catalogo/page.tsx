@@ -60,7 +60,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             <AppliedFilters filters={filters} />
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary-600">
+                <p className="hidden font-mono text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary-600 lg:block">
                   {catalog.total} referencias disponibles
                 </p>
                 <h1 className="mt-1 font-display text-2xl font-black text-brand-primary-900">Listado de productos</h1>

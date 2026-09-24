@@ -39,8 +39,10 @@ test("las rutas de autenticación muestran estados reales de Clerk", async () =>
   assert.match(proxy, /signInUrl: authConfig\.signInUrl/);
   assert.match(proxy, /signUpUrl: authConfig\.signUpUrl/);
   assert.match(header, /ClerkLoading/);
+  assert.match(header, /ClerkFailed/);
   assert.match(header, /ClerkLoaded/);
-  assert.match(header, /Cargando sesión/);
+  assert.match(header, /Show when="signed-in"/);
+  assert.match(header, /Show when="signed-out"/);
   assert.match(mobileMenu, /ClerkLoading/);
   assert.match(mobileMenu, /ClerkLoaded/);
 });

@@ -3067,7 +3067,6 @@ export function Tanda2Settings({
 }) {
   const connectedIntegrations = integrations.filter((row) => row.lastCheckedStatus === "CONNECTED").length;
   const activeSeries = documentSeries.filter((row) => row.active).length;
-  const totalPricesTracked = priceLists.reduce((sum, row) => sum + row.activePrices, 0);
   const orderedIntegrations = INTEGRATION_DISPLAY_ORDER
     .map((key) => integrations.find((row) => row.key === key))
     .filter((row): row is NonNullable<typeof row> => Boolean(row))

@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, ilike, inArray, isNull, ne, or, sql, type SQ
 import { getDb } from "@/db";
 import { brands, categories, families, productPrices, productRelations, products } from "@/db/schema";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
-import { getActiveRetailPrices } from "@/lib/pricing-repository";
+import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
 import { mapCatalogProductRow, type CatalogProductSourceRow } from "@/lib/catalog-view-model";
 import { invalidateRuntimeCache, withRuntimeCache } from "@/lib/runtime-cache";
 import type { Product } from "@/types/product";
@@ -61,10 +61,11 @@ function joinBase(db: ReturnType<typeof getDb>) { return db.select(catalogSelect
 
 async function mapRows(rows: CatalogJoinRow[]) {
   const ids = rows.map((row) => row.product.id);
-  const [media, prices] = await Promise.all([getPublishedMediaForEntities("product", ids), getActiveRetailPrices(ids)]);
+  const [media, prices] = await Promise.all([getPublishedMediaForEntities("product", ids), loadRetailPricesWithPromotions(getDb(), ids)]);
   return rows.map((row) => {
     const price = prices.get(row.product.id);
-    return mapCatalogProductRow({ ...row, product: { ...row.product, images: media.get(row.product.id) ?? [], price: price?.amount ?? null, priceCurrency: price?.currency ?? null } });
+    const salePrice = price && price.promotionIds.length > 0 && Number(price.amount) < Number(price.baseAmount) ? price : null;
+    return mapCatalogProductRow({ ...row, product: { ...row.product, images: media.get(row.product.id) ?? [], price: price ? Number(price.amount) : null, priceCurrency: price?.currency ?? null, oldPrice: salePrice ? Number(salePrice.baseAmount) : null, discount: salePrice ? Number(salePrice.discountAmount) : null, onSale: Boolean(salePrice) } });
   });
 }
 
@@ -197,4 +198,3 @@ export async function getCatalogStats(publicOnly = false) {
 }
 
 export function makeCatalogSearchPattern(value: string) { return sql`%${value.trim()}%`; }
-

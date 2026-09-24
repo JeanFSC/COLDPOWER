@@ -14,12 +14,12 @@ test("public product and category cards avoid eager dynamic prefetch", async () 
 });
 
 test("public navigation uses deliberate prefetch boundaries", async () => {
-  const [footer, brands, productSection, cart] = await Promise.all([
+  const [footer, brands, homeProductNavigation, cart] = await Promise.all([
     read("src/components/layout/Footer.tsx"),
     read("src/components/home/BrandsSection.tsx"),
-    read("src/components/home/ProductSection.tsx"),
+    read("src/components/home/HomeProductCard.tsx"),
     read("src/components/cart/CartButton.tsx"),
   ]);
-  for (const source of [footer, brands, productSection, cart]) assert.match(source, /prefetch=\{false\}/);
+  // ProductSection composes the client tab panel; HomeProductCard owns its product links.
+  for (const source of [footer, brands, homeProductNavigation, cart]) assert.match(source, /prefetch=\{false\}/);
 });
-

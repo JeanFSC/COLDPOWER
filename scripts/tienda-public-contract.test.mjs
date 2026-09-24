@@ -103,7 +103,7 @@ test("imágenes públicas optimizadas y logo real están disponibles", () => {
     "public/brand/logo-coldpower-lockup.webp",
     "public/brand/logo-coldpower-lockup-light.webp",
     "public/images/home-espejo/hero-desktop.webp",
-    "public/images/home/home-v2-brand-trust.webp",
+    "public/images/home-espejo/banner-navy.webp",
     "public/images/home/placa-equipo.webp",
     "public/images/info/asesor-mostrador.webp",
     "public/images/info/despacho-repuestos.webp",

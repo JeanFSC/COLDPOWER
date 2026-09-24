@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, exists, gte, ilike, inArray, isNull, lt, not, or, sum, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, mediaAssetUsages, mediaAssets } from "@/db/schema";
-import type { MediaAssetView, MediaFilters, MediaListItem, MediaPageResponse } from "@/lib/media-contract";
+import type { MediaAssetView, MediaFilters, MediaPageResponse } from "@/lib/media-contract";
 
 const defaultPageSize = 24;
 const maxPageSize = 100;

@@ -5,7 +5,7 @@ import { getDb } from "@/db";
 import { auditLogs, companySettings, companySettingsHistory } from "@/db/schema";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
-import { administrativeCompanySettings, companySettingsFields, publicCompanySettings, toCompanySettingsAdminResponse } from "@/lib/company-settings";
+import { companySettingsFields, publicCompanySettings, toCompanySettingsAdminResponse } from "@/lib/company-settings";
 import { validateCompanySettingsInput } from "@/lib/company-settings-validation";
 
 const SETTINGS_ID = "default";

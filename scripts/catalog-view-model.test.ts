@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { mapCatalogProductRow } from "../src/lib/catalog-view-model";
+import { mapCatalogProductRow, type CatalogProductSourceRow } from "../src/lib/catalog-view-model";
 
 test("maps a persistent inventory row without inventing commercial data", () => {
   const product = mapCatalogProductRow({
@@ -87,4 +87,48 @@ test("maps inactive source status to a visible non-available state", () => {
   assert.equal(product.status, "out-of-stock");
   assert.equal(product.stock, null);
   assert.equal(product.price, null);
+});
+
+test("preserves promotion pricing markers supplied by the persistent catalog repository", () => {
+  const row = {
+    product: {
+      id: "product-cp-sale-001",
+      sku: "CP-SALE-001",
+      slug: "control-sale-001",
+      originalName: "Control en oferta",
+      normalizedName: "Control en oferta",
+      productType: "Control",
+      compatibilityBrands: null,
+      modelCode: null,
+      application: null,
+      voltage: null,
+      power: null,
+      frequency: null,
+      rpm: null,
+      amperage: null,
+      capacitance: null,
+      refrigerant: null,
+      horsepower: null,
+      temperature: null,
+      dimensions: null,
+      length: null,
+      connectionSize: null,
+      unitOfMeasure: "Unidad",
+      status: "Activo",
+      price: 90,
+      priceCurrency: "PEN",
+      oldPrice: 100,
+      discount: 10,
+      onSale: true,
+    },
+    category: { name: "Refrigeración", slug: "refrigeracion" },
+    family: { name: "Controles", slug: "refrigeracion-controles" },
+    brand: null,
+  } satisfies CatalogProductSourceRow;
+
+  const product = mapCatalogProductRow(row);
+  assert.equal(product.price, 90);
+  assert.equal(product.oldPrice, 100);
+  assert.equal(product.discount, 10);
+  assert.equal(product.onSale, true);
 });

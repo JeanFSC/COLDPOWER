@@ -293,8 +293,7 @@ textarea {
 .home-utility-whatsapp:hover { background: rgba(82, 42, 0, .58); }
 
 .home-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 40;
   background: #fff;
   border-bottom: 1px solid #e1e8f0;
@@ -536,6 +535,7 @@ textarea {
 
 @media (max-width: 1279px) {
   .home-wide-container, .home-container { width: min(calc(100% - 2rem), 1120px); }
+  .home-utility-whatsapp { margin-right: 0; padding-inline: 1rem; }
   .home-header-inner { gap: 1rem; }
   .home-header-logo { width: 190px; }
   .home-header-logo > img { width: 190px; transform: none; }
@@ -552,6 +552,10 @@ textarea {
   .home-footer-grid { grid-template-columns: 1.3fr 1fr 1fr 1fr; }
   .home-footer-contact { grid-column: span 2; }
   .home-footer-newsletter { grid-column: span 2; }
+}
+
+@media (max-width: 1023px) {
+  .home-utility-whatsapp { display: none; }
 }
 
 @media (max-width: 767px) {

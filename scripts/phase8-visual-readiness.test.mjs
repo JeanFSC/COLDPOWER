@@ -14,7 +14,7 @@ for (const file of [
   "public/brand/logo-coldpower-lockup.webp",
   "public/brand/logo-coldpower-lockup-light.webp",
   "public/images/home-espejo/hero-desktop.webp",
-  "public/images/home/home-v2-brand-trust.webp",
+  "public/images/home-espejo/banner-navy.webp",
   "public/images/categories/refrigeracion.webp",
   "public/images/products/product-placeholder.webp",
 ]) {
