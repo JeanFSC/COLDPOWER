@@ -1,7 +1,7 @@
 import { and, count, eq, ilike, inArray, ne, notInArray, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, quotes } from "@/db/schema";
-import { crmActivities, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities } from "@/db/crm-schema";
+import { crmActivities, crmAttachments, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities } from "@/db/crm-schema";
 import { orders, sales } from "@/db/sales-schema";
 
 type Actor = { userId: string | null; role?: string | null };
@@ -15,6 +15,11 @@ export class CustomerOperationsError extends Error {
 function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function normalizedPhone(value: string | null | undefined) { return value?.replace(/\D/g, "") || null; }
 function audit(actor: Actor, action: string, customerId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role ?? null, action, entityType: "customer", entityId: customerId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
+
+export function assertCustomerMergeable(primary: { canonicalCustomerId?: string | null; userId?: string | null }, secondary: { canonicalCustomerId?: string | null; userId?: string | null }) {
+  if (primary.canonicalCustomerId || secondary.canonicalCustomerId) throw new CustomerOperationsError("CUSTOMER_MERGE_CHAIN", "No se puede fusionar un cliente que ya pertenece a otra fusión.", 409);
+  if (primary.userId && secondary.userId && primary.userId !== secondary.userId) throw new CustomerOperationsError("CUSTOMER_MERGE_USER_CONFLICT", "Los clientes tienen usuarios vinculados diferentes; resuelve el conflicto antes de fusionar.", 409);
+}
 
 export async function findCustomerDuplicates(input: { name?: string | null; ruc?: string | null; documentNumber?: string | null; email?: string | null; phone?: string | null; whatsapp?: string | null }, excludeId?: string) {
   const email = input.email?.trim().toLowerCase() || null;
@@ -72,6 +77,7 @@ export async function previewCustomerMerge(primaryId: string, secondaryId: strin
   const db = getDb();
   const [primary, secondary] = await Promise.all([db.select().from(customers).where(eq(customers.id, primaryId)).limit(1), db.select().from(customers).where(eq(customers.id, secondaryId)).limit(1)]);
   if (!primary[0] || !secondary[0]) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Uno de los clientes no existe.", 404);
+  assertCustomerMergeable(primary[0], secondary[0]);
   const counters = await Promise.all([
     db.select({ total: count(customerContacts.id) }).from(customerContacts).where(eq(customerContacts.customerId, secondaryId)),
     db.select({ total: count(customerAddresses.id) }).from(customerAddresses).where(eq(customerAddresses.customerId, secondaryId)),
@@ -82,9 +88,10 @@ export async function previewCustomerMerge(primaryId: string, secondaryId: strin
     db.select({ total: count(crmActivities.id) }).from(crmActivities).where(eq(crmActivities.customerId, secondaryId)),
     db.select({ total: count(crmTasks.id) }).from(crmTasks).where(eq(crmTasks.customerId, secondaryId)),
     db.select({ total: count(customerNotes.id) }).from(customerNotes).where(eq(customerNotes.customerId, secondaryId)),
+    db.select({ total: count(crmAttachments.id) }).from(crmAttachments).where(eq(crmAttachments.customerId, secondaryId)),
   ]);
   const values = counters.map((row) => Number(row[0]?.total ?? 0));
-  return { primary: primary[0], secondary: secondary[0], moved: { contacts: values[0], addresses: values[1], opportunities: values[2], quotes: values[3], sales: values[4], orders: values[5], activities: values[6], tasks: values[7], notes: values[8] } };
+  return { primary: primary[0], secondary: secondary[0], moved: { contacts: values[0], addresses: values[1], opportunities: values[2], quotes: values[3], sales: values[4], orders: values[5], activities: values[6], tasks: values[7], notes: values[8], attachments: values[9] } };
 }
 
 export async function mergeCustomers(input: { primaryId: string; secondaryId: string; reason: string }, actor: Actor) {
@@ -94,7 +101,7 @@ export async function mergeCustomers(input: { primaryId: string; secondaryId: st
     const [primary] = await tx.select().from(customers).where(eq(customers.id, input.primaryId)).for("update").limit(1);
     const [secondary] = await tx.select().from(customers).where(eq(customers.id, input.secondaryId)).for("update").limit(1);
     if (!primary || !secondary) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Uno de los clientes ya no existe.", 404);
-    if (secondary.canonicalCustomerId === primary.id) return { primary, secondary, moved: preview.moved, idempotent: true };
+    assertCustomerMergeable(primary, secondary);
     const [primaryContact] = await tx.select({ id: customerContacts.id }).from(customerContacts).where(and(eq(customerContacts.customerId, primary.id), eq(customerContacts.isPrimary, true))).limit(1);
     const [primaryAddress] = await tx.select({ id: customerAddresses.id }).from(customerAddresses).where(and(eq(customerAddresses.customerId, primary.id), eq(customerAddresses.isPrimary, true))).limit(1);
     if (primaryContact) await tx.update(customerContacts).set({ isPrimary: false }).where(eq(customerContacts.customerId, secondary.id));
@@ -109,15 +116,18 @@ export async function mergeCustomers(input: { primaryId: string; secondaryId: st
       tx.update(orders).set({ customerId: primary.id }).where(eq(orders.customerId, secondary.id)),
       tx.update(crmActivities).set({ customerId: primary.id }).where(eq(crmActivities.customerId, secondary.id)),
       tx.update(crmTasks).set({ customerId: primary.id }).where(eq(crmTasks.customerId, secondary.id)),
+      tx.update(crmAttachments).set({ customerId: primary.id }).where(eq(crmAttachments.customerId, secondary.id)),
     ]);
     const now = new Date();
-    const [merged] = await tx.update(customers).set({ status: "INACTIVE", canonicalCustomerId: primary.id, mergeReason: input.reason.trim().slice(0, 500), mergedBy: actor.userId, mergedAt: now, updatedAt: now }).where(eq(customers.id, secondary.id)).returning();
+    const transferredUserId = primary.userId ?? secondary.userId ?? null;
+    if (!primary.userId && secondary.userId) await tx.update(customers).set({ userId: secondary.userId }).where(eq(customers.id, primary.id));
+    const [merged] = await tx.update(customers).set({ userId: null, status: "INACTIVE", canonicalCustomerId: primary.id, mergeReason: input.reason.trim().slice(0, 500), mergedBy: actor.userId, mergedAt: now, updatedAt: now }).where(eq(customers.id, secondary.id)).returning();
     await tx.update(customers).set({ updatedAt: now }).where(eq(customers.id, primary.id));
     await tx.insert(auditLogs).values([
       audit(actor, "customer.merged", primary.id, primary, { ...primary, updatedAt: now }, { secondaryId: secondary.id, reason: input.reason.trim().slice(0, 500), moved: preview.moved }),
       audit(actor, "customer.merged_into", secondary.id, secondary, merged, { canonicalCustomerId: primary.id, reason: input.reason.trim().slice(0, 500), moved: preview.moved }),
     ]);
-    return { primary: { ...primary, updatedAt: now }, secondary: merged, moved: preview.moved, idempotent: false };
+    return { primary: { ...primary, userId: transferredUserId, updatedAt: now }, secondary: merged, moved: preview.moved, idempotent: false };
   });
 }
 

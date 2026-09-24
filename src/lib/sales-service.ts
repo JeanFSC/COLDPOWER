@@ -5,7 +5,7 @@ import { auditLogs, inventoryBalances, inventoryReservations, locations, product
 import { publicConditions } from "@/lib/catalog-repository";
 import { customers, opportunities, opportunityStageHistory } from "@/db/crm-schema";
 import { orderIncidents, orderItems, orderStatusHistory, orders, paymentAttempts, paymentRefunds, payments, paymentStatusHistory, saleItems, sales, shipmentEvents, shipments, type OrderDeliveryDetails } from "@/db/sales-schema";
-import { loadRetailPrices } from "@/lib/retail-price";
+import { loadRetailPricesWithPromotions, type PromotionPriceStep } from "@/lib/retail-price";
 import { lockCartForCheckout, markCartConverted } from "@/lib/shopping-cart-service";
 import { commerceConfig } from "@/lib/env";
 import { createShipmentForOrder, markShipmentDelivered } from "@/lib/shipment-service";
@@ -14,7 +14,7 @@ export { convertQuoteToSale } from "@/lib/quote-conversion-service";
 import { canTransitionOrderForDelivery, type CheckoutInput, type ManualPaymentMethod, type OrderStatus } from "@/lib/sales-validation";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
 import { notifyStaffOnce } from "@/lib/notifications-service";
-import { applyPromotionsInTransaction } from "@/lib/promotion-service";
+import { recordPromotionalApplicationsInTransaction } from "@/lib/promotion-service";
 
 type Actor = { userId: string | null; role?: string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
@@ -23,7 +23,7 @@ function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function money(value: string | number) { return Number(Number(value).toFixed(2)); }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role ?? null, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 
-type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; unitPrice: string; currency: string; lineTotal: string };
+type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; baseUnitPrice: string; unitPrice: string; currency: string; lineTotal: string; promotionIds: string[]; promotionSteps: PromotionPriceStep[] };
 type CommercialLine = ResolvedLine & { baseLineTotal: string; discountAmount: string; promotionIds: string[] };
 export function calculateCheckoutTotals(lines: Array<Pick<CommercialLine, "baseLineTotal" | "lineTotal">>) {
   const cents = (value: string) => {
@@ -42,14 +42,14 @@ async function resolveLines(tx: Transaction, input: CheckoutInput, options: { en
   const sellabilityConditions = options.enforcePublicSellability === false ? [] : publicConditions();
   const productRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName }).from(products).where(and(inArray(products.id, [...quantities.keys()]), ...sellabilityConditions))
   if (productRows.length !== quantities.size) throw new Error("Uno o más productos ya no están disponibles en el catálogo.");
-  const priceByProduct = await loadRetailPrices(tx, [...quantities.keys()]);
+  const priceByProduct = await loadRetailPricesWithPromotions(tx, [...quantities.keys()]);
   const lines: ResolvedLine[] = [];
   for (const product of productRows) {
     const price = priceByProduct.get(product.id);
     if (!price) throw new Error(`El producto ${product.sku} todavía no tiene precio retail vigente; continúa como cotizable.`);
     const quantity = quantities.get(product.id) ?? 0;
     const unitPrice = Number(price.amount).toFixed(2);
-    lines.push({ productId: product.id, sku: product.sku, name: product.name || product.normalizedName, quantity, unitPrice, currency: price.currency, lineTotal: (money(unitPrice) * quantity).toFixed(2) });
+    lines.push({ productId: product.id, sku: product.sku, name: product.name || product.normalizedName, quantity, baseUnitPrice: price.baseAmount, unitPrice, currency: price.currency, promotionIds: price.promotionIds, promotionSteps: price.promotionSteps, lineTotal: (money(unitPrice) * quantity).toFixed(2) });
   }
   const currencies = new Set(lines.map((line) => line.currency));
   if (currencies.size !== 1) throw new Error("No se puede crear un pedido con monedas mezcladas.");
@@ -58,8 +58,10 @@ async function resolveLines(tx: Transaction, input: CheckoutInput, options: { en
 
 async function applyCheckoutPromotions(tx: Transaction, lines: ResolvedLine[], idempotencyKey: string): Promise<CommercialLine[]> {
   return Promise.all(lines.map(async (line) => {
-    const applied = await applyPromotionsInTransaction(tx, { productId: line.productId, baseUnitPrice: line.unitPrice, contextType: "checkout", contextId: idempotencyKey, idempotencyKey: idempotencyKey + ":" + line.productId });
-    return { ...line, baseLineTotal: line.lineTotal, unitPrice: applied.finalUnitPrice, discountAmount: applied.discountAmount, promotionIds: applied.promotionIds, lineTotal: (money(applied.finalUnitPrice) * line.quantity).toFixed(2) };
+    const applied = await recordPromotionalApplicationsInTransaction(tx, { productId: line.productId, baseUnitPrice: line.baseUnitPrice, contextType: "checkout", contextId: idempotencyKey, idempotencyKey: idempotencyKey + ":" + line.productId }, line.promotionSteps);
+    if (applied.finalUnitPrice !== line.unitPrice || applied.promotionIds.join(",") !== line.promotionIds.join(",")) throw new Error("PROMOTION_PRICE_CHANGED");
+    const discountAmount = Math.max(0, money(line.baseUnitPrice) - money(line.unitPrice)).toFixed(2);
+    return { ...line, baseLineTotal: (money(line.baseUnitPrice) * line.quantity).toFixed(2), unitPrice: line.unitPrice, discountAmount, promotionIds: line.promotionIds, lineTotal: (money(line.unitPrice) * line.quantity).toFixed(2) };
   }));
 }
 

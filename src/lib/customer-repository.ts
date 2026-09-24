@@ -769,19 +769,21 @@ export async function getCustomer360(
       .orderBy(desc(customerNotes.createdAt))
       .limit(100),
   ]);
-  const openOpportunityCount = await db
-    .select({ total: count(opportunities.id) })
-    .from(opportunities)
-    .where(
-      and(
-        eq(opportunities.customerId, customerId),
-        inArray(opportunities.stage, [...activeCommercialStages]),
+  const [openOpportunityCount, lastActivity] = await Promise.all([
+    db
+      .select({ total: count(opportunities.id) })
+      .from(opportunities)
+      .where(
+        and(
+          eq(opportunities.customerId, customerId),
+          inArray(opportunities.stage, [...activeCommercialStages]),
+        ),
       ),
-    );
-  const lastActivity = await db
-    .select({ lastActivityAt: max(sql`coalesce(${crmActivities.occurredAt}, ${crmActivities.createdAt})`) })
-    .from(crmActivities)
-    .where(eq(crmActivities.customerId, customerId));
+    db
+      .select({ lastActivityAt: max(sql`coalesce(${crmActivities.occurredAt}, ${crmActivities.createdAt})`) })
+      .from(crmActivities)
+      .where(eq(crmActivities.customerId, customerId)),
+  ]);
   return {
     customer: {
       ...customerRow.customer,

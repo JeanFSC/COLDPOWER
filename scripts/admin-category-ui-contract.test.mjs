@@ -17,7 +17,6 @@ for (const name of [
   "ProductWorkspace",
   "InventoryWorkspace",
   "PricingWorkspace",
-  "CustomersWorkspace",
   "OrdersWorkspace",
   "PaymentsWorkspace",
   "ContentWorkspace",

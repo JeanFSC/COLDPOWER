@@ -45,6 +45,7 @@ export default async function AdminClientesPage({
       page={page}
       queryString={query.toString()}
       canManage={can(actor.role, "customers.manage")}
+      canExport={can(actor.role, "customers.export")}
       canCrmManage={can(actor.role, "crm.manage")}
       canQuotesCreate={can(actor.role, "quotes.create")}
       canSalesView={can(actor.role, "sales.view")}

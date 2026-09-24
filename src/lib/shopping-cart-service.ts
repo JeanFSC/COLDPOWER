@@ -3,7 +3,8 @@ import { getDb } from "@/db";
 import { products } from "@/db/schema";
 import { shoppingCartItems, shoppingCarts } from "@/db/sales-schema";
 import { getCatalogProductsByIds, publicConditions } from "@/lib/catalog-repository";
-import { loadRetailPrices } from "@/lib/retail-price";
+import { resolveProductImage } from "@/lib/product-image";
+import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
 
 export const CART_SESSION_COOKIE = "coldpower-cart-session";
 export const CART_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
@@ -27,6 +28,8 @@ export type CartLineView = {
   sku: string | null;
   name: string;
   brand: string | null;
+  category: string | null;
+  family: string | null;
   image: string | null;
   quantity: number;
   unitPrice: string | null;
@@ -129,14 +132,14 @@ async function assertPurchasable(tx: Transaction, cartId: string | null, product
     .where(and(eq(products.id, productId), ...publicConditions()))
     .limit(1);
   if (!product) throw new CartDomainError("PRODUCT_NOT_AVAILABLE", "El producto ya no está disponible en el catálogo.", 404);
-  const prices = await loadRetailPrices(tx, [productId]);
+  const prices = await loadRetailPricesWithPromotions(tx, [productId]);
   const price = prices.get(productId);
   if (!price) throw new CartDomainError("PRODUCT_QUOTE_ONLY", `El producto ${product.sku} no tiene precio vigente; solicítalo por cotización.`, 409);
   if (!cartId) return;
   const otherItems = await tx.select({ productId: shoppingCartItems.productId }).from(shoppingCartItems).where(eq(shoppingCartItems.cartId, cartId));
   const otherIds = otherItems.map((item) => item.productId).filter((id) => id !== productId);
   if (!otherIds.length) return;
-  const otherPrices = await loadRetailPrices(tx, otherIds);
+  const otherPrices = await loadRetailPricesWithPromotions(tx, otherIds);
   if ([...otherPrices.values()].some((other) => other.currency !== price.currency)) {
     throw new CartDomainError("MIXED_CURRENCY", "Este producto se vende en otra moneda. Completa primero la compra actual.", 409);
   }
@@ -155,7 +158,7 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
   const rows = await db.select().from(shoppingCartItems).where(eq(shoppingCartItems.cartId, cartId)).orderBy(asc(shoppingCartItems.createdAt));
   if (!rows.length) return { ...emptyView, cartId, version: cart.version };
   const ids = rows.map((row) => row.productId);
-  const [catalog, prices] = await Promise.all([getCatalogProductsByIds(ids), loadRetailPrices(db, ids)]);
+  const [catalog, prices] = await Promise.all([getCatalogProductsByIds(ids), loadRetailPricesWithPromotions(db, ids)]);
   const productById = new Map(catalog.map((product) => [product.id, product]));
   const items: CartLineView[] = rows.map((row) => {
     const product = productById.get(row.productId);
@@ -166,7 +169,9 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
       sku: product?.sku ?? null,
       name: product?.name ?? "Producto no disponible",
       brand: product?.brand ?? null,
-      image: product?.images?.[0] ?? null,
+      category: product?.category ?? null,
+      family: product?.family ?? null,
+      image: product ? resolveProductImage(product).src : null,
       quantity: row.quantity,
       unitPrice: price?.amount ?? null,
       currency: price?.currency ?? null,

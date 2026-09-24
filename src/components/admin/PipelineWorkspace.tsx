@@ -19,6 +19,7 @@ import {
   type PipelineDeepLink,
   type PipelineFollowUpItem,
 } from "@/lib/pipeline-contract";
+import { formatLimaDateTimeLocal, parseLimaDateTimeLocal } from "@/lib/lima-datetime";
 import {
   AlertCircle,
   ArrowRight,
@@ -147,12 +148,17 @@ const initialForm: NewForm = {
 function dateValue(value: BoardDate) {
   return value ? new Date(value) : null;
 }
+
+function localDateTimeToIso(value: string) {
+  const date = parseLimaDateTimeLocal(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
 function dateLabel(value: BoardDate, withTime = false) {
   const date = dateValue(value);
   if (!date || Number.isNaN(date.getTime())) return "Sin fecha";
   const formatted = new Intl.DateTimeFormat(
     "es-PE",
-    withTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" },
+    withTime ? { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" } : { dateStyle: "medium", timeZone: "America/Lima" },
   ).format(date);
   // Node's ICU data and browser ICU data disagree on which whitespace
   // character precedes "a. m."/"p. m.", which breaks SSR hydration even
@@ -535,6 +541,11 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
         .then((payload: { task?: { opportunityId?: string | null } }) => {
           if (payload.task?.opportunityId) {
             openDetail(payload.task.opportunityId);
+            if (deepLink.action === "resolve") {
+              void fetch(`/api/admin/operaciones/${encodeURIComponent(`work-item-follow_up-${taskId}`)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "resolve" }) })
+                .then((resolveResponse) => { if (!resolveResponse.ok) throw new Error("TASK_RESOLVE_FAILED"); setToast("Tarea resuelta y sincronizada con Operaciones."); })
+                .catch(() => setToast("No se pudo resolver la tarea desde Operaciones."));
+            }
             return;
           }
           setToast("La tarea no tiene una oportunidad asociada.");
@@ -548,7 +559,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [deepLink.opportunityId, deepLink.taskId]);
+  }, [deepLink.action, deepLink.opportunityId, deepLink.taskId]);
 
   useEffect(() => {
     if (!toast) return;
@@ -645,10 +656,13 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
     "productId",
     "createdFrom",
     "createdTo",
+    "followUpFrom",
+    "followUpTo",
     "overdue",
     "withoutNextAction",
     "withQuote",
     "withAmount",
+    "unassigned",
   ].filter((key) => searchParams.has(key)).length;
   const selectedView = searchParams.get("view") ?? "pipeline";
   const presetCustomerId = searchParams.get("customerId");
@@ -691,6 +705,9 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
       : null,
     searchParams.get("withQuote") === "true" ? { key: "withQuote", label: "Con cotización" } : null,
     searchParams.get("withAmount") === "true" ? { key: "withAmount", label: "Con monto" } : null,
+    searchParams.get("unassigned") === "true" ? { key: "unassigned", label: "Sin responsable" } : null,
+    searchParams.get("followUpFrom") ? { key: "followUpFrom", label: `Seguimiento desde: ${searchParams.get("followUpFrom")}` } : null,
+    searchParams.get("followUpTo") ? { key: "followUpTo", label: `Seguimiento hasta: ${searchParams.get("followUpTo")}` } : null,
   ].filter((chip): chip is { key: string; label: string } => Boolean(chip));
   const visibleLanes = useMemo(
     () => (selectedView === "pipeline" ? board.lanes : []),
@@ -721,7 +738,10 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
     setDetail(null);
     setDetailTab("Resumen");
     void fetch(`/api/admin/oportunidades/${id}`, { cache: "no-store" })
-      .then((response) => response.json())
+      .then(async (response) => {
+        if (!response.ok) throw new Error("OPPORTUNITY_DETAIL_UNAVAILABLE");
+        return response.json();
+      })
       .then((payload: Detail) => setDetail(payload))
       .catch(() => setToast("No se pudo cargar el detalle."));
   }
@@ -746,7 +766,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
       setStageReason("");
       setStageReasonCode("");
       setStageDate(
-        stage === "FOLLOW_UP" ? new Date(Date.now() + 86_400_000).toISOString().slice(0, 16) : "",
+        stage === "FOLLOW_UP" ? formatLimaDateTimeLocal(Date.now() + 86_400_000) : "",
       );
       setStageAction(card.nextAction ?? "");
       return;
@@ -808,7 +828,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
         totalAmount: newForm.totalAmount || null,
         currency: newForm.currency,
         nextAction: newForm.nextAction || null,
-        followUpAt: newForm.followUpAt ? new Date(newForm.followUpAt).toISOString() : null,
+        followUpAt: newForm.followUpAt ? localDateTimeToIso(newForm.followUpAt) : null,
         notes: newForm.notes || null,
         items: newForm.items.map((item) => ({
           productId: item.productId,
@@ -843,7 +863,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
         type: activityForm.type,
         subject: activityForm.subject,
         body: activityForm.body || null,
-        dueAt: activityForm.dueAt ? new Date(activityForm.dueAt).toISOString() : null,
+        dueAt: activityForm.dueAt ? localDateTimeToIso(activityForm.dueAt) : null,
       }),
     });
     if (!response.ok) {
@@ -863,7 +883,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: followupForm.title,
-        dueAt: new Date(followupForm.dueAt).toISOString(),
+        dueAt: localDateTimeToIso(followupForm.dueAt),
         assignedTo: detail.assignedSellerId,
       }),
     });
@@ -894,7 +914,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
     setFollowupEditId(item.id);
     setFollowupEditForm({
       title: item.title,
-      dueAt: item.dueAt ? new Date(item.dueAt).toISOString().slice(0, 16) : "",
+      dueAt: item.dueAt ? formatLimaDateTimeLocal(item.dueAt) : "",
     });
     setFollowupEditOpen(true);
   }
@@ -909,7 +929,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: followupEditForm.title,
-          dueAt: new Date(followupEditForm.dueAt).toISOString(),
+          dueAt: localDateTimeToIso(followupEditForm.dueAt),
         }),
       },
     );
@@ -1273,7 +1293,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
           value={board.metrics.activeOpportunities}
           helper={`${board.metrics.unassigned} sin responsable · ${board.metrics.withoutNextAction} sin próxima acción`}
           icon={<UsersRound className="h-4 w-4" />}
-          onClick={() => updateQuery({ view: null })}
+          onClick={() => updateQuery({ view: null, unassigned: "true" })}
         />
         <MetricCard
           label="Valor del pipeline"
@@ -2104,7 +2124,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
               void patchStage(stageDialog.card.id, stageDialog.stage, {
                 note: stageNote || null,
                 followUpAt:
-                  stageDialog.stage === "FOLLOW_UP" ? new Date(stageDate).toISOString() : null,
+                  stageDialog.stage === "FOLLOW_UP" ? localDateTimeToIso(stageDate) : null,
                 nextAction: stageDialog.stage === "FOLLOW_UP" ? stageAction : null,
                 lostReason:
                   stageDialog.stage === "LOST"

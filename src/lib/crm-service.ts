@@ -2,6 +2,7 @@ import { and, asc, eq, ilike, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, products, quotes, users } from "@/db/schema";
 import { crmActivities, crmAttachments, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityItems, opportunityStageHistory } from "@/db/crm-schema";
+import { operationsWorkItemHistory, operationsWorkItems } from "@/db/operations-schema";
 import { assertOpportunityTransition, contactActivityTypes, type ActivityType, type CustomerType, type OpportunityCurrency, type OpportunityItemInput, type OpportunityOrigin, type OpportunityStage, type TaskStatus } from "@/lib/crm-validation";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { activeCommercialStages, postSaleOpportunityStages, sellerRoleCodes } from "@/lib/opportunity-stage-config";
@@ -16,6 +17,17 @@ export class CrmDomainError extends Error {
 
 function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
+
+export function leadIdentityKeys(input: { userId?: string | null; documentNumber?: string | null; phone?: string | null; email?: string | null }) {
+  const document = input.documentNumber?.replace(/[^a-z0-9]/gi, "").toUpperCase() || "";
+  const phone = input.phone?.replace(/\D/g, "") || "";
+  return [
+    input.userId?.trim() ? `user:${input.userId.trim()}` : null,
+    document ? `document:${document}` : null,
+    phone ? `phone:${phone}` : null,
+    input.email?.trim() ? `email:${input.email.trim().toLowerCase()}` : null,
+  ].filter((value): value is string => Boolean(value));
+}
 
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
 
@@ -333,9 +345,42 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus, actor
     const [before] = await tx.select().from(crmTasks).where(eq(crmTasks.id, taskId)).limit(1);
     if (!before) throw new CrmDomainError("CRM_TASK_NOT_FOUND", "Tarea no encontrada.", 404);
     const [after] = await tx.update(crmTasks).set({ status, completedAt: status === "COMPLETED" ? new Date() : null, updatedAt: new Date() }).where(eq(crmTasks.id, taskId)).returning();
+    if (status === "COMPLETED" && before.status !== "COMPLETED") {
+      const [workItem] = await tx.select().from(operationsWorkItems).where(and(eq(operationsWorkItems.sourceType, "FOLLOW_UP"), eq(operationsWorkItems.sourceId, taskId))).for("update").limit(1);
+      if (workItem && workItem.status !== "RESOLVED" && workItem.status !== "STALE") {
+        const [resolved] = await tx.update(operationsWorkItems).set({ status: "RESOLVED", updatedAt: new Date() }).where(eq(operationsWorkItems.id, workItem.id)).returning();
+        await tx.insert(operationsWorkItemHistory).values({ id: id("work-item-history"), workItemId: workItem.id, actorId: actor.userId, action: "RESOLVE", fromAssigneeId: workItem.assigneeId, toAssigneeId: workItem.assigneeId, fromStatus: workItem.status, note: "La tarea CRM se completó." });
+        await tx.insert(auditLogs).values(audit(actor, "operations.work_item_resolved", "operations_work_item", workItem.id, workItem, resolved));
+      }
+    }
     await tx.insert(auditLogs).values(audit(actor, "crm.task_status_changed", "crm_task", taskId, before, after));
     return after;
   });
+}
+
+async function findLeadCustomer(tx: Transaction, quote: typeof quotes.$inferSelect) {
+  if (quote.userId) {
+    const [match] = await tx.select().from(customers).where(eq(customers.userId, quote.userId)).limit(1);
+    if (match) return match;
+  }
+  const document = quote.documentNumber.replace(/[^a-z0-9]/gi, "").toUpperCase();
+  if (document) {
+    const [match] = await tx.select().from(customers).where(or(
+      sql`upper(regexp_replace(coalesce(${customers.documentNumber}, ''), '[^a-zA-Z0-9]', '', 'g')) = ${document}`,
+      sql`upper(regexp_replace(coalesce(${customers.ruc}, ''), '[^a-zA-Z0-9]', '', 'g')) = ${document}`,
+    )).limit(1);
+    if (match) return match;
+  }
+  const phone = quote.phone.replace(/\D/g, "");
+  const email = quote.email?.trim().toLowerCase() || null;
+  if (phone || email) {
+    const [match] = await tx.select().from(customers).where(or(
+      phone ? sql`regexp_replace(coalesce(${customers.phone}, ''), '[^0-9]', '', 'g') = ${phone}` : undefined,
+      email ? sql`lower(coalesce(${customers.email}, '')) = ${email}` : undefined,
+    )).limit(1);
+    if (match) return match;
+  }
+  return null;
 }
 
 export async function ensureLeadFromQuoteInTransaction(tx: Transaction, quoteId: string, actorId: string | null) {
@@ -348,9 +393,11 @@ export async function ensureLeadFromQuoteInTransaction(tx: Transaction, quoteId:
       : [];
     return { ...existingLink, assignedSellerId: existingOpportunity?.assignedSellerId ?? null };
   }
-  const [existingCustomer] = await tx.select().from(customers).where(and(eq(customers.email, quote.email ?? ""), eq(customers.phone, quote.phone))).limit(1);
+  const existingCustomer = await findLeadCustomer(tx, quote);
   const customerId = existingCustomer?.id ?? id("customer");
-  const customer = existingCustomer ?? (await tx.insert(customers).values({ id: customerId, userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone, whatsapp: quote.phone, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "PROSPECT" }).returning())[0];
+  const customer = existingCustomer
+    ? (await tx.update(customers).set({ userId: existingCustomer.userId ?? quote.userId, documentNumber: existingCustomer.documentNumber || quote.documentNumber || null, phone: existingCustomer.phone || quote.phone, whatsapp: existingCustomer.whatsapp || quote.phone, email: existingCustomer.email || quote.email, updatedAt: new Date() }).where(eq(customers.id, existingCustomer.id)).returning())[0] ?? existingCustomer
+    : (await tx.insert(customers).values({ id: customerId, userId: quote.userId, name: quote.name, documentNumber: quote.documentNumber || null, phone: quote.phone, whatsapp: quote.phone, email: quote.email, location: [quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || null, customerType: quote.customerType === "company" ? "EMPRESA" : "CONSUMIDOR", status: "PROSPECT" }).returning())[0];
   const [seller] = await tx.select({ id: users.id }).from(users).where(and(eq(users.status, "ACTIVE"), inArray(users.roleCode, sellerRoleCodes))).orderBy(asc(users.createdAt), asc(users.id)).limit(1);
   const opportunityId = id("opportunity");
   const opportunity = (await tx.insert(opportunities).values({ id: opportunityId, code: `OP-${quote.trackingCode}`, customerId: customer.id, quoteId, title: quote.productName ? `Cotización: ${quote.productName}` : "Solicitud de cotización", origin: "WEB", stage: "NEW", assignedSellerId: seller?.id ?? null, createdBy: actorId }).returning())[0];

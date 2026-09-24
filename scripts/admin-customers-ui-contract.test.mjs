@@ -8,14 +8,17 @@ const read = (file) => readFile(path.join(root, file), "utf8");
 
 test("clientes: la tabla abre el detalle 360 real", async () => {
   const page = await read("src/app/admin/crm/page.tsx");
+  const customersPage = await read("src/app/admin/clientes/page.tsx");
   const views = await read("src/components/admin/AdminCategoryViews.tsx");
+  const control = await read("src/components/admin/CustomersControlCenter.tsx");
   const detail = await read("src/components/admin/CustomerDetailPanel.tsx");
 
-  assert.match(page, /customerId/);
-  assert.match(page, /const customerId = query\.get\("customerId"\)/);
-  assert.match(page, /CustomersWorkspace[\s\S]*customerId=\{customerId\}/);
-  assert.match(views, /CustomerDetailPanel/);
-  assert.match(views, /admin\/crm\?\$\{detailQuery\.toString\(\)\}/);
+  assert.match(customersPage, /customerId/);
+  assert.match(customersPage, /customerId=\{query\.get\("customerId"\)\}/);
+  assert.match(page, /redirect\(`\/admin\/clientes/);
+  assert.match(customersPage, /customerId/);
+  assert.match(control, /CustomerDetailPanel/);
+  assert.doesNotMatch(views, /export function CustomersWorkspace/);
   assert.match(detail, /api\/admin\/clientes\/\$\{encodeURIComponent\(customerId\)\}/);
   assert.match(detail, /role="dialog"|aria-label="Detalle 360/);
 });

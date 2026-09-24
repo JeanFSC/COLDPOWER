@@ -1,4 +1,5 @@
 import { alias } from "drizzle-orm/pg-core";
+import { after } from "next/server";
 import {
   and,
   asc,
@@ -23,7 +24,7 @@ import {
   transfers,
   users,
 } from "@/db/schema";
-import { crmTasks, customers, opportunities } from "@/db/crm-schema";
+import { crmTasks, customers, opportunities, opportunityFollowups } from "@/db/crm-schema";
 import { orderIncidents, orders } from "@/db/sales-schema";
 import { operationsWorkItems } from "@/db/operations-schema";
 import {
@@ -33,7 +34,7 @@ import {
   type OperationsQueue,
 } from "@/lib/operations-contract";
 import { getOperationsPaymentReviewCount } from "@/lib/operations-payment-signals";
-import { upsertOperationsWorkItemsBatch } from "@/lib/operations-work-items-service";
+import { getOperationsWorkItemRefs, syncOperationsWorkItemsAfterResponse } from "@/lib/operations-work-items-service";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 
 type OperationalAction = { label: string; href: string; permission?: string };
@@ -87,6 +88,7 @@ const quoteSeller = alias(users, "operations_quote_seller");
 const quotePriority = sql<string>`case when ${quotes.createdAt} <= now() - interval '2 days' then 'HIGH' when ${quotes.createdAt} <= now() - interval '1 day' then 'MEDIUM' else 'NORMAL' end`;
 const opportunityPriority = sql<string>`case when ${opportunities.followUpAt} is not null and ${opportunities.followUpAt} < now() then 'HIGH' when ${opportunities.followUpAt} is not null and ${opportunities.followUpAt} <= now() + interval '2 days' then 'MEDIUM' else 'NORMAL' end`;
 const followUpPriority = sql<string>`case when ${crmTasks.dueAt} is not null and ${crmTasks.dueAt} < now() then 'HIGH' else 'NORMAL' end`;
+const legacyFollowUpPriority = sql<string>`case when ${opportunityFollowups.dueAt} < now() then 'HIGH' else 'NORMAL' end`;
 const orderPriority = sql<string>`case when exists (select 1 from order_incidents oi where oi.order_id = ${orders.id} and oi.status = 'OPEN' and oi.blocker = true) then 'CRITICAL' when ${orders.createdAt} <= now() - interval '2 days' then 'HIGH' when ${orders.createdAt} <= now() - interval '1 day' then 'MEDIUM' else 'NORMAL' end`;
 
 function applyWorkItemFilters(
@@ -226,7 +228,7 @@ function taskActions(id: string): OperationalAction[] {
     },
     {
       label: "Resolver tarea",
-      href: `/api/admin/operaciones?taskId=${encodeURIComponent(id)}&action=resolve`,
+      href: `/admin/crm?view=pipeline&taskId=${encodeURIComponent(id)}&action=resolve`,
       permission: "crm.edit",
     },
   ];
@@ -441,7 +443,14 @@ async function loadFollowUps(filters: OperationsFilters) {
     sql`case when ${crmTasks.dueAt} is null then 'NO_POLICY' when ${crmTasks.dueAt} < now() then 'OVERDUE' when ${crmTasks.dueAt} <= now() + interval '2 days' then 'DUE_SOON' else 'ON_TRACK' end`,
   );
   const db = getDb();
-  const [rows, total] = await Promise.all([
+  const legacyConditions: SQL[] = [eq(opportunityFollowups.status, "PENDING"), lte(opportunityFollowups.dueAt, followUpEnd)];
+  if (filters.fromAt) legacyConditions.push(gte(opportunityFollowups.dueAt, filters.fromAt));
+  if (filters.sellerId) legacyConditions.push(eq(opportunityFollowups.assignedTo, filters.sellerId));
+  applyAssigneeFilter(legacyConditions, filters, "FOLLOW_UP", sql`${opportunityFollowups.id}`);
+  falseWhenUnsupported(legacyConditions, filters.locationId, false);
+  if (filters.status) legacyConditions.push(sql`${opportunityFollowups.status}::text = ${filters.status}`);
+  applyWorkItemFilters(legacyConditions, filters, "VENTAS", legacyFollowUpPriority, sql`case when ${opportunityFollowups.dueAt} < now() then 'OVERDUE' when ${opportunityFollowups.dueAt} <= now() + interval '2 days' then 'DUE_SOON' else 'ON_TRACK' end`);
+  const [rows, total, legacyRows, legacyTotal] = await Promise.all([
     db
       .select({
         id: crmTasks.id,
@@ -470,14 +479,17 @@ async function loadFollowUps(filters: OperationsFilters) {
       .select({ count: count() })
       .from(crmTasks)
       .where(and(...conditions)),
+    db.select({ id: opportunityFollowups.id, status: opportunityFollowups.status, title: opportunityFollowups.title, description: sql<string | null>`null`, seller: sql<string | null>`coalesce(${users.name}, ${users.email}, ${opportunityFollowups.assignedTo})`, customer: customers.name, opportunity: opportunities.code, due: opportunityFollowups.dueAt, date: opportunityFollowups.createdAt, priority: legacyFollowUpPriority, ownerId: opportunityFollowups.assignedTo }).from(opportunityFollowups).innerJoin(opportunities, eq(opportunities.id, opportunityFollowups.opportunityId)).innerJoin(customers, eq(customers.id, opportunities.customerId)).leftJoin(users, eq(users.id, opportunityFollowups.assignedTo)).where(and(...legacyConditions)).orderBy(asc(opportunityFollowups.dueAt)).limit(filters.pageSize).offset((filters.page - 1) * filters.pageSize),
+    db.select({ count: count() }).from(opportunityFollowups).innerJoin(opportunities, eq(opportunities.id, opportunityFollowups.opportunityId)).innerJoin(customers, eq(customers.id, opportunities.customerId)).where(and(...legacyConditions)),
   ]);
+  const mergedRows = [...rows, ...legacyRows].sort((a, b) => (a.due?.getTime() ?? 0) - (b.due?.getTime() ?? 0)).slice(0, filters.pageSize);
   return {
-    items: rows.map((row) => ({
+    items: mergedRows.map((row) => ({
       ...row,
       overdue: row.due ? row.due < new Date() : false,
       actions: taskActions(row.id),
     })),
-    total: Number(total[0]?.count ?? 0),
+    total: Number(total[0]?.count ?? 0) + Number(legacyTotal[0]?.count ?? 0),
   };
 }
 
@@ -772,7 +784,7 @@ async function loadTeamLoad(filters: OperationsFilters) {
 
 export async function getOperationsWorkspace(
   filters: OperationsFilters = { range: "all", page: 1, pageSize: 25 },
-  options: { allowedPermissions?: Iterable<string>; summaryScope?: "header" | "home" } = {},
+  options: { allowedPermissions?: Iterable<string>; summaryScope?: "header" | "home"; syncWorkItems?: boolean } = {},
 ): Promise<OperationsWorkspace> {
   const selectedQueue = filters.queue;
   // "home" (/admin/inicio) renders only each queue's first page + metrics.overdueTasks. It
@@ -820,7 +832,7 @@ export async function getOperationsWorkspace(
   // "header" callers (KPI/comparison reads on /admin/operaciones) only ever consume
   // .metrics/.operationalSignals/.teamLoad — never .queues. The full path below still
   // loads and upserts every queue's items (up to 1,000 rows x 5 queues) just to compute
-  // those three fields, which was the dominant cost when this ran 2-3x per page load.
+  // those three fields, which was the dominant latency when this ran 2-3x per page load.
   if (options.summaryScope === "header") {
     const [metrics, teamLoad] = await Promise.all([
       loadMetrics({
@@ -900,14 +912,9 @@ export async function getOperationsWorkspace(
     ["FOLLOW_UP", followUpProjection.items],
     ["INVENTORY", inventoryProjection.items],
   ] as const;
-  // Build every row's projection in memory first (no DB calls), then sync all
-  // of them in a single batched upsert instead of one round trip per row —
-  // this used to fire up to 5,000 concurrent queries (5 queues x up to 1,000
-  // rows each) on a single page load of /admin/operaciones.
-  const workItemRefs = new Map<
-    string,
-    { id: string; assigneeId: string | null; team: string | null }
-  >();
+  // The projection is read-only during render. Persistence/reconciliation is
+  // scheduled after the response so an operations page cannot turn a GET into
+  // hundreds of writes or leave stale items hidden behind a successful render.
   const projections = projected.flatMap(([sourceType, rows]) =>
     rows.map((row) => {
       const current = row as Record<string, unknown>;
@@ -968,14 +975,15 @@ export async function getOperationsWorkspace(
       } as const;
     }),
   );
-  const workItems = await upsertOperationsWorkItemsBatch(projections);
-  for (const workItem of workItems) {
-    workItemRefs.set(`${workItem.sourceType}:${workItem.sourceId}`, {
-      id: workItem.id,
-      assigneeId: workItem.assigneeId,
-      team: workItem.team,
-    });
+  const workItemRefs = await getOperationsWorkItemRefs(projections);
+  try {
+    if (options.syncWorkItems !== false) after(() => syncOperationsWorkItemsAfterResponse(projections).catch((error) => console.error("ColdPower: no se pudo sincronizar la cola operativa", error)));
+  } catch {
+    // Contract/unit callers do not have a Next request context. They still get
+    // a read-only snapshot; production Route Handlers and Server Components
+    // provide the after() context.
   }
+  const projectionTeams = new Map(projections.map((projection) => [`${projection.sourceType}:${projection.sourceId}`, projection.team ?? null]));
   const attachWorkItems = (sourceType: string, rows: Array<Record<string, unknown>>) =>
     rows.map((row) => {
       const sourceId =
@@ -983,9 +991,8 @@ export async function getOperationsWorkspace(
           ? `${String(row.id ?? "")}:${String(row.locationId ?? "")}`
           : String(row.id ?? "");
       const ref = workItemRefs.get(`${sourceType}:${sourceId}`);
-      return ref
-        ? { ...row, workItemId: ref.id, workItemAssigneeId: ref.assigneeId, workItemTeam: ref.team }
-        : row;
+      const fallback = projectionTeams.get(`${sourceType}:${sourceId}`);
+      return { ...row, workItemId: ref?.id ?? `work-item-${sourceType.toLowerCase()}-${sourceId}`, workItemAssigneeId: ref?.assigneeId ?? null, workItemTeam: ref?.team ?? fallback ?? null };
     });
   const totalItems = selectedQueue
     ? totals[selectedQueue]
@@ -1023,10 +1030,10 @@ export async function getOperationsExport(filters: OperationsFilters) {
   const queues: OperationsQueue[] = filters.queue ? [filters.queue] : [...operationsQueues];
   const pages = await Promise.all(
     queues.map(async (queue) => {
-      const first = await getOperationsWorkspace({ ...filters, queue, page: 1, pageSize: 1000 });
+      const first = await getOperationsWorkspace({ ...filters, queue, page: 1, pageSize: 1000 }, { syncWorkItems: false });
       const results = [first];
       for (let page = 2; page <= first.totalPages; page += 1)
-        results.push(await getOperationsWorkspace({ ...filters, queue, page, pageSize: 1000 }));
+        results.push(await getOperationsWorkspace({ ...filters, queue, page, pageSize: 1000 }, { syncWorkItems: false }));
       return results.flatMap((result) => result.queues[queue].map((row) => ({ queue, ...row })));
     }),
   );

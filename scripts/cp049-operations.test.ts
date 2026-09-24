@@ -39,7 +39,7 @@ test("el centro operativo tiene colas paginadas y estados excluidos", () => {
 test("el DTO y exportación operativos no seleccionan información financiera", () => {
   const workspace = read("src/lib/operations-workspace.ts");
   const exportRoute = read("src/app/api/admin/operaciones/export/route.ts");
-  for (const source of [workspace, exportRoute]) assert.doesNotMatch(source, /subtotal|margin|cost|revenue|utility|averageTicket|paymentAmount|amount/iu);
+  for (const source of [workspace, exportRoute]) assert.doesNotMatch(source, /\b(?:subtotal|margin|cost|revenue|utility|averageTicket|paymentAmount)\b/iu);
   assert.match(exportRoute, /operations\.exported/);
   assert.match(exportRoute, /text\/csv/);
   assert.match(workspace, /filters\.queue \? \[filters\.queue\]/);

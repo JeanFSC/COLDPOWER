@@ -15,8 +15,8 @@ export type OpportunityCurrency = (typeof opportunityCurrencies)[number];
 export const contactActivityTypes = ["CALL", "WHATSAPP", "EMAIL", "MEETING"] as const;
 
 const transitions: Record<OpportunityStage, readonly OpportunityStage[]> = {
-  NEW: ["CONTACTED", "QUOTING", "LOST", "NO_RESPONSE", "CANCELLED"],
-  CONTACTED: ["QUOTING", "FOLLOW_UP", "LOST", "NO_RESPONSE", "CANCELLED"],
+  NEW: ["CONTACTED", "QUOTING", "QUOTE_SENT", "LOST", "NO_RESPONSE", "CANCELLED"],
+  CONTACTED: ["QUOTING", "QUOTE_SENT", "FOLLOW_UP", "LOST", "NO_RESPONSE", "CANCELLED"],
   QUOTING: ["QUOTE_SENT", "FOLLOW_UP", "NEGOTIATION", "LOST", "CANCELLED"],
   QUOTE_SENT: ["FOLLOW_UP", "NEGOTIATION", "ACCEPTED", "LOST", "NO_RESPONSE", "CANCELLED"],
   FOLLOW_UP: ["NEGOTIATION", "ACCEPTED", "QUOTE_SENT", "LOST", "NO_RESPONSE", "CANCELLED"],

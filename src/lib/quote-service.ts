@@ -4,6 +4,7 @@ import { auditLogs, companySettings, discountRules, productPrices, products, quo
 import { crmActivities, crmTasks, customerQuoteLinks, customers, opportunities, opportunityStageHistory } from "@/db/crm-schema";
 import { can, type AppRole } from "@/lib/roles";
 import { buildQuoteTotals, discountApprovalState, snapshotHash, type CommercialLine } from "@/lib/quote-pricing";
+import { canTransitionOpportunity } from "@/lib/crm-validation";
 import { canTransitionQuote, effectiveQuoteStatus, normalizeQuoteStatus, type QuoteWorkflowStatus } from "@/lib/quote-workflow";
 import type { QuoteResponseChannel, QuoteTaxMode } from "@/lib/quote-contract";
 
@@ -18,6 +19,20 @@ function positiveInteger(value: unknown) { const number = Number(value); return 
 function dateValue(value: unknown) { if (value === null || value === undefined || value === "") return null; const date = new Date(String(value)); return Number.isNaN(date.getTime()) ? null : date; }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 function legacyStatus(status: QuoteWorkflowStatus) { const values: Record<QuoteWorkflowStatus, (typeof quoteStatusHistory.$inferInsert)["toStatus"]> = { DRAFT: "borrador", SENT: "enviada", FOLLOW_UP: "cotizada", ACCEPTED: "aprobada", REJECTED: "cerrada", EXPIRED: "cerrada", CONVERTED: "convertida", CANCELLED: "cerrada" }; return values[status]; }
+
+export function opportunityStageForQuoteResponse(response: "SENT" | "ACCEPTED" | "REJECTED" | "NEEDS_CHANGES" | "NO_RESPONSE") {
+  return response === "SENT" ? "QUOTE_SENT" : response === "ACCEPTED" ? "ACCEPTED" : response === "REJECTED" ? "LOST" : "FOLLOW_UP";
+}
+
+async function syncOpportunityStage(tx: Transaction, opportunityId: string | null, nextStage: "QUOTE_SENT" | "ACCEPTED" | "LOST" | "FOLLOW_UP", actor: Actor, note: string) {
+  if (!opportunityId) return;
+  const [before] = await tx.select().from(opportunities).where(eq(opportunities.id, opportunityId)).for("update").limit(1);
+  if (!before || before.stage === nextStage) return;
+  if (!canTransitionOpportunity(before.stage, nextStage)) throw new Error(`La oportunidad no permite la etapa ${nextStage} desde ${before.stage}.`);
+  const [after] = await tx.update(opportunities).set({ stage: nextStage, updatedAt: new Date() }).where(eq(opportunities.id, opportunityId)).returning();
+  await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId, fromStage: before.stage, toStage: nextStage, changedBy: actor.userId ?? "system", note });
+  await tx.insert(auditLogs).values(audit(actor, "crm.opportunity_stage_changed", "opportunity", opportunityId, before, after, { source: "quote", quoteStage: nextStage }));
+}
 
 async function activeDiscountRule(tx: Transaction) {
   const now = new Date();
@@ -168,6 +183,7 @@ export async function sendQuote(quoteId: string, actor: Actor, channel: string, 
     const [updated] = await tx.update(quotes).set({ workflowStatus: "SENT", status: legacyStatus("SENT"), currentVersionNumber: version.versionNumber, sentAt: now, sentBy: actor.userId, updatedAt: now, revision: data.quote.revision + 1 }).where(and(eq(quotes.id, quoteId), eq(quotes.revision, data.quote.revision))).returning();
     if (!updated) throw new Error("Esta cotización fue actualizada por otro usuario. Recarga los cambios.");
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, fromStatus: data.quote.status, toStatus: "enviada", changedBy: actor.userId ?? "system", note: `Versión v${version.versionNumber} enviada por ${text(channel, 30) || "canal no indicado"}` });
+    await syncOpportunityStage(tx, data.opportunityId, "QUOTE_SENT", actor, "Cotización enviada al cliente.");
     await tx.insert(crmActivities).values({ id: id("activity"), customerId: data.customer?.id ?? null, opportunityId: data.opportunityId, quoteId, type: channel === "EMAIL" ? "EMAIL" : channel === "PHONE" ? "CALL" : channel === "IN_PERSON" ? "MEETING" : "WHATSAPP", subject: `Cotización v${version.versionNumber} enviada`, body: recipient ? `Destinatario: ${recipient}` : null, performedBy: actor.userId });
     await tx.insert(auditLogs).values(audit(actor, "quote.sent", "quote", quoteId, { workflowStatus: data.quote.workflowStatus, version: data.quote.currentVersionNumber }, { workflowStatus: "SENT", version: version.versionNumber, channel, recipient: recipient ?? null }));
     return { quote: updated, version, idempotent: false };
@@ -203,6 +219,8 @@ export async function recordQuoteResponse(quoteId: string, input: { response: "A
     if (input.response === "ACCEPTED" && !version) throw new Error("La aceptación necesita una versión comercial enviada.");
     if (version && input.response === "ACCEPTED") await tx.update(quoteVersions).set({ status: "ACCEPTED", acceptedAt: now, acceptedBy: actor.userId, acceptedChannel: input.channel, acceptanceNote: text(input.note, 500) || null }).where(eq(quoteVersions.id, version.id));
     const [updated] = await tx.update(quotes).set({ workflowStatus: next, status: legacyStatus(next), acceptedVersionId: input.response === "ACCEPTED" ? version?.id ?? null : null, acceptedAt: input.response === "ACCEPTED" ? now : null, acceptedBy: input.response === "ACCEPTED" ? actor.userId : null, responseChannel: input.channel, responseNote: text(input.note, 500) || null, respondedAt: now, respondedBy: actor.userId, rejectionReasonCode: input.response === "REJECTED" ? text(input.rejectionCode, 80) || "OTHER" : null, rejectionReason: input.response === "REJECTED" ? text(input.note, 500) : null, updatedAt: now, revision: quote.revision + 1 }).where(eq(quotes.id, quoteId)).returning();
+    const [link] = await tx.select({ opportunityId: customerQuoteLinks.opportunityId }).from(customerQuoteLinks).where(eq(customerQuoteLinks.quoteId, quoteId)).limit(1);
+    await syncOpportunityStage(tx, link?.opportunityId ?? null, opportunityStageForQuoteResponse(input.response), actor, `Cotización ${input.response.toLowerCase()}.`);
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, fromStatus: quote.status, toStatus: legacyStatus(next), changedBy: actor.userId ?? "system", note: text(input.note, 500) || `Respuesta ${input.response} por ${input.channel}` });
     await tx.insert(auditLogs).values(audit(actor, `quote.${input.response.toLowerCase()}`, "quote", quoteId, { workflowStatus: current, acceptedVersionId: quote.acceptedVersionId }, { workflowStatus: next, acceptedVersionId: updated.acceptedVersionId, channel: input.channel }));
     return updated;

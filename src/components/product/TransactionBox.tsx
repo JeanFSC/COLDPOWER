@@ -7,8 +7,9 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { formatProductPrice } from "@/lib/formatters";
 import { trackCatalogEvent } from "@/lib/analytics";
+import type { RetailPriceWithPromotion } from "@/lib/retail-price";
 
-type TransactionBoxProps = { product: Product };
+type TransactionBoxProps = { product: Product; promotionalPrice?: RetailPriceWithPromotion | null };
 
 const availabilityLabel: Record<Product["status"], string> = {
   "in-stock": "Disponible para compra",
@@ -17,8 +18,9 @@ const availabilityLabel: Record<Product["status"], string> = {
   "out-of-stock": "No disponible",
 };
 
-export function TransactionBox({ product }: TransactionBoxProps) {
+export function TransactionBox({ product, promotionalPrice }: TransactionBoxProps) {
   const hasPrice = product.price !== null;
+  const hasPromotion = Boolean(promotionalPrice?.promotionIds.length && promotionalPrice.amount !== promotionalPrice.baseAmount);
   const purchasable = hasPrice && product.status !== "out-of-stock";
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function TransactionBox({ product }: TransactionBoxProps) {
   return (
     <aside className="rounded-lg border border-border bg-white p-5 shadow-card sm:p-6" aria-label={hasPrice ? "Comprar o cotizar" : "Producto solo cotizable"}>
       <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-brand-secondary-600">{hasPrice ? "Compra online o cotiza" : "Solo cotizable"}</p>
-      {hasPrice ? <p className="mt-3 font-display text-3xl font-black text-dark">{formatProductPrice(product.price, product.priceCurrency ?? "PEN")}</p> : <p className="mt-3 text-xl font-black text-dark">Precio por cotización</p>}
+      {hasPrice ? <div className="mt-3">{hasPromotion ? <p className="text-sm font-bold text-text-secondary line-through">{formatProductPrice(Number(promotionalPrice!.baseAmount), promotionalPrice!.currency)}</p> : null}<p className="font-display text-3xl font-black text-dark">{formatProductPrice(hasPromotion ? Number(promotionalPrice!.amount) : product.price, hasPromotion ? promotionalPrice!.currency : product.priceCurrency ?? "PEN")}</p>{hasPromotion ? <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.08em] text-brand-secondary-600">Precio promocional vigente</p> : null}</div> : <p className="mt-3 text-xl font-black text-dark">Precio por cotización</p>}
       <p className="mt-2 text-sm leading-6 text-text-secondary">
         {hasPrice ? "Precio publicado en el catálogo. El envío se coordina aparte y la disponibilidad se valida al pagar." : "Un asesor confirma el precio, la disponibilidad y la compatibilidad en tu cotización."}
       </p>

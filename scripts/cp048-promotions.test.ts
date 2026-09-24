@@ -51,3 +51,16 @@ test("RBAC separa administrar promociones, aprobar descuentos y exportar", () =>
   assert.equal(can("SUPERADMIN", "pricing.discount.approve"), true);
   assert.equal(can("GERENCIA", "promotions.export"), true);
 });
+
+test("promociones usan pickers buscables, edicion gobernada y precio compartido", () => {
+  const page = read("src/app/admin/promociones/page.tsx");
+  const form = read("src/components/admin/PromotionForm.tsx");
+  const control = read("src/components/admin/PromotionStatusControl.tsx");
+  const sales = read("src/lib/sales-service.ts");
+  assert.match(form, /type=\"search\"/);
+  assert.match(form, /selectedProductIds/);
+  assert.match(form, /selectedCategoryIds/);
+  assert.match(page, /role=\"dialog\"/);
+  assert.match(control, /\?edit=/);
+  assert.match(sales, /loadRetailPricesWithPromotions/);
+});

@@ -1,8 +1,10 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditLogs, users } from "@/db/schema";
-import { crmTasks } from "@/db/crm-schema";
+import { auditLogs, inventoryBalances, quotes, users } from "@/db/schema";
+import { crmTasks, opportunities, opportunityFollowups } from "@/db/crm-schema";
 import { operationsWorkItemHistory, operationsWorkItems } from "@/db/operations-schema";
+import { orders } from "@/db/sales-schema";
+import { can, type AppRole } from "@/lib/roles";
 
 export const workItemSourceTypes = [
   "QUOTE",
@@ -10,9 +12,6 @@ export const workItemSourceTypes = [
   "ORDER",
   "FOLLOW_UP",
   "INVENTORY",
-  "TRANSFER",
-  "PAYMENT",
-  "PURCHASE",
 ] as const;
 export const workItemStatuses = ["PENDING", "IN_PROGRESS", "RESOLVED", "STALE"] as const;
 export type WorkItemSourceType = (typeof workItemSourceTypes)[number];
@@ -35,6 +34,15 @@ export type WorkItemProjection = {
   sourceUpdatedAt?: Date | null;
 };
 type Actor = { userId: string | null; role?: string | null };
+
+export function canActOnOperationsWorkItem(team: string | null | undefined, sourceType: string, role: string | null | undefined) {
+  if (!role || role === "customer") return false;
+  if (["SUPERADMIN", "GERENCIA", "JEFATURA", "ADMIN", "OPERACIONES_VENTAS"].includes(role)) return true;
+  const appRole = role as AppRole;
+  if (sourceType === "INVENTORY") return can(appRole, "inventory.adjust") || can(appRole, "inventory.view");
+  if (team === "VENTAS" || ["QUOTE", "OPPORTUNITY", "FOLLOW_UP"].includes(sourceType)) return can(appRole, "crm.edit") || can(appRole, "quotes.edit") || can(appRole, "quotes.send");
+  return can(appRole, "orders.edit") || can(appRole, "operations.assign");
+}
 function id(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
 }
@@ -133,6 +141,42 @@ export async function upsertOperationsWorkItemsBatch(inputs: WorkItemProjection[
     .returning();
 }
 
+export async function getOperationsWorkItemRefs(inputs: WorkItemProjection[]) {
+  const result = new Map<string, { id: string; assigneeId: string | null; team: string | null; status: WorkItemStatus }>();
+  const grouped = new Map<WorkItemSourceType, string[]>();
+  for (const input of inputs) grouped.set(input.sourceType, [...(grouped.get(input.sourceType) ?? []), input.sourceId]);
+  await Promise.all([...grouped.entries()].map(async ([sourceType, sourceIds]) => {
+    const rows = await getDb().select({ id: operationsWorkItems.id, sourceId: operationsWorkItems.sourceId, assigneeId: operationsWorkItems.assigneeId, team: operationsWorkItems.team, status: operationsWorkItems.status }).from(operationsWorkItems).where(and(eq(operationsWorkItems.sourceType, sourceType), inArray(operationsWorkItems.sourceId, sourceIds)));
+    for (const row of rows) result.set(`${sourceType}:${row.sourceId}`, row);
+  }));
+  return result;
+}
+
+export async function syncOperationsWorkItemsAfterResponse(inputs: WorkItemProjection[]) {
+  if (inputs.length) await upsertOperationsWorkItemsBatch(inputs);
+  const db = getDb();
+  const [activeQuotes, activeOpportunities, activeOrders, activeTasks, activeFollowups, activeInventory] = await Promise.all([
+    db.select({ id: quotes.id }).from(quotes).where(notInArray(quotes.workflowStatus, ["ACCEPTED", "REJECTED", "CANCELLED", "CONVERTED", "EXPIRED"])),
+    db.select({ id: opportunities.id }).from(opportunities).where(notInArray(opportunities.stage, ["LOST", "CANCELLED", "CLOSED", "NO_RESPONSE", "DELIVERED"])),
+    db.select({ id: orders.id }).from(orders).where(notInArray(orders.status, ["CANCELLED", "DELIVERED"])),
+    db.select({ id: crmTasks.id }).from(crmTasks).where(inArray(crmTasks.status, ["PENDING", "OVERDUE"])),
+    db.select({ id: opportunityFollowups.id }).from(opportunityFollowups).where(eq(opportunityFollowups.status, "PENDING")),
+    db.select({ productId: inventoryBalances.productId, locationId: inventoryBalances.locationId }).from(inventoryBalances).where(sql`${inventoryBalances.onHand} - ${inventoryBalances.reserved} <= coalesce(${inventoryBalances.minimumStock}, 0)`),
+  ]);
+  const active: Array<[WorkItemSourceType, string[]]> = [
+    ["QUOTE", activeQuotes.map((row) => row.id)],
+    ["OPPORTUNITY", activeOpportunities.map((row) => row.id)],
+    ["ORDER", activeOrders.map((row) => row.id)],
+    ["FOLLOW_UP", [...activeTasks.map((row) => row.id), ...activeFollowups.map((row) => row.id)]],
+    ["INVENTORY", activeInventory.map((row) => `${row.productId}:${row.locationId}`)],
+  ];
+  await db.transaction(async (tx) => {
+    for (const [sourceType, sourceIds] of active) {
+      await tx.update(operationsWorkItems).set({ status: "STALE", updatedAt: new Date() }).where(and(eq(operationsWorkItems.sourceType, sourceType), or(eq(operationsWorkItems.status, "PENDING"), eq(operationsWorkItems.status, "IN_PROGRESS")), sourceIds.length ? notInArray(operationsWorkItems.sourceId, sourceIds) : undefined));
+    }
+  });
+}
+
 export async function listOperationsWorkItems(
   options: {
     status?: WorkItemStatus;
@@ -175,6 +219,7 @@ export async function takeOperationsWorkItem(workItemId: string, actor: Actor) {
       .for("update")
       .limit(1);
     if (!before) throw new Error("Tarea operativa no encontrada.");
+    if (!canActOnOperationsWorkItem(before.team, before.sourceType, actor.role)) throw new Error("No tienes permiso para tomar tareas de este equipo.");
     if (before.status === "RESOLVED" || before.status === "STALE")
       throw new Error("Esta tarea cambió de estado y ya no requiere esta acción.");
     if (before.assigneeId && before.assigneeId !== actor.userId)
@@ -233,6 +278,7 @@ export async function reassignOperationsWorkItem(
       .for("update")
       .limit(1);
     if (!before) throw new Error("Tarea operativa no encontrada.");
+    if (!canActOnOperationsWorkItem(before.team, before.sourceType, actor.role)) throw new Error("No tienes permiso para reasignar tareas de este equipo.");
     if (before.status === "RESOLVED" || before.status === "STALE")
       throw new Error("Esta tarea cambió de estado y ya no requiere esta acción.");
     if (assigneeId) {
@@ -285,6 +331,7 @@ export async function resolveOperationsWorkItem(workItemId: string, actor: Actor
       .for("update")
       .limit(1);
     if (!before) throw new Error("Tarea operativa no encontrada.");
+    if (!canActOnOperationsWorkItem(before.team, before.sourceType, actor.role)) throw new Error("No tienes permiso para resolver tareas de este equipo.");
     if (before.status === "RESOLVED" || before.status === "STALE")
       throw new Error("Esta tarea cambió de estado y ya no requiere esta acción.");
     if (before.sourceType !== "FOLLOW_UP")
@@ -292,10 +339,13 @@ export async function resolveOperationsWorkItem(workItemId: string, actor: Actor
 
     const [task] = await tx
       .update(crmTasks)
-      .set({ status: "COMPLETED", completedAt: new Date(), updatedAt: new Date() })
+      .set({ status: "COMPLETED", completedAt: new Date() })
       .where(eq(crmTasks.id, before.sourceId))
       .returning({ id: crmTasks.id });
-    if (!task) throw new Error("La tarea CRM de origen no existe.");
+    if (!task) {
+      const [followup] = await tx.update(opportunityFollowups).set({ status: "COMPLETED" }).where(eq(opportunityFollowups.id, before.sourceId)).returning({ id: opportunityFollowups.id });
+      if (!followup) throw new Error("La tarea CRM de origen no existe.");
+    }
 
     const [after] = await tx
       .update(operationsWorkItems)

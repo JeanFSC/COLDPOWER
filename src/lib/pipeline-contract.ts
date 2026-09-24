@@ -77,6 +77,7 @@ export type PipelineFilters = {
   withoutNextAction?: boolean;
   withQuote?: boolean;
   withAmount?: boolean;
+  unassigned?: boolean;
   page?: number;
   pageSize?: number;
 };
@@ -84,6 +85,7 @@ export type PipelineFilters = {
 export type PipelineDeepLink = {
   opportunityId?: string;
   taskId?: string;
+  action?: "resolve";
 };
 
 function text(params: URLSearchParams, key: string) {
@@ -95,6 +97,7 @@ export function parsePipelineDeepLink(params: URLSearchParams): PipelineDeepLink
   return {
     opportunityId: text(params, "opportunityId"),
     taskId: text(params, "taskId"),
+    action: params.get("action") === "resolve" ? "resolve" : undefined,
   };
 }
 
@@ -168,6 +171,7 @@ export function parsePipelineFilters(params: URLSearchParams): PipelineFilters {
     withoutNextAction: booleanValue(params, "withoutNextAction"),
     withQuote: booleanValue(params, "withQuote"),
     withAmount: booleanValue(params, "withAmount"),
+    unassigned: booleanValue(params, "unassigned"),
     page: positive(params, "page"),
     pageSize: positive(params, "pageSize"),
   };

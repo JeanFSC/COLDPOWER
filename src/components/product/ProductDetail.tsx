@@ -10,11 +10,14 @@ import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { getCatalogRelatedProducts } from "@/lib/catalog-repository";
+import { getDb } from "@/db";
+import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
 
 type ProductDetailProps = { product: Product };
 
 export async function ProductDetail({ product }: ProductDetailProps) {
   const relatedProducts = await getCatalogRelatedProducts(product.id, product.familyId);
+  const retailPrice = (await loadRetailPricesWithPromotions(getDb(), [product.id])).get(product.id);
   const hasPrice = product.price !== null;
   const purchasable = hasPrice && product.status !== "out-of-stock";
 
@@ -29,7 +32,7 @@ export async function ProductDetail({ product }: ProductDetailProps) {
           <ProductGallery product={product} />
           <div className="min-w-0 space-y-7">
             <TechnicalIdentity product={product} />
-            <div className="lg:sticky lg:top-28"><TransactionBox product={product} /></div>
+            <div className="lg:sticky lg:top-28"><TransactionBox product={product} promotionalPrice={retailPrice ?? null} /></div>
             <CompatibilityPanel product={product} />
           </div>
         </section>

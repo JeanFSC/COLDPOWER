@@ -40,6 +40,7 @@ test("CP-034 expone 360 con relaciones independientes, exportación auditable y 
   const detail = read("src/app/api/admin/clientes/[id]/route.ts");
   const exportRoute = read("src/app/api/admin/clientes/export/route.ts");
   const page = read("src/app/admin/crm/page.tsx");
+  const customersPage = read("src/app/admin/clientes/page.tsx");
   const roles = read("src/lib/roles.ts");
   assert.match(detail, /getCustomer360/);
   assert.match(detail, /includeFinancial/);
@@ -47,8 +48,8 @@ test("CP-034 expone 360 con relaciones independientes, exportación auditable y 
   assert.match(exportRoute, /customers\.exported/);
   assert.match(exportRoute, /text\/csv/);
   assert.match(exportRoute, /requireApiPermission\("customers\.export"\)/);
-  assert.match(page, /getCustomersPage/);
-  assert.match(page, /CustomersWorkspace/);
+  assert.match(customersPage, /getCustomersPage/);
+  assert.match(page, /redirect\(`\/admin\/clientes/);
   assert.match(roles, /customers\.export/);
 });
 

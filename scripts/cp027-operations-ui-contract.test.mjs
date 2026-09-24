@@ -7,11 +7,11 @@ const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
 test("CRM expone creación de oportunidades y actividades persistentes", () => {
-  const source = read("src/components/admin/CrmCreateForms.tsx");
+  const source = read("src/components/admin/PipelineWorkspace.tsx");
   assert.match(source, /\/api\/admin\/oportunidades/);
   assert.match(source, /\/api\/admin\/actividades/);
   assert.match(source, /Nueva oportunidad/);
-  assert.match(source, /Nueva actividad/);
+  assert.match(source, /Nueva actividad|Registrar actividad/);
   assert.match(source, /followUpAt|dueAt/);
 });
 

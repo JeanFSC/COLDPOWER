@@ -54,8 +54,7 @@ export default async function OperationsWorkspacePage({
       .catch((error) => { console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error); return []; }),
     db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.status, "ACTIVE")).orderBy(users.name)
       .catch((error) => { console.error("ColdPower: no se pudo cargar el nombre del actor operativo", error); return []; }),
-    getOperationsWorkspace(filters, { allowedPermissions })
-      .catch((error) => { console.error("ColdPower: no se pudo cargar el centro operativo", error); return null; }),
+    getOperationsWorkspace(filters, { allowedPermissions }),
     hasCustomRange ? Promise.resolve(null) : getOperationsWorkspace(comparisonPeriods.current, headerOptions),
     getOperationsWorkspace(comparisonPeriods.previous, headerOptions),
     getOperationsDaySummary({ ...filters, assigneeId: undefined }),
@@ -65,13 +64,6 @@ export default async function OperationsWorkspacePage({
     locations: locationRows.map((row) => ({ id: row.id, label: row.name })),
     sellers: sellerRows.map((row) => ({ id: row.id, label: row.name ?? row.email ?? row.id })),
   };
-  if (!snapshot) {
-    return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-        No se pudo consultar el centro operativo. No se muestran datos inventados.
-      </div>
-    );
-  }
   const currentKpis = currentKpisResult ?? snapshot;
 
   return (

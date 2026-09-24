@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const result = await getDb().transaction(async (tx) => {
       const [before] = await tx.select().from(promotions).where(eq(promotions.id, id)).limit(1);
       if (!before) throw new Error("PROMOTION_NOT_FOUND");
+      if (decision === "APPROVED" && before.createdBy && before.createdBy === actor.userId) throw new Error("PROMOTION_SELF_APPROVAL");
       const [after] = await tx.update(promotions).set(promotionApprovalChanges(decision, actor.userId)).where(eq(promotions.id, id)).returning();
       await tx.insert(auditLogs).values({ id: "audit-" + crypto.randomUUID(), actorId: actor.userId, actorRole: actor.role, action: decision === "APPROVED" ? "promotions.approved" : "promotions.rejected", entityType: "promotion", entityId: id, before, after, metadata: { decision } });
       return after;
@@ -25,6 +26,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return apiSuccess({ promotion: result });
   } catch (error) {
     if (error instanceof Error && error.message === "PROMOTION_NOT_FOUND") return apiError("PROMOTION_NOT_FOUND", "Promoción no encontrada.", 404);
+    if (error instanceof Error && error.message === "PROMOTION_SELF_APPROVAL") return apiError("PROMOTION_SELF_APPROVAL", "La persona que creó la promoción no puede aprobarla.", 409);
     return apiError("PROMOTION_APPROVAL_FAILED", "No se pudo registrar la aprobación.", 409);
   }
 }

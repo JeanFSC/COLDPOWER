@@ -44,7 +44,6 @@ import {
   type PipelineCard,
   type PipelineFilters,
   type PipelineFollowUpItem,
-  type PipelineLane,
   type PipelinePageResponse,
   type PipelineBoardResponse,
   type PipelineStageMetric,
@@ -167,6 +166,8 @@ function pipelineWhere(filters: PipelineFilters, db: Db, stages?: readonly Oppor
   }
   if (filters.assignedSellerId)
     conditions.push(eq(opportunities.assignedSellerId, filters.assignedSellerId));
+  if (filters.unassigned !== undefined)
+    conditions.push(filters.unassigned ? isNull(opportunities.assignedSellerId) : isNotNull(opportunities.assignedSellerId));
   if (filters.customerId) conditions.push(eq(opportunities.customerId, filters.customerId));
   if (filters.productId) {
     conditions.push(
@@ -189,37 +190,69 @@ function pipelineWhere(filters: PipelineFilters, db: Db, stages?: readonly Oppor
     conditions.push(gte(opportunities.createdAt, dayStart(filters.createdFrom)));
   if (filters.createdTo) conditions.push(lt(opportunities.createdAt, dayAfter(filters.createdTo)));
   if (filters.followUpFrom || filters.followUpTo) {
-    const dueConditions: SQL[] = [
+    const followupDueConditions: SQL[] = [
       eq(opportunityFollowups.opportunityId, opportunities.id),
       eq(opportunityFollowups.status, "PENDING"),
     ];
     if (filters.followUpFrom)
-      dueConditions.push(gte(opportunityFollowups.dueAt, dayStart(filters.followUpFrom)));
+      followupDueConditions.push(gte(opportunityFollowups.dueAt, dayStart(filters.followUpFrom)));
     if (filters.followUpTo)
-      dueConditions.push(lt(opportunityFollowups.dueAt, dayAfter(filters.followUpTo)));
+      followupDueConditions.push(lt(opportunityFollowups.dueAt, dayAfter(filters.followUpTo)));
+    const taskDueConditions: SQL[] = [
+      eq(crmTasks.opportunityId, opportunities.id),
+      inArray(crmTasks.status, ["PENDING", "OVERDUE"]),
+      isNotNull(crmTasks.dueAt),
+    ];
+    if (filters.followUpFrom)
+      taskDueConditions.push(gte(crmTasks.dueAt, dayStart(filters.followUpFrom)));
+    if (filters.followUpTo)
+      taskDueConditions.push(lt(crmTasks.dueAt, dayAfter(filters.followUpTo)));
     conditions.push(
-      exists(
-        db
-          .select({ id: opportunityFollowups.id })
-          .from(opportunityFollowups)
-          .where(and(...dueConditions)),
-      ),
+      or(
+        exists(
+          db
+            .select({ id: opportunityFollowups.id })
+            .from(opportunityFollowups)
+            .where(and(...followupDueConditions)),
+        ),
+        exists(
+          db
+            .select({ id: crmTasks.id })
+            .from(crmTasks)
+            .where(and(...taskDueConditions)),
+        ),
+      )!,
     );
   }
   if (filters.overdue === true) {
     conditions.push(
-      exists(
-        db
-          .select({ id: opportunityFollowups.id })
-          .from(opportunityFollowups)
-          .where(
-            and(
-              eq(opportunityFollowups.opportunityId, opportunities.id),
-              eq(opportunityFollowups.status, "PENDING"),
-              lt(opportunityFollowups.dueAt, new Date()),
+      or(
+        exists(
+          db
+            .select({ id: opportunityFollowups.id })
+            .from(opportunityFollowups)
+            .where(
+              and(
+                eq(opportunityFollowups.opportunityId, opportunities.id),
+                eq(opportunityFollowups.status, "PENDING"),
+                lt(opportunityFollowups.dueAt, new Date()),
+              ),
             ),
-          ),
-      ),
+        ),
+        exists(
+          db
+            .select({ id: crmTasks.id })
+            .from(crmTasks)
+            .where(
+              and(
+                eq(crmTasks.opportunityId, opportunities.id),
+                inArray(crmTasks.status, ["PENDING", "OVERDUE"]),
+                isNotNull(crmTasks.dueAt),
+                lt(crmTasks.dueAt, new Date()),
+              ),
+            ),
+        ),
+      )!,
     );
   }
   if (filters.withoutNextAction !== undefined) {
@@ -368,7 +401,7 @@ async function countAlerts(db: Db, filters: PipelineFilters) {
   const where = activeWhere(filters, db);
   const now = new Date();
   const staleAt = new Date(now.getTime() - pipelineAgingThresholds.staleAfterDays * dayMs);
-  const [overdue, withoutNextAction, unassigned, stale] = await Promise.all([
+  const [overdue, taskOverdue, withoutNextAction, unassigned, stale] = await Promise.all([
     db
       .select({ total: count(opportunityFollowups.id) })
       .from(opportunityFollowups)
@@ -377,6 +410,12 @@ async function countAlerts(db: Db, filters: PipelineFilters) {
       .where(
         and(where, eq(opportunityFollowups.status, "PENDING"), lt(opportunityFollowups.dueAt, now)),
       ),
+    db
+      .select({ total: count(crmTasks.id) })
+      .from(crmTasks)
+      .innerJoin(opportunities, eq(crmTasks.opportunityId, opportunities.id))
+      .innerJoin(customers, eq(opportunities.customerId, customers.id))
+      .where(and(where, inArray(crmTasks.status, ["PENDING", "OVERDUE"]), isNotNull(crmTasks.dueAt), lt(crmTasks.dueAt, now))),
     db
       .select({ total: count(opportunities.id) })
       .from(opportunities)
@@ -402,7 +441,7 @@ async function countAlerts(db: Db, filters: PipelineFilters) {
       ),
   ]);
   return {
-    overdue: numberValue(overdue[0]?.total),
+    overdue: numberValue(overdue[0]?.total) + numberValue(taskOverdue[0]?.total),
     withoutNextAction: numberValue(withoutNextAction[0]?.total),
     unassigned: numberValue(unassigned[0]?.total),
     stale: numberValue(stale[0]?.total),
@@ -411,35 +450,30 @@ async function countAlerts(db: Db, filters: PipelineFilters) {
 
 async function loadFollowUps(db: Db, filters: PipelineFilters, now: Date) {
   const where = activeWhere(filters, db);
-  const rows = await db
-    .select({
-      followup: opportunityFollowups,
-      opportunityCode: opportunities.code,
-      customerName: customers.name,
-      assignedToName: users.name,
-    })
-    .from(opportunityFollowups)
-    .innerJoin(opportunities, eq(opportunityFollowups.opportunityId, opportunities.id))
-    .innerJoin(customers, eq(opportunities.customerId, customers.id))
-    .leftJoin(users, eq(opportunityFollowups.assignedTo, users.id))
-    .where(and(where, eq(opportunityFollowups.status, "PENDING")))
-    .orderBy(asc(opportunityFollowups.dueAt), asc(opportunities.code))
-    .limit(80);
-  return rows.map(
-    (row) =>
-      ({
-        id: row.followup.id,
-        opportunityId: row.followup.opportunityId,
-        opportunityCode: row.opportunityCode,
-        customerName: row.customerName,
-        title: row.followup.title,
-        dueAt: row.followup.dueAt,
-        status: row.followup.status,
-        assignedTo: row.followup.assignedTo,
-        assignedToName: row.assignedToName,
-        overdue: row.followup.dueAt < now,
-      }) satisfies PipelineFollowUpItem,
-  );
+  const [followUpRows, taskRows] = await Promise.all([
+    db
+      .select({ followup: opportunityFollowups, opportunityCode: opportunities.code, customerName: customers.name, assignedToName: users.name })
+      .from(opportunityFollowups)
+      .innerJoin(opportunities, eq(opportunityFollowups.opportunityId, opportunities.id))
+      .innerJoin(customers, eq(opportunities.customerId, customers.id))
+      .leftJoin(users, eq(opportunityFollowups.assignedTo, users.id))
+      .where(and(where, eq(opportunityFollowups.status, "PENDING")))
+      .orderBy(asc(opportunityFollowups.dueAt), asc(opportunities.code))
+      .limit(80),
+    db
+      .select({ task: crmTasks, opportunityCode: opportunities.code, customerName: customers.name, assignedToName: users.name })
+      .from(crmTasks)
+      .innerJoin(opportunities, eq(crmTasks.opportunityId, opportunities.id))
+      .innerJoin(customers, eq(opportunities.customerId, customers.id))
+      .leftJoin(users, eq(crmTasks.assignedTo, users.id))
+      .where(and(where, inArray(crmTasks.status, ["PENDING", "OVERDUE"]), isNotNull(crmTasks.dueAt)))
+      .orderBy(asc(crmTasks.dueAt), asc(opportunities.code))
+      .limit(80),
+  ]);
+  return [
+    ...followUpRows.map((row) => ({ id: row.followup.id, opportunityId: row.followup.opportunityId, opportunityCode: row.opportunityCode, customerName: row.customerName, title: row.followup.title, dueAt: row.followup.dueAt, status: row.followup.status, assignedTo: row.followup.assignedTo, assignedToName: row.assignedToName, overdue: row.followup.dueAt < now } satisfies PipelineFollowUpItem)),
+    ...taskRows.map((row) => ({ id: row.task.id, opportunityId: row.task.opportunityId!, opportunityCode: row.opportunityCode, customerName: row.customerName, title: row.task.title, dueAt: row.task.dueAt!, status: row.task.status, assignedTo: row.task.assignedTo, assignedToName: row.assignedToName, overdue: row.task.dueAt! < now } satisfies PipelineFollowUpItem)),
+  ].sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime()).slice(0, 80);
 }
 
 export async function getPipelineBoard(
@@ -465,6 +499,7 @@ export async function getPipelineBoard(
       subject: crmActivities.subject,
       createdAt: crmActivities.createdAt,
       performedBy: crmActivities.performedBy,
+      actorName: users.name,
       opportunityId: opportunities.id,
       opportunityCode: opportunities.code,
       customerName: customers.name,
@@ -472,6 +507,7 @@ export async function getPipelineBoard(
     .from(crmActivities)
     .innerJoin(opportunities, eq(crmActivities.opportunityId, opportunities.id))
     .innerJoin(customers, eq(opportunities.customerId, customers.id))
+    .leftJoin(users, eq(crmActivities.performedBy, users.id))
     .where(baseWhere)
     .orderBy(desc(crmActivities.createdAt))
     .limit(6);
@@ -509,27 +545,17 @@ export async function getPipelineBoard(
         .orderBy(asc(opportunities.currency)),
     ]);
   const stageMetrics = buildStageMetrics(stageRows);
-  const activityActorIds = [
-    ...new Set(recentActivityRows.map((row) => row.performedBy).filter((value): value is string => Boolean(value))),
-  ];
-  const activityActorRows = activityActorIds.length
-    ? await db
-        .select({ id: users.id, name: users.name, email: users.email })
-        .from(users)
-        .where(inArray(users.id, activityActorIds))
-    : [];
-  const activityActorNames = new Map(activityActorRows.map((actor) => [actor.id, actor.name ?? actor.email]));
   const recentActivity = recentActivityRows.map((row) => ({
     id: row.id,
     type: row.type,
     subject: row.subject,
     createdAt: row.createdAt,
-    actorName: row.performedBy ? (activityActorNames.get(row.performedBy) ?? "Usuario del equipo") : "Sistema",
+    actorName: row.performedBy ? (row.actorName ?? "Usuario del equipo") : "Sistema",
     opportunityId: row.opportunityId,
     opportunityCode: row.opportunityCode,
     customerName: row.customerName,
   }));
-  const lanes: PipelineLane[] = await Promise.all(
+  const lanesPromise = Promise.all(
     opportunityLaneDefinitions.map(async (definition) => {
       const stages = [...definition.stages] as OpportunityStage[];
       const where = pipelineWhere(filters, db, stages);
@@ -564,7 +590,8 @@ export async function getPipelineBoard(
   );
   const closedFilters = { ...filters, stages: undefined, lane: undefined, lanePage: undefined };
   const closedWhere = pipelineWhere(closedFilters, db, [...closedOpportunityStages, "NO_RESPONSE"]);
-  const closed = await loadCards(db, closedWhere, now, 50, 0);
+  const closedPromise = loadCards(db, closedWhere, now, 50, 0);
+  const [lanes, closed] = await Promise.all([lanesPromise, closedPromise]);
   const activeMetrics = stageMetrics.filter((row) =>
     (activeCommercialStages as readonly string[]).includes(row.stage),
   );
@@ -624,7 +651,7 @@ export async function getPipelinePage(
   const now = new Date();
   const { page, pageSize } = pageValues(filters.page, filters.pageSize);
   const where = pipelineWhere(filters, db);
-  const [totalRows, stageRows, rows, sellerFacets, originFacets] = await Promise.all([
+  const [totalRows, stageRows, rows, sellerFacets, originFacets, overdueRows, taskOverdueRows] = await Promise.all([
     db
       .select({ total: count(opportunities.id) })
       .from(opportunities)
@@ -643,6 +670,18 @@ export async function getPipelinePage(
       .innerJoin(customers, eq(opportunities.customerId, customers.id))
       .where(where)
       .orderBy(asc(opportunities.origin)),
+    db
+      .select({ total: count(opportunityFollowups.id) })
+      .from(opportunityFollowups)
+      .innerJoin(opportunities, eq(opportunityFollowups.opportunityId, opportunities.id))
+      .innerJoin(customers, eq(opportunities.customerId, customers.id))
+      .where(and(activeWhere(filters, db), eq(opportunityFollowups.status, "PENDING"), lt(opportunityFollowups.dueAt, now))),
+    db
+      .select({ total: count(crmTasks.id) })
+      .from(crmTasks)
+      .innerJoin(opportunities, eq(crmTasks.opportunityId, opportunities.id))
+      .innerJoin(customers, eq(opportunities.customerId, customers.id))
+      .where(and(activeWhere(filters, db), inArray(crmTasks.status, ["PENDING", "OVERDUE"]), isNotNull(crmTasks.dueAt), lt(crmTasks.dueAt, now))),
   ]);
   const totalItems = numberValue(totalRows[0]?.total);
   const metrics = buildStageMetrics(stageRows);
@@ -656,18 +695,6 @@ export async function getPipelinePage(
   const weightedAmount = opportunityStageProbability.configured
     ? metrics.reduce((total, row) => total + row.weightedAmount, 0)
     : 0;
-  const overdueRows = await db
-    .select({ total: count(opportunityFollowups.id) })
-    .from(opportunityFollowups)
-    .innerJoin(opportunities, eq(opportunityFollowups.opportunityId, opportunities.id))
-    .innerJoin(customers, eq(opportunities.customerId, customers.id))
-    .where(
-      and(
-        activeWhere(filters, db),
-        eq(opportunityFollowups.status, "PENDING"),
-        lt(opportunityFollowups.dueAt, now),
-      ),
-    );
   return {
     items: rows,
     page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))),
@@ -677,7 +704,7 @@ export async function getPipelinePage(
     metrics: {
       total: totalItems,
       open,
-      overdueFollowUps: numberValue(overdueRows[0]?.total),
+      overdueFollowUps: numberValue(overdueRows[0]?.total) + numberValue(taskOverdueRows[0]?.total),
       totalAmount: Number(totalAmount.toFixed(2)),
       weightedAmount: Number(weightedAmount.toFixed(2)),
       conversionRate: closeRate(metrics),

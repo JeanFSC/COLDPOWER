@@ -159,6 +159,21 @@ function humanLabel(raw: unknown, labels: Record<string, string>) {
   return labels[raw] ?? raw.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function relationHref(kind: RelationKey, row: Value) {
+  const id = value(row, [kind === "quotes" ? "id" : kind === "opportunities" ? "id" : kind === "sales" ? "id" : kind === "orders" ? "id" : kind === "payments" ? "id" : "id"], "");
+  if (!id) return null;
+  const param = kind === "quotes" ? "quoteId" : kind === "opportunities" ? "opportunityId" : kind === "sales" ? "saleId" : kind === "orders" ? "orderId" : kind === "payments" ? "paymentId" : kind === "tasks" ? "taskId" : null;
+  if (!param) return null;
+  return kind === "opportunities" || kind === "tasks" ? `/admin/crm?view=pipeline&${param}=${encodeURIComponent(id)}` : `/admin/${kind === "quotes" ? "cotizaciones" : kind === "sales" ? "ventas" : kind === "orders" ? "pedidos" : "pagos"}?${param}=${encodeURIComponent(id)}`;
+}
+
+function relationAmount(row: Value) {
+  const amount = row.total ?? row.totalAmount ?? row.amount ?? row.lineTotal ?? row.subtotal;
+  if (typeof amount !== "string" && typeof amount !== "number") return null;
+  const currency = typeof row.currency === "string" ? row.currency : "PEN";
+  return `${currency === "USD" ? "US$" : "S/"} ${Number(amount).toFixed(2)}`;
+}
+
 function unwrapRelation(item: Value) {
   const nested = [
     item.order,
@@ -721,19 +736,17 @@ function RelationSection({
         <div className="mt-3 grid gap-2">
           {relation.items.map((item, index) => {
             const row = unwrapRelation(item);
+            const href = relationHref(relationKey, row);
+            const title = value(row, ["paymentCode", "trackingCode", "code", "number", "title", "name", "subject", "reference"], "Registro relacionado");
+            const amount = relationAmount(row);
             return (
               <div key={`${relationKey}-${index}`} className="rounded-md bg-[#fbfcfd] p-3">
-                <p className="text-xs font-bold text-[#304b66]">
-                  {value(
-                    row,
-                    ["paymentCode", "code", "number", "title", "name", "subject", "reference"],
-                    "Registro relacionado",
-                  )}
-                </p>
+                <p className="text-xs font-bold text-[#304b66]">{href ? <a href={href} className="text-[#2277ee] hover:underline">{title}</a> : title}</p>
                 <p className="mt-1 text-[11px] text-[#8296a9]">
                   {humanLabel(value(row, ["status", "stage", "type", "description", "body"]), {})} ·{" "}
                   {dateValue(row.occurredAt ?? row.updatedAt ?? row.createdAt ?? row.dueAt)}
                 </p>
+                {amount ? <p className="mt-1 text-[11px] font-extrabold text-[#304b66]">Monto: {amount}</p> : null}
                 {relationKey === "activities" && (row.result || row.nextAction) ? (
                   <div className="mt-2 grid gap-1 text-[10px] text-[#526b84]">
                     {row.result ? <p><strong>Resultado:</strong> {String(row.result)}</p> : null}

@@ -49,12 +49,12 @@ export async function createManualProduct(input: ManualProductInput, actor: Cata
   return db.transaction(async (tx) => {
     const [existing] = await tx.select({ id: products.id }).from(products).where(eq(products.sku, values.sku)).limit(1);
     if (existing) throw new Error("CATALOG_VALIDATION_ERROR");
-    const [family] = await tx.select({ id: families.id, categoryId: families.categoryId }).from(families).where(and(eq(families.id, values.familyId), eq(families.categoryId, values.categoryId))).limit(1);
+    const [family] = await tx.select({ id: families.id, categoryId: families.categoryId }).from(families).where(and(eq(families.id, values.familyId), eq(families.categoryId, values.categoryId), eq(families.active, true))).limit(1);
     if (!family) throw new Error("CATALOG_VALIDATION_ERROR");
-    const [category] = await tx.select({ id: categories.id }).from(categories).where(eq(categories.id, values.categoryId)).limit(1);
+    const [category] = await tx.select({ id: categories.id }).from(categories).where(and(eq(categories.id, values.categoryId), eq(categories.active, true))).limit(1);
     if (!category) throw new Error("CATALOG_VALIDATION_ERROR");
     if (values.brandId) {
-      const [brand] = await tx.select({ id: brands.id }).from(brands).where(eq(brands.id, values.brandId)).limit(1);
+      const [brand] = await tx.select({ id: brands.id }).from(brands).where(and(eq(brands.id, values.brandId), eq(brands.active, true))).limit(1);
       if (!brand) throw new Error("CATALOG_VALIDATION_ERROR");
     }
     const [created] = await tx.insert(products).values(values).returning({ id: products.id, sku: products.sku, slug: products.slug, publicationStatus: products.publicationStatus, sourceStatus: products.status });

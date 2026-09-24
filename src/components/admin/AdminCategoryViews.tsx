@@ -25,7 +25,6 @@ import {
   Tag,
   Target,
   Truck,
-  UserRound,
   UsersRound,
   Warehouse,
   X,
@@ -38,7 +37,6 @@ import {
 // added latency with nothing to show for it.
 import { AdminLineChart } from "@/components/admin/AdminChartsLazy";
 import { AdminSparkline } from "@/components/admin/AdminCharts";
-import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import type { PricingFilters, PricingListResponse } from "@/lib/pricing-contract";
 
@@ -1176,152 +1174,6 @@ export function PricingWorkspace({
   );
 }
 
-export function CustomersWorkspace({
-  rows,
-  metrics,
-  pagination,
-  facets,
-  query,
-  queryString,
-  exportHref,
-  controls,
-  customerId,
-  closeHref,
-}: {
-  rows: Array<{
-    id: string;
-    name: string;
-    type?: string;
-    contact?: string;
-    phone?: string;
-    email?: string;
-    city?: string;
-    quotes?: number | string;
-    lastActivityAt?: Date | string | null;
-    status?: string;
-  }>;
-  metrics?: { total: number; active: number; inactive: number; withOpenOpportunity: number; withoutActivity: number };
-  pagination?: { page: number; totalPages: number; totalItems: number };
-  facets?: { customerTypes: string[]; statuses: string[]; sellers: Array<{ id: string; name: string | null; email: string | null }>; locations: string[] };
-  query?: string;
-  queryString?: string;
-  exportHref?: string;
-  controls?: ReactNode;
-  customerId?: string | null;
-  closeHref?: string;
-}) {
-  const detailHrefFor = (id: string) => {
-    const detailQuery = new URLSearchParams(queryString ?? "");
-    detailQuery.set("view", "clientes");
-    detailQuery.set("customerId", id);
-    return `/admin/crm?${detailQuery.toString()}`;
-  };
-  const data = rows
-    .map((row) => [
-      <strong className="text-[#304b66]">{row.name}</strong>,
-      <span>{displayValue(row.type)}</span>,
-      <span>{displayValue(row.contact)}</span>,
-      <span>{displayValue(row.phone)}</span>,
-      <span>{displayValue(row.email)}</span>,
-      <span>{displayValue(row.city)}</span>,
-      <b>{row.lastActivityAt ? new Date(row.lastActivityAt).toLocaleDateString("es-PE") : "Sin actividad"}</b>,
-      <StatusBadge tone={row.status ? toneForStatus(row.status) : "gray"}>
-        {displayValue(row.status, "Sin estado")}
-      </StatusBadge>,
-      <More label={row.name} href={detailHrefFor(row.id)} />,
-    ]);
-  const waiting = metrics?.withoutActivity ?? rows.filter((row) => !row.lastActivityAt).length;
-  const total = metrics?.total ?? rows.length;
-  const active = metrics?.active ?? rows.filter((row) => /activo/i.test(row.status ?? "")).length;
-  const hrefForPage = pagination && queryString ? (page: number) => {
-    const next = new URLSearchParams(queryString);
-    next.set("page", String(page));
-    return `/admin/crm?${next.toString()}`;
-  } : undefined;
-  return (
-    <div className="space-y-4">
-      <PageHeader
-        eyebrow="Clientes"
-        title="Gestión de clientes"
-        description="Administra tu cartera de clientes y su actividad comercial."
-        action={<PrimaryAction icon={UserRound} href="#customer-controls">Nuevo cliente</PrimaryAction>}
-      >
-        <SecondaryAction href={exportHref}>Exportar</SecondaryAction>
-      </PageHeader>
-      {customerId ? <CustomerDetailPanel key={customerId} customerId={customerId} closeHref={closeHref ?? "/admin/crm?view=clientes"} /> : null}
-      <MetricGrid
-        columns="lg:grid-cols-3"
-        items={[
-          {
-            label: "Clientes registrados",
-            value: total,
-            note: "Total filtrado",
-            icon: UsersRound,
-          },
-          {
-            label: "Clientes activos",
-            value: active,
-            note: "Estado activo",
-            tone: "green",
-            icon: Check,
-          },
-          {
-            label: "Por atender",
-            value: waiting,
-            note: "Sin actividad informada",
-            tone: "orange",
-            icon: Clock3,
-          },
-        ]}
-      />
-      <Toolbar placeholder="Buscar por nombre, empresa, contacto o email..." action="/admin/crm?view=clientes" queryValue={query}>
-        <FilterSelect name="status" options={(facets?.statuses ?? ["ACTIVE", "INACTIVE", "PROSPECT"]).map((status) => ({ value: status, label: status === "ACTIVE" ? "Activos" : status === "INACTIVE" ? "Inactivos" : "Prospectos" }))}>Estado</FilterSelect>
-        <FilterSelect name="customerType" options={(facets?.customerTypes ?? []).map((type) => ({ value: type, label: type }))}>Tipo de cliente</FilterSelect>
-      </Toolbar>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <Panel title="Clientes" subtitle={`${rows.length} resultados`}>
-          <Table
-            headers={[
-              "Cliente",
-              "Tipo",
-              "Contacto",
-              "Teléfono",
-              "Email",
-              "Ciudad",
-              "Actividad",
-              "Estado",
-              "",
-            ]}
-            rows={data}
-            title="No hay clientes registrados"
-            description="No se encontraron clientes para esta consulta."
-            icon={UsersRound}
-          />
-          <Pager label={`Mostrando ${data.length} de ${pagination?.totalItems ?? rows.length} clientes`} page={pagination?.page} totalPages={pagination?.totalPages} hrefForPage={hrefForPage} />
-        </Panel>
-        <Summary
-          title="Resumen de clientes"
-          items={["Registrados", "Activos", "Por atender"]}
-          values={[
-            total,
-            active,
-            waiting,
-          ]}
-        />
-      </div>
-      {controls ? (
-        <Panel title="Operaciones CRM">
-          <details>
-            <summary className="cursor-pointer px-4 py-3 text-[10px] font-extrabold text-[#2277ee]">
-              Abrir controles de clientes
-            </summary>
-            <div id="customer-controls" className="border-t border-[#edf2f6] p-4">{controls}</div>
-          </details>
-        </Panel>
-      ) : null}
-    </div>
-  );
-}
 
 
 export function OrdersWorkspace({ rows, metrics, pagination, facets, query, queryString, exportHref, controls }: { rows: ListingRow[]; metrics?: { total: number; pending: number; paid: number; cancelled: number; totalAmount: number; averageTicket: number | null }; pagination?: { page: number; totalPages: number; totalItems: number }; facets?: { statuses: string[]; deliveryMethods: string[]; currencies: string[] }; query?: string; queryString?: string; exportHref?: string; controls?: ReactNode }) {
