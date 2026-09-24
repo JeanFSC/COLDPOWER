@@ -45,3 +45,49 @@ Neon está **fuera de cuota** (HTTP 402). Mientras no se restablezca:
 - aplica las correcciones en el código y valida con `tsc`, lint y contratos;
 - **no ejecutes scripts, servidores ni tests que consulten la base de datos**;
 - deja la verificación visual final pendiente. La hará Claude cuando Neon vuelva.
+
+---
+
+# Ronda 2 (Claude, 2026-09-24, captura real 1920 y 390 en 3002; Neon caído, partes con datos en estado honesto)
+
+Resueltos de la ronda 1:
+- orden del header;
+- banner navy a todo el ancho con panel interno y CTA compacta;
+- rail alineado con el título;
+- tabs y marcas (pendientes de ver con datos);
+- footer.
+
+Pendientes (obligatorios):
+1. **Manuscrito del hero todavía ilegible a 1920.** "Tu proyecto, nuestro respaldo" sigue encima del ventilador azul (arriba a la derecha).
+   - En la referencia el manuscrito está sobre cielo despejado, **a la izquierda del ventilador** y encima de la card de aplicaciones, con contraste pleno.
+   - Mueve el encuadre de la foto (`object-position`, o desplaza la composición a la izquierda) o reubica el manuscrito para que no toque ningún equipo.
+   - Criterio: el texto completo se lee a 1920 y a 1440.
+2. **Logo del header demasiado pequeño.** En la referencia el lockup mide ≈ 150 px de ancho a 984 (≈ 290–300 px a 1920) e incluye la línea "SOLUCIONES EN REFRIGERACIÓN"; hoy mide ≈ 115 px a escala.
+   - Usa el lockup completo al tamaño de la referencia, sin cambiar la altura del header más de ±5%.
+   - Aplica el mismo criterio al logo del footer (≈ 130 px a 984).
+3. **Móvil 390 — utility bar.** El texto se corta ("¿Necesitas ayuda? Escríben…"). En móvil muestra un solo mensaje que quepa completo, o hazla rotar/desplazar sin cortes.
+4. **Móvil 390 — hero:**
+   - el manuscrito se monta sobre el eyebrow; en móvil va en su propia línea sin solaparse (debajo de los CTA o sobre la imagen en zona libre) o se oculta;
+   - el beneficio "Asesoría técnica especializada" queda sobre la foto con contraste bajo; añade un scrim/gradiente oscuro detrás del bloque de texto para contraste AA en todo el copy.
+5. **Móvil 390 — rail.** "OFERTAS del MES" y "Herramientas…" no ocupan el ancho completo del contenedor (≈ 285 de 358 px). Deben ir al 100% del ancho del contenedor.
+
+Neon sigue fuera de cuota: mismas restricciones, sin DB. Valida con tsc, lint y contratos. Claude verificará con captura real.
+
+---
+
+# Ronda 3 (Claude, 2026-09-24, captura real 1920 y 390)
+
+Resueltos:
+- móvil: utility bar completa, hero sin solapes y con scrim, rail al 100%;
+- lockup del header ampliado.
+
+Pendientes (obligatorios):
+1. **Composición del hero (causa raíz del manuscrito).** Lo moviste, pero ahora queda sobre la condensadora y se corta ("respald…"). La causa es la foto: `hero-desktop.webp` tiene equipos hasta el borde derecho. En la referencia, a 984:
+   - el grupo de equipos ocupa ≈ x 365–830 (≈ 37%–84% del ancho);
+   - el ventilador azul está en ≈ 760–830 (78%–84%);
+   - la franja derecha ≈ 84%–100% es fondo desenfocado claro (edificio/cielo), donde van el manuscrito (arriba) y la card de aplicaciones (abajo), sin tocar ningún equipo.
+   **Regenera `hero-desktop.webp`** con esa composición exacta: equipos de 37% a 84%, franja derecha libre y la mitad izquierda con fondo de edificio azul más claro, como en la referencia. El compresor no lleva marca impresa.
+   Luego el manuscrito completo "Tu proyecto, / nuestro respaldo" va en esa franja, arriba, con su trazo naranja, legible al 100% a 1920 y a 1440.
+2. **H1 ≈ 11% más grande que la referencia.** "Todo para refrigeración" mide ≈ 311 px de ancho a 984 en la referencia y ≈ 345 px en la actual. Ajusta el tamaño para quedar dentro de ±5%, y conserva las tres líneas.
+
+Mismas restricciones: sin DB, sin servidores en 3002, sin commit.

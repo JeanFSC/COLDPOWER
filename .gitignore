@@ -58,6 +58,7 @@ next-env.d.ts
 
 # local runtime uploads, browser profiles, logs and database backups
 /tmp/
+/.tmp-*/
 
 # local Cloudflare Tunnel connector and token
 /.cloudflared/

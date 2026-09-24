@@ -29,6 +29,7 @@ type BrandLogoProps = {
   size?: BrandLogoSize;
   href?: string | null;
   className?: string;
+  showTagline?: boolean;
 };
 
 export function BrandLogo({
@@ -37,14 +38,21 @@ export function BrandLogo({
   size = "md",
   href = "/",
   className,
+  showTagline = false,
 }: BrandLogoProps) {
   const s = sizeStyles[size];
   const imageClass = compact ? "w-[150px]" : s.image;
-  const content = <LogoLockup variant={variant} className={imageClass} />;
+  const content = (
+    <>
+      <LogoLockup variant={variant} className={imageClass} />
+      {showTagline ? <span className="brand-logo-tagline">SOLUCIONES EN REFRIGERACIÓN</span> : null}
+    </>
+  );
+  const wrapperClass = showTagline ? "brand-logo-with-tagline" : "";
 
   if (href === null) {
     return (
-      <span aria-label="ColdPower" className={cn("inline-flex shrink-0 items-center", s.gap, className)}>
+      <span aria-label="ColdPower" className={cn("inline-flex shrink-0 items-center", s.gap, wrapperClass, className)}>
         {content}
       </span>
     );
@@ -55,7 +63,7 @@ export function BrandLogo({
       href={href}
       prefetch={false}
       aria-label="Ir al inicio de ColdPower"
-      className={cn("group inline-flex shrink-0 items-center", s.gap, className)}
+      className={cn("group inline-flex shrink-0 items-center", s.gap, wrapperClass, className)}
     >
       {content}
     </Link>

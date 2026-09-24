@@ -40,7 +40,7 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
     <footer className="home-footer">
       <div className="home-wide-container home-footer-grid">
         <div className="home-footer-brand">
-          <BrandLogo variant="light" size="lg" />
+          <BrandLogo variant="light" size="lg" showTagline />
           <p>Repuestos para refrigeración, aire acondicionado y línea blanca. Tu proyecto, nuestro respaldo.</p>
           {socialLinks.length > 0 ? (
             <div className="home-footer-socials">
