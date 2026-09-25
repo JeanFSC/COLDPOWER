@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
+import { assertDevelopmentDatabase } from "./fixtures/promotions-dev";
 import { effectivePromotionStatus, validatePromotionInput } from "@/lib/operations-validation";
 import { applyPromotionToUnitPrice } from "@/lib/promotion-service";
 import { can } from "@/lib/roles";
+import { createPromotionCalendarScale, scalePromotionDate, scalePromotionRange } from "@/lib/promotion-calendar";
 
 const root = process.cwd();
 const read = (file: string) => readFileSync(join(root, file), "utf8");
@@ -50,6 +52,22 @@ test("RBAC separa administrar promociones, aprobar descuentos y exportar", () =>
   assert.equal(can("SUPERADMIN", "promotions.manage"), true);
   assert.equal(can("SUPERADMIN", "pricing.discount.approve"), true);
   assert.equal(can("GERENCIA", "promotions.export"), true);
+});
+
+test("el Gantt escala fechas por días de Lima dentro de la ventana visible", () => {
+  const scale = createPromotionCalendarScale("2026-09-25T12:00:00-05:00");
+  assert.deepEqual(scale, { from: "2026-09-18", to: "2026-11-12", totalDays: 56 });
+  const range = scalePromotionRange("2026-09-24T00:00:00-05:00", "2026-10-01T23:59:59-05:00", scale);
+  assert.ok(Math.abs(range.left - 10.7142857) < 0.0001);
+  assert.ok(Math.abs(range.width - 14.2857143) < 0.0001);
+  assert.equal(scalePromotionDate("2026-09-25T23:59:59-05:00", scale).left, 12.5);
+});
+
+test("la fixture de promociones sólo acepta PostgreSQL local y no Neon", () => {
+  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@127.0.0.1:5433/coldpower" }));
+  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@localhost:5433/coldpower" }));
+  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@ep-example.neon.tech/coldpower" }), /127\.0\.0\.1|localhost/);
+  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "production", DATABASE_URL: "postgres://coldpower:local@127.0.0.1:5433/coldpower" }), /production/);
 });
 
 test("promociones usan pickers buscables, edicion gobernada y precio compartido", () => {

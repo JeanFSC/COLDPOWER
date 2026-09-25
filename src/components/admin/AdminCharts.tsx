@@ -336,7 +336,9 @@ export function AdminSparkline({ tone = "blue", data, ariaLabel = "Tendencia del
     const draw = () => {
       const bounds = canvas.getBoundingClientRect();
       const ratio = window.devicePixelRatio || 1;
-      const width = Math.max(bounds.width, 120);
+      // Use the real CSS width. A fixed 120px minimum clipped compact KPI
+      // sparklines (92-100px) and made the last segment look like a vertical spike.
+      const width = Math.max(bounds.width, 1);
       const height = Math.max(bounds.height, 30);
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
