@@ -84,6 +84,8 @@ export default async function AdminComprasPage({
   ]);
   const requestProductId = query.get("requestProductId") ?? undefined;
   const requestLocationId = query.get("requestLocationId") ?? undefined;
+  const orderSupplierId = query.get("orderSupplierId") ?? undefined;
+  const orderLocationId = query.get("orderLocationId") ?? undefined;
   const prefilledProducts = requestProductId
     ? await getInventoryProductOptions("", requestLocationId, requestProductId)
     : [];
@@ -158,6 +160,8 @@ export default async function AdminComprasPage({
           canReceive={can(actor.role, "purchases.receive")}
           initialRequestProductId={requestProductId}
           initialRequestLocationId={requestLocationId}
+          initialOrderSupplierId={orderSupplierId}
+          initialOrderLocationId={orderLocationId}
         />
       }
     />

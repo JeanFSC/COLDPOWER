@@ -263,6 +263,29 @@ function promotionCoversProduct(
   return (!direct?.size && !category?.size) || Boolean(direct?.has(productId) || category?.has(categoryId));
 }
 
+export async function getActivePromotionsForProduct(productId: string, categoryId: string) {
+  const db = getDb();
+  const now = new Date();
+  const activeRows = await db
+    .select()
+    .from(promotions)
+    .where(and(eq(promotions.status, "ACTIVE"), lte(promotions.startsAt, now), gt(promotions.endsAt, now)))
+    .orderBy(desc(promotions.priority), asc(promotions.startsAt));
+  if (!activeRows.length) return [];
+  const ids = activeRows.map((row) => row.id);
+  const [directRows, categoryRows] = await Promise.all([
+    db.select({ promotionId: promotionProducts.promotionId, productId: promotionProducts.productId }).from(promotionProducts).where(inArray(promotionProducts.promotionId, ids)),
+    db.select({ promotionId: promotionCategories.promotionId, categoryId: promotionCategories.categoryId }).from(promotionCategories).where(inArray(promotionCategories.promotionId, ids)),
+  ]);
+  const directByPromotion = new Map<string, Set<string>>();
+  const categoriesByPromotion = new Map<string, Set<string>>();
+  for (const row of directRows) directByPromotion.set(row.promotionId, new Set([...(directByPromotion.get(row.promotionId) ?? []), row.productId]));
+  for (const row of categoryRows) categoriesByPromotion.set(row.promotionId, new Set([...(categoriesByPromotion.get(row.promotionId) ?? []), row.categoryId]));
+  return activeRows
+    .filter((row) => promotionCoversProduct(row.id, productId, categoryId, directByPromotion, categoriesByPromotion))
+    .map((row) => ({ id: row.id, name: row.name, type: row.type, discountValue: Number(row.discountValue), endsAt: row.endsAt, priority: row.priority }));
+}
+
 async function getPromotionConflictMap(now = new Date()) {
   const db = getDb();
   const activeRows = await db

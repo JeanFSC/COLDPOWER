@@ -485,6 +485,8 @@ export async function getSupplierDetail(supplierId: string) {
   };
 }
 
+export type SupplierDetail = NonNullable<Awaited<ReturnType<typeof getSupplierDetail>>>;
+
 const openPurchaseStatuses = ["DRAFT", "PENDING", "PARTIAL_RECEIVED"] as const;
 
 // Real spend by product category (unit cost x quantity ordered), used by the "Gasto por
