@@ -1,0 +1,53 @@
+{
+  "phase": "after",
+  "qaSet": "final-notificaciones",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T20:58:01.168Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:57:53.984Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-notificaciones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-notificaciones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        }
+      },
+      "title": "Notificaciones | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

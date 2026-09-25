@@ -1,0 +1,976 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+OPERACIONES · INVENTARIO
+
+Gestión de inventario
+
+Saldos físicos, reservas y movimientos por local. El catálogo no se interpreta como stock.
+
+Actualizar
+Exportar
+Reservar
+Mínimos
+Transferir stock
+Ajustar inventario
+
+REFERENCIAS CON SALDO
+
+1,341
+
+Catálogos activos
+
+LOCALES ACTIVOS
+
+6
+
+Ubicaciones operativas
+
+BALANCES REGISTRADOS
+
+1,342
+
+En el sistema
+
+KARDEX PERSISTENTE
+
+1,367
+
+Trazabilidad completa
+
+RESERVAS ACTIVAS
+
+40
+
+Stock comprometido
+
+SALDOS CRÍTICOS
+
+3
+
+Requieren atención · ver detalle
+
+Buscar SKU, nombre o atributo
+Local
+Todos los locales
+CP-AQP-DEV · Tienda Arequipa
+CP-CHI-DEV · Sucursal Chiclayo
+CP-CUS-DEV · Sucursal Cusco
+CP-LIM-DEV · Almacén Lima
+CP-PIU-DEV · Sucursal Piura
+CP-TRU-DEV · Sucursal Trujillo
+Categoría
+Todas las categorías
+Amoladoras
+Arroceras
+Aspiradoras
+Automotriz
+Bombas de agua
+Campanas extractoras
+Cocinas
+Conexiones y accesorios
+Congeladoras
+Consumibles
+Duchas eléctricas
+Fitness y bienestar
+Herramientas y equipos
+Hervidores
+Lavadoras
+Licuadoras
+Lustradoras
+Microondas
+Multilínea
+Otros electrodomésticos
+Planchas
+Refrigeración
+Secadoras
+Selladoras
+Servicios
+Termas
+Uso general
+Familia
+Todas las familias
+Abrazaderas
+Abrazaderas
+Aceites
+Aceites
+Acoples
+Acoples
+Acoples
+Acoples
+Agitadores
+Agitadores
+Agitadores y paletas
+Aislamiento térmico
+Amortiguadores
+Anillos
+Antorchas
+Bimetales
+Bisagras
+Bombas
+Bombas de vacío
+Cables
+Cables
+Cables
+Cajas de transmisión
+Capacitores
+Carbones y escobillas
+Carbones y escobillas
+Carbones y escobillas
+Carbones y escobillas
+Cintas
+Cintas
+Codos
+Codos
+Condensadores
+Conectores
+Conexiones
+Conexiones Tee
+Conexiones Tee
+Controladores de temperatura
+Cuchillas
+Cuchillas
+Deshidratadores / secadores
+Diafragmas
+Difusores
+Empaquetaduras
+Empaquetaduras
+Engranajes
+Equipos de limpieza
+Equipos de pilates
+Evaporadores
+Fajas y correas
+Fajas y correas
+Fajas y correas
+Filtros
+Filtros
+Filtros
+Fundentes
+Hornillas
+Iluminación
+Iluminación
+Interruptores y switches
+Interruptores y switches
+Interruptores y switches
+Interruptores y switches
+Interruptores y switches
+Inyectores
+Mangueras
+Mangueras
+Manijas
+Manijas
+Manijas
+Manómetros y manifolds
+Micas
+Molinillos y accesorios
+Motocompresores
+Motores
+Motores
+Motores
+Motores automotrices
+Motores de drenaje
+Motores síncronos
+Niples
+Niples
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Otros
+Paletas / pulsadores
+Perillas
+Perillas
+Perillas
+Pines y ejes
+Pines y ejes
+Platos
+Platos
+Presostatos y niveles
+Protección eléctrica
+Protección eléctrica
+Quemadores
+Quemadores
+Refrigerantes
+Reguladores de gas
+Relés
+Relés
+Resistencias
+Resistencias
+Resistencias
+Resistencias
+Resistencias
+Resistencias
+Resistencias
+Resortes
+Resortes
+Retenes
+Rodamientos
+Selladoras
+Sellos
+Sellos
+Sellos
+Sensores
+Sensores
+Sensores
+Servicios
+Soldaduras
+Soldaduras
+Tapas
+Tapas
+Tarjetas electrónicas
+Tarjetas electrónicas
+Tarjetas electrónicas
+Temporizadores
+Temporizadores
+Terminales eléctricos
+Termopilas
+Termostatos
+Termostatos
+Termostatos
+Termostatos
+Termostatos
+Termostatos
+Termostatos
+Termómetros
+Termómetros
+Termómetros
+Tuberías
+Tubos capilares
+Tuercas
+Tuercas
+Tuercas
+Tuercas
+Tuercas
+Uniones
+Uniones
+Vasos
+Ventiladores
+Válvulas
+Válvulas
+Válvulas
+Válvulas
+Válvulas
+Marca
+Todas las marcas
+Alfa
+Black+Decker
+Bosch
+Brastemp
+ColdPoint
+ColdPower
+Coldex
+Cubigel
+Daewoo
+Danfoss
+Ducatti
+Elco
+Electrolux
+Embraco
+Emicol
+Eurovalve
+F&D
+FSP
+Fafnir
+GE
+Genpro
+Global Cap
+Hamilton Beach
+Harris
+Imaco
+Indurama
+Kenmore
+Klimatic
+LG
+Last One
+MULTIMARCA
+Mabe
+Mars
+Metusa
+Miray
+Moulinex
+Nidec
+Oster
+PFI
+Pedsu
+Philips
+Practika
+Quality
+Rainbox
+Ranco
+Robertshaw
+SKF
+Saginomiya
+Samsung
+Sanwa
+Siemens
+Sole
+Supco
+Superlon
+Tecumseh
+Trisun
+Vazel
+Whirlpool
+ZKL
+ZSG
+Estado
+Todos los estados
+Sin mínimo
+Agotado
+Crítico
+Óptimo
+Reservado
+Más filtros
+Aplicar
+Limpiar
+Saldos por referencia
+
+Disponible = físico − reservado · actualizado desde PostgreSQL
+
+25 set. 2026, 3:50 p. m.
+SKU	PRODUCTO	LOCAL	FÍSICO	RESERVADO	DISPONIBLE	MÍNIMO	ESTADO	ÚLTIMO MOVIMIENTO	
+ACCIONES
+
+CP-AMO-CAR-1027	
+Imagen referencial
+CARBON AMOLADORA BOSCH
+Carbones y escobillas
+	
+CP-LIM-DEV
+Almacén Lima
+	34	14	20	8	Óptimo	
+Liberación de reserva
+25 set. 2026, 8:24 a. m.
+	
+···
+
+CP-REF-MCP-0103	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+Motocompresores
+	
+CP-LIM-DEV
+Almacén Lima
+	1,063	3	1,060	8	Óptimo	
+Reserva
+25 set. 2026, 1:18 a. m.
+	
+···
+
+CP-FIT-OTR-0313	
+Imagen referencial
+TONIFICADOR DE GLUTEOS PRO
+Otros
+	
+CP-LIM-DEV
+Almacén Lima
+	291	0	291	8	Óptimo	
+Recepción de compra
+24 set. 2026, 9:10 p. m.
+	
+···
+
+CP-REF-BIM-0431	
+Imagen referencial
+BIMETALES L45
+Bimetales
+	
+CP-LIM-DEV
+Almacén Lima
+	2	1	1	5	Crítico	
+Saldo inicial
+16 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-BIM-0432	
+Imagen referencial
+BIMETAL ST-3 ELECTROLUX
+Bimetales
+	
+CP-LIM-DEV
+Almacén Lima
+	8	1	7	10	Crítico	
+Saldo inicial
+15 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-REL-0227	
+Imagen referencial
+RELAY ELECTRONICO SSR-4
+Relés
+	
+CP-LIM-DEV
+Almacén Lima
+	1,141	2	1,139	8	Óptimo	
+Saldo inicial
+20 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-REL-0228	
+Imagen referencial
+RELAY DANFOSS ORIGINAL 6001 1/5 220 V
+Relés
+	
+CP-LIM-DEV
+Almacén Lima
+	1,142	0	1,142	8	Óptimo	
+Saldo inicial
+19 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-REL-0229	
+Imagen referencial
+RELAY DANFOSS 103NOO18
+Relés
+	
+CP-LIM-DEV
+Almacén Lima
+	1,143	1	1,142	8	Óptimo	
+Saldo inicial
+18 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-REL-0230	
+Imagen referencial
+RELAY DANFOSS 1/4 220 V RE
+Relés
+	
+CP-LIM-DEV
+Almacén Lima
+	1,144	2	1,142	8	Óptimo	
+Saldo inicial
+17 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-REL-0842	
+Imagen referencial
+RELAY 1/5
+Relés
+	
+CP-LIM-DEV
+Almacén Lima
+	1,145	0	1,145	8	Óptimo	
+Saldo inicial
+16 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0080	
+Imagen referencial
+RESISTENCIAS DE VIDRIO DE 16" 180 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,146	1	1,145	8	Óptimo	
+Saldo inicial
+15 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0081	
+Imagen referencial
+RESISTENCIAS DE VIDRIO DE 15" 160 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,147	2	1,145	8	Óptimo	
+Saldo inicial
+14 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0082	
+Imagen referencial
+RESISTENCIAS DE VIDRIO DE 12" 130 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,148	0	1,148	8	Óptimo	
+Saldo inicial
+13 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0083	
+Imagen referencial
+RESISTENCIAS DE VIDRIO DE 10" 115 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,149	1	1,148	8	Óptimo	
+Saldo inicial
+12 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0084	
+Imagen referencial
+RESISTENCIAS DE VIDRIO 14" 150 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,150	2	1,148	8	Óptimo	
+Saldo inicial
+11 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0085	
+Imagen referencial
+RESISTENCIAS DE VIDRIO 13" 140 W 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,151	0	1,151	8	Óptimo	
+Saldo inicial
+10 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0086	
+Imagen referencial
+RESISTENCIAS DE REFRIGERADORA 230 V 450 W
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,152	1	1,151	8	Óptimo	
+Saldo inicial
+9 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0087	
+Imagen referencial
+RESISTENCIAS DE REFRIGERADORA 115 V 450 W
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,153	2	1,151	8	Óptimo	
+Saldo inicial
+8 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0088	
+Imagen referencial
+RESISTENCIAS DE 45 cm. 110 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,154	0	1,154	8	Óptimo	
+Saldo inicial
+7 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0089	
+Imagen referencial
+RESISTENCIA SH 222 SUPCO 110 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,155	1	1,154	8	Óptimo	
+Saldo inicial
+6 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0090	
+Imagen referencial
+RESISTENCIA MABE 110 V 40CM
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,156	2	1,154	8	Óptimo	
+Saldo inicial
+5 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0091	
+Imagen referencial
+RESISTENCIA MABE 110 V 38CM
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,157	0	1,157	8	Óptimo	
+Saldo inicial
+4 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0092	
+Imagen referencial
+RESISTENCIA GH282 110 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,158	1	1,157	8	Óptimo	
+Saldo inicial
+3 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0093	
+Imagen referencial
+RESISTENCIA DE REFRIGERADORA 220 V 260 W 50CM
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,159	2	1,157	8	Óptimo	
+Saldo inicial
+2 set. 2026, 9:31 a. m.
+	
+···
+
+CP-REF-RES-0094	
+Imagen referencial
+RESISTENCIA DE 50 cm 220 V
+Resistencias
+	
+CP-LIM-DEV
+Almacén Lima
+	1,160	0	1,160	8	Óptimo	
+Saldo inicial
+1 set. 2026, 9:31 a. m.
+	
+···
+Mostrando 1–25 de 1,342 saldos
+1
+2
+54
+10 por página
+25 por página
+50 por página
+100 por página
+Movimientos recientes
+Ver todos
+
+Liberación de reserva
+
+CP-AMO-CAR-1027 · CARBON AMOLADORA BOSCH
+
+25 set. 2026, 8:24 a. m.
+
+0 uds
+
+Liberación de reserva
+
+CP-AMO-CAR-1027 · CARBON AMOLADORA BOSCH
+
+25 set. 2026, 8:24 a. m.
+
+0 uds
+
+Liberación de reserva
+
+CP-AMO-CAR-1027 · CARBON AMOLADORA BOSCH
+
+25 set. 2026, 8:24 a. m.
+
+0 uds
+
+Reserva
+
+CP-REF-MCP-0103 · MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+
+25 set. 2026, 1:18 a. m.
+
+0 uds
+
+Reserva
+
+CP-AMO-CAR-1027 · CARBON AMOLADORA BOSCH
+
+25 set. 2026, 1:01 a. m.
+
+0 uds
+Resumen por local
+Gestionar
+
+Capacidad comprometida y disponible
+
+Almacén Lima
+CP-LIM-DEV
+Disp.
+936,230
+Reserv.
+1,359
+Críticos
+2
+Tienda Arequipa
+CP-AQP-DEV
+Disp.
+2
+Reserv.
+1
+Críticos
+1
+Sucursal Chiclayo
+CP-CHI-DEV
+Disp.
+0
+Reserv.
+0
+Críticos
+0
+Sucursal Cusco
+CP-CUS-DEV
+Disp.
+0
+Reserv.
+0
+Críticos
+0
+Sucursal Piura
+CP-PIU-DEV
+Disp.
+0
+Reserv.
+0
+Críticos
+0
+Sucursal Trujillo
+CP-TRU-DEV
+Disp.
+0
+Reserv.
+0
+Críticos
+0
+Alertas de atención
+
+Sin inventar disponibilidad para referencias desconocidas
+
+CP-REF-BIM-0440
+
+BIMETAL MIRAY 4 CABLES
+
+Agotado
+
+Almacén Lima · 0 disponibles · mínimo 5
+
+Crear solicitud de compra
+
+CP-REF-BIM-0431
+
+BIMETALES L45
+
+Crítico
+
+Almacén Lima · 1 disponibles · mínimo 5
+
+Crear solicitud de compra
+
+CP-REF-BIM-0431
+
+BIMETALES L45
+
+Crítico
+
+Tienda Arequipa · 2 disponibles · mínimo 6
+
+Crear solicitud de compra
+
+CP-REF-BIM-0432
+
+BIMETAL ST-3 ELECTROLUX
+
+Crítico
+
+Almacén Lima · 7 disponibles · mínimo 10
+
+Crear solicitud de compra
+Reservas por expirar
+8
+Traslados pendientes
+0
+Movimientos8
+Transferencias0
+Reservas46
+Mínimos8
+Importaciones0
+Consulta el historial completo con filtros y paginación.
+Movimientos globales
+Liberación de reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Reserva reservation-f2932d5b-4811-4134-bd58-64e1f01f3b3c · Sistema
+
+Reserva liberada
+
+0uds
+
+Reserva -1
+
+25 set. 2026, 8:24 a. m.
+
+Liberación de reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Reserva reservation-efc2d93c-2999-473f-adc4-a0505d571e23 · Sistema
+
+Reserva liberada
+
+0uds
+
+Reserva -1
+
+25 set. 2026, 8:24 a. m.
+
+Liberación de reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Reserva reservation-750aa7a4-17ad-497d-ad64-88af7b0150ab · Sistema
+
+Reserva liberada
+
+0uds
+
+Reserva -1
+
+25 set. 2026, 8:24 a. m.
+
+Reserva
+CP-REF-MCP-0103
+
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+
+CP-LIM-DEV · Almacén Lima · Pedido order-465c1960-3808-4a6a-9736-49769df8e3fd · Colaborador 01
+
+0uds
+
+Reserva +1
+
+25 set. 2026, 1:18 a. m.
+
+Reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Pedido order-219b15c4-a0a5-4a85-8fe1-a4517b77ce24 · María Torres
+
+0uds
+
+Reserva +1
+
+25 set. 2026, 1:01 a. m.
+
+Reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Pedido order-cbe6ec67-66f2-40f8-be60-a5406c8e85cc · María Torres
+
+0uds
+
+Reserva +1
+
+25 set. 2026, 12:59 a. m.
+
+Reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Pedido order-64a8a145-36fc-4725-8240-4d104499fb3b · María Torres
+
+0uds
+
+Reserva +1
+
+25 set. 2026, 12:56 a. m.
+
+Reserva
+CP-AMO-CAR-1027
+
+CARBON AMOLADORA BOSCH
+
+CP-LIM-DEV · Almacén Lima · Pedido order-bccc38be-c499-4593-b3b3-d6382549deb7 · María Torres
+
+0uds
+
+Reserva +1
+
+25 set. 2026, 12:54 a. m.

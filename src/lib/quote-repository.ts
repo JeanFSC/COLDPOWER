@@ -78,11 +78,34 @@ function metricsFromStatusCounts(statusCounts: Map<string, number>) {
   return { open, draft, sent, followUp, accepted, converted, rejected, expired, cancelled, conversionRate: denominator ? Number(((converted / denominator) * 100).toFixed(2)) : null };
 }
 
+/**
+ * Canonical count used by both the quote workspace and the admin home shortcut.
+ * Keeping the open predicate here prevents a module tile from drifting away
+ * from the status/validity rules used by the quote list.
+ */
+export async function getOpenQuoteCount(filters: QuoteFilters = {}) {
+  const db = getDb();
+  const rows = await db
+    .select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil })
+    .from(quotes)
+    .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
+    .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
+    .leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id))
+    .where(quoteWhere(filters))
+    .groupBy(quotes.workflowStatus, quotes.status, quotes.validUntil);
+  const statusCounts = new Map<string, number>();
+  for (const row of rows) {
+    const normalized = effectiveQuoteStatus(row.legacyStatus, row.status, row.validUntil);
+    statusCounts.set(normalized, (statusCounts.get(normalized) ?? 0) + 1);
+  }
+  return metricsFromStatusCounts(statusCounts).open;
+}
+
 export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePageResponse> {
   const { page, pageSize } = pageValues(filters.page, filters.pageSize);
   const db = getDb();
   const where = quoteWhere(filters);
-  const [rows, totalRows, typeRows, currencyRows, sellerRows, summaryStatusRows] = await Promise.all([
+  const [rows, totalRows, typeRows, currencyRows, sellerRows, summaryStatusRows, openCount] = await Promise.all([
     db.select({ quote: quotes, customer: customers, opportunity: opportunities, seller }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).leftJoin(seller, eq(seller.id, sql`coalesce(${opportunities.assignedSellerId}, ${quotes.assignedSellerId})`)).where(where).orderBy(orderByFor(filters), asc(quotes.trackingCode)).limit(pageSize).offset((page - 1) * pageSize),
     db.select({ total: count(quotes.id) }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where),
     db.selectDistinct({ value: quotes.customerType }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where).orderBy(quotes.customerType),
@@ -92,6 +115,7 @@ export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePa
     // matches the same `where` scope as the other summary queries above so status
     // counts reflect the filtered set, not every quote ever created.
     db.select({ status: quotes.workflowStatus, legacyStatus: quotes.status, validUntil: quotes.validUntil }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(where).groupBy(quotes.workflowStatus, quotes.status, quotes.validUntil),
+    getOpenQuoteCount(filters),
   ]);
   const itemRows = rows.length ? await db.select({ quoteId: quoteItems.quoteId, sku: quoteItems.skuSnapshot, name: quoteItems.productNameSnapshot, quantity: quoteItems.quantity }).from(quoteItems).where(inArray(quoteItems.quoteId, rows.map((row) => row.quote.id))).orderBy(asc(quoteItems.createdAt)) : [];
   const itemMap = quoteItemPreviewMap(itemRows);
@@ -105,7 +129,7 @@ export async function getQuotesPage(filters: QuoteFilters = {}): Promise<QuotePa
     const normalized = effectiveQuoteStatus(row.legacyStatus, row.status, row.validUntil);
     statusCounts.set(normalized, (statusCounts.get(normalized) ?? 0) + 1);
   }
-  const metricsBase = metricsFromStatusCounts(statusCounts);
+  const metricsBase = { ...metricsFromStatusCounts(statusCounts), open: openCount };
   const [followUpRows, expiryRows, pendingDiscountRows] = await Promise.all([
     db.select({ bucket: sql<string>`case when ${crmTasks.dueAt} < now() then 'overdue' when ${crmTasks.dueAt} < now() + interval '1 day' then 'today' else 'upcoming' end`, total: count(crmTasks.id) }).from(crmTasks).innerJoin(quotes, eq(crmTasks.quoteId, quotes.id)).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(and(where, eq(crmTasks.status, "PENDING"), isNotNull(crmTasks.quoteId))).groupBy(sql`1`),
     db.select({ bucket: sql<string>`case when ${quotes.validUntil} < now() + interval '1 day' then 'today' when ${quotes.validUntil} < now() + interval '3 days' then 'threeDays' else 'sevenDays' end`, total: count(quotes.id) }).from(quotes).leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id)).leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id)).leftJoin(opportunities, eq(customerQuoteLinks.opportunityId, opportunities.id)).where(and(where, gte(quotes.validUntil, new Date()), lt(quotes.validUntil, new Date(Date.now() + 7 * 86_400_000)), or(inArray(quotes.workflowStatus, ["SENT", "FOLLOW_UP"]), inArray(quotes.status, ["enviada", "nuevo", "contactado", "evaluacion", "requiere_info", "cotizada"])))).groupBy(sql`1`),

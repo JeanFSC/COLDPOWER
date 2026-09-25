@@ -1,0 +1,588 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+OPERACIONES COMERCIALES
+
+Gestión de cotizaciones
+
+Controla propuestas, respuestas y conversiones con trazabilidad completa.
+
+Exportar
+Nueva cotización
+
+Cotizaciones abiertas
+
+21
+
+Borradores, enviadas, seguimiento y aceptadas
+
+Borradores
+
+12
+
+Pendientes de enviar al cliente
+
+Aceptadas
+
+8
+
+Listas para convertir en venta
+
+Tasa de conversión
+
+24.3%
+
+Convertidas / cerradas con resultado
+
+Estado: Todos
+Borrador
+Enviada
+Seguimiento
+Aceptada
+Rechazada
+Vencida
+Convertida
+Cancelada
+Fecha: Todos
+Vence hoy
+Próximos 3 días
+Próximos 7 días
+Vencidas
+Aplicar
+Bandeja comercial
+
+143 registros · ordenados por última actualización
+
+Actualizar
+COTIZACIÓN	CLIENTE	PRODUCTOS	IMPORTE	ESTADO	VIGENCIA	RESPONSABLE	PRÓXIMA ACCIÓN	ACTUALIZADA	
+ACCIONES
+
+CP-COT-2026-048
+v1 · email
+	
+Cliente corporativo 013
+compras.013@empresa-corporativa.local
+	
+PLATINOS S/M
+1 producto
+	Por cotizar
+Moneda pendiente
+	Vencida	25 ene. 2027	
+Sin asignar
+	
+Por definir
+	26 dic. 2026	
+
+CP-COT-2026-047
+v1 · whatsapp
+	
+Cliente corporativo 014
+compras.014@empresa-corporativa.local
+	
+PLATINO *7
+1 producto
+	Por cotizar
+Moneda pendiente
+	Vencida	18 ene. 2027	
+Sin asignar
+	
+Por definir
+	19 dic. 2026	
+
+CP-COT-2026-046
+v1 · email
+	
+Cliente corporativo 015
+compras.015@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO DK15 USO AUTOMOTRIZ NUMERO DE MOTOR: DK15 26035618 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Vencida	11 ene. 2027	
+Sin asignar
+	
+Por definir
+	12 dic. 2026	
+
+CP-COT-2026-045
+v1 · whatsapp
+	
+Cliente corporativo 016
+compras.016@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO DK15 USO AUTOMOTRIZ NUMERO DE MOTOR : DK15 26035604 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Vencida	04 ene. 2027	
+Sin asignar
+	
+Por definir
+	05 dic. 2026	
+
+CP-COT-2026-044
+v1 · email
+	
+Cliente corporativo 018
+compras.018@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO C14 USO AUTOMOTRIZ NUMERO DE MOTOR : LCU 26035424 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Convertida	26 dic. 2026	
+Sin asignar
+	
+Por definir
+	26 nov. 2026	
+
+CP-COT-2026-043
+v1 · whatsapp
+	
+Cliente corporativo 019
+compras.019@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELOG4GC USO AUTOMOTRIZ NUMERO DE MOTOR :G4GC 26035378 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Convertida	19 dic. 2026	
+Sin asignar
+	
+Por definir
+	19 nov. 2026	
+
+CP-COT-2026-042
+v1 · email
+	
+Cliente corporativo 020
+compras.020@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO C14 USO AUTOMOTRIZ NUMERO DE MOTOR: LUC 26035431 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Convertida	12 dic. 2026	
+Sin asignar
+	
+Por definir
+	12 nov. 2026	
+
+CP-COT-2026-041
+v1 · whatsapp
+	
+Cliente corporativo 021
+compras.021@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO DK15 USO AUTOMOTRIZ NUMERO DE MOTOR: DK15 26035619 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Convertida	05 dic. 2026	
+Sin asignar
+	
+Por definir
+	05 nov. 2026	
+
+CP-COT-2026-040
+v1 · email
+	
+Cliente corporativo 022
+compras.022@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO G4KD USO AUTOMOTRIZ NUMERO DE MOTOR:G4KD 26035335 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Aceptada	25 nov. 2026	
+Sin asignar
+	
+Convertir
+	26 oct. 2026	
+
+CP-COT-2026-039
+v1 · whatsapp
+	
+Cliente corporativo 023
+compras.023@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO C14 USO AUTOMOTRIZ NUMERO DE MOTOR : LCU 26035421 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Aceptada	18 nov. 2026	
+Sin asignar
+	
+Convertir
+	19 oct. 2026	
+
+CP-COT-2026-038
+v1 · email
+	
+Cliente corporativo 024
+compras.024@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO 4G13S USO AUTOMOTRIZ NUMERO DE MOTOR :4G13S 26035506 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Aceptada	11 nov. 2026	
+Sin asignar
+	
+Convertir
+	12 oct. 2026	
+
+CP-COT-2026-037
+v1 · whatsapp
+	
+Cliente corporativo 025
+compras.025@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO G4LC USO AUTOMOTRIZ NUMERO DE MOTOR :G4LC 26035132 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Aceptada	04 nov. 2026	
+Sin asignar
+	
+Convertir
+	05 oct. 2026	
+
+CP-COT-2026-036
+v1 · email
+	
+Cliente corporativo 026
+compras.026@empresa-corporativa.local
+	
+MOTOR NUEVO SEMIARMADO MODELO F18D USO AUTOMOTRIZ NUMERO DE MOTOR:F18D 26035460 USO AUTOMOTRIZ
+1 producto
+	Por cotizar
+Moneda pendiente
+	Vencida	26 oct. 2026	
+Sin asignar
+	
+Por definir
+	26 set. 2026	
+
+CP-20260925-LIGR
+v1 · phone
+	
+Jean QA M10-03
+999999999
+	
+CAPACITOR 25 µF 450 V COLDPOWER
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-LD24
+v1 · phone
+	
+Jean QA M10-03
+999999999
+	
+CAPACITOR 25 µF 450 V COLDPOWER
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-FGKR
+v1 · phone
+	
+Jean QA M10-03
+999999999
+	
+CAPACITOR 25 µF 450 V COLDPOWER
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-M4DP
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	S/ 1,250.00
+PEN
+	Convertida	30 dic. 2026	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-ZOLU
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	S/ 1,250.00
+PEN
+	Enviada	30 dic. 2026	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-KSEP
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-DA9X
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-8KTR
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260925-LGZB
+v1 · phone
+	
+QA B1.1 1790316452351
+b11.1790316452351@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	25 set. 2026	
+
+CP-20260924-K7ET
+v1 · phone
+	
+QA B1.4 1790311164938
+b14.1790311136970@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	24 set. 2026	
+
+CP-20260924-RJK6
+v1 · phone
+	
+QA B1.4 1790311164938
+b14.1790311136970@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	Por cotizar
+Moneda pendiente
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	24 set. 2026	
+
+CP-20260924-8LFS
+v1 · phone
+	
+QA R3.7 1790310377720
+r37.1790310377720@example.test
+	
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+1 producto
+	S/ 1,062.50
+PEN
+	Borrador	Por definir	
+Colaborador 13
+	
+Por definir
+	24 set. 2026	
+
+Página 1 de 6
+
+RESUMEN DEL FLUJO
+
+Estado de la cartera
+12
+Borradores
+En proceso
+1
+Enviadas
+En proceso
+0
+Seguimiento
+En proceso
+8
+Aceptadas
+Decisión cliente
+9
+Convertidas
+Resultado
+Valor aceptado
+Por cotizar
+Seguimientos vencidos
+65
+
+VIGENCIA
+
+Vencimientos próximos
+QA B1.1 1790316452351
+CP-20260925-ZOLU · 30 dic. 2026
+97 días
+
+RECOMENDACIÓN
+
+Próximas acciones
+
+Aceptadas sin convertir
+
+Aceptadas sin convertir
+8
+Borradores sin enviar
+12
+Seguimientos vencidos
+65
+
+OPERACIÓN DIARIA
+
+Ruta de una cotización
+21 abiertas
+1
+
+Borradores
+
+12 registros
+
+2
+
+Enviadas
+
+1 registros
+
+3
+
+Seguimiento
+
+0 registros
+
+4
+
+Aceptadas
+
+8 registros
+
+5
+
+Convertidas
+
+9 registros
+
+GUÍA RÁPIDA
+
+Buenas prácticas
+Enviar siempre una versión con vigencia y moneda definidas.
+Convertir sólo la versión que el cliente aceptó.
+Registrar respuesta y siguiente acción en CRM.

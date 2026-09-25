@@ -1,0 +1,257 @@
+{
+  "phase": "after",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T20:45:43.868Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "inicio",
+      "route": "/admin/inicio",
+      "status": 200,
+      "startedAt": "2026-09-25T20:44:33.626Z",
+      "action": {
+        "type": "focus",
+        "label": "first visible input"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inicio-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inicio-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inicio-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inicio-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-inicio-1920x1080.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 35,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-inicio-390x844.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 35,
+          "violationIds": []
+        }
+      },
+      "title": "Inicio | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "cotizaciones",
+      "route": "/admin/cotizaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:44:46.983Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-cotizaciones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-cotizaciones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 42,
+          "violationIds": []
+        }
+      },
+      "title": "Cotizaciones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "ventas",
+      "route": "/admin/ventas",
+      "status": 200,
+      "startedAt": "2026-09-25T20:45:17.609Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\ventas-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\ventas-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\ventas-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\ventas-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-ventas-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 43,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-ventas-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 39,
+          "violationIds": []
+        }
+      },
+      "title": "Ventas | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:29.844Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/pagos\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/pagos\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.410Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/notificaciones\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/notificaciones\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "clientes",
+      "route": "/admin/clientes",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.529Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/clientes\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/clientes\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "precios",
+      "route": "/admin/precios",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.557Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/precios\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/precios\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.604Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/auditoria\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/auditoria\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "usuarios",
+      "route": "/admin/usuarios",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.624Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/usuarios\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/usuarios\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "compras",
+      "route": "/admin/compras",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.645Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/compras\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/compras\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "inventario",
+      "route": "/admin/inventario",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.679Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/inventario\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/inventario\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "catalogo",
+      "route": "/admin/catalogo",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.717Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/catalogo\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/catalogo\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "promociones",
+      "route": "/admin/promociones",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.744Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/promociones\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/promociones\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "detalle-producto",
+      "route": "/admin/catalogo/product-cp-ref-mcp-0103",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.764Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/catalogo/product-cp-ref-mcp-0103\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/catalogo/product-cp-ref-mcp-0103\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "detalle-carbon",
+      "route": "/admin/catalogo/product-cp-amo-car-1027",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.785Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/catalogo/product-cp-amo-car-1027\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/catalogo/product-cp-amo-car-1027\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "configuracion",
+      "route": "/admin/configuracion",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.804Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/configuracion\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/configuracion\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.819Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/dashboard\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "operaciones",
+      "route": "/admin/operaciones",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.837Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/operaciones\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/operaciones\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "name": "reportes",
+      "route": "/admin/reportes",
+      "status": null,
+      "startedAt": "2026-09-25T20:45:43.851Z",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/admin/reportes\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3003/admin/reportes\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ],
+  "events": {
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: net::ERR_CONNECTION_RESET"
+    ],
+    "pageErrors": [
+      "Error: Internal Next.js error: Router action dispatched before initialization."
+    ],
+    "requestFailures": [
+      "GET http://localhost:3003/_next/static/css/app/layout.css?v=1790369143112 :: net::ERR_CONNECTION_RESET",
+      "GET http://localhost:3003/admin/pagos :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/notificaciones :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/clientes :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/precios :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/auditoria :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/usuarios :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/compras :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/inventario :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/catalogo :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/promociones :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/catalogo/product-cp-ref-mcp-0103 :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/catalogo/product-cp-amo-car-1027 :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/configuracion :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/dashboard :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/operaciones :: net::ERR_CONNECTION_REFUSED",
+      "GET http://localhost:3003/admin/reportes :: net::ERR_CONNECTION_REFUSED"
+    ]
+  }
+}

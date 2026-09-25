@@ -1,0 +1,413 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+Gestión de clientes
+
+Administra tu cartera de clientes y su actividad comercial.
+
+Exportar
+Nuevo cliente
+
+Clientes registrados
+
+69
+
+Total filtrado
+
+Clientes activos
+
+55
+
+Estado activo
+
+Por atender
+
+68
+
+Acción comercial pendiente
+
+Oportunidades activas
+
+78
+
+En pipeline
+
+Estado
+ACTIVE
+PROSPECT
+Tipo de cliente
+Empresa
+Consumidor
+Técnico
+Empresa
+Distribuidor
+Responsable
+Carlos Ramírez
+Colaborador 01
+Colaborador 02
+Colaborador 03
+Colaborador 04
+Colaborador 05
+Colaborador 06
+Colaborador 07
+Colaborador 08
+Colaborador 09
+Colaborador 10
+Colaborador 11
+Colaborador 12
+Colaborador 13
+Colaborador 14
+Colaborador 15
+Colaborador 16
+María Torres
+Filtros
+Clientes
+
+69 resultados
+
+Colaborador 01
+
+empleado.001@coldpower.local
+
+Consumidor
+Sin actividad
+Activo
+
+Jean QA M10-03
+
+999999999
+
+Consumidor
+Sin actividad
+Prospecto
+
+QA B1.1 1790316452351
+
+b11.1790316452351@example.test
+
+Consumidor
+Cotización v1 enviada
+Prospecto
+
+QA B1.4 1790311164938
+
+b14.1790311136970@example.test
+
+Consumidor
+Sin actividad
+Prospecto
+
+QA B2.3 1790316095016
+
+b23-payment.1790314318995@example.test
+
+Consumidor
+Sin actividad
+Activo
+
+QA R3.6 1790309076718
+
+999076718
+
+Consumidor
+Sin actividad
+Prospecto
+
+QA R3.6 1790309129894
+
+999129894
+
+Consumidor
+Sin actividad
+Prospecto
+
+QA R3.7 1790310332956
+
+r37.1790310332956@example.test
+
+Consumidor
+Sin actividad
+Prospecto
+
+QA R3.7 1790310377720
+
+r37.1790310377720@example.test
+
+Consumidor
+Sin actividad
+Prospecto
+
+Cliente corporativo 007
+
+compras.007@empresa-corporativa.local
+
+Distribuidor
+Llamada comercial
+Prospecto
+
+Cliente corporativo 034
+
+compras.034@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Restaurante Costa Azul
+
+compras@costaazul.pe
+
+Empresa
+Llamada comercial
+Activo
+
+Cliente corporativo 008
+
+compras.008@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Cliente corporativo 035
+
+compras.035@empresa-corporativa.local
+
+Distribuidor
+Llamada comercial
+Activo
+
+Cliente corporativo 009
+
+compras.009@empresa-corporativa.local
+
+Empresa
+Llamada comercial
+Activo
+
+Cliente corporativo 036
+
+compras.036@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Frío Norte Servicios
+
+contacto@frionorte.pe
+
+Técnico
+Seguimiento de cotización
+Activo
+
+Cliente corporativo 010
+
+compras.010@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Cliente corporativo 037
+
+compras.037@empresa-corporativa.local
+
+Empresa
+Llamada comercial
+Prospecto
+
+Cliente corporativo 011
+
+compras.011@empresa-corporativa.local
+
+Distribuidor
+Llamada comercial
+Activo
+
+Cliente corporativo 038
+
+compras.038@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Cliente corporativo 012
+
+compras.012@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+
+Cliente corporativo 039
+
+compras.039@empresa-corporativa.local
+
+Distribuidor
+Llamada comercial
+Activo
+
+Cliente corporativo 013
+
+compras.013@empresa-corporativa.local
+
+Empresa
+Seguimiento comercial 2026-12
+Activo
+
+Cliente corporativo 040
+
+compras.040@empresa-corporativa.local
+
+Empresa
+Seguimiento de cotización
+Activo
+Mostrando 1 a 25 de 69 clientes
+Anterior
+1
+2
+Siguiente
+Distribución por tipo
+Empresa
+44 (64%)
+Distribuidor
+15 (22%)
+Consumidor
+9 (13%)
+Técnico
+1 (4%)
+Ver reporte completo →
+Distribución geográfica
+Lima / Lima
+10 (14%)
+Arequipa / Arequipa
+10 (14%)
+Cusco / Cusco
+10 (14%)
+Piura / Piura
+9 (13%)
+Chiclayo / Chiclayo
+9 (13%)
+Ver reporte completo →
+Requieren atención
+
+Casos que necesitan una acción comercial.
+
+Seguimiento vencido
+59
+Sin responsable
+9
+Oportunidad estancada
+44
+Cotización por responder
+1
+Ver toda la cartera por atender →
+Operaciones CRM
+
+Agenda, actividad, oportunidades e historial cargados desde datos reales.
+
+Fusionar clientes
+Abrir pipeline
+Agenda
+Actividad
+Oportunidades
+Historial
+
+Tarea mensual 2026-01
+
+Cliente corporativo 060 · Colaborador 15
+
+11/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-01
+
+Frío Norte Servicios · Colaborador 14
+
+18/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-01
+
+Cliente corporativo 059 · Colaborador 13
+
+25/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Cliente corporativo 056 · María Torres
+
+11/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Cliente corporativo 055 · Colaborador 11
+
+18/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Hotel Valle Sur · Colaborador 10
+
+25/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 053 · Colaborador 09
+
+11/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 052 · Colaborador 08
+
+18/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 051 · Lucía Quispe
+
+25/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-04
+
+Cliente corporativo 049 · Colaborador 06
+
+11/4/2026, 10:00:00 a. m.

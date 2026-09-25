@@ -1,0 +1,498 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+GOBIERNO COMERCIAL
+
+Gestión de precios
+
+Controla valores, vigencias y reglas sin perder trazabilidad.
+
+Exportar
+Importar lista
+Nuevo precio
+
+CON PRECIO MINORISTA
+
+108
+
+8% de cobertura del catálogo
+
+SIN PRECIO
+
+1,240
+
+Requieren carga o revisión
+
+MAYORISTA CONFIGURADO
+
+0
+
+Con cantidad mínima válida
+
+PROMOCIONES ACTIVAS
+
+0
+
+0 vencen en 7 días
+
+TIPO
+Todos
+Minorista
+Mayorista
+Mínimo autorizado
+Precio especial
+Costo
+ESTADO
+Todos
+Vigente
+Programado
+Vencido
+Inactivo
+Archivado
+Sin precio
+Más filtros
+Precios
+Actualización masiva
+Descuentos
+Historial
+2
+Lista de precios
+
+1,348 productos en este alcance · página 1 de 113
+
+POR PÁGINA
+Todos
+12 filas
+25 filas
+50 filas
+100 filas
+Ordenado por SKU
+SKU / PRODUCTO	MINORISTA	MAYORISTA	MÍNIMO	PROMOCIÓN	ESTADO	ACTUALIZADO	
+
+Imagen referencial
+CARBON AMOLADORA BOSCH
+CP-AMO-CAR-1027 · Carbones y escobillas
+	
+
+PEN / USD
+
+S/ 90.00
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Vigente	24 set. 2026, 9:32 a. m.	
+
+
+Imagen referencial
+RESISTENCIA DE OLLA ARROCERA K-10 40 W 220 V
+CP-ARR-RES-1029 · Resistencias
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:42 p. m.	
+
+
+Imagen referencial
+SENSOR DE OLLA
+CP-ARR-SEN-1028 · Sensores
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:42 p. m.	
+
+
+Imagen referencial
+PULSADOR 20A-125 V 15A250 V
+CP-ASP-SWI-1030 · Interruptores y switches
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:42 p. m.	
+
+
+Imagen referencial
+MONO BLOCK CON CULATA NUEVO MODELO G4FA NUMERO 26013589 COMBUSTIBLE .GASOLINA USO AUTOMOTRIZ
+CP-AUT-AUT-0014 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONO NBLOCK CON CULATA NUEVO MODELOG4FG- NUMERO:26013622-COMBUSTIBLE:GASOLINA- USO:AUTOMOTRIZ
+CP-AUT-AUT-0015 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATA NUEVO MODELO:G4FG- NUMERO:26013622-COMBUSTIBLE:GASOLINA- USO:AUTOMOTRIZ
+CP-AUT-AUT-0016 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATA NUEVO MODELO:G4FA- NUMERO:26013589-COMBUSTIBLE:GASOLINA- USO:AUTOMOTRIZ
+CP-AUT-AUT-0017 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATANUEVO MODELO LCU C14- NUMERO:26013709-COMBUSTIBLE USO:AUTOMOTRIZ
+CP-AUT-AUT-0018 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATA NUEVO MODELO LCU C14- NUMERO:26013709-COMBUSTIBLE:GASOLINA-USO AUTOMOTRIZ
+CP-AUT-AUT-0019 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATA NUEVO MODELO LCU C14- NUMERO:26013706-COMBUSTIBLE:GASOLINA- USO:AUTOMOTRIZ
+CP-AUT-AUT-0020 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+
+Imagen referencial
+MONOBLOCK CON CULATA NUEVO MODELO LCU C14- NUMERO:26013716-COMBUSTIBLE:GASOLINA- USO:AUTOMOTRIZ
+CP-AUT-AUT-0021 · Motores automotrices
+	
+
+PEN / USD
+
+—
+
+	
+
+POR VOLUMEN
+
+—
+
+	
+
+PISO COMERCIAL
+
+—
+
+	
+
+VIGENCIA
+
+—
+
+	Sin precio	11 ago. 2026, 3:38 p. m.	
+
+Mostrando 1–12 de 1,348
+
+1 / 113
+Cobertura comercial
+
+Precio minorista vigente
+
+8%
+108 / 1348
+
+1240 productos todavía requieren un minorista.
+
+Control de vigencias
+Cambios programados
+1
+Vencen en 7 días
+0
+Registros vigentes
+108
+Historial disponible
+2
+Reglas en un solo lugar
+
+Los precios especiales no reemplazan al minorista. Cada registro conserva su vigencia y motivo.

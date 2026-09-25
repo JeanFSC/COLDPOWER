@@ -1,0 +1,520 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Auditoría
+
+Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.
+
+Exportar logs
+Guardar filtro
+Eventos 24h
+245
+↗ 329.8% vs. período anterior
+Eventos críticos
+0
+Sin base comparable
+Cambios sensibles
+0
+Sin base comparable
+Inicios de sesión
+0
+Sin base comparable
+Errores de integración
+0
+Sin base comparable
+Acciones fallidas
+0
+Sin base comparable
+Módulo
+Todos
+Severidad
+Todas
+Desde
+Hasta
+Aplicar
+Más filtros
+
+FILTROS GUARDADOS
+
+Aún no guardaste ningún filtro.
+
+Volumen de eventos
+Total
+Período anterior
+
+Volumen de eventos de auditoría, últimos 30 días. Valores actuales: 26-ago: 3; 27-ago: 0; 28-ago: 0; 29-ago: 1; 30-ago: 1; 31-ago: 1; 01-set: 1; 02-set: 1; 03-set: 1; 04-set: 1; 05-set: 11; 06-set: 1; 07-set: 1; 08-set: 1; 09-set: 1; 10-set: 1; 11-set: 1; 12-set: 11; 13-set: 1; 14-set: 2; 15-set: 2; 16-set: 2; 17-set: 2; 18-set: 2; 19-set: 12; 20-set: 2; 21-set: 2; 22-set: 2; 23-set: 3; 24-set: 122.
+
+Volumen de eventos de auditoría, últimos 30 días
+Período	Actual	Anterior
+26-ago	3	0
+27-ago	0	0
+28-ago	0	0
+29-ago	1	0
+30-ago	1	0
+31-ago	1	0
+01-set	1	1
+02-set	1	1
+03-set	1	1
+04-set	1	11
+05-set	11	1
+06-set	1	1
+07-set	1	1
+08-set	1	1
+09-set	1	1
+10-set	1	1
+11-set	1	11
+12-set	11	1
+13-set	1	0
+14-set	2	0
+15-set	2	6
+16-set	2	0
+17-set	2	0
+18-set	2	10
+19-set	12	0
+20-set	2	0
+21-set	2	0
+22-set	2	0
+23-set	3	0
+24-set	122	0
+122
+92
+61
+31
+0
+26-ago
+02-set
+10-set
+17-set
+24-set
+Alertas y cumplimiento
+
+Cumplimiento
+
+Todos los eventos se registran y conservan de forma permanente (append-only).
+
+Sin anomalías de seguridad
+
+No se detectaron eventos críticos ni fallidos en el período.
+
+Registro de auditoría
+
+707 resultados
+
+1
+2
+3
+4
+5
+FECHA Y HORA
+	ACTOR	MÓDULO	ACCIÓN	OBJETO	SEVERIDAD	RESULTADO	DETALLE
+25 set 2026, 02:19 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Asoció un archivo multimedia	
+
+Producto
+
+product-cp-ref-mcp-0103
+	Info	Exitoso	
+
+25 set 2026, 02:19 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Media	Subió un recurso	
+
+Recurso
+
+media-bdf72cda-7a7d-476e-82d7-99d0609d6142
+
+	Info	Exitoso	
+
+25 set 2026, 02:17 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Precios	Programó reemplazo de precio	
+
+Precio
+
+price-07111a45-3e23-4bab-8771-5e8dadb9b43a
+
+	Info	Exitoso	
+
+25 set 2026, 02:09 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó una familia	
+
+Familia
+
+family-refrigeracion-acoples
+
+	Info	Exitoso	
+
+25 set 2026, 09:28 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pipeline	Creó un lead desde cotización	
+
+Cotización
+
+CP-20260925-LIGR
+	Info	Exitoso	
+
+25 set 2026, 09:26 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pipeline	Creó un lead desde cotización	
+
+Cotización
+
+CP-20260925-LD24
+	Info	Exitoso	
+
+25 set 2026, 09:19 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pipeline	Creó un lead desde cotización	
+
+Cotización
+
+CP-20260925-FGKR
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Liberó una reserva	
+
+Inventory Reservation
+
+reservation-f2932d5b-4811-4134-bd58-64e1f01f3b3c
+
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Registró un movimiento	
+
+Inventory Movement
+
+movement-dcf2fd17-20db-4127-8ecd-92127f412f1e
+
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Ventas	Actualizó el estado de un pedido	
+
+Pedido
+
+order-e31fac89-30ad-47a6-9888-f85d82d580c4
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Ventas	Actualizó el estado de un pedido	
+
+Pedido
+
+order-b4f3d6dc-0588-410f-b4d7-8470c5710f7f
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Liberó una reserva	
+
+Inventory Reservation
+
+reservation-efc2d93c-2999-473f-adc4-a0505d571e23
+
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Registró un movimiento	
+
+Inventory Movement
+
+movement-fee8b19e-7fd1-46d9-88f9-d140c959a130
+
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Liberó una reserva	
+
+Inventory Reservation
+
+reservation-750aa7a4-17ad-497d-ad64-88af7b0150ab
+
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Ventas	Actualizó el estado de un pedido	
+
+Pedido
+
+order-00c3655b-d9cd-4d5a-859f-33f87b709aac
+	Info	Exitoso	
+
+25 set 2026, 08:24 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Inventario	Registró un movimiento	
+
+Inventory Movement
+
+movement-53409821-be41-4e3c-88b1-95fbfe1d64f3
+
+	Info	Exitoso	
+
+25 set 2026, 02:40 a. m.	
+MT
+
+María Torres
+
+maria.gerencia@coldpower.local
+
+	Promociones	Actualizó una promoción	
+
+Promoción
+
+promotion-e8000d5f-a2c2-429e-ade1-39f2f744b490
+
+	Info	Exitoso	
+
+25 set 2026, 02:40 a. m.	
+MT
+
+María Torres
+
+maria.gerencia@coldpower.local
+
+	Promociones	Actualizó una promoción	
+
+Promoción
+
+promotion-e8000d5f-a2c2-429e-ade1-39f2f744b490
+
+	Info	Exitoso	
+
+25 set 2026, 02:40 a. m.	
+MT
+
+María Torres
+
+maria.gerencia@coldpower.local
+
+	Promociones	Approved	
+
+Promoción
+
+promotion-e8000d5f-a2c2-429e-ade1-39f2f744b490
+
+	Info	Exitoso	
+
+25 set 2026, 02:39 a. m.	
+MT
+
+María Torres
+
+maria.gerencia@coldpower.local
+
+	Promociones	Actualizó una promoción	
+
+Promoción
+
+promotion-e8000d5f-a2c2-429e-ade1-39f2f744b490
+
+	Info	Exitoso	
+
+25 set 2026, 02:34 a. m.	
+MT
+
+María Torres
+
+maria.gerencia@coldpower.local
+
+	Promociones	Creó una promoción	
+
+Promoción
+
+promotion-e8000d5f-a2c2-429e-ade1-39f2f744b490
+
+	Info	Exitoso	
+
+25 set 2026, 01:19 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pagos	Procesó una actualización de pago	
+
+Pago
+
+payment-f-retry-brief17-r3-021475e4-ef4cada8
+	Info	Exitoso	
+
+25 set 2026, 01:19 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pagos	Confirmó un pago de pedido cancelado	
+
+Pago
+
+payment-e-late-brief17-r3-021475e4-eccee470
+	Info	Exitoso	
+
+25 set 2026, 01:19 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pagos	Procesó una actualización de pago	
+
+Pago
+
+payment-e-late-brief17-r3-021475e4-eccee470
+	Info	Exitoso	
+
+25 set 2026, 01:19 a. m.	
+SC
+
+Sistema
+
+sistema@coldpower.com
+
+	Pagos	Procesó una actualización de pago	
+
+Pago
+
+payment-d-b-brief17-r3-021475e4-d5ce42bb
+	Info	Exitoso	
+
+Selecciona un evento
+
+Elige una fila del registro para ver su detalle completo.

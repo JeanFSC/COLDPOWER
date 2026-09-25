@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Archive, Check, Undo2 } from "lucide-react";
+import { notificationBodyLabel, notificationEventLabel } from "@/lib/notification-display";
 
 type NotificationState = "UNREAD" | "READ" | "DISMISSED";
 type NotificationPriority = "Alta" | "Media" | "Baja";
@@ -212,11 +213,11 @@ export function NotificationsList({
           <input name="query" defaultValue={filters.get("query") ?? ""} placeholder="Buscar en notificaciones..." className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" type="text" />
         </div>
         <div className="flex items-center gap-2">
-          <select name="type" defaultValue={filters.get("type") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <select aria-label="Filtrar por tipo de notificación" name="type" defaultValue={filters.get("type") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
             <option value="">Todos los tipos</option>
-            {types.map((type) => <option key={type} value={type}>{type}</option>)}
+            {types.map((type) => <option key={type} value={type}>{notificationEventLabel(type)}</option>)}
           </select>
-          <select name="state" defaultValue={filters.get("state") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <select aria-label="Filtrar por estado de notificación" name="state" defaultValue={filters.get("state") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
             <option value="">Todos los estados</option>
             <option value="UNREAD">No leídas</option>
             <option value="READ">Leídas</option>
@@ -263,7 +264,7 @@ export function NotificationsList({
                     <h3 className={`truncate text-xs font-bold ${row.state === "UNREAD" ? "text-slate-900" : "text-slate-700"}`}>{row.title}</h3>
                     <span className="shrink-0 text-[11px] text-slate-400">{formatRelative(row.createdAt)}</span>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-[11.5px] text-slate-500">{row.body}</p>
+                  <p className="mt-0.5 line-clamp-1 text-[11.5px] text-slate-500">{notificationBodyLabel(row.body)}</p>
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-[10px] text-slate-400">{stateLabels[row.state]}</span>
                     <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${priorityClasses[row.priority]}`}>{row.priority}</span>

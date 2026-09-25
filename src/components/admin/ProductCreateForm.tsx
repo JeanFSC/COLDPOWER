@@ -62,7 +62,7 @@ export function ProductCreateForm({ categories, families, brands, canCreate = tr
   return (
     <>
       {!canCreate ? null : (
-      <button type="button" onClick={() => { setMessage(""); setOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ff830e] px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(255,131,14,0.16)] transition hover:bg-[#e97305]">
+      <button type="button" onClick={() => { setMessage(""); setOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(37,99,235,0.16)] transition hover:bg-blue-700">
         Nuevo producto
       </button>)}
       {open ? (

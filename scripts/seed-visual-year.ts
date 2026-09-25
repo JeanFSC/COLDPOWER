@@ -43,11 +43,13 @@ function fixtureYear() {
 }
 
 function dateAt(year: number, month: number, day: number, hour = 15) {
-  return new Date(Date.UTC(year, month, day, hour, 0, 0));
+  const candidate = new Date(Date.UTC(year, month, day, hour, 0, 0));
+  return candidate.getTime() > Date.now() ? new Date() : candidate;
 }
 
 function addHours(date: Date, hours: number) {
-  return new Date(date.getTime() + hours * 60 * 60 * 1000);
+  const candidate = new Date(date.getTime() + hours * 60 * 60 * 1000);
+  return candidate.getTime() > Date.now() ? new Date() : candidate;
 }
 
 function money(value: number) {

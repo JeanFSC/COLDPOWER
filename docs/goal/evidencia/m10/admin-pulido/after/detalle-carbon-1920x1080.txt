@@ -1,0 +1,165 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+CATÁLOGO / PRODUCTOS / DETALLE
+
+CARBON AMOLADORA BOSCH
+
+CP-AMO-CAR-1027
+·
+Modelo No registrado
+
+Publicado
+Disponible
+Requiere imagen editorial
+Ver en tienda
+Despublicar
+Editar ficha
+Ficha
+Precios
+Inventario
+Imágenes
+Historial
+Ficha comercial
+
+Datos de origen y edición para publicar el producto.
+
+● editorial
+Nombre comercial
+CARBON AMOLADORA BOSCH
+Marca
+Bosch
+Categoría
+Amoladoras
+Familia
+Carbones y escobillas
+Aplicación
+Amoladoras
+Descripción editorial
+No registrado
+Atributos técnicos
+
+Valores persistidos para búsqueda y ficha de tienda.
+
+Editar ficha
+Refrigerante
+No registrado
+Voltaje
+No registrado
+Frecuencia
+No registrado
+Potencia
+No registrado
+Capacitancia
+No registrado
+Amperaje
+No registrado
+Temperatura
+No registrado
+Dimensiones
+No registrado
+Unidad de medida
+Unidad
+Marcas compatibles
+Bosch
+Código de modelo
+No registrado
+SKU inmutable
+CP-AMO-CAR-1027
+Precio e inventario
+
+Datos vigentes por local y precio minorista actual.
+
+Ajustar stock
+Ajustar precio
+LOCAL	FÍSICO	RESERVADO	DISPONIBLE	MÍNIMO	ESTADO
+Almacén Lima	34	14	20	8	Sobre mínimo
+
+Precio minorista
+
+S/ 90.00
+
+Vigente desde 24 set. 2026
+
+Preparación para publicar
+
+Completa lo necesario antes de mostrarlo.
+
+4 de 6
+67%
+
+Ficha incompleta
+
+Falta completar campos editoriales.
+
+Nombre y SKU
+Categoría y familia
+Precio vigente
+Stock por local
+Imagen principal
+Completar
+Descripción editorial
+Completar
+Vista en tienda
+
+Así lo verá el cliente.
+
+CARBON AMOLADORA BOSCH
+
+SKU CP-AMO-CAR-1027 · Disponible
+
+S/ 90.00
+
+Imagen referencial: aún no hay media propia asociada.
+
+Promociones activas
+
+Aplicables a este producto.
+
+0 activas
+
+No hay promociones activas aplicables.

@@ -1,0 +1,53 @@
+{
+  "phase": "after",
+  "qaSet": "final-dashboard",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T21:08:57.556Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "status": 200,
+      "startedAt": "2026-09-25T21:08:45.828Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-dashboard-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 49,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-dashboard-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 49,
+          "violationIds": []
+        }
+      },
+      "title": "Dashboard ejecutivo | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

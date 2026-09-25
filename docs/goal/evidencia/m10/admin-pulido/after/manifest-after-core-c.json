@@ -1,0 +1,271 @@
+{
+  "phase": "after",
+  "qaSet": "core-c",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T20:52:45.586Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "promociones",
+      "route": "/admin/promociones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:51:51.905Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\promociones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\promociones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\promociones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\promociones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-promociones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-promociones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        }
+      },
+      "title": "Promociones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "detalle-producto",
+      "route": "/admin/catalogo/product-cp-ref-mcp-0103",
+      "status": 200,
+      "startedAt": "2026-09-25T20:51:59.957Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-producto-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-producto-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-producto-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-producto-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-detalle-producto-1920x1080.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 48,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-detalle-producto-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 48,
+          "violationIds": []
+        }
+      },
+      "title": "Detalle de producto | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "detalle-carbon",
+      "route": "/admin/catalogo/product-cp-amo-car-1027",
+      "status": 200,
+      "startedAt": "2026-09-25T20:52:07.509Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-carbon-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-carbon-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-carbon-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\detalle-carbon-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-detalle-carbon-1920x1080.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 48,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-detalle-carbon-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 48,
+          "violationIds": []
+        }
+      },
+      "title": "Detalle de producto | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "configuracion",
+      "route": "/admin/configuracion",
+      "status": 200,
+      "startedAt": "2026-09-25T20:52:11.528Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\configuracion-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\configuracion-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\configuracion-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\configuracion-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-configuracion-1920x1080.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 41,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-configuracion-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        }
+      },
+      "title": "Configuración empresarial | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "status": 200,
+      "startedAt": "2026-09-25T20:52:18.081Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\dashboard-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-dashboard-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-dashboard-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 46,
+          "violationIds": []
+        }
+      },
+      "title": "Dashboard ejecutivo | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "operaciones",
+      "route": "/admin/operaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:52:29.861Z",
+      "action": {
+        "type": "button",
+        "label": "ver detalle"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-operaciones-1920x1080.json",
+          "violations": 1,
+          "incomplete": 1,
+          "passes": 51,
+          "violationIds": [
+            "color-contrast"
+          ]
+        },
+        "mobile": {
+          "fileName": "axe-operaciones-390x844.json",
+          "violations": 1,
+          "incomplete": 1,
+          "passes": 51,
+          "violationIds": [
+            "color-contrast"
+          ]
+        }
+      },
+      "title": "Operaciones y ventas | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "reportes",
+      "route": "/admin/reportes",
+      "status": 200,
+      "startedAt": "2026-09-25T20:52:37.601Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\reportes-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\reportes-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\reportes-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\reportes-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-reportes-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 45,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-reportes-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 45,
+          "violationIds": []
+        }
+      },
+      "title": "Reportes | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [
+      "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    ],
+    "pageErrors": [
+      "SyntaxError: Invalid or unexpected token"
+    ],
+    "requestFailures": []
+  }
+}

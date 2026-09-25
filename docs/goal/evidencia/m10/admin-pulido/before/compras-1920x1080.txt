@@ -1,0 +1,290 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Compras y proveedores
+
+Gestiona tus proveedores, órdenes de compra y recepciones en un solo lugar.
+
+Nuevo proveedor
+Crear OC
+Registrar recepción
+Órdenes abiertas
+6
+
+Sin recibir ni cancelar
+
+Solicitudes pendientes
+1
+
+En revisión
+
+Recepciones pendientes
+5
+
+OC pendientes o parciales
+
+Gasto del período
+PEN S/ 3,590
+
+Subtotal de OC filtradas
+
+Lead time promedio
+9.5 días
+
+Emisión a recepción final
+
+Proveedores con incidencias
+1
+
+OC abiertas con proveedor inactivo
+
+Gasto por categoría
+S/ 3,590
+Total filtrado
+Fitness y bienestar · PEN
+S/ 1,200
+33%
+Refrigeración · PEN
+S/ 900
+25%
+Lavadoras · PEN
+S/ 640
+18%
+Herramientas y equipos · PEN
+S/ 480
+13%
+Campanas extractoras · PEN
+S/ 370
+10%
+Rendimiento por proveedor
+Proveedor
+Monto
+% del total
+LG Electronics · PEN
+S/ 970
+27%
+Mabe · PEN
+S/ 960
+27%
+Daikin · PEN
+S/ 900
+25%
+Samsung · PEN
+S/ 520
+14%
+QA B4.1 Proveedor 1790302344453 · PEN
+S/ 240
+7%
+Scorecard de proveedores
+Ver todos
+
+Puntualidad
+
+50%
+
+Fill rate
+
+25%
+
+Incidencias
+
+1
+
+Proveedores activos
+
+4/5
+
+Todos los estados
+Borrador
+Pendiente
+Parcial
+Recibida
+Cancelada
+Todos los proveedores
+Daikin
+LG Electronics
+Mabe
+QA B4.1 Proveedor 1790302344453
+Samsung
+Todos los almacenes
+Almacén Lima
+Sucursal Chiclayo
+Sucursal Cusco
+Sucursal Piura
+Sucursal Trujillo
+Tienda Arequipa
+Más filtros
+Filtrar
+Limpiar
+Órdenes de compra
+9 resultados
+Exportar
+OC	PROVEEDOR	LOCAL	CREADA	ESPERADA	MONTO	ESTADO	ATENCIÓN	
+OC-20260925-D1301A	QA B4.1 Proveedor 1790302344453	Almacén Lima	24 set. 2026	N/D	S/ 240	Pendiente	Normal	
+
+OC-DEV-008	LG Electronics	Almacén Lima	24 set. 2026	04 oct. 2026	S/ 240	Parcial	Parcial	
+
+OC-DEV-001	LG Electronics	Almacén Lima	23 set. 2026	N/D	S/ 250	Borrador	Normal	
+
+OC-DEV-002	Samsung	Almacén Lima	21 set. 2026	29 set. 2026	S/ 400	Pendiente	Normal	
+
+OC-DEV-003	Daikin	Almacén Lima	14 set. 2026	22 set. 2026	S/ 900	Pendiente	Incidencia	
+
+OC-DEV-004	LG Electronics	Almacén Lima	12 set. 2026	19 set. 2026	S/ 480	Parcial	Parcial	
+
+OC-DEV-005	Mabe	Almacén Lima	06 set. 2026	16 set. 2026	S/ 720	Recibida	Normal	
+
+OC-DEV-006	Samsung	Almacén Lima	30 ago. 2026	04 set. 2026	S/ 120	Recibida	Normal	
+
+OC-DEV-007	Mabe	Almacén Lima	18 set. 2026	N/D	S/ 240	Cancelada	Normal	
+Mostrando 1 a 9 de 9 órdenes
+Solicitudes de compra
+Ver pendientes
+SOL-20260925-FAB8B0
+Almacén Lima · 1 líneas
+Convertida
+SC-DEV-001
+Almacén Lima · 1 líneas
+Borrador
+SC-DEV-002
+Almacén Lima · 1 líneas
+En revisión
+SC-DEV-003
+Almacén Lima · 1 líneas
+Aprobada
+4 solicitudes
+Alertas de compras
+
+2 órdenes con retraso en la entrega
+
+1 proveedor con incidencia activa
+
+1 producto en stock crítico dentro de OC en tránsito
+
+1 solicitud pendiente de aprobación
+
+Proveedores
+Daikin
+PEN
+Inactivo
+LG Electronics
+PEN
+Activo
+Mabe
+PEN
+Activo
+QA B4.1 Proveedor 1790302344453
+PEN
+Activo
+Samsung
+PEN
+Activo
+Flujo de compras
+
+Completa los pasos en orden. Crear una orden no altera el inventario; solo una recepción validada registra el movimiento.
+
+1
+Solicitud
+2
+Proveedor
+3
+Orden
+4
+Recepción
+1
+
+SOLICITUD
+
+Define lo que hay que comprar
+
+Guarda una solicitud en borrador; no cambia el inventario y puede pasar por aprobación.
+
+Antes de crear una solicitud: debe existir un local activo y un producto encontrado en el catálogo.
+Local de recepción
+Origen manual
+Producto solicitado
+Guardar solicitud
+2
+
+PROVEEDOR
+
+Registra el origen de compra
+
+Primero registra un proveedor activo; después podrás crear una orden.
+
+Guardar proveedor
+3
+
+ORDEN DE COMPRA
+
+Solicita el abastecimiento
+
+Selecciona proveedor, local y producto para dejar la orden pendiente de recepción.
+
+Antes de crear una orden: registra al menos un proveedor, un local activo y un producto disponible.
+Proveedor
+Local de recepción
+Producto
+Entrega esperada (opcional)
+Guardar borrador
+Emitir OC
+
+Un borrador se puede emitir después; solo la recepción validada afecta inventario.
+
+4
+
+RECEPCIÓN
+
+Ingresa lo recibido al inventario
+
+Elige una OC pendiente y confirma sus líneas. Solo las cantidades capturadas se registran como entrada.
+
+Cargando órdenes…
+No hay órdenes pendientes de recepción para esta búsqueda.
+Registrar recepción
+
+La recepción registra las entradas, actualiza el saldo y deja Kardex en la misma transacción.

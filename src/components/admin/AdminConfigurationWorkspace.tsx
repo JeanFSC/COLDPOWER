@@ -113,7 +113,7 @@ function statusLabel(value: string | null | undefined) {
 }
 
 function TextField({ label, value, onChange, required, help, type = "text", maxLength }: { label: string; value: string; onChange: (value: string) => void; required?: boolean; help?: string; type?: string; maxLength?: number }) {
-  return <label className="grid gap-1.5 text-[12px] font-extrabold text-[#304b66]"><span>{label} {required ? <span className="text-[#d94848]" aria-hidden="true">*</span> : null}</span><input type={type} value={value} onChange={(event) => onChange(event.currentTarget.value)} className={input} maxLength={maxLength} /><span className="min-h-4 text-[11px] font-semibold leading-4 text-[#8296a9]">{help ?? ""}</span></label>;
+  return <label className="grid gap-2.5 text-[12px] font-extrabold text-[#304b66]"><span>{label} {required ? <span className="text-[#d94848]" aria-hidden="true">*</span> : null}</span><input type={type} value={value} onChange={(event) => onChange(event.currentTarget.value)} className={input} maxLength={maxLength} /><span className="min-h-4 pt-0.5 text-[11px] font-semibold leading-4 text-[#8296a9]">{help ?? ""}</span></label>;
 }
 
 function EmptyState({ title, detail }: { title: string; detail: string }) {

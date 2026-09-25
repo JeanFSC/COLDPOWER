@@ -1,0 +1,394 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Notificaciones internas
+
+Centraliza las comunicaciones, alertas y recordatorios del equipo.
+
+No leídas
+102
+↗ 5000% vs. período anterior
+Automatizaciones activas
+4
+Sin datos del período anterior
+Fallidas
+0
+↘ 100% vs. período anterior
+Alertas SLA
+29
+Sin datos del período anterior
+Recordatorios hoy
+0
+→ 0% vs. período anterior
+En cola
+1
+Sin datos del período anterior
+Bandeja de notificaciones
+
+112 resultados
+
+Todos los tipos
+FOLLOW_UP_OVERDUE
+INVENTORY_CRITICAL
+INVENTORY_LOW
+LEAD_CREATED
+MANUAL
+ORDER_CREATED
+ORDER_READY
+PAYMENT_APPROVED
+PAYMENT_FAILED
+QUOTE_CREATED
+QUOTE_DISCOUNT_PENDING
+SALE_CREATED
+SCHEDULED
+TRANSFER_UPDATED
+Todos los estados
+No leídas
+Leídas
+Descartadas
+Filtrar
+Desde
+Hasta
+Limpiar
+Nuevo lead comercial
+Hace 5 h
+
+Se creó el lead asociado a la solicitud CP-20260925-LIGR.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 5 h
+
+La solicitud CP-20260925-LIGR requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 5 h
+
+Se creó el lead asociado a la solicitud CP-20260925-LD24.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 5 h
+
+La solicitud CP-20260925-LD24 requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 5 h
+
+Se creó el lead asociado a la solicitud CP-20260925-FGKR.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 5 h
+
+La solicitud CP-20260925-FGKR requiere revisión comercial.
+
+No leída
+Baja
+Pago aprobado
+Hace 13 h
+
+El pago del proveedor mock quedó en estado CONFIRMED.
+
+No leída
+Baja
+Pago aprobado con reembolso pendiente
+Hace 13 h
+
+El proveedor mock aprobó un pago del pedido BRIEF17R3-e-a75802, pero ya existía otro cobro o el pedido estaba cerrado. Requiere reembolso.
+
+No leída
+Alta
+Pago aprobado con reembolso pendiente
+Hace 13 h
+
+El proveedor mock aprobó un pago del pedido BRIEF17R3-d-e790fc, pero ya existía otro cobro o el pedido estaba cerrado. Requiere reembolso.
+
+No leída
+Alta
+Pago aprobado
+Hace 13 h
+
+El pago del proveedor mock quedó en estado CONFIRMED.
+
+No leída
+Baja
+Pago aprobado
+Hace 13 h
+
+El pago del proveedor mock quedó en estado CONFIRMED.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 13 h
+
+Se creó el lead asociado a la solicitud CP-20260925-M4DP.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 13 h
+
+La solicitud CP-20260925-M4DP requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 14 h
+
+Se creó el lead asociado a la solicitud CP-20260925-ZOLU.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 14 h
+
+La solicitud CP-20260925-ZOLU requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 14 h
+
+Se creó el lead asociado a la solicitud CP-20260925-KSEP.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 14 h
+
+La solicitud CP-20260925-KSEP requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 14 h
+
+Se creó el lead asociado a la solicitud CP-20260925-DA9X.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 14 h
+
+La solicitud CP-20260925-DA9X requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 14 h
+
+Se creó el lead asociado a la solicitud CP-20260925-8KTR.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 14 h
+
+La solicitud CP-20260925-8KTR requiere revisión comercial.
+
+No leída
+Baja
+Nuevo lead comercial
+Hace 14 h
+
+Se creó el lead asociado a la solicitud CP-20260925-LGZB.
+
+No leída
+Baja
+Nueva solicitud de cotización
+Hace 14 h
+
+La solicitud CP-20260925-LGZB requiere revisión comercial.
+
+No leída
+Baja
+Pago aprobado
+Hace 14 h
+
+El pago manual del pedido ORD-20260925-16CB52 fue confirmado.
+
+No leída
+Baja
+Pago fallido
+Hace 14 h
+
+El pago del proveedor mock quedó en estado REJECTED.
+
+No leída
+Alta
+Seleccionar todas las de esta página
+Mostrando 25 de 112
+1
+2
+3
+4
+5
+Siguiente
+
+Selecciona una notificación
+
+Elige un elemento de la bandeja para ver su detalle completo.
+
+Reglas de automatización
+5
+Stock crítico
+
+INVENTORY_CRITICAL
+
+Stock bajo mínimo
+
+INVENTORY_LOW
+
+Cotización sin respuesta
+
+FOLLOW_UP_OVERDUE
+
+Pago confirmado
+
+PAYMENT_APPROVED
+
+Transferencia lista
+
+TRANSFER_UPDATED
+
+Estado de entrega
+
+Entregadas/fallidas: últimos 30 días · resto: ahora
+
+2156
+TOTAL
+Entregadas (30d)
+1081
+En cola
+1
+Fallidas (30d)
+1
+Pendientes
+0
+No leídas
+1073
+Plantillas de mensajes
+4
+Alerta de stock bajo
+
+Habilitada
+
+Seguimiento de cotización
+
+Habilitada
+
+Pago confirmado
+
+Habilitada
+
+Pedido en ruta
+
+Habilitada
+
+Gestión: avisos, plantillas, reglas y programaciones
+Nuevo aviso
+Plantilla
+Regla declarativa
+Programación
+TÍTULO DEL AVISO
+MENSAJE INTERNO
+ENLACE INTERNO (OPCIONAL)
+DESTINATARIOS POR ROL
+Superadmin
+Gerencia
+Operaciones y ventas
+Jefatura
+Ventas
+Almacén
+Compras
+Reportes
+
+Destinatarios activos: 0
+
+Enviar aviso
+Preferencias personales
+
+Elige qué avisos internos quieres recibir. Esta configuración solo afecta a tu usuario.
+
+Guardar preferencias
+Cotizaciones nuevas
+Avisos de cotizaciones creadas.
+Leads nuevos
+Avisos de nuevos leads comerciales.
+Pagos aprobados
+Confirmaciones de pagos aprobados.
+Pagos fallidos
+Alertas de pagos que requieren atención.
+Pedidos nuevos
+Avisos de pedidos recibidos.
+Pedidos listos
+Avisos de pedidos listos para entrega.
+Ventas registradas
+Avisos de ventas confirmadas.
+Stock bajo
+Alertas de stock bajo.
+Stock crítico
+Alertas de quiebre o stock crítico.
+Seguimientos vencidos
+Avisos de tareas comerciales vencidas.
+Transferencias
+Cambios en transferencias de inventario.
+Avisos manuales
+Mensajes enviados por un administrador.
+Avisos programados
+Mensajes enviados por una programación.
+Reportes programados
+Confirmaciones de reportes ejecutados.

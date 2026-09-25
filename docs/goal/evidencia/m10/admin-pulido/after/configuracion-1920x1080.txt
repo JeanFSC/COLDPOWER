@@ -1,0 +1,160 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+GESTIÓN / ADMINISTRACIÓN
+
+Configuración
+
+Prepara la operación y factura con cambios versionados.
+
+Historial
+
+Completitud de configuración
+
+Lo que falta para operar sin bloqueos.
+
+Empresa
+
+0/6 campos
+
+Locales
+
+6 activos
+
+Series
+
+0 activas
+
+IGV
+
+Sin configurar
+
+Integraciones
+
+0/5 conectadas
+
+Empresa
+Locales
+Series y documentos
+Precios e IGV
+Integraciones
+Branding
+Legal
+Historial
+Datos de la empresa
+
+Estos datos aparecen en documentos, comprobantes y el pie de tienda.
+
+Empresa
+Razón social *
+Nombre legal registrado ante SUNAT.
+Nombre comercial
+Cómo reconocerán los clientes.
+RUC *
+Se valida según el país seleccionado.
+Correo de ventas *
+Recibe avisos de cotizaciones y pedidos.
+Teléfono
+Número visible en documentos.
+WhatsApp
+Canal rápido para clientes y proveedores.
+Dirección fiscal *
+Dirección de facturación registrada.
+Sitio web
+Enlace visible en el pie de tienda.
+País
+Activa las reglas específicas del país.
+Horario de atención
+Se muestra en contacto y documentos.
+Departamento
+Sin configurar
+Amazonas
+Áncash
+Apurímac
+Arequipa
+Ayacucho
+Cajamarca
+Callao
+Cusco
+Huancavelica
+Huánuco
+Ica
+Junín
+La Libertad
+Lambayeque
+Lima
+Loreto
+Madre de Dios
+Moquegua
+Pasco
+Piura
+Puno
+San Martín
+Tacna
+Tumbes
+Ucayali
+Provincia
+Sin configurar
+Distrito
+Sin configurar
+Vista previa
+
+Así aparecen los datos confirmados.
+
+Actual
+
+Sin datos empresariales configurados
+
+Completa los campos de Empresa para generar una vista previa fiel.
+
+Último cambio
+
+Trazabilidad de la configuración.
+
+Versión 29
+
+24 set. 2026

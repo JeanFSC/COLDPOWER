@@ -1,0 +1,53 @@
+{
+  "phase": "after",
+  "qaSet": "final-audit",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T21:08:40.672Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "status": 200,
+      "startedAt": "2026-09-25T21:08:32.110Z",
+      "action": {
+        "type": "button",
+        "label": "más filtros"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-auditoria-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 45,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-auditoria-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 45,
+          "violationIds": []
+        }
+      },
+      "title": "Auditoría | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

@@ -1,0 +1,157 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+
+CATÁLOGO / PRODUCTOS / DETALLE
+
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+
+CP-REF-MCP-0103
+·
+Modelo THG1346YGS
+
+Publicado
+Disponible
+Ver en tienda
+Despublicar
+Editar ficha
+Ficha
+Precios
+Inventario
+Imágenes
+Historial
+Ficha comercial
+
+Datos de origen y edición para publicar el producto.
+
+● editorial
+Nombre comercial
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+Marca
+Tecumseh
+Categoría
+Refrigeración
+Familia
+Motocompresores
+Aplicación
+Refrigeradoras / sistemas de refrigeración
+Descripción editorial
+No registrado
+Atributos técnicos
+
+Valores persistidos para búsqueda y ficha de tienda.
+
+Editar ficha
+Refrigerante
+R134
+Voltaje
+220 V
+Frecuencia
+No registrado
+Potencia
+No registrado
+Capacitancia
+No registrado
+Amperaje
+No registrado
+Temperatura
+No registrado
+Dimensiones
+No registrado
+Unidad de medida
+Unidad
+Marcas compatibles
+Tecumseh
+Código de modelo
+THG1346YGS
+SKU inmutable
+CP-REF-MCP-0103
+Precio e inventario
+
+Datos vigentes por local y precio minorista actual.
+
+Ajustar stock
+Ajustar precio
+LOCAL	FÍSICO	RESERVADO	DISPONIBLE	MÍNIMO	ESTADO
+Almacén Lima	1063	3	1060	8	Sobre mínimo
+
+Precio minorista
+
+S/ 1,250.00
+
+Vigente desde 01 oct. 2027
+
+Preparación para publicar
+
+Completa lo necesario antes de mostrarlo.
+
+5 de 6
+83%
+
+Ficha incompleta
+
+Falta completar campos editoriales.
+
+Nombre y SKU
+Categoría y familia
+Precio vigente
+Stock por local
+Imagen principal
+Descripción editorial
+Completar
+Vista en tienda
+
+Así lo verá el cliente.
+
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+
+SKU CP-REF-MCP-0103 · Disponible
+
+S/ 1,250.00
+
+Promociones activas
+
+Aplicables a este producto.
+
+1 activa
+
+Fixture visual Home Espejo
+
+PERCENTAGE · termina 24 oct. 2026

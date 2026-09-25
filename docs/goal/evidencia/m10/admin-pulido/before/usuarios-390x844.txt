@@ -1,0 +1,241 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+Usuarios
+
+Gestiona los usuarios del sistema, sus roles y permisos de acceso.
+
+Invitar usuario
+Permisos por rol
+Exportar
+
+Usuarios activos
+
+22
+
+Dato actual
+
+Invitaciones pendientes
+
+0
+
+Pendientes en Clerk
+
+Roles configurados
+
+5
+
+Roles operativos visibles
+
+Usuarios registrados
+
+22
+
+Según filtros actuales
+
+Superadmins
+
+1
+
+Activos actualmente
+
+Suspendidos
+
+0
+
+Estado persistido
+
+Rol: Todos
+Estado: Todos
+Aplicar
+Exportar
+AVATAR
+	NOMBRE	CORREO	ROL	ESTADO	ÚLTIMO ACCESO	INCORPORACIÓN	ACCIONES
+
+JC
+	Jean Franco Seminario Cerna	20222404@aloe.ulima.edu.pe	Cliente	Activo	Nunca registrado	02 set 2026	
+
+
+C0
+	Colaborador 01	empleado.001@coldpower.local	Ventas	Activo	Nunca registrado	14 ago 2026	
+
+
+C0
+	Colaborador 02	empleado.002@coldpower.local	Almacén	Activo	Nunca registrado	13 ago 2026	
+
+
+JE
+	Jean	xslync@gmail.com	Superadmin	Activo	Nunca registrado	13 ago 2026	
+
+
+C0
+	Colaborador 03	empleado.003@coldpower.local	Compras	Activo	Nunca registrado	12 ago 2026	
+
+
+C0
+	Colaborador 04	empleado.004@coldpower.local	Reportes	Activo	Nunca registrado	11 ago 2026	
+
+
+C0
+	Colaborador 05	empleado.005@coldpower.local	Jefatura	Activo	Nunca registrado	10 ago 2026	
+
+
+DS
+	Diego Salazar	diego.compras@coldpower.local	Compras	Activo	Nunca registrado	10 ago 2026	
+
+
+C0
+	Colaborador 06	empleado.006@coldpower.local	Administrador	Activo	Nunca registrado	09 ago 2026	
+
+
+C0
+	Colaborador 07	empleado.007@coldpower.local	Ventas	Activo	Nunca registrado	08 ago 2026	
+
+
+LQ
+	Lucía Quispe	lucia.almacen@coldpower.local	Almacén	Activo	Nunca registrado	08 ago 2026	
+
+
+C0
+	Colaborador 08	empleado.008@coldpower.local	Almacén	Activo	Nunca registrado	07 ago 2026	
+
+
+C0
+	Colaborador 09	empleado.009@coldpower.local	Compras	Activo	Nunca registrado	06 ago 2026	
+
+
+CR
+	Carlos Ramírez	carlos.ventas@coldpower.local	Operaciones y ventas	Activo	Nunca registrado	06 ago 2026	
+
+
+C1
+	Colaborador 10	empleado.010@coldpower.local	Reportes	Activo	Nunca registrado	05 ago 2026	
+
+
+C1
+	Colaborador 11	empleado.011@coldpower.local	Jefatura	Activo	Nunca registrado	04 ago 2026	
+
+
+MT
+	María Torres	maria.gerencia@coldpower.local	Gerencia	Activo	Nunca registrado	04 ago 2026	
+
+
+C1
+	Colaborador 12	empleado.012@coldpower.local	Administrador	Activo	Nunca registrado	03 ago 2026	
+
+
+C1
+	Colaborador 13	empleado.013@coldpower.local	Ventas	Activo	Nunca registrado	02 ago 2026	
+
+
+C1
+	Colaborador 14	empleado.014@coldpower.local	Almacén	Activo	Nunca registrado	01 ago 2026	
+
+
+C1
+	Colaborador 15	empleado.015@coldpower.local	Compras	Activo	Nunca registrado	31 jul 2026	
+
+
+C1
+	Colaborador 16	empleado.016@coldpower.local	Reportes	Activo	Nunca registrado	30 jul 2026	
+Mostrando 1 a 22 de 22 usuarios
+1
+Permisos por rol
+
+Permisos efectivos actuales. La matriz es de solo lectura.
+
+MÓDULO	SUPERADMIN	GERENCIA	OPERACIONES	ALMACÉN	VENTAS
+Dashboard	
+	
+	
+	
+	
+
+Productos	
+	
+	
+	
+	
+
+Inventario	
+	
+	
+	
+	
+
+Reportes	
+	
+	
+	
+	
+
+Usuarios	
+	
+	
+	
+	
+Invitaciones pendientes
+
+Usuarios invitados que aún no activaron su cuenta.
+
+No hay invitaciones pendientes.
+
+Gestionar invitaciones (0)
+Actividad reciente
+
+Actividad del usuario seleccionado.
+
+Selecciona un usuario para consultar su actividad real.
+
+Ver toda la auditoría
+Invitar nuevo usuario
+
+Crea una invitación de acceso con el rol inicial correspondiente.
+
+Nombre
+Apellido
+Correo
+
+Rol inicial
+
+Superadmin
+Invitar
+
+La invitación se envía con Clerk y queda auditada. El registro público siempre crea CUSTOMER.

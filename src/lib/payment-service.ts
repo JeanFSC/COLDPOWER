@@ -5,6 +5,7 @@ import { customers } from "@/db/crm-schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory } from "@/db/sales-schema";
 import { getPaymentProvider, type PaymentCreateResult, type PaymentRefundResult } from "@/lib/payments";
 import { canTransitionPayment, normalizeProviderStatus, summarizePaymentLedger } from "@/lib/payments-contract";
+import { paymentProviderLabel, paymentStatusLabel } from "@/lib/payment-display";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 
@@ -21,6 +22,7 @@ export class PaymentDomainError extends Error {
 const retryablePaymentStatuses = ["PENDING", "REJECTED", "CANCELLED", "ERROR"] as const as readonly string[];
 const receivedPaymentStatuses = ["CONFIRMED", "APPROVED"] as const;
 const lateApprovalRefundReason = "Aprobación posterior: requiere reembolso";
+
 type PaymentTransaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
 
 function isReceivedPaymentStatus(status: string) {
@@ -179,7 +181,7 @@ export async function refreshPaymentStatus(paymentId: string, actor: Actor | nul
   });
   if (result.requiresRefund && result.lateApprovalOrderCode) {
     try {
-      await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `El proveedor ${paymentId} confirmó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía un cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.payment.id)}&queue=refunds`, metadata: { paymentId: result.payment.id, refundRequired: true, orderCode: result.lateApprovalOrderCode }, dedupeKey: `payment-late-approval:${result.payment.id}` });
+      await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `La pasarela de pago confirmó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía un cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.payment.id)}&queue=refunds`, metadata: { paymentId: result.payment.id, refundRequired: true, orderCode: result.lateApprovalOrderCode }, dedupeKey: `payment-late-approval:${result.payment.id}` });
     } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
   }
   return result;
@@ -317,10 +319,10 @@ export async function processPaymentWebhook(provider: string, rawPayload: string
     return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false };
   });
   if ("lateApprovalOrderCode" in result && result.lateApprovalOrderCode) {
-    try { await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `El proveedor ${provider} aprobó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía otro cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}&queue=refunds`, metadata: { paymentId: result.paymentId, provider, orderCode: result.lateApprovalOrderCode, refundRequired: true }, dedupeKey: `payment-late-approval:${result.paymentId}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
+    try { await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `${paymentProviderLabel(provider)} aprobó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía otro cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}&queue=refunds`, metadata: { paymentId: result.paymentId, provider, orderCode: result.lateApprovalOrderCode, refundRequired: true }, dedupeKey: `payment-late-approval:${result.paymentId}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
   }
   if (!result.duplicate && !result.ignored && !("lateApprovalOrderCode" in result) && ["CONFIRMED", "REJECTED", "CANCELLED", "ERROR"].includes(result.status)) {
-    try { await notifyStaffOnce({ type: result.status === "CONFIRMED" ? "PAYMENT_APPROVED" : "PAYMENT_FAILED", title: result.status === "CONFIRMED" ? "Pago aprobado" : "Pago fallido", body: `El pago del proveedor ${provider} quedó en estado ${result.status}.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}`, metadata: { paymentId: result.paymentId, provider, status: result.status }, dedupeKey: `payment-event:${provider}:${result.paymentId}:${result.status}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el resultado del pago", error); }
+    try { await notifyStaffOnce({ type: result.status === "CONFIRMED" ? "PAYMENT_APPROVED" : "PAYMENT_FAILED", title: result.status === "CONFIRMED" ? "Pago aprobado" : "Pago fallido", body: `El pago procesado por ${paymentProviderLabel(provider)} quedó ${paymentStatusLabel(result.status)}.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}`, metadata: { paymentId: result.paymentId, provider, status: result.status }, dedupeKey: `payment-event:${provider}:${result.paymentId}:${result.status}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el resultado del pago", error); }
   }
   return result;
 }

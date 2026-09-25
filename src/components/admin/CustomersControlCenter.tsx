@@ -522,7 +522,7 @@ export function CustomersControlCenter({
                 setDuplicatesChecked(false);
                 setDrawer("create");
               }}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ff830e] px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(255,131,14,0.18)]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(37,99,235,0.18)] hover:bg-blue-700"
             >
               <UserPlus className="h-4 w-4" />
               Nuevo cliente
@@ -706,7 +706,7 @@ export function CustomersControlCenter({
                     "Actividad reciente",
                     "Estado",
                     "Responsable",
-                    "",
+                    "Acciones",
                   ].map((head) => (
                     <th key={head} className="px-3 py-3">
                       {head}
@@ -766,7 +766,7 @@ export function CustomersControlCenter({
                         setDuplicatesChecked(false);
                         setDrawer("create");
                       }}
-                      className="mt-3 inline-flex items-center gap-1 rounded-lg bg-[#ff830e] px-3 py-2 text-xs font-extrabold text-white"
+                      className="mt-3 inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-blue-700"
                     >
                       <Plus className="h-3.5 w-3.5" /> Nuevo cliente
                     </button>
@@ -796,23 +796,6 @@ export function CustomersControlCenter({
           />
         </section>
         <aside className="space-y-3">
-          <section className="rounded-xl border border-[#e2eaf1] bg-white p-3.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]">
-            <h2 className="text-[13px] font-extrabold text-[#102a43]">Resumen de clientes</h2>
-            <div className="mt-3 grid gap-2">
-              {metricCards.map((metric) => (
-                <div
-                  key={metric.label}
-                  className="rounded-lg border border-[#edf2f6] bg-[#fbfcfd] p-3"
-                >
-                  <p className="text-[8px] font-extrabold uppercase tracking-wide text-[#71869c]">
-                    {metric.label}
-                  </p>
-                  <p className="mt-1 text-lg font-black text-[#102a43]">{metric.value}</p>
-                  <p className="text-[9px] font-semibold text-[#8296a9]">{metric.note}</p>
-                </div>
-              ))}
-            </div>
-          </section>
           <Distribution
             title="Distribución por tipo"
             rows={page.metrics.distributionByType}
@@ -1036,7 +1019,7 @@ export function CustomersControlCenter({
                   (duplicates.some((item) => item.strong) && !overrideReason.trim())
                 }
                 onClick={() => void saveCustomer()}
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ff830e] px-4 text-[10px] font-extrabold text-white disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-[10px] font-extrabold text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 {busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Crear cliente
@@ -1073,7 +1056,7 @@ export function CustomersControlCenter({
             <button
               disabled={busy || !mergePreview || !reason.trim()}
               onClick={() => void merge()}
-              className="h-10 rounded-lg bg-[#ff830e] px-4 text-[10px] font-extrabold text-white disabled:opacity-50"
+              className="h-10 rounded-lg bg-blue-600 px-4 text-[10px] font-extrabold text-white hover:bg-blue-700 disabled:opacity-50"
             >
               Confirmar fusión
             </button>

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getQuoteDetail, getQuotesPage } from "@/lib/quote-repository";
+import { getQuoteDetail, getOpenQuoteCount, getQuotesPage } from "@/lib/quote-repository";
+import { getHomeActivitySummary } from "@/lib/operations-dashboard";
 
 test("CP-036 runtime devuelve cotizaciones paginadas y métricas coherentes", async () => {
   const page = await getQuotesPage({ page: 1, pageSize: 10 });
@@ -23,4 +24,14 @@ test("CP-036 runtime permite búsqueda por tracking code y detalle histórico", 
   assert.equal(detail.quote.id, first.items[0].id);
   assert.ok(Array.isArray(detail.items));
   assert.ok(Array.isArray(detail.history));
+});
+
+test("Inicio y Cotizaciones comparten el mismo conteo de cotizaciones abiertas", async () => {
+  const [home, page, canonicalCount] = await Promise.all([
+    getHomeActivitySummary({ range: "today" }),
+    getQuotesPage({ page: 1, pageSize: 1 }),
+    getOpenQuoteCount(),
+  ]);
+  assert.equal(home.openQuotes, canonicalCount);
+  assert.equal(page.metrics.open, canonicalCount);
 });

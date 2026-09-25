@@ -1,0 +1,291 @@
+{
+  "phase": "before",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T19:47:15.092Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "inicio",
+      "route": "/admin/inicio",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:20.105Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inicio-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inicio-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inicio-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inicio-390x844.txt"
+      },
+      "title": "Inicio | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "cotizaciones",
+      "route": "/admin/cotizaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:37.593Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\cotizaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\cotizaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\cotizaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\cotizaciones-390x844.txt"
+      },
+      "title": "Cotizaciones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "ventas",
+      "route": "/admin/ventas",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:43.773Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\ventas-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\ventas-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\ventas-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\ventas-390x844.txt"
+      },
+      "title": "Ventas | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:49.017Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\pagos-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\pagos-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\pagos-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\pagos-390x844.txt"
+      },
+      "title": "Pagos | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:53.824Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\notificaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\notificaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\notificaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\notificaciones-390x844.txt"
+      },
+      "title": "Notificaciones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "clientes",
+      "route": "/admin/clientes",
+      "status": 200,
+      "startedAt": "2026-09-25T19:45:58.157Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\clientes-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\clientes-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\clientes-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\clientes-390x844.txt"
+      },
+      "title": "Clientes | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "precios",
+      "route": "/admin/precios",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:02.416Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\precios-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\precios-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\precios-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\precios-390x844.txt"
+      },
+      "title": "Precios | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:07.774Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\auditoria-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\auditoria-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\auditoria-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\auditoria-390x844.txt"
+      },
+      "title": "Auditoría | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "usuarios",
+      "route": "/admin/usuarios",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:12.511Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\usuarios-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\usuarios-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\usuarios-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\usuarios-390x844.txt"
+      },
+      "title": "Usuarios | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "compras",
+      "route": "/admin/compras",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:17.265Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\compras-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\compras-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\compras-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\compras-390x844.txt"
+      },
+      "title": "Compras | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "inventario",
+      "route": "/admin/inventario",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:22.044Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inventario-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inventario-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inventario-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\inventario-390x844.txt"
+      },
+      "title": "Inventario | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "catalogo",
+      "route": "/admin/catalogo",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:29.135Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\catalogo-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\catalogo-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\catalogo-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\catalogo-390x844.txt"
+      },
+      "title": "Catálogo | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "promociones",
+      "route": "/admin/promociones",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:36.262Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\promociones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\promociones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\promociones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\promociones-390x844.txt"
+      },
+      "title": "Promociones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "detalle-producto",
+      "route": "/admin/catalogo/product-cp-ref-mcp-0103",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:41.446Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\detalle-producto-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\detalle-producto-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\detalle-producto-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\detalle-producto-390x844.txt"
+      },
+      "title": "Detalle de producto | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "configuracion",
+      "route": "/admin/configuracion",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:47.029Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\configuracion-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\configuracion-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\configuracion-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\configuracion-390x844.txt"
+      },
+      "title": "Configuración empresarial | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "status": 200,
+      "startedAt": "2026-09-25T19:46:51.875Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\dashboard-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\dashboard-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\dashboard-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\dashboard-390x844.txt"
+      },
+      "title": "Dashboard ejecutivo | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "operaciones",
+      "route": "/admin/operaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T19:47:00.710Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\operaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\operaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\operaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\operaciones-390x844.txt"
+      },
+      "title": "Operaciones y ventas | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "reportes",
+      "route": "/admin/reportes",
+      "status": 200,
+      "startedAt": "2026-09-25T19:47:08.897Z",
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\reportes-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\reportes-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\reportes-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\before\\reportes-390x844.txt"
+      },
+      "title": "Reportes | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [
+      "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HTTPAccessFallbackErrorBoundary pathname=\"/admin/inv...\" notFound={{...}} forbidden={undefined} ...>\n      <RedirectBoundary>\n        <RedirectErrorBoundary router={{...}}>\n          <InnerLayoutRouter url=\"/admin/inv...\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n            <LoadingBoundaryProvider loading={[...]}>\n              <SegmentViewNode type=\"layout\" pagePath=\"admin/layo...\">\n                <SegmentTrieNode>\n                <AdminLayout>\n                  <AdminShell role=\"SUPERADMIN\" links={[...]} showNotifications={true} unreadNotificationsCount={106}>\n                    <div className=\"admin-shel...\">\n                      <aside>\n                      <div className=\"min-h-scre...\">\n                        <header className=\"sticky top...\">\n                          <button>\n                          <label className=\"relative f...\">\n                            <Search>\n                            <input\n                              value=\"\"\n                              onChange={function onChange}\n                              className=\"h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12p...\"\n                              placeholder=\"Buscar productos, clientes, pedidos, cotizaciones...\"\n                              aria-label=\"Buscar en el panel administrativo\"\n                              onKeyDown={function onKeyDown}\n-                             style={{caret-color:\"transparent\"}}\n                            >\n                            ...\n                          ...\n                        ...\n          ...\n",
+      "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HTTPAccessFallbackErrorBoundary pathname=\"/admin/cat...\" notFound={{...}} forbidden={undefined} ...>\n      <RedirectBoundary>\n        <RedirectErrorBoundary router={{...}}>\n          <InnerLayoutRouter url=\"/admin/cat...\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n            <LoadingBoundaryProvider loading={[...]}>\n              <SegmentViewNode type=\"layout\" pagePath=\"admin/layo...\">\n                <SegmentTrieNode>\n                <AdminLayout>\n                  <AdminShell role=\"SUPERADMIN\" links={[...]} showNotifications={true} unreadNotificationsCount={106}>\n                    <div className=\"admin-shel...\">\n                      <aside>\n                      <div className=\"min-h-scre...\">\n                        <header className=\"sticky top...\">\n                          <button>\n                          <label className=\"relative f...\">\n                            <Search>\n                            <input\n                              value=\"\"\n                              onChange={function onChange}\n                              className=\"h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12p...\"\n                              placeholder=\"Buscar productos, clientes, pedidos, cotizaciones...\"\n                              aria-label=\"Buscar en el panel administrativo\"\n                              onKeyDown={function onKeyDown}\n-                             style={{caret-color:\"transparent\"}}\n                            >\n                            ...\n                          ...\n                        ...\n          ...\n",
+      "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <LoadingBoundary name=\"catalogo/\" loading={[...]}>\n      <Suspense name=\"catalogo/\" fallback={<Fragment>}>\n        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>\n          <RedirectBoundary>\n            <RedirectErrorBoundary router={{...}}>\n              <InnerLayoutRouter url=\"/admin/cat...\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n                <SegmentViewNode type=\"page\" pagePath=\"admin/cata...\">\n                  <SegmentTrieNode>\n                  <AdminCatalogoPage>\n                    <AdminProductCatalog items={[...]} total={1348} pagination={{page:1, ...}} queryString=\"\" ...>\n                      <div className=\"space-y-4 ...\">\n                        <div>\n                        <div>\n                        <div className=\"min-w-0 ro...\">\n                          <form onSubmit={function onSearchSubmit} className=\"grid gap-x...\">\n                            <label className=\"relative m...\">\n                              <Search>\n                              <input\n                                name=\"query\"\n                                value=\"\"\n                                onChange={function onChange}\n                                placeholder=\"Buscar por SKU, nombre, marca o categoría…\"\n                                className=\"h-9 w-full rounded-lg border border-[#dce6ee] pl-9 pr-9 text-[10px] font-se...\"\n-                               style={{caret-color:\"transparent\"}}\n                              >\n                              ...\n                            ...\n                          ...\n                        ...\n                ...\n              ...\n"
+    ],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

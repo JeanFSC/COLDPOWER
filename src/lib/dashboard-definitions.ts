@@ -1,4 +1,5 @@
 import type { DashboardGranularity } from "@/lib/dashboard-contract";
+import { deltaPct } from "@/lib/period-metrics";
 
 export const OPEN_QUOTE_EXCLUDED_STATUSES = ["REJECTED", "EXPIRED", "CONVERTED", "CANCELLED"] as const;
 
@@ -72,7 +73,7 @@ function periodKpi(current: number, previous: number): KpiView {
     comparison: {
       previous,
       absoluteDelta: current - previous,
-      relativeDelta: previous === 0 ? null : ((current - previous) / previous) * 100,
+      relativeDelta: deltaPct(current, previous),
       comparisonAvailable,
     },
   };

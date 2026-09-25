@@ -1,0 +1,153 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+COMERCIAL
+
+Promociones
+
+Campañas sobre el precio base, con vigencia, alcance y trazabilidad.
+
+Exportar CSV
+Nueva promoción
+ACTIVAS AHORA
+
+1
+
+Sin vencimientos próximos
+
+DESCUENTO ENTREGADO · 30 D
+
+S/ 0.00
+
+Sin período anterior comparable
+
+APLICACIONES · 30 D
+
+0
+
+Sin aplicaciones en la ventana
+
+Checkout 0%
+Cotización 0%
+POR APROBAR
+
+0
+
+Todo al día
+
+Calendario de campañas
+
+Vigencia visible a 8 semanas · hoy, 25-set
+
+0 conflictos
+Ver conflictos 
+18-set
+25-set
+02-oct
+09-oct
+16-oct
+23-oct
+30-oct
+06-nov
+Hoy
+Fixture visual Home Espejo
+Activa
+Programada
+Por aprobar
+Borrador
+Conflicto
+Cola de campañas
+Prioriza vencimientos, alcance y aprobaciones antes de activar.
+
+Vigencia, alcance y aprobaciones en una sola vista.
+
+Reglas de descuento
+Todas
+1
+Activas
+1
+Programadas
+0
+Por aprobar
+0
+Borradores
+0
+Vencidas
+0
+Con conflicto
+0
+Buscar por nombre o descripción
+Tipo
+Todos
+Porcentaje
+Monto fijo
+Precio especial
+Alcance
+Todos
+Con productos
+Con categorías
+Filtrar
+CAMPAÑA	BENEFICIO	ALCANCE	VIGENCIA	REGLAS	APROBACIÓN	USO 30 D	
+ACCIONES
+
+
+Fixture visual Home Espejo
+Promoción no operativa para validar el home en desarrollo.
+	−10 %	
+3 productos
+0 categorías
+	
+24-set → 24-oct
+vence en 29 d
+	
+P5
+Exclusiva
+	No requerida	
+0 aplicaciones
+S/ 0.00
+	
+1 de 1 campaña · filtros guardados en la URL

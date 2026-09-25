@@ -20,6 +20,7 @@ import { AdminLineChart } from "@/components/admin/AdminChartsLazy";
 import { ReportScheduleControls } from "@/components/admin/ReportScheduleControls";
 import type { DashboardFilters } from "@/lib/dashboard-contract";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
+import { formatPeriodDelta } from "@/lib/period-metrics";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type MetricTone = "blue" | "orange" | "green" | "red" | "purple";
@@ -110,13 +111,9 @@ export function AdminReportsStitch({
 }) {
   const currency = data?.currency;
   const previousSales = data?.previousSalesSeries.reduce((sum, row) => sum + row.total, 0) ?? 0;
-  const salesChange =
-    previousSales > 0 && data
-      ? ((data.salesRange.total - previousSales) / previousSales) * 100
-      : null;
-  const conversionChange =
+  const conversionDelta =
     data?.conversion.percentage != null && data.previousConversion != null
-      ? data.conversion.percentage - data.previousConversion
+      ? formatPeriodDelta(data.conversion.percentage, data.previousConversion)
       : null;
   const salesTrend = data?.salesSeries.map((row) => row.total);
   const orderTrend = data?.salesSeries.map((row) => row.orders ?? 0);
@@ -124,14 +121,15 @@ export function AdminReportsStitch({
     ? data.salesSeries.map((row) => row.margin ?? 0)
     : undefined;
   const ticketTrend = data?.salesSeries.map((row) => row.count > 0 ? row.total / row.count : 0);
-  const grossChange = data?.grossProfit != null && data.previousGrossProfit != null && data.previousGrossProfit !== 0
-    ? ((data.grossProfit - data.previousGrossProfit) / Math.abs(data.previousGrossProfit)) * 100
-    : null;
   const ticketNow = data?.salesRange.count ? data.salesRange.total / data.salesRange.count : null;
-  const ticketChange = ticketNow !== null && data?.previousAverageTicket != null && data.previousAverageTicket !== 0
-    ? ((ticketNow - data.previousAverageTicket) / Math.abs(data.previousAverageTicket)) * 100
+  const salesDelta = data ? formatPeriodDelta(data.salesRange.total, previousSales) : null;
+  const grossDelta = data?.grossProfit != null && data.previousGrossProfit != null
+    ? formatPeriodDelta(data.grossProfit, data.previousGrossProfit)
     : null;
-  const criticalStockChange = data?.comparisons.criticalStock.percentage ?? null;
+  const ticketDelta = ticketNow !== null && data?.previousAverageTicket != null
+    ? formatPeriodDelta(ticketNow, data.previousAverageTicket)
+    : null;
+  const stockDelta = data ? formatPeriodDelta(data.comparisons.criticalStock.current, data.comparisons.criticalStock.previous) : null;
   const categories = data?.categorySummary.slice(0, 6) ?? [];
   const maxCategoryRevenue = Math.max(1, ...categories.map((item) => item.revenue));
   const insights: Array<{
@@ -141,13 +139,13 @@ export function AdminReportsStitch({
     icon: LucideIcon;
     className: string;
   }> = [];
-  if (currency && salesChange !== null)
+  if (currency && salesDelta && salesDelta.direction !== "unavailable")
     insights.push({
-      title: salesChange >= 0 ? "Crecimiento en ventas" : "Variación de ventas",
-      detail: `Las ventas ${salesChange >= 0 ? "aumentaron" : "disminuyeron"} ${Math.abs(salesChange).toFixed(1)}% respecto al periodo anterior.`,
+      title: salesDelta.direction === "down" ? "Variación de ventas" : "Crecimiento en ventas",
+      detail: `Las ventas ${salesDelta.direction === "down" ? "disminuyeron" : "aumentaron"}: ${salesDelta.label}.`,
       href: "#sales-trend",
-      icon: salesChange >= 0 ? ArrowUpRight : ArrowDownRight,
-      className: salesChange >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600",
+      icon: salesDelta.direction === "down" ? ArrowDownRight : ArrowUpRight,
+      className: salesDelta.direction === "down" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600",
     });
   if (data?.criticalStock)
     insights.push({
@@ -157,10 +155,10 @@ export function AdminReportsStitch({
       icon: AlertCircle,
       className: "bg-amber-50 text-amber-500",
     });
-  if (conversionChange !== null)
+  if (conversionDelta && conversionDelta.direction !== "unavailable")
     insights.push({
       title: "Conversión comercial",
-      detail: `La tasa de conversión ${conversionChange >= 0 ? "mejoró" : "varió"} ${Math.abs(conversionChange).toFixed(1)} puntos frente al periodo anterior.`,
+      detail: `La tasa de conversión se movió: ${conversionDelta.label}.`,
       href: "/admin/crm?view=pipeline",
       icon: BarChart3,
       className: "bg-violet-50 text-violet-600",
@@ -234,15 +232,16 @@ export function AdminReportsStitch({
                 : item.label.includes("Pedidos")
                   ? orderTrend
                   : undefined;
-          const percentage = item.label.startsWith("Ventas")
-            ? salesChange
+          const delta = item.label.startsWith("Ventas")
+            ? salesDelta
             : item.label.includes("Margen")
-              ? grossChange
+              ? grossDelta
               : item.label.includes("Ticket")
-                ? ticketChange
+                ? ticketDelta
                 : item.label.includes("Stock")
-                  ? criticalStockChange
+                  ? stockDelta
                   : null;
+          const deltaIsGood = delta?.direction === (item.label.includes("Stock") ? "down" : "up");
           return (
             <article
               key={item.label}
@@ -258,7 +257,7 @@ export function AdminReportsStitch({
                 </div>
               </div>
               <div className="mt-3">
-                {percentage === null ? <p className="text-[10px] font-normal text-slate-400">{item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${percentage >= 0 ? "text-emerald-600" : "text-rose-600"}`}><span aria-hidden="true">{percentage >= 0 ? "↑" : "↓"}</span><span>{Math.abs(percentage).toFixed(1)}%</span><span className="ml-0.5 text-[10px] font-normal text-slate-400">vs. periodo anterior</span></p>}
+                {!delta || delta.value === null ? <p className="text-[10px] font-normal text-slate-400">{delta?.label ?? item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${deltaIsGood ? "text-emerald-600" : "text-rose-600"}`}><span aria-hidden="true">{delta.direction === "down" ? "↘" : "↗"}</span><span>{delta.label}</span></p>}
                 <MetricSparkline tone={metricTone} values={trend} />
               </div>
             </article>
@@ -395,7 +394,7 @@ export function AdminReportsStitch({
                   Exportar
                 </a>
               </div>
-              <div className="overflow-x-auto">
+              <div tabIndex={0} role="region" aria-label="Tabla de reportes por período" className="overflow-x-auto">
                 <table className="w-full min-w-[570px] text-left text-[11px]">
                   <thead className="border-y border-slate-100 bg-slate-50/80 text-[9px] font-semibold uppercase tracking-wide text-slate-400">
                     <tr>

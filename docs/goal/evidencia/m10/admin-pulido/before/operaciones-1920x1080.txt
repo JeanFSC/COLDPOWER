@@ -1,0 +1,224 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Centro operativo
+
+Supervisa, coordina y resuelve las operaciones diarias de ColdPower.
+
+Todo el período
+Hoy
+Ayer
+Últimos 7 días
+Últimos 30 días
+Personalizado
+Todos los equipos
+Ventas
+Operaciones
+Almacén
+Tomar tarea
+Reasignar
+Resolver
+
+Tareas activas
+
+232
+↗132% vs. 30 días anteriores
+Anterior: 100
+
+Vencidas hoy
+
+105
+↗1% vs. ayer
+Anterior: 104
+
+Cotizaciones por responder
+
+14
+↘75% vs. 30 días anteriores
+Anterior: 56
+
+Pedidos detenidos
+
+0
+→0% vs. 30 días anteriores
+Anterior: 0
+
+Transferencias pendientes
+
+0
+→0% vs. 30 días anteriores
+Anterior: 0
+
+Seguimientos críticos
+
+41
+↗1267% vs. 30 días anteriores
+Anterior: 3
+Cotizaciones
+95
+Oportunidades
+114
+Pedidos
+181
+Seguimientos
+69
+Inventario
+4
+Cola de tareas prioritarias
+
+Gestiona y da seguimiento a las tareas operativas de todos los módulos.
+
+Filtros
+	ID	TAREA	CLIENTE / REFERENCIA	URGENCIA	SLA	RESPONSABLE	MÓDULO	PRÓXIMA ACCIÓN	
+	CP-COT-2026-040	Revisar y responder cotización	Cliente corporativo 022
+MOTOR NUEVO SEMIARMADO MODELO G4KD USO AUTOMOTRIZ NUMERO DE MOTOR:G4KD 26035335 USO AUTOMOTRIZ
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-COT-2026-039	Revisar y responder cotización	Cliente corporativo 023
+MOTOR NUEVO SEMIARMADO MODELO C14 USO AUTOMOTRIZ NUMERO DE MOTOR : LCU 26035421 USO AUTOMOTRIZ
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-COT-2026-038	Revisar y responder cotización	Cliente corporativo 024
+MOTOR NUEVO SEMIARMADO MODELO 4G13S USO AUTOMOTRIZ NUMERO DE MOTOR :4G13S 26035506 USO AUTOMOTRIZ
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-COT-2026-037	Revisar y responder cotización	Cliente corporativo 025
+MOTOR NUEVO SEMIARMADO MODELO G4LC USO AUTOMOTRIZ NUMERO DE MOTOR :G4LC 26035132 USO AUTOMOTRIZ
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-LIGR	Revisar y responder cotización	Jean QA M10-03
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-LD24	Revisar y responder cotización	Jean QA M10-03
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-FGKR	Revisar y responder cotización	Jean QA M10-03
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-ZOLU	Revisar y responder cotización	QA B1.1 1790316848107
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-KSEP	Revisar y responder cotización	QA B1.1 1790316773389
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+
+	CP-20260925-DA9X	Revisar y responder cotización	QA B1.1 1790316615325
+MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)
+	Normal	Sin plazo	
+Sin asignar
+	Cotizaciones	Responder	
+Mostrando 1 a 10 de 95 tareas
+1
+2
+…
+10
+10 por página
+25 por página
+50 por página
+Alertas operativas
+Ver todas
+105 tareas vencidas hoy
+
+Requieren atención inmediata.
+
+0 pedidos detenidos
+
+Por incidencias que bloquean el pedido.
+
+0 transferencias pendientes
+
+Solicitadas o en tránsito.
+
+65 seguimientos críticos
+
+Seguimientos que superaron su vencimiento.
+
+Carga por equipo
+Ver detalle
+Ventas
+266
+63%
+Operaciones
+154
+36%
+Almacén
+4
+1%
+Estado de tareas del día
+203
+Tareas
+Resueltas
+0
+0%
+En proceso
+0
+0%
+Pendientes
+98
+48%
+Vencidas
+105
+52%

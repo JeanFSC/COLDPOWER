@@ -6,6 +6,7 @@ import {
   type AuditAlert, type AuditFieldDiff, type AuditKpi, type AuditListItem, type AuditPageResponse,
   type AuditSavedFilter, type AuditTrendPoint,
 } from "@/lib/audit-contract";
+import { formatPeriodDelta } from "@/lib/period-metrics";
 
 function Icon({ path, className }: { path: string; className?: string }) {
   return (
@@ -77,10 +78,13 @@ function avatarTone(seed: string) {
 // reference design colored them (more visibility isn't itself bad news).
 const badWhenUp = new Set(["critical", "failed", "integrationErrors"]);
 function deltaDisplay(key: string, kpi: AuditKpi) {
-  if (kpi.deltaPct === null) return { text: "Sin datos del período anterior", color: "text-slate-400" };
-  const arrow = kpi.deltaPct > 0 ? "↗" : kpi.deltaPct < 0 ? "↘" : "→";
-  const text = `${arrow} ${Math.abs(kpi.deltaPct)}% vs. período anterior`;
-  const color = badWhenUp.has(key) ? (kpi.deltaPct > 0 ? "text-red-500" : "text-emerald-600") : "text-emerald-600";
+  const delta = formatPeriodDelta(kpi.current, kpi.previous);
+  const color = delta.direction === "unavailable" || delta.direction === "new"
+    ? "text-slate-400"
+    : badWhenUp.has(key)
+      ? (delta.direction === "up" ? "text-red-500" : "text-emerald-600")
+      : delta.direction === "down" ? "text-emerald-600" : "text-emerald-600";
+  const text = delta.label;
   return { text, color };
 }
 
@@ -256,7 +260,7 @@ export function AuditModule({
         <section className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <div className="flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs lg:col-span-2">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-slate-800">Volumen de eventos</h3>
+              <h2 className="text-xs font-semibold text-slate-800">Volumen de eventos</h2>
               <div className="flex items-center gap-4 text-[11px] text-slate-500">
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-500" />Total</span>
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-1 rounded-full border border-dashed border-blue-300" />Período anterior</span>

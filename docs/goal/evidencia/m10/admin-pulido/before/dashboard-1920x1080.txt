@@ -1,0 +1,383 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Dashboard ejecutivo
+
+Visión general comercial, financiera y operativa de ColdPower.
+
+Últimos 30 días
+Aplicar filtros
+Exportar reporte
+
+Ventas confirmadas
+
+S/ 215,779
+
+89.2% vs. período anterior
+
+Margen bruto
+
+N/D
+
+N/D · costo histórico incompleto
+
+Sin serie diaria disponible
+
+Cobrado
+
+S/ 30,322
+
+9.2% vs. período anterior
+Pagos confirmados menos reembolsos
+
+Pedidos activos
+
+154
+
+275.6% vs. período anterior
+
+Conversión comercial
+
+25.0%
+
+1 convertidas / 4 evaluadas
+Cotizaciones abiertas
+95
+69.6% vs. período anterior
+Stock crítico
+4
+300.0% vs. período anterior
+Pagos por revisar
+47
+161.1% vs. período anterior
+Seguimientos vencidos
+65
+2066.7% vs. período anterior
+Clientes activos
+55
+Sin base comparable
+Evolución de ventas y margen
+
+Ventas netas, período anterior y margen bruto
+
+Moneda: PEN · zona horaria America/Lima
+Ventas actuales
+Ventas período anterior
+Margen bruto (%)
+Diario
+
+Evolución de ventas y comparación con el período anterior. Valores actuales: 27 ago: S/ 0; 28 ago: S/ 0; 29 ago: S/ 0; 30 ago: S/ 0; 31 ago: S/ 0; 1 set: S/ 7,786; 2 set: S/ 4,945; 3 set: S/ 2,578; 4 set: S/ 5,725; 5 set: S/ 9,610; 6 set: S/ 12,691; 7 set: S/ 9,348; 8 set: S/ 6,479; 9 set: S/ 4,084; 10 set: S/ 5,809; 11 set: S/ 10,658; 12 set: S/ 14,932; 13 set: S/ 10,452; 14 set: S/ 9,880; 15 set: S/ 7,618; 16 set: S/ 11,628; 17 set: S/ 12,940; 18 set: S/ 11,824; 19 set: S/ 13,304; 20 set: S/ 6,680; 21 set: S/ 10,720; 22 set: S/ 12,242; 23 set: S/ 11,246; 24 set: S/ 0; 25 set: S/ 2,600.
+
+Evolución de ventas y comparación con el período anterior
+Período	Actual	Anterior
+27 ago	S/ 0	S/ 0
+28 ago	S/ 0	S/ 0
+29 ago	S/ 0	S/ 0
+30 ago	S/ 0	S/ 2,504
+31 ago	S/ 0	S/ 1,641
+1 set	S/ 7,786	S/ 936
+2 set	S/ 4,945	S/ 389
+3 set	S/ 2,578	S/ 1,860
+4 set	S/ 5,725	S/ 7,107
+5 set	S/ 9,610	S/ 3,993
+6 set	S/ 12,691	S/ 2,611
+7 set	S/ 9,348	S/ 4,445
+8 set	S/ 6,479	S/ 2,245
+9 set	S/ 4,084	S/ 8,077
+10 set	S/ 5,809	S/ 7,727
+11 set	S/ 10,658	S/ 7,080
+12 set	S/ 14,932	S/ 3,643
+13 set	S/ 10,452	S/ 6,425
+14 set	S/ 9,880	S/ 3,723
+15 set	S/ 7,618	S/ 6,209
+16 set	S/ 11,628	S/ 11,213
+17 set	S/ 12,940	S/ 8,511
+18 set	S/ 11,824	S/ 7,815
+19 set	S/ 13,304	S/ 3,063
+20 set	S/ 6,680	S/ 1,884
+21 set	S/ 10,720	S/ 863
+22 set	S/ 12,242	S/ 4,704
+23 set	S/ 11,246	S/ 3,525
+24 set	S/ 0	S/ 0
+25 set	S/ 2,600	S/ 1,827
+S/ 15k
+S/ 11k
+S/ 7.5k
+S/ 3.7k
+S/ 0
+75%
+56%
+38%
+19%
+0%
+27 ago
+3 set
+11 set
+18 set
+25 set
+Estado del negocio
+
+Tareas que requieren tu atención
+
+Ver todas 
+Pedidos por confirmar
+Requiere atención
+70
+Alta
+Cotizaciones por enviar/seguir
+Requiere atención
+95
+Alta
+Pagos por verificar
+Requiere atención
+47
+Media
+Productos que requieren revisión
+Requiere atención
+57
+Media
+Seguimientos vencidos
+Requiere atención
+65
+Media
+Pipeline comercial
+
+Oportunidades activas por macroetapa
+
+Total: 81 oportunidades | S/ 129,449
+Ver pipeline 
+Prospección
+14%
+21 | S/ 17,576
+Cotización
+14%
+9 | S/ 18,672
+Seguimiento
+15%
+8 | S/ 19,768
+Negociación
+38%
+19 | S/ 49,127
+Cierre ganado
+19%
+24 | S/ 24,306
+Top productos por ventas
+Ingresos confirmados
+Ver todas 
+#
+PRODUCTO
+UNIDADES
+INGRESO
+TENDENCIA
+1
+REFRIGERACIÓN - ANTORCHA YC- 35W
+6
+S/ 8,388
+396%
+2
+REFRIGERACIÓN - BIMETAL 4 CABLES LG
+6
+S/ 8,220
+3
+REFRIGERACIÓN - CAPACITOR 600UF 250V PEDSU
+6
+S/ 8,052
+4
+REFRIGERACIÓN - CAPACITOR 243-292MFD 125V DUCATTI
+6
+S/ 7,884
+5
+REFRIGERACIÓN - ANTORCHA YC-1M
+5
+S/ 6,595
+550%
+Top clientes
+Ventas confirmadas
+Ver todos 
+#
+CLIENTE
+VENTAS
+MONTO
+ÚLTIMA COMPRA
+1
+C0
+Cliente corporativo 012
+2
+S/ 13,428
+21 set
+2
+C0
+Cliente corporativo 018
+2
+S/ 10,416
+15 set
+3
+C0
+Cliente corporativo 011
+2
+S/ 10,400
+22 set
+4
+C0
+Cliente corporativo 036
+1
+S/ 8,220
+11 set
+5
+C0
+Cliente corporativo 054
+1
+S/ 8,052
+16 set
+Vendedores
+Por ventas netas del periodo
+Top vendedores
+Ver todos 
+#
+VENDEDOR
+VENTAS
+COTIZACIONES
+CONVERSIÓN
+1
+C1
+Colaborador 16
+S/ 32,544
+7
+33.3%
+2
+C1
+Colaborador 15
+S/ 25,540
+7
+33.3%
+3
+C1
+Colaborador 10
+S/ 21,168
+6
+0.0%
+4
+C1
+Colaborador 14
+S/ 19,168
+7
+25.0%
+5
+C0
+Colaborador 09
+S/ 16,060
+6
+0.0%
+Actividad reciente
+Ver todas 
+USUARIO
+ACCIÓN
+MÓDULO
+DETALLE
+TIEMPO
+J
+Jean
+Asoció una imagen
+Productos
+product-cp-ref-mcp-0103
+Hace 26 min
+J
+Jean
+Actualización registrada
+Registro
+media-bdf72cda-7a7d-476e-82d7-99d0609d6142
+Hace 26 min
+J
+Jean
+Actualización registrada
+Registro
+price-07111a45-3e23-4bab-8771-5e8dadb9b43a
+Hace 28 min
+J
+Jean
+Actualización registrada
+Registro
+family-refrigeracion-acoples
+Hace 37 min
+S
+Sistema
+Actualización registrada
+Cotizaciones
+CP-20260925-LIGR
+Hace 5 h
+Resumen operativo
+Indicadores clave del período
+Nivel de servicio (SLA)
+100.0%
+Histórico
+Fill rate (disponibilidad)
+19.0%
+Histórico
+Ticket promedio
+S/ 2,075
+-19.9% vs. anterior
+Tiempo de preparación
+0.9 días
+Histórico
+Métodos de pago
+Participación en ventas
+S/ 30,592
+Total cobrado
+TRANSFERENCIA
+64.7%
+Tarjeta
+12.9%
+Efectivo
+7.3%
+Plin
+6.9%
+Yape
+6.4%
+OTHER
+1.8%
+
+Actualizado 25 set · Moneda: PEN

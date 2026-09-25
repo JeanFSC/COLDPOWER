@@ -214,7 +214,7 @@ export function AdminShell({
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4" aria-label="Navegacion administrativa">
+        <nav className="min-h-0 flex-1 overflow-y-auto flex flex-col px-3 py-4" aria-label="Navegacion administrativa">
           <div className="grid gap-1">
             {links.map((link, index) => {
               const Icon = iconMap[link.icon];
@@ -252,8 +252,7 @@ export function AdminShell({
               );
             })}
           </div>
-        </nav>
-        <div className="mt-auto shrink-0 space-y-4 px-4 pb-4">
+          <div className="mt-auto shrink-0 space-y-4 px-1 pb-1 pt-4">
           <details className="group rounded-xl bg-[#12395c] text-white shadow-[0_8px_20px_rgba(18,57,92,0.16)]">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-white/70">
               <span className="flex items-center gap-2">
@@ -288,7 +287,8 @@ export function AdminShell({
               C&J COLD IMPORT PERÚ E.I.R.L.
             </span>
           </div>
-        </div>
+          </div>
+        </nav>
       </aside>
 
       <div className={`min-h-screen min-w-0 ${contentOffset}`}>

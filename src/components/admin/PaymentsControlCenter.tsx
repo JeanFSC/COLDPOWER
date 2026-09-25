@@ -24,6 +24,7 @@ import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 import { ManualPaymentControl } from "@/components/admin/ManualPaymentControl";
 import type { PaymentListItem, PaymentsPageResponse } from "@/lib/payments-contract";
 import type { getPaymentsKpiSeries } from "@/lib/payments-repository";
+import { paymentProviderLabel, paymentReferenceLabel } from "@/lib/payment-display";
 
 type Detail = {
   payment: Record<string, unknown>;
@@ -66,6 +67,8 @@ const labels: Record<string, string> = {
   DEBIT_CARD: "Tarjeta de débito",
   YAPE: "Yape",
   PLIN: "Plin",
+  mock: "Pasarela de prueba",
+  "development-gateway": "Pasarela de prueba",
 };
 function label(value: string | null | undefined) {
   return value ? (labels[value] ?? value) : "N/D";
@@ -78,6 +81,27 @@ function amountsByCurrencyText(rows: Array<{ currency: string; net: string | num
   return rows
     .map((row) => (rows.length === 1 ? money(row.currency, row.net) : `${row.currency} · ${money(row.currency, row.net)}`))
     .join(" · ");
+}
+type MethodBreakdownRow = PaymentsPageResponse["metrics"]["methodBreakdown"][number];
+function groupedMethodBreakdown(rows: MethodBreakdownRow[]) {
+  const groups = new Map<string, { method: string; displayLabel: string; count: number; confirmedAmountsByCurrency: Array<{ currency: string; gross: number; refunded: number; net: number }> }>();
+  for (const row of rows) {
+    const displayLabel = label(row.method);
+    const group = groups.get(displayLabel) ?? { method: row.method, displayLabel, count: 0, confirmedAmountsByCurrency: [] };
+    group.count += row.count;
+    for (const amount of row.confirmedAmountsByCurrency) {
+      const existing = group.confirmedAmountsByCurrency.find((item) => item.currency === amount.currency);
+      if (existing) {
+        existing.gross += amount.gross;
+        existing.refunded += amount.refunded;
+        existing.net += amount.net;
+      } else {
+        group.confirmedAmountsByCurrency.push({ ...amount });
+      }
+    }
+    groups.set(displayLabel, group);
+  }
+  return [...groups.values()];
 }
 function limaDateTime(value: unknown) {
   if (!value) return "N/D";
@@ -161,6 +185,7 @@ export function PaymentsControlCenter({
 }) {
   const [detailId, setDetailId] = useState<string | null>(() => new URLSearchParams(queryString).get("paymentId"));
   const confirmed = amountsByCurrencyText(page.metrics.amountsByCurrency);
+  const methodBreakdown = groupedMethodBreakdown(page.metrics.methodBreakdown);
   const reconciliationRate = page.metrics.reconciliationRate;
   const statusTotal = Math.max(1, page.metrics.total);
   const kpis: Array<{
@@ -270,11 +295,11 @@ export function PaymentsControlCenter({
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
+      <section className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="flex h-fit flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Estado de pago</h2>
-          <div className="flex flex-col items-center gap-6 py-3 sm:flex-row sm:justify-between sm:gap-10 sm:px-4">
-            <div className="relative flex h-40 w-40 shrink-0 items-center justify-center sm:h-44 sm:w-44">
+          <div className="grid items-center justify-items-center gap-5 py-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:justify-items-stretch sm:gap-6 sm:px-4">
+            <div className="relative flex h-36 w-36 shrink-0 items-center justify-center sm:h-40 sm:w-40 sm:justify-self-center">
               <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" fill="none" r="14" stroke="#f1f5f9" strokeWidth={3.5} />
                 {donutSegments.map((segment) => (
@@ -286,9 +311,9 @@ export function PaymentsControlCenter({
                 <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Pagos totales</span>
               </div>
             </div>
-            <div className="w-full space-y-4 sm:w-auto">
+            <div className="w-full space-y-3 sm:flex sm:h-full sm:flex-col sm:justify-between sm:space-y-0">
               {statusDonut.map((row) => (
-                <div key={row.label} className="flex items-center justify-between gap-10">
+                <div key={row.label} className="flex items-center justify-between gap-6">
                   <div className="flex items-center gap-2.5">
                     <span className={`h-3 w-3 shrink-0 rounded-full ${row.dot}`} />
                     <span className="text-sm font-medium text-slate-600">{row.label}</span>
@@ -301,11 +326,11 @@ export function PaymentsControlCenter({
             </div>
           </div>
         </div>
-        <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
+        <div className="flex h-fit flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Métodos de pago</h2>
           <div className="space-y-4 pt-3">
-            {page.metrics.methodBreakdown.length ? (
-              page.metrics.methodBreakdown.map((row) => {
+            {methodBreakdown.length ? (
+              methodBreakdown.map((row) => {
                 const MethodIcon = methodIcon(row.method);
                 const total = amountsByCurrencyText(row.confirmedAmountsByCurrency);
                 const share = row.confirmedAmountsByCurrency[0]
@@ -322,7 +347,7 @@ export function PaymentsControlCenter({
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${methodIconBg(row.method)}`}>
                         <MethodIcon className="h-5 w-5" />
                       </div>
-                      <span className="truncate text-sm font-medium text-slate-700">{label(row.method)}</span>
+                       <span className="truncate text-sm font-medium text-slate-700">{row.displayLabel}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-8">
                       <span className="text-sm font-bold text-slate-800">{total}</span>
@@ -628,7 +653,7 @@ function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Referencia</span>
-            <span className="truncate font-medium text-slate-700">{item.providerReference ?? "N/D"}</span>
+            <span className="truncate font-medium text-slate-700">{paymentReferenceLabel(item.providerReference)}</span>
           </div>
           {observed && Number(item.difference) !== 0 ? (
             <div className="flex justify-between font-medium text-red-600">
@@ -685,7 +710,7 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
       <td className="px-3 py-3">
         <Badge value={item.refundRequired ? "REFUND_REQUIRED" : item.reconciliation} />
       </td>
-      <td className="max-w-32 truncate px-3 py-3">{item.providerReference ?? "N/D"}</td>
+      <td className="max-w-32 truncate px-3 py-3">{paymentReferenceLabel(item.providerReference)}</td>
       <td className="px-3 py-3 text-slate-500">{limaDateTime(item.createdAt).split(",")[0]}</td>
       <td className="px-3 py-3">
         <button
@@ -925,8 +950,8 @@ function PaymentDrawer({
             <div className="space-y-3">
               <div className="rounded-lg bg-slate-50 p-3 text-[11px] text-slate-600">
                 {label(String(payment?.method))} ·{" "}
-                {payment?.provider ? String(payment.provider) : "Manual"} · Referencia{" "}
-                {String(payment?.providerReference ?? "N/D")}
+                {payment?.provider ? paymentProviderLabel(String(payment.provider)) : "Manual"} · Referencia{" "}
+                {paymentReferenceLabel(String(payment?.providerReference ?? ""))}
               </div>
               {canManage && payment?.provider && payment?.providerReference ? (
                 <button

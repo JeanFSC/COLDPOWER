@@ -1,0 +1,163 @@
+{
+  "phase": "after",
+  "qaSet": "final-contrast",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T20:57:14.629Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "status": 200,
+      "startedAt": "2026-09-25T20:56:32.169Z",
+      "action": {
+        "type": "button",
+        "label": "ver pago"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-pagos-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 47,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-pagos-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 43,
+          "violationIds": []
+        }
+      },
+      "title": "Pagos | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:56:42.820Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\notificaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-notificaciones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-notificaciones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 41,
+          "violationIds": []
+        }
+      },
+      "title": "Notificaciones | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "usuarios",
+      "route": "/admin/usuarios",
+      "status": null,
+      "startedAt": "2026-09-25T20:56:54.673Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-usuarios-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 44,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-usuarios-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 44,
+          "violationIds": []
+        }
+      },
+      "title": "Usuarios | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "operaciones",
+      "route": "/admin/operaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T20:57:08.827Z",
+      "action": {
+        "type": "button",
+        "label": "ver detalle"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\operaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-operaciones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-operaciones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 46,
+          "violationIds": []
+        }
+      },
+      "title": "Operaciones y ventas | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    ],
+    "pageErrors": [
+      "SyntaxError: Invalid or unexpected token"
+    ],
+    "requestFailures": []
+  }
+}

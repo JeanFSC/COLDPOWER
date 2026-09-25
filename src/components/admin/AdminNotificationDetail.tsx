@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MarkAsReadButton } from "@/components/admin/NotificationDetailActions";
 import { priorityOf } from "@/lib/notifications-service";
+import { notificationBodyLabel, notificationEventLabel } from "@/lib/notification-display";
 import type { getNotificationDetail } from "@/lib/notification-rules-service";
 
 type Detail = NonNullable<Awaited<ReturnType<typeof getNotificationDetail>>>;
@@ -53,7 +54,7 @@ function formatDateTime(value: Date | string) {
 export function NotificationDetail({ detail }: { detail: Detail | null }) {
   if (!detail) {
     return (
-      <aside className="flex h-full flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-10 text-center shadow-2xs">
+      <aside className="flex min-h-[180px] h-fit flex-col items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white p-6 text-center shadow-2xs">
         <Icon path={ICON.bell} className="h-8 w-8 text-slate-300" />
         <p className="text-xs font-semibold text-slate-500">Selecciona una notificación</p>
         <p className="text-[11px] text-slate-400">Elige un elemento de la bandeja para ver su detalle completo.</p>
@@ -96,7 +97,7 @@ export function NotificationDetail({ detail }: { detail: Detail | null }) {
           </div>
           <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${stateClasses[notification.state]}`}>{priority}</span>
         </div>
-        <p className="mt-2.5 rounded-lg border border-white/60 bg-white/80 p-2.5 text-xs leading-relaxed text-slate-700">{notification.body}</p>
+        <p className="mt-2.5 rounded-lg border border-white/60 bg-white/80 p-2.5 text-xs leading-relaxed text-slate-700">{notificationBodyLabel(notification.body)}</p>
       </div>
 
       <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3">
@@ -107,7 +108,7 @@ export function NotificationDetail({ detail }: { detail: Detail | null }) {
         <div className="space-y-2 divide-y divide-slate-100 text-xs">
           <div className="flex items-center justify-between pt-1.5">
             <span className="font-normal text-slate-400">Tipo</span>
-            <span className="font-mono text-[11.5px] font-medium text-slate-700">{notification.type}</span>
+            <span className="text-[11.5px] font-medium text-slate-700" title={`Código interno: ${notification.type}`}>{notificationEventLabel(notification.type)}</span>
           </div>
           <div className="flex items-center justify-between pt-1.5">
             <span className="font-normal text-slate-400">Canal</span>

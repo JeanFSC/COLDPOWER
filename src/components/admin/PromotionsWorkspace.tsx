@@ -39,6 +39,7 @@ import type {
 } from "@/lib/promotion-repository";
 import { formatDateTime, formatMoney } from "@/lib/order-display";
 import { createPromotionCalendarScale, differencePromotionCalendarDays, promotionCalendarDateKey, promotionCalendarTicks, scalePromotionDate, scalePromotionRange } from "@/lib/promotion-calendar";
+import { formatPeriodDelta } from "@/lib/period-metrics";
 
 type WorkspaceProps = {
   data: PromotionPage;
@@ -363,13 +364,13 @@ export function PromotionsWorkspace({
 }
 
 function PromotionKpis({ metrics }: { metrics: PromotionPage["metrics"] }) {
-  const discountDelta = Number(metrics.discountPrevious30) > 0 ? ((Number(metrics.discount30) - Number(metrics.discountPrevious30)) / Number(metrics.discountPrevious30)) * 100 : null;
+  const discountDelta = formatPeriodDelta(Number(metrics.discount30), Number(metrics.discountPrevious30));
   const totalApplications = metrics.checkoutApplications30 + metrics.quoteApplications30;
   const checkoutShare = totalApplications ? Math.round((metrics.checkoutApplications30 / totalApplications) * 100) : 0;
   const quoteShare = totalApplications ? 100 - checkoutShare : 0;
   const cards = [
     { label: "Activas ahora", value: metrics.activeNow.toLocaleString("es-PE"), note: metrics.expiringSoon ? `${campaignCountLabel(metrics.expiringSoon)} ${metrics.expiringSoon === 1 ? "vence" : "vencen"} en ≤ 7 días` : "Sin vencimientos próximos", icon: Tag, iconClass: "bg-blue-100 text-blue-600", noteClass: metrics.expiringSoon ? "text-orange-700" : "text-emerald-700" },
-    { label: "Descuento entregado · 30 d", mobileLabel: "Descuento · 30 d", value: formatMoney(metrics.discount30, "PEN"), note: discountDelta === null ? "Sin período anterior comparable" : `${discountDelta >= 0 ? "▲" : "▼"} ${Math.abs(discountDelta).toFixed(1)}% vs. período anterior`, icon: Layers3, iconClass: "bg-emerald-100 text-emerald-600", noteClass: discountDelta === null || discountDelta >= 0 ? "text-emerald-700" : "text-rose-700", spark: true },
+    { label: "Descuento entregado · 30 d", mobileLabel: "Descuento · 30 d", value: formatMoney(metrics.discount30, "PEN"), note: discountDelta.label, icon: Layers3, iconClass: "bg-emerald-100 text-emerald-600", noteClass: discountDelta.direction === "down" ? "text-rose-700" : discountDelta.direction === "up" ? "text-emerald-700" : "text-slate-500", spark: true },
     { label: "Aplicaciones · 30 d", value: metrics.applications30.toLocaleString("es-PE"), note: totalApplications ? `${checkoutShare}% checkout · ${quoteShare}% cotización` : "Sin aplicaciones en la ventana", icon: WalletCards, iconClass: "bg-violet-100 text-violet-600", split: true },
     { label: "Por aprobar", value: metrics.pendingApproval.toLocaleString("es-PE"), note: metrics.oldestPendingAt ? `más antigua: ${formatRelativeDays(metrics.oldestPendingAt, "en", "hace")}` : "Todo al día", icon: Clock3, iconClass: "bg-orange-100 text-orange-600", noteClass: metrics.pendingApproval ? "text-orange-700" : "text-emerald-700" },
   ];

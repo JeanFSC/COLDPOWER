@@ -1,0 +1,506 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Auditoría
+
+Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.
+
+Exportar logs
+Guardar filtro
+Eventos 24h
+245
+↗ 329.8% vs. período anterior
+Eventos críticos
+0
+→ 0% vs. período anterior
+Cambios sensibles
+0
+↘ 100% vs. período anterior
+Inicios de sesión
+0
+→ 0% vs. período anterior
+Errores de integración
+0
+→ 0% vs. período anterior
+Acciones fallidas
+0
+→ 0% vs. período anterior
+Módulo
+Todos
+Severidad
+Todas
+Desde
+Hasta
+Aplicar
+Más filtros
+Volumen de eventos
+Total
+Período anterior
+
+Volumen de eventos de auditoría, últimos 30 días. Valores actuales: 26-ago: 5; 27-ago: 0; 28-ago: 0; 29-ago: 1; 30-ago: 1; 31-ago: 1; 01-set: 1; 02-set: 1; 03-set: 1; 04-set: 1; 05-set: 11; 06-set: 1; 07-set: 1; 08-set: 1; 09-set: 1; 10-set: 1; 11-set: 1; 12-set: 11; 13-set: 1; 14-set: 2; 15-set: 2; 16-set: 2; 17-set: 2; 18-set: 2; 19-set: 12; 20-set: 2; 21-set: 2; 22-set: 2; 23-set: 3; 24-set: 122.
+
+Volumen de eventos de auditoría, últimos 30 días
+Período	Actual	Anterior
+26-ago	5	0
+27-ago	0	0
+28-ago	0	0
+29-ago	1	0
+30-ago	1	0
+31-ago	1	0
+01-set	1	1
+02-set	1	1
+03-set	1	1
+04-set	1	11
+05-set	11	1
+06-set	1	1
+07-set	1	1
+08-set	1	1
+09-set	1	1
+10-set	1	1
+11-set	1	11
+12-set	11	1
+13-set	1	0
+14-set	2	0
+15-set	2	6
+16-set	2	0
+17-set	2	0
+18-set	2	10
+19-set	12	0
+20-set	2	0
+21-set	2	0
+22-set	2	0
+23-set	3	0
+24-set	122	0
+122
+92
+61
+31
+0
+26-ago
+02-set
+10-set
+17-set
+24-set
+Alertas y cumplimiento
+
+Cumplimiento
+
+Todos los eventos se registran y conservan de forma permanente (append-only).
+
+Sin anomalías de seguridad
+
+No se detectaron eventos críticos ni fallidos en el período.
+
+Registro de auditoría
+
+837 resultados
+
+1
+2
+3
+4
+5
+FECHA Y HORA
+	ACTOR	MÓDULO	ACCIÓN	OBJETO	SEVERIDAD	RESULTADO	DETALLE
+26 dic 2026, 07:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Asoció un archivo multimedia	
+
+Producto
+
+product-cp-bag-otr-0657
+	Info	Exitoso	
+
+26 dic 2026, 06:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó contenido editorial	
+
+Producto
+
+product-cp-bag-otr-0657
+	Info	Exitoso	
+
+26 dic 2026, 05:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Inventario	Ajustó el inventario	
+
+Inventario
+
+cp-visual-year-2026-order-048
+
+	Info	Exitoso	
+
+26 dic 2026, 04:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó un precio	
+
+Producto
+
+product-cp-bag-otr-0657
+	Info	Exitoso	
+
+26 dic 2026, 03:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Clientes	Creó el cliente	
+
+Cliente
+
+cp-dashboard-v5-customer-013
+	Info	Exitoso	
+
+26 dic 2026, 02:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pagos	Registró el pago	
+
+Pago
+
+cp-visual-year-2026-payment-048
+	Info	Exitoso	
+
+26 dic 2026, 01:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pedidos	Creó el pedido	
+
+Pedido
+
+cp-visual-year-2026-order-048
+	Info	Exitoso	
+
+26 dic 2026, 12:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Ventas	Creó la venta	
+
+Venta
+
+cp-visual-year-2026-sale-048
+	Info	Exitoso	
+
+26 dic 2026, 11:00 a. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pipeline	Creó la oportunidad	
+
+Oportunidad
+
+cp-visual-year-2026-opportunity-048
+
+	Info	Exitoso	
+
+26 dic 2026, 10:00 a. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Cotizaciones	Creó la cotización	
+
+Cotización
+
+cp-visual-year-2026-quote-048
+	Info	Exitoso	
+
+19 dic 2026, 07:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Asoció un archivo multimedia	
+
+Producto
+
+product-cp-bag-otr-0656
+	Info	Exitoso	
+
+19 dic 2026, 06:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó contenido editorial	
+
+Producto
+
+product-cp-bag-otr-0656
+	Info	Exitoso	
+
+19 dic 2026, 05:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Inventario	Ajustó el inventario	
+
+Inventario
+
+cp-visual-year-2026-order-047
+
+	Info	Exitoso	
+
+19 dic 2026, 04:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó un precio	
+
+Producto
+
+product-cp-bag-otr-0656
+	Info	Exitoso	
+
+19 dic 2026, 03:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Clientes	Creó el cliente	
+
+Cliente
+
+cp-dashboard-v5-customer-014
+	Info	Exitoso	
+
+19 dic 2026, 02:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pagos	Registró el pago	
+
+Pago
+
+cp-visual-year-2026-payment-047
+	Info	Exitoso	
+
+19 dic 2026, 01:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pedidos	Creó el pedido	
+
+Pedido
+
+cp-visual-year-2026-order-047
+	Info	Exitoso	
+
+19 dic 2026, 12:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Ventas	Creó la venta	
+
+Venta
+
+cp-visual-year-2026-sale-047
+	Info	Exitoso	
+
+19 dic 2026, 11:00 a. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Pipeline	Creó la oportunidad	
+
+Oportunidad
+
+cp-visual-year-2026-opportunity-047
+
+	Info	Exitoso	
+
+19 dic 2026, 10:00 a. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Cotizaciones	Creó la cotización	
+
+Cotización
+
+cp-visual-year-2026-quote-047
+	Info	Exitoso	
+
+12 dic 2026, 07:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Asoció un archivo multimedia	
+
+Producto
+
+product-cp-aut-aut-1353
+	Info	Exitoso	
+
+12 dic 2026, 06:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó contenido editorial	
+
+Producto
+
+product-cp-aut-aut-1353
+	Info	Exitoso	
+
+12 dic 2026, 05:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Inventario	Ajustó el inventario	
+
+Inventario
+
+cp-visual-year-2026-order-046
+
+	Info	Exitoso	
+
+12 dic 2026, 04:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Productos	Actualizó un precio	
+
+Producto
+
+product-cp-aut-aut-1353
+	Info	Exitoso	
+
+12 dic 2026, 03:00 p. m.	
+JE
+
+Jean
+
+xslync@gmail.com
+
+	Clientes	Creó el cliente	
+
+Cliente
+
+cp-dashboard-v5-customer-015
+	Info	Exitoso	
+
+Selecciona un evento
+
+Elige una fila del registro para ver su detalle completo.

@@ -79,7 +79,7 @@ function initials(value: string) {
     : value.slice(0, 2).toUpperCase();
 }
 function formatDate(value: Date | null) {
-  return value ? dateTime.format(value) : "Nunca registrado";
+  return value ? dateTime.format(value) : "—";
 }
 function queryFor(filters: UserFilters, updates: Record<string, string | undefined>) {
   const params = new URLSearchParams();
@@ -227,8 +227,8 @@ export function AdminUsersStitch({
           tone="bg-purple-50 text-purple-600"
         />
         <Metric
-          label="Usuarios registrados"
-          value={metrics.total}
+          label="Inactivos"
+          value={metrics.inactive}
           note="Según filtros actuales"
           icon={UserPlus}
           tone="bg-teal-50 text-teal-600"
@@ -294,6 +294,7 @@ export function AdminUsersStitch({
               <input
                 type="date"
                 name="lastSignInFrom"
+                aria-label="Último acceso desde"
                 defaultValue={filters.lastSignInFrom}
                 className="w-28 bg-transparent text-[11px] font-medium outline-none"
               />
@@ -305,14 +306,6 @@ export function AdminUsersStitch({
               <Filter className="h-3.5 w-3.5" />
               Aplicar
             </button>
-            <a
-              href={exportHref}
-              download
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Exportar
-            </a>
           </div>
         </form>
         <div className="overflow-x-auto">

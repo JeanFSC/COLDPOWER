@@ -1006,7 +1006,7 @@ export function OperationsCenter({
     {
       title: `${day.overdue} tareas vencidas hoy`,
       copy: "Requieren atención inmediata.",
-      color: "#ff2447",
+      color: "#b42318",
       icon: TriangleAlert,
       queue: "followUps",
       extra: { sla: "OVERDUE" },
@@ -1014,7 +1014,7 @@ export function OperationsCenter({
     {
       title: `${snapshot.operationalSignals.blockedOrders} pedidos detenidos`,
       copy: "Por incidencias que bloquean el pedido.",
-      color: "#ff8500",
+      color: "#8a4b08",
       icon: ClipboardList,
       queue: "orders",
       extra: { urgency: "CRITICAL" },
@@ -1022,14 +1022,14 @@ export function OperationsCenter({
     {
       title: `${snapshot.operationalSignals.pendingTransfers} transferencias pendientes`,
       copy: "Solicitadas o en tránsito.",
-      color: "#9238ff",
+      color: "#6d28d9",
       icon: RefreshCw,
       href: "/admin/inventario?tab=transfers#inventory-operations",
     },
     {
       title: `${snapshot.metrics.overdueTasks} seguimientos críticos`,
       copy: "Seguimientos que superaron su vencimiento.",
-      color: "#ff9500",
+      color: "#8a4b08",
       icon: Target,
       queue: "followUps",
       extra: { sla: "OVERDUE" },
@@ -1537,7 +1537,7 @@ export function OperationsCenter({
                       "Responsable",
                       "Módulo",
                       "Próxima acción",
-                      "",
+                      "Acciones",
                     ].map((label, i) => (
                       <th key={i}>{label}</th>
                     ))}

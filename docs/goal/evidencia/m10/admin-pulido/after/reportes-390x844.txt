@@ -1,0 +1,214 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+Reportes
+
+Analiza el desempeño de tu negocio con datos en tiempo real.
+
+Período
+Filtros
+Exportar
+
+Ventas hoy
+
+S/ 18,161
+
+↗
+↗ 102.9% vs. período anterior
+
+Ventas del mes
+
+S/ 231,340
+
+↗
+↗ 102.9% vs. período anterior
+
+Margen bruto
+
+N/D
+
+Costo histórico incompleto
+
+Ticket promedio
+
+S/ 1,977
+
+↘
+↘ 23.7% vs. período anterior
+
+Pedidos activos
+
+154
+
+En el rango
+
+Stock crítico
+
+4
+
+Sin base comparable
+
+Filtros avanzados
+Ventas y margen bruto
+
+Montos expresados en PEN.
+
+Ventas netas
+Periodo anterior
+
+Ventas y margen bruto por periodo. Valores actuales: 27-ago.: S/ 0; 28-ago.: S/ 0; 29-ago.: S/ 0; 30-ago.: S/ 0; 31-ago.: S/ 0; 01-set.: S/ 7,786; 02-set.: S/ 4,945; 03-set.: S/ 2,578; 04-set.: S/ 5,725; 05-set.: S/ 9,610; 06-set.: S/ 12,691; 07-set.: S/ 9,348; 08-set.: S/ 6,479; 09-set.: S/ 4,084; 10-set.: S/ 5,809; 11-set.: S/ 10,658; 12-set.: S/ 14,932; 13-set.: S/ 10,452; 14-set.: S/ 9,880; 15-set.: S/ 7,618; 16-set.: S/ 11,628; 17-set.: S/ 12,940; 18-set.: S/ 11,824; 19-set.: S/ 13,304; 20-set.: S/ 6,680; 21-set.: S/ 10,720; 22-set.: S/ 12,242; 23-set.: S/ 11,246; 24-set.: S/ 0; 25-set.: S/ 18,161.
+
+Ventas y margen bruto por periodo
+Período	Actual	Anterior
+27-ago.	S/ 0	S/ 0
+28-ago.	S/ 0	S/ 0
+29-ago.	S/ 0	S/ 0
+30-ago.	S/ 0	S/ 2,504
+31-ago.	S/ 0	S/ 1,641
+01-set.	S/ 7,786	S/ 936
+02-set.	S/ 4,945	S/ 389
+03-set.	S/ 2,578	S/ 1,860
+04-set.	S/ 5,725	S/ 7,107
+05-set.	S/ 9,610	S/ 3,993
+06-set.	S/ 12,691	S/ 2,611
+07-set.	S/ 9,348	S/ 4,445
+08-set.	S/ 6,479	S/ 2,245
+09-set.	S/ 4,084	S/ 8,077
+10-set.	S/ 5,809	S/ 7,727
+11-set.	S/ 10,658	S/ 7,080
+12-set.	S/ 14,932	S/ 3,643
+13-set.	S/ 10,452	S/ 6,425
+14-set.	S/ 9,880	S/ 3,723
+15-set.	S/ 7,618	S/ 6,209
+16-set.	S/ 11,628	S/ 11,213
+17-set.	S/ 12,940	S/ 8,511
+18-set.	S/ 11,824	S/ 7,815
+19-set.	S/ 13,304	S/ 3,063
+20-set.	S/ 6,680	S/ 1,884
+21-set.	S/ 10,720	S/ 863
+22-set.	S/ 12,242	S/ 4,704
+23-set.	S/ 11,246	S/ 3,525
+24-set.	S/ 0	S/ 0
+25-set.	S/ 18,161	S/ 1,827
+S/ 18k
+S/ 14k
+S/ 9.1k
+S/ 4.5k
+S/ 0
+27-ago.
+03-set.
+11-set.
+18-set.
+25-set.
+Ventas por familia de productos
+
+Comparación del periodo seleccionado.
+
+S/ 207,676
+Refrigeración
+S/ 19,163
+Automotriz
+S/ 2,701
+Bombas de agua
+S/ 1,800
+Amoladoras
+Ventas
+Inventario
+Clientes
+Detalle de ventas
+
+Transacciones, montos y variación por periodo.
+
+Exportar
+PERIODO	VENTAS NETAS	MARGEN BRUTO	PEDIDOS	VARIACIÓN
+25-set.	S/ 18,161	N/D	29	+894.0%
+24-set.	S/ 0	N/D	0	N/D
+23-set.	S/ 11,246	N/D	5	+219.0%
+22-set.	S/ 12,242	N/D	5	+160.2%
+21-set.	S/ 10,720	N/D	5	+1142.2%
+20-set.	S/ 6,680	N/D	5	+254.6%
+Productos más vendidos
+
+Por monto facturado en el periodo.
+
+1
+REFRIGERACIÓN - ANTORCHA YC- 35W
+S/ 8,388
+2
+REFRIGERACIÓN - BIMETAL 4 CABLES LG
+S/ 8,220
+3
+REFRIGERACIÓN - CAPACITOR 600UF 250V PEDSU
+S/ 8,052
+4
+REFRIGERACIÓN - CAPACITOR 243-292MFD 125V DUCATTI
+S/ 7,884
+5
+REFRIGERACIÓN - ANTORCHA YC-1M
+S/ 6,595
+Ver todos los productos
+Insights y recomendaciones
+
+Crecimiento en ventas
+
+Las ventas aumentaron: ↗ 102.9% vs. período anterior.
+
+Ver detalle
+
+Stock en riesgo
+
+4 productos con stock crítico requieren atención.
+
+Ver detalle
+
+Familia con mayor aporte
+
+Refrigeración representa 89.8% de las ventas del periodo.
+
+Ver detalle
+Reportes programados
+Programar
+Reportes programados
+
+Se guardan con los filtros actuales y se entregarán primero en tu inbox interno.
+
+Ejecución automática activa
+
+Aún no tienes reportes programados. Crea uno para dejar persistido el alcance y su frecuencia.

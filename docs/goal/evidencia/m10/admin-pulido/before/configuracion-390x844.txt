@@ -1,0 +1,82 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+
+GESTIÓN / ADMINISTRACIÓN
+
+Configuración
+
+Prepara la operación y factura con cambios versionados.
+
+Historial
+
+Completitud de configuración
+
+Lo que falta para operar sin bloqueos.
+
+Empresa
+
+0/6 campos
+
+Locales
+
+6 activos
+
+Series
+
+0 activas
+
+IGV
+
+Sin configurar
+
+Integraciones
+
+0/5 conectadas
+
+Empresa
+Locales
+Series y documentos
+Precios e IGV
+Integraciones
+Branding
+Legal
+Historial
+Cargando configuración empresarial…

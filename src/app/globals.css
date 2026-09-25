@@ -89,6 +89,14 @@
   outline-offset: 3px;
 }
 
+/* The administrative workspace uses blue as its action/focus language. Keep
+   the storefront amber accent out of keyboard focus states inside the shell. */
+.admin-shell :focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.4);
+}
+
 /* Dropdowns keep the brand's calm blue focus ring instead of the amber
    accent used for buttons/links/inputs — the amber halo reads as an error
    state on a select control. Applies to every <select> in the app. */
@@ -124,10 +132,15 @@ select:focus-visible {
 /* Shared admin utilities need to remain readable on the light workspace
    surfaces. Keep these overrides centralized because the modules intentionally
    use Tailwind utility classes for their dense operational layouts. */
-.admin-shell .text-slate-400 { color: #64748b; }
+.admin-shell .text-slate-400 { color: #526b84; }
+.admin-shell .text-slate-500 { color: #475569; }
 .admin-shell .text-emerald-600 { color: #047857; }
 .admin-shell .text-amber-600 { color: #9a5b00; }
 .admin-shell .text-rose-500 { color: #be123c; }
+.admin-shell .text-rose-600,
+.admin-shell .text-red-600 { color: #b42318; }
+.admin-shell .text-blue-600 { color: #1d4ed8; }
+.admin-shell .text-sky-600 { color: #00629d; }
 .admin-shell [class~="text-[#8195aa]"] { color: #607894; }
 .admin-shell [class~="text-[#8195a8]"] { color: #607894; }
 .admin-shell [class~="text-[#8195a7]"] { color: #607894; }
@@ -135,6 +148,40 @@ select:focus-visible {
 .admin-shell [class~="text-[#90a1b9]"] { color: #64748b; }
 .admin-shell [class~="bg-[#2277ee]"] { background-color: #1c65d1; }
 .admin-shell .bg-amber-600 { background-color: #9a5b00; }
+
+/* Readable semantic colors for the dense admin tables and compact badges. */
+.admin-shell [class~="text-[#8296a9]"],
+.admin-shell [class~="text-[#71869c]"],
+.admin-shell [class~="text-[#7185a3]"],
+.admin-shell [class~="text-[#8b9ab1]"],
+.admin-shell [class~="text-[#7d91a5]"],
+.admin-shell [class~="text-[#7890a7]"],
+.admin-shell [class~="text-[#748aa0]"],
+.admin-shell [class~="text-[#6f819c]"],
+.admin-shell [class~="text-[#60779f]"] { color: #526b84; }
+.admin-shell [class~="text-[#159263]"],
+.admin-shell [class~="text-[#0e9b64]"],
+.admin-shell [class~="text-[#079669]"] { color: #087443; }
+.admin-shell [class~="text-[#2277ee]"],
+.admin-shell [class~="text-[#155dfc]"] { color: #1d4ed8; }
+.admin-shell [class~="text-[#bd6b00]"],
+.admin-shell [class~="text-[#c96f16]"],
+.admin-shell [class~="text-[#f58b20]"],
+.admin-shell [class~="text-[#ff8500]"],
+.admin-shell [class~="text-[#ff9500]"] { color: #8a4b08; }
+.admin-shell [class~="text-[#ed4b4b]"],
+.admin-shell [class~="text-[#ed5353]"],
+.admin-shell [class~="text-[#d94848]"],
+.admin-shell [class~="text-[#ec003f]"],
+.admin-shell [class~="text-[#e7000b]"],
+.admin-shell [class~="text-[#ef334e]"],
+.admin-shell [class~="text-[#d8324d]"],
+.admin-shell [class~="text-[#ff2447]"] { color: #b42318; }
+.admin-shell [class~="text-[#f54900]"] { color: #b93800; }
+.admin-shell [class~="text-[#62748e]"],
+.admin-shell [class~="text-[#64748b]"] { color: #475569; }
+.admin-shell [class~="text-[#0084d1]"] { color: #00629d; }
+.admin-shell [class~="text-[#956f3f]"] { color: #704214; }
 
 @theme inline {
   --color-background: var(--background);

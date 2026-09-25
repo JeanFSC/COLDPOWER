@@ -11,7 +11,10 @@ import { can } from "@/lib/roles";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 import { withRuntimeCache } from "@/lib/runtime-cache";
 import { opportunityStageProbability } from "@/lib/opportunity-stage-config";
+import { deltaPct, formatPeriodDelta } from "@/lib/period-metrics";
 import { isActiveOrderStatus, getPipelineMacroStage, PIPELINE_MACRO_STAGE_ORDER, PIPELINE_MACRO_STAGE_LABELS, buildKpiView, resolveGranularity } from "@/lib/dashboard-definitions";
+import { actionLabel as auditActionLabel, entityLabel as auditEntityLabel } from "@/lib/audit-contract";
+import { getOpenQuoteCount } from "@/lib/quote-repository";
 
 type Window = { from: Date; to: Date };
 export type DashboardActor = { userId?: string; role: AppRole };
@@ -58,7 +61,7 @@ export type DashboardComparisonInput = {
 export function dashboardComparisons(input: DashboardComparisonInput) {
   const compare = (metric: { current: number; previous: number }) => ({
     ...metric,
-    percentage: metric.previous === 0 ? null : ((metric.current - metric.previous) / metric.previous) * 100,
+    percentage: deltaPct(metric.current, metric.previous),
   });
   return {
     sales: compare(input.sales),
@@ -137,7 +140,7 @@ const pipelineLabels: Record<string, string> = { NEW: "Nueva", CONTACTED: "Conta
 const statusLabels: Record<string, string> = { ACTIVE: "Activo", INACTIVE: "Inactivo", SUSPENDED: "Suspendido" };
 const developmentFixtureAuditExclusions = ["cp-mock-v1", "cp-dashboard-v2", "cp-dashboard-v3", "cp-dashboard-v4"];
 const entityLabels: Record<string, string> = { product: "Producto", products: "Productos", sale: "Venta", order: "Pedido", quote: "Cotización", opportunity: "Oportunidad", user: "Usuario", payment: "Pago", inventory: "Inventario", company_settings: "Configuración empresarial" };
-const actionLabels: Record<string, string> = { "catalog.publication_status_changed": "Cambió el estado de publicación", "catalog.duplicate_decision_changed": "Revisó un posible duplicado", "catalog.product_editorial_updated": "Producto actualizado", "catalog.product_created": "Creó un producto", "catalog.media_associated": "Asoció una imagen", "catalog.media_removed": "Quitó una imagen", "user.role_changed": "Cambió el rol de un usuario", "inventory.adjustment": "Ajustó inventario", PRODUCT_CREATED: "Creó un producto", PRODUCT_PUBLICATION_CHANGED: "Cambió el estado de publicación", PRODUCT_DUPLICATE_REVIEWED: "Revisó un posible duplicado", PRODUCT_MEDIA_ASSOCIATED: "Asoció una imagen", PRODUCT_MEDIA_REMOVED: "Quitó una imagen" };
+const actionLabels: Record<string, string> = { "catalog.publication_status_changed": "Cambió el estado de publicación", "catalog.duplicate_decision_changed": "Revisó un posible duplicado", "catalog.product_editorial_updated": "Actualizó un producto", "catalog.product_created": "Creó un producto", "catalog.media_associated": "Asoció una imagen", "catalog.media_removed": "Quitó una imagen", "user.role_changed": "Cambió el rol de un usuario", "inventory.adjustment": "Ajustó inventario", "payments.created": "Registró un pago", "payments.status_changed": "Actualizó el estado de un pago", "payment.status_changed": "Actualizó el estado de un pago", "orders.status_changed": "Actualizó el estado de un pedido", "sales.status_changed": "Actualizó el estado de una venta", "quotes.status_changed": "Actualizó el estado de una cotización", "opportunities.created": "Creó una oportunidad", PRODUCT_CREATED: "Creó un producto", PRODUCT_PUBLICATION_CHANGED: "Cambió el estado de publicación", PRODUCT_DUPLICATE_REVIEWED: "Revisó un posible duplicado", PRODUCT_MEDIA_ASSOCIATED: "Asoció una imagen", PRODUCT_MEDIA_REMOVED: "Quitó una imagen" };
 Object.assign(entityLabels, { customer: "Cliente" });
 Object.assign(actionLabels, {
   "pricing.price_updated": "Actualizó un precio",
@@ -547,7 +550,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     return [row.sellerId, { quotes: Number(row.quoteCount ?? 0), conversion: denominator ? (converted / denominator) * 100 : null }] as const;
   }));
   const recentActivityView = recentActivity
-    .map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? "Actualización registrada", entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? "Registro"), actorName: row.actorName || "Sistema" }))
+    .map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? auditActionLabel(row.action), entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? auditEntityLabel(row.entityType)), actorName: row.actorName || "Sistema" }))
     // Audit data can contain repeated fixture events with the same user-facing identity.
     // Keep the newest representative so the dashboard does not turn one event into
     // several indistinguishable cards; the audit module still exposes the full log.
@@ -614,7 +617,8 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     topProducts: topProducts.map((row) => {
       const revenue = Number(row.revenue);
       const previousRevenue = topProductPreviousRevenueById.get(row.id) ?? 0;
-      return { ...row, units: Number(row.units), revenue, primaryImageUrl: productMedia.get(row.id)?.[0] ?? null, trend: fillProductRevenueTrend(range, topProductTrendById.get(row.id) ?? []), trendPercent: previousRevenue > 0 ? ((revenue - previousRevenue) / previousRevenue) * 100 : null };
+       const trend = formatPeriodDelta(revenue, previousRevenue);
+       return { ...row, units: Number(row.units), revenue, primaryImageUrl: productMedia.get(row.id)?.[0] ?? null, trend: fillProductRevenueTrend(range, topProductTrendById.get(row.id) ?? []), trendPercent: trend.value, trendLabel: trend.label, trendDirection: trend.direction };
     }),
     topCustomers: topCustomers.map((row) => ({ ...row, orders: Number(row.orders), revenue: Number(row.revenue), lastPurchase: topCustomerLatestById.get(row.id) ?? null })),
     topSellers: topSellers.map((row) => {
@@ -653,23 +657,45 @@ export async function getHomeActivitySummary(filters: DashboardFilters = {}, act
   const now = new Date();
   const range = resolveWindow(filters, now);
   const productScope = conditionList(productConditions(filters), filters.productId ? eq(products.id, filters.productId) : undefined);
-  const [ordersByStatus, pendingPaymentsRows, pendingApprovalsRows, recentActivityRows] = await Promise.all([
+  const [ordersByStatus, pendingPaymentsRows, pendingApprovalsRows, recentActivityRows, openQuotes] = await Promise.all([
     db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, undefined, filters.currency))).groupBy(orders.status),
     db.select({ count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).where(and(or(inArray(payments.status, ["PENDING", "UNDER_REVIEW"]), sql`${dashboardNetForOrder} > 0 and (${dashboardNetForOrder} < ${orders.total} - 0.005 or ${dashboardNetForOrder} > ${orders.total} + 0.005)`), ...orderConditions(db, filters, undefined, filters.currency))),
     db.select({ count: count() }).from(products).where(and(...productScope, eq(products.requiresReview, true))),
-    db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(128),
+    db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, entityId: auditLogs.entityId, actorId: auditLogs.actorId, correlationId: auditLogs.correlationId, actorName: sql<string>`coalesce(${users.name}, 'Sistema')`, createdAt: auditLogs.createdAt }).from(auditLogs).leftJoin(users, eq(auditLogs.actorId, users.id)).where(and(gte(auditLogs.createdAt, range.from), lt(auditLogs.createdAt, range.to), or(isNull(auditLogs.correlationId), notInArray(auditLogs.correlationId, developmentFixtureAuditExclusions)))).orderBy(desc(auditLogs.createdAt)).limit(128),
+    getOpenQuoteCount(),
   ]);
   const activeOrderCount = ordersByStatus.filter((row) => isActiveOrderStatus(row.status)).reduce((sum, row) => sum + Number(row.count), 0);
   const activityProductIds = recentActivityRows.filter((row) => row.entityType === "product").map((row) => row.entityId);
-  const activityProducts = activityProductIds.length
-    ? await db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})` }).from(products).where(inArray(products.id, activityProductIds))
-    : [];
-  const activityProductLabels = new Map(activityProducts.map((row) => [row.id, row.name]));
+  const idsFor = (entityType: string) => recentActivityRows.filter((row) => row.entityType === entityType).map((row) => row.entityId);
+  const activitySalesIds = idsFor("sale");
+  const activityOrderIds = idsFor("order");
+  const activityQuoteIds = idsFor("quote");
+  const activityOpportunityIds = idsFor("opportunity");
+  const activityPaymentIds = idsFor("payment");
+  const activityCustomerIds = idsFor("customer");
+  const [activityProducts, activitySales, activityOrders, activityQuotes, activityOpportunities, activityPayments, activityCustomers] = await Promise.all([
+    activityProductIds.length ? db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.normalizedName}, ${products.originalName})` }).from(products).where(inArray(products.id, activityProductIds)) : Promise.resolve([]),
+    activitySalesIds.length ? db.select({ id: sales.id, code: sales.code }).from(sales).where(inArray(sales.id, activitySalesIds)) : Promise.resolve([]),
+    activityOrderIds.length ? db.select({ id: orders.id, code: orders.code }).from(orders).where(inArray(orders.id, activityOrderIds)) : Promise.resolve([]),
+    activityQuoteIds.length ? db.select({ id: quotes.id, code: quotes.trackingCode }).from(quotes).where(inArray(quotes.id, activityQuoteIds)) : Promise.resolve([]),
+    activityOpportunityIds.length ? db.select({ id: opportunities.id, code: opportunities.code }).from(opportunities).where(inArray(opportunities.id, activityOpportunityIds)) : Promise.resolve([]),
+    activityPaymentIds.length ? db.select({ id: payments.id, reference: payments.providerReference }).from(payments).where(inArray(payments.id, activityPaymentIds)) : Promise.resolve([]),
+    activityCustomerIds.length ? db.select({ id: customers.id, name: customers.name }).from(customers).where(inArray(customers.id, activityCustomerIds)) : Promise.resolve([]),
+  ]);
+  const activityEntityLabels = new Map<string, string>();
+  for (const row of activityProducts) activityEntityLabels.set(`product:${row.id}`, row.name);
+  for (const row of activitySales) activityEntityLabels.set(`sale:${row.id}`, `Venta ${row.code}`);
+  for (const row of activityOrders) activityEntityLabels.set(`order:${row.id}`, `Pedido ${row.code}`);
+  for (const row of activityQuotes) activityEntityLabels.set(`quote:${row.id}`, `Cotización ${row.code}`);
+  for (const row of activityOpportunities) activityEntityLabels.set(`opportunity:${row.id}`, `Oportunidad ${row.code}`);
+  for (const row of activityPayments) activityEntityLabels.set(`payment:${row.id}`, row.reference ? `Pago ${row.reference}` : "Pago registrado");
+  for (const row of activityCustomers) activityEntityLabels.set(`customer:${row.id}`, row.name);
   const recentActivity = recentActivityRows
-    .map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? "Actualización registrada", entityLabel: row.entityType === "product" ? (activityProductLabels.get(row.entityId) ?? "Producto") : (entityLabels[row.entityType] ?? "Registro"), actorName: row.actorName || "Sistema" }))
+    .map((row) => ({ ...row, actionLabel: actionLabels[row.action] ?? auditActionLabel(row.action), entityLabel: activityEntityLabels.get(`${row.entityType}:${row.entityId}`) ?? entityLabels[row.entityType] ?? auditEntityLabel(row.entityType), actorName: row.actorName || "Sistema" }))
     .filter((row, index, rows) => index === rows.findIndex((candidate) => candidate.actionLabel === row.actionLabel && candidate.entityType === row.entityType && candidate.entityLabel === row.entityLabel && candidate.actorName === row.actorName));
   return {
     orders: { total: activeOrderCount },
+    openQuotes,
     pendingPayments: Number(pendingPaymentsRows[0]?.count ?? 0),
     pendingApprovalsCount: Number(pendingApprovalsRows[0]?.count ?? 0),
     recentActivity,

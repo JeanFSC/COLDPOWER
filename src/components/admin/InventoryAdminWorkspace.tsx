@@ -736,7 +736,7 @@ function GlobalMovementsDrawer({
                       {movement.sku}
                     </Link>
                   </div>
-                  <p className="mt-1 truncate text-[11px] font-extrabold text-slate-700">
+                   <p className="mt-1 max-w-[320px] truncate text-[11px] font-extrabold text-slate-700" title={movement.productName}>
                     {movement.productName}
                   </p>
                   <p className="mt-1 text-[11px] text-slate-400">
@@ -1998,7 +1998,7 @@ function InventoryOperationsTabs({
                         {movement.sku}
                       </Link>
                     </div>
-                    <p className="mt-0.5 truncate text-[11px] font-extrabold text-slate-700">
+                     <p className="mt-0.5 max-w-[360px] truncate text-[11px] font-extrabold text-slate-700" title={movement.productName}>
                       {movement.productName}
                     </p>
                     <p className="mt-1 truncate text-[11px] text-slate-400">
@@ -2979,7 +2979,7 @@ export function InventoryAdminWorkspace({
             <button
               type="button"
               onClick={() => setDialog("adjustment")}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-amber-600 px-3.5 text-[11px] font-extrabold text-white shadow-[0_6px_14px_rgba(245,139,32,0.2)] hover:bg-amber-600"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[11px] font-extrabold text-white shadow-[0_6px_14px_rgba(37,99,235,0.2)] hover:bg-blue-700"
             >
               <Plus className="h-3.5 w-3.5" />
               Ajustar inventario
@@ -3606,7 +3606,7 @@ function InventoryDetailDrawer({
               <div>
                 <p className="text-[11px] font-black text-slate-700">Actividad reciente</p>
                 {movements.slice(0, 3).map((movement) => (
-                  <p key={movement.id} className="mt-2 text-[11px] text-slate-500">
+                   <p key={movement.id} className="mt-2 max-w-[420px] truncate text-[11px] text-slate-500" title={`${movement.label} · ${movement.productName}`}>
                     {movement.label} ·{" "}
                     {movement.entry
                       ? `+${number(movement.entry)}`
@@ -3891,8 +3891,8 @@ function MovementsRail({
                 <MovementIcon className="h-3 w-3" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[11px] font-bold text-slate-700">{movement.label}</p>
-                <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                <p className="max-w-[250px] truncate text-[11px] font-bold text-slate-700" title={movement.label}>{movement.label}</p>
+                <p className="mt-0.5 max-w-[320px] truncate text-[11px] text-slate-400" title={`${movement.sku} · ${movement.productName}`}>
                   <Link
                     href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
                     className="font-mono font-extrabold text-blue-600 underline"

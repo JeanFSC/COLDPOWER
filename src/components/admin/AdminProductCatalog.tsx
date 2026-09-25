@@ -44,6 +44,7 @@ import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 import { CatalogImportDialog } from "@/components/admin/CatalogImportDialog";
 import { DuplicateDecisionControl } from "@/components/admin/DuplicateDecisionControl";
 import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
+import { formatPeriodDelta } from "@/lib/period-metrics";
 
 const panel =
   "min-w-0 rounded-[14px] border border-[#e2eaf1] bg-white shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
@@ -1597,7 +1598,7 @@ function BulkWorkspace({
                   type="button"
                   onClick={() => setOperation("publish")}
                   disabled={!selected.length}
-                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#ff830e] text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 text-[10px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="h-3.5 w-3.5" />
                   Publicar seleccionados
@@ -2045,7 +2046,7 @@ function PublicationPreflight({
               setBusy(true);
               onConfirm();
             }}
-            className="h-9 rounded-lg bg-[#ff830e] px-4 text-[10px] font-extrabold text-white disabled:opacity-40"
+            className="h-9 rounded-lg bg-blue-600 px-4 text-[10px] font-extrabold text-white disabled:opacity-40"
           >
             {busy ? "Publicando…" : `Publicar ${data.eligible} productos`}
           </button>
@@ -2315,7 +2316,7 @@ export function AdminProductCatalog({
               type="button"
               onClick={() => setPublishMenu((value) => !value)}
               disabled={!permissions.canPublish || busyAction}
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#ff830e] px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(255,131,14,0.16)] disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(37,99,235,0.16)] disabled:cursor-not-allowed disabled:opacity-45"
             >
               <Send className="h-3.5 w-3.5" />
               Publicar cambios
@@ -2367,26 +2368,21 @@ export function AdminProductCatalog({
         {metricCards.map(({ label, value, trend, improvement, tone, Icon, href }) => {
           const previousValue = trend.previousValue;
           const difference = previousValue === null ? null : value - previousValue;
-          const percentage =
-            difference === null || previousValue === null || previousValue === 0
-              ? null
-              : Math.abs((difference / previousValue) * 100);
+          const periodDelta = previousValue === null ? null : formatPeriodDelta(value, previousValue);
           const comparisonLabel =
             difference === null
               ? `Comparación disponible en ${trend.periodDays} días`
-              : percentage === null
-                ? `${difference > 0 ? "+" : ""}${difference.toLocaleString("es-PE")} vs. período anterior`
-                : `${difference > 0 ? "+" : difference < 0 ? "−" : ""}${percentage.toLocaleString("es-PE", { maximumFractionDigits: 1 })}% vs. período anterior`;
+              : periodDelta?.label ?? "Sin base comparable";
           const changeIsGood =
-            difference === null || difference === 0
+            difference === null || periodDelta?.value === null || periodDelta?.value === 0
               ? null
               : improvement === "up"
-                ? difference > 0
-                : difference < 0;
+                ? periodDelta?.direction === "up"
+                : periodDelta?.direction === "down";
           const ComparisonIcon =
-            difference === null || difference === 0
+            difference === null || periodDelta?.value === null || periodDelta?.value === 0
               ? null
-              : difference > 0
+              : periodDelta?.direction === "up"
                 ? ArrowUpRight
                 : ArrowDownRight;
           return (
@@ -2622,7 +2618,7 @@ export function AdminProductCatalog({
             <table className="w-full min-w-[930px] text-left">
               <thead className="border-b border-[#e9eff4] bg-[#fbfcfd] text-[8px] font-extrabold uppercase tracking-[0.07em] text-[#7d91a5]">
                 <tr>
-                  <th className="w-9 px-3 py-3" />
+                  <th className="w-9 px-3 py-3"><span className="sr-only">Selección</span></th>
                   <SortHeader label="SKU" sort="sku" queryString={queryString} />
                   <SortHeader label="Producto" sort="name" queryString={queryString} />
                   <SortHeader label="Categoría" sort="category" queryString={queryString} />

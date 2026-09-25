@@ -89,6 +89,13 @@ test("usa una categoría neutra para una familia desconocida y un genérico si t
   assert.equal(genericResult.source, "generic");
 });
 
+test("mantiene una imagen neutra para carbones de amoladora sin inventar una familia HVAC", () => {
+  const result = resolveProductImage({ family: "Carbones y escobillas", category: "Amoladoras" });
+  assert.equal(result.src, GENERIC_PRODUCT_IMAGE);
+  assert.equal(result.source, "generic");
+  assert.notEqual(result.src, "/images/products/placeholder-compresores.webp");
+});
+
 test("prioriza media publicada y descarta fallbacks heredados antes de resolver la familia", () => {
   const mediaResult = resolveProductImage({
     images: ["/api/media/asset-real", "/images/products/product-placeholder.webp"],

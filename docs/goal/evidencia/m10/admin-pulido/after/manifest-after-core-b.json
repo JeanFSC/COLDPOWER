@@ -1,0 +1,246 @@
+{
+  "phase": "after",
+  "qaSet": "core-b",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T20:50:35.722Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "precios",
+      "route": "/admin/precios",
+      "status": 200,
+      "startedAt": "2026-09-25T20:48:03.448Z",
+      "action": {
+        "type": "button",
+        "label": "más filtros"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\precios-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\precios-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\precios-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\precios-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-precios-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 41,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-precios-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 41,
+          "violationIds": []
+        }
+      },
+      "title": "Precios | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "status": 200,
+      "startedAt": "2026-09-25T20:48:36.689Z",
+      "action": {
+        "type": "button",
+        "label": "más filtros"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\auditoria-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-auditoria-1920x1080.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 39,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-auditoria-390x844.json",
+          "violations": 0,
+          "incomplete": 0,
+          "passes": 39,
+          "violationIds": []
+        }
+      },
+      "title": "Auditoría | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "usuarios",
+      "route": "/admin/usuarios",
+      "status": 200,
+      "startedAt": "2026-09-25T20:49:05.786Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\usuarios-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-usuarios-1920x1080.json",
+          "violations": 1,
+          "incomplete": 2,
+          "passes": 44,
+          "violationIds": [
+            "color-contrast"
+          ]
+        },
+        "mobile": {
+          "fileName": "axe-usuarios-390x844.json",
+          "violations": 1,
+          "incomplete": 2,
+          "passes": 44,
+          "violationIds": [
+            "color-contrast"
+          ]
+        }
+      },
+      "title": "Usuarios | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "compras",
+      "route": "/admin/compras",
+      "status": 200,
+      "startedAt": "2026-09-25T20:49:22.656Z",
+      "action": {
+        "type": "toggle",
+        "label": "aria-expanded=false"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\compras-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\compras-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\compras-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\compras-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-compras-1920x1080.json",
+          "violations": 1,
+          "incomplete": 3,
+          "passes": 40,
+          "violationIds": [
+            "color-contrast"
+          ]
+        },
+        "mobile": {
+          "fileName": "axe-compras-390x844.json",
+          "violations": 0,
+          "incomplete": 3,
+          "passes": 40,
+          "violationIds": []
+        }
+      },
+      "title": "Compras | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "inventario",
+      "route": "/admin/inventario",
+      "status": 200,
+      "startedAt": "2026-09-25T20:49:53.448Z",
+      "action": {
+        "type": "button",
+        "label": "más filtros"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inventario-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inventario-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inventario-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\inventario-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-inventario-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 48,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-inventario-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 43,
+          "violationIds": []
+        }
+      },
+      "title": "Inventario | Panel admin ColdPower | ColdPower"
+    },
+    {
+      "name": "catalogo",
+      "route": "/admin/catalogo",
+      "status": 200,
+      "startedAt": "2026-09-25T20:50:18.287Z",
+      "action": {
+        "type": "button",
+        "label": "más filtros"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\catalogo-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\catalogo-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\catalogo-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\catalogo-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-catalogo-1920x1080.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-catalogo-390x844.json",
+          "violations": 0,
+          "incomplete": 2,
+          "passes": 46,
+          "violationIds": []
+        }
+      },
+      "title": "Catálogo | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [
+      "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead.",
+      "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead.",
+      "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    ],
+    "pageErrors": [
+      "SyntaxError: Invalid or unexpected token",
+      "SyntaxError: Invalid or unexpected token",
+      "Error: Internal Next.js error: Router action dispatched before initialization.",
+      "SyntaxError: Invalid or unexpected token",
+      "Error: Internal Next.js error: Router action dispatched before initialization.",
+      "Error: Internal Next.js error: Router action dispatched before initialization.",
+      "Error: Internal Next.js error: Router action dispatched before initialization."
+    ],
+    "requestFailures": []
+  }
+}

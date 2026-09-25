@@ -74,6 +74,7 @@ import {
 import { getHomeActivitySummary, getOperationsDashboard } from "@/lib/operations-dashboard";
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import type { OperationsFilters } from "@/lib/operations-contract";
+import { formatPeriodDelta } from "@/lib/period-metrics";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type HomeActivitySummary = Awaited<ReturnType<typeof getHomeActivitySummary>>;
@@ -151,21 +152,26 @@ function Delta({
   /** True for metrics where going up is bad (e.g. stock crítico) — flips the green/red mapping. */
   invert?: boolean;
 }) {
-  if (previous === 0 && unit !== "pp")
+  const periodDelta = formatPeriodDelta(current, previous);
+  if (periodDelta.value === null) {
+    return <span className={`mt-2 block text-[11px] font-bold ${muted}`}>{periodDelta.label}</span>;
+  }
+  const value = unit === "pp" ? current - previous : periodDelta.value ?? 0;
+  if (!Number.isFinite(value)) {
     return <span className={`mt-2 block text-[11px] font-bold ${muted}`}>Sin base comparable</span>;
-  const value = unit === "pp" ? current - previous : ((current - previous) / Math.abs(previous)) * 100;
-  if (!Number.isFinite(value))
-    return <span className={`mt-2 block text-[11px] font-bold ${muted}`}>Sin base comparable</span>;
+  }
   const isGood = invert ? value < 0 : value > 0;
   const isBad = invert ? value > 0 : value < 0;
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Info;
+  const label = unit === "pp"
+    ? `${value === 0 ? "→" : value > 0 ? "↗" : "↘"} ${Math.abs(value).toFixed(1)} pp vs. período anterior`
+    : periodDelta.label;
   return (
     <span
       className={`mt-2 inline-flex items-center gap-1 text-[11px] font-bold ${isGood ? "text-emerald-600" : isBad ? "text-rose-500" : muted}`}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {Math.abs(value).toFixed(1)}
-      {unit} vs. período anterior
+      {label}
     </span>
   );
 }
@@ -262,7 +268,9 @@ function Metric({
           {note ? <div className={`mt-0.5 text-[9px] font-bold ${colors.ink}`}>{note}</div> : null}
         </div>
       </div>
-      <AdminSparkline tone={colors.line} data={sparkline} ariaLabel={`Tendencia de ${label}`} className="mt-1.5 block h-4 w-full" />
+      {sparkline?.length ? (
+        <AdminSparkline tone={colors.line} data={sparkline} ariaLabel={`Tendencia de ${label}`} className="mt-1.5 block h-4 w-full" />
+      ) : null}
     </article>
   );
 }
@@ -627,9 +635,9 @@ function OperationalSummaryPanel({ data }: { data: DashboardData }) {
   const averageTicket = data.salesRange.count > 0 ? data.salesRange.total / data.salesRange.count : null;
   const ticketNote = averageTicket === null
     ? "Sin ventas"
-    : data.previousAverageTicket === null || data.previousAverageTicket === 0
+    : data.previousAverageTicket === null
       ? "Sin base comparable"
-      : `${averageTicket - data.previousAverageTicket >= 0 ? "+" : ""}${(((averageTicket - data.previousAverageTicket) / data.previousAverageTicket) * 100).toFixed(1)}% vs. anterior`;
+      : formatPeriodDelta(averageTicket, data.previousAverageTicket).label;
   return (
     <section className="min-w-0 rounded-[10px] border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.035)] sm:p-6">
       <div className="flex items-baseline gap-2">
@@ -1059,8 +1067,8 @@ function TopProductsPanel({ data }: { data: DashboardData }) {
           </div>
           <div className="divide-y divide-[#f1f4f7]">
             {rows.map((row, index) => {
-              const trend = row.trendPercent;
-              const TrendIcon = trend === null ? null : trend >= 0 ? ArrowUpRight : ArrowDownRight;
+              const comparableTrend = row.trendDirection !== "unavailable";
+              const TrendIcon = !comparableTrend || row.trendDirection === "new" ? null : row.trendDirection === "up" ? ArrowUpRight : ArrowDownRight;
               return (
                 <Link key={row.id} href={`/admin/catalogo?query=${encodeURIComponent(row.sku)}`} className="grid min-h-[64px] grid-cols-[22px_minmax(0,1fr)_62px_84px_70px] items-center gap-2.5 py-3 transition hover:bg-slate-50">
                   <span className="text-center text-[12px] font-black text-slate-400">{index + 1}</span>
@@ -1078,9 +1086,9 @@ function TopProductsPanel({ data }: { data: DashboardData }) {
                   </span>
                   <span className="truncate text-center text-[12px] font-semibold leading-4 text-slate-600">{number(row.units)}</span>
                   <span className="truncate text-[12px] font-semibold leading-4 text-slate-600">{money(row.revenue, data.currency)}</span>
-                  <span className={`flex min-w-0 items-center ${trend === null ? "w-16" : "gap-1 text-[12px] font-extrabold"} ${trend === null ? "text-slate-400" : trend >= 0 ? "text-emerald-600" : "text-rose-500"}`} title={trend === null ? "Sin período anterior comparable" : "Variación vs. período anterior"}>
-                    {TrendIcon ? <><TrendIcon className="h-4 w-4 shrink-0" aria-hidden="true" />{Math.abs(trend ?? 0).toFixed(0)}%</> : <AdminSparkline tone="blue" data={row.trend} ariaLabel={`Tendencia de ingresos de ${row.name}`} className="mt-0 block h-5 w-full" />}
-                  </span>
+                   <span className={`flex min-w-0 items-center ${!comparableTrend ? "w-16" : "gap-1 text-[11px] font-extrabold"} ${!comparableTrend ? "text-slate-400" : row.trendDirection === "down" ? "text-rose-500" : "text-emerald-600"}`} title={!comparableTrend ? "Sin período anterior comparable" : "Variación vs. período anterior"}>
+                     {comparableTrend ? <>{TrendIcon ? <TrendIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}{row.trendLabel}</> : <AdminSparkline tone="blue" data={row.trend} ariaLabel={`Tendencia de ingresos de ${row.name}`} className="mt-0 block h-5 w-full" />}
+                   </span>
                 </Link>
               );
             })}
@@ -2963,7 +2971,7 @@ export function Tanda2Users({
         >
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MiniValue label="Estado" value={detail.user.status} note="Estado local persistido" icon={CheckCircle2} />
-            <MiniValue label="Último acceso" value={detail.lastAccess ? detail.lastAccess.toLocaleString("es-PE") : "Nunca registrado"} note="Fuente local" icon={Clock3} />
+            <MiniValue label="Último acceso" value={detail.lastAccess ? detail.lastAccess.toLocaleString("es-PE") : "—"} note="Fuente local" icon={Clock3} />
             <MiniValue label="Clerk" value={detail.user.clerkSyncStatus} note={detail.user.clerkSyncError ?? "Sin error de sincronización"} icon={RefreshCw} />
             <MiniValue label="Alta" value={detail.user.createdAt.toLocaleDateString("es-PE")} note={`Actualizado ${detail.user.updatedAt.toLocaleDateString("es-PE")}`} icon={FileText} />
           </div>
@@ -3410,6 +3418,26 @@ export function Tanda2Home({
         ...availableModules.filter((item) => !configuredFavorites.includes(item)),
       ]
     : availableModules;
+  const recentCustomerEvents = data?.recentActivity.filter((entry) => entry.entityType === "customer").length ?? 0;
+  function frequentModuleDetail(href: string) {
+    if (href === "/admin/catalogo") {
+      const pending = data?.pendingApprovalsCount ?? 0;
+      return pending ? `${number(pending)} productos por revisar` : "Catálogo sin pendientes";
+    }
+    if (href === "/admin/inventario") {
+      const critical = snapshot?.metrics.criticalStock ?? 0;
+      return critical ? `${number(critical)} alertas de stock` : "Sin alertas críticas";
+    }
+    if (href === "/admin/cotizaciones") {
+      return `${number(data?.openQuotes)} cotizaciones abiertas`;
+    }
+    if (href === "/admin/clientes") {
+      return recentCustomerEvents ? `${number(recentCustomerEvents)} cambios recientes` : "Sin cambios recientes";
+    }
+    if (href === "/admin/operaciones") return `${number(taskCount)} tareas en cola`;
+    if (href === "/admin/auditoria") return `${number(data?.recentActivity.length)} eventos recientes`;
+    return `${number(data?.recentActivity.length)} eventos disponibles`;
+  }
   const configuredQuickActions = (preferences?.quickActions ?? [])
     .map((id) => availableQuickActions.find((item) => item.id === id))
     .filter((value): value is (typeof availableQuickActions)[number] => Boolean(value));
@@ -3452,7 +3480,7 @@ export function Tanda2Home({
                 <span>
                   <strong className="block text-[10px] text-slate-700">{label}</strong>
                   <span className={`mt-0.5 block text-[9px] font-semibold ${muted}`}>
-                    Abrir módulo
+                    {frequentModuleDetail(href)}
                   </span>
                 </span>
                 <ChevronRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
@@ -3541,22 +3569,31 @@ export function Tanda2Home({
         />
       </T2PageHeader>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="Mis tareas hoy" value={number(taskCount)} icon={Workflow} color="blue" />
+        <Metric
+          label="Mis tareas hoy"
+          value={number(taskCount)}
+          note={taskCount ? "Cola operativa actual" : "Sin tareas asignadas"}
+          icon={Workflow}
+          color="blue"
+        />
         <Metric
           label="Seguimientos vencidos"
           value={number(snapshot?.metrics.overdueTasks)}
+          note={snapshot?.metrics.overdueTasks ? "Requieren atención en CRM" : "Sin seguimientos vencidos"}
           icon={Clock3}
           color="red"
         />
         <Metric
           label="Notificaciones no leídas"
           value={number(unreadCount)}
+          note={unreadCount ? "Pendientes de revisar" : "Bandeja al día"}
           icon={Bell}
           color="purple"
         />
         <Metric
           label="Pendientes asignados"
           value={number(data?.pendingApprovalsCount)}
+          note={data?.pendingApprovalsCount ? "Productos que requieren revisión" : "Sin aprobaciones pendientes"}
           icon={CheckCircle2}
           color="orange"
         />
@@ -3564,7 +3601,7 @@ export function Tanda2Home({
       <div className="grid gap-3 xl:grid-cols-3">
         {orderedWidgets.map((widgetId) => renderWidget(widgetId))}
       </div>
-      <div className="grid gap-3 xl:grid-cols-2">
+      <div className="grid items-start gap-3 xl:grid-cols-2">
         <Panel
           title="Actividad del equipo"
           subtitle={
@@ -3603,6 +3640,7 @@ export function Tanda2Home({
         <Panel
           title="Resumen operativo de hoy"
           subtitle="Monitorea el trabajo pendiente y el estado del día"
+          className="h-fit self-start !pb-3"
           action={
             <Link href="/admin/operaciones" className="text-[10px] font-extrabold text-blue-600">
               Ver detalle

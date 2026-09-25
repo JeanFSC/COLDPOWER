@@ -194,11 +194,14 @@ export function SalesControlCenter({
     const params = new URLSearchParams(queryString);
     const directId = params.get("saleId");
     if (directId) return directId;
+    const quoteId = params.get("quoteId");
+    const orderId = params.get("orderId");
+    const customerId = params.get("customerId");
     const ownerItem = page.items.find(
       (item) =>
-        item.quoteId === params.get("quoteId") ||
-        item.orderId === params.get("orderId") ||
-        item.customerId === params.get("customerId"),
+        (quoteId && item.quoteId === quoteId) ||
+        (orderId && item.orderId === orderId) ||
+        (customerId && item.customerId === customerId),
     );
     return ownerItem?.id ?? null;
   });

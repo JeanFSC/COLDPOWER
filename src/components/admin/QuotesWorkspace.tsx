@@ -418,8 +418,8 @@ export function QuotesWorkspace({
     .sort((a, b) => new Date(a.validUntil!).getTime() - new Date(b.validUntil!).getTime())
     .slice(0, 5);
   return (
-    <div className="min-h-full bg-[#f7fafc] px-4 pb-12 pt-7 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1550px]">
+    <div className="min-h-full bg-[#f7fafc] pb-12 pt-0">
+      <div className="mx-auto w-full max-w-none">
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
@@ -927,17 +927,17 @@ function KpiCard({
 function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: string) => void }) {
   return (
     <tr className="group hover:bg-[#fbfdff]">
-      <td className="px-5 py-4">
+      <td className="px-5 py-3">
         <button type="button" onClick={() => onOpen(quote.id)} className="text-left">
-          <span className="font-mono text-xs font-extrabold text-blue-600">
+          <span className="block whitespace-nowrap font-mono text-xs font-extrabold text-blue-600">
             {quote.trackingCode}
           </span>
-          <span className="mt-1 block text-[11px] text-[#526578]">
+          <span className="mt-1 block whitespace-nowrap text-[11px] text-[#526578]">
             v{quote.currentVersion || 1} · {quote.preferredContact || "Contacto"}
           </span>
         </button>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <button type="button" onClick={() => onOpen(quote.id)} className="max-w-[160px] text-left">
           <span className="block truncate text-sm font-extrabold text-slate-900">{quote.name}</span>
           <span className="mt-1 block truncate text-[11px] text-[#526578]">
@@ -945,7 +945,7 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
           </span>
         </button>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <span className="block max-w-[190px] truncate text-xs font-semibold text-[#415d75]">
           {quote.itemsPreview[0]?.name || quote.productName || "Consulta general"}
         </span>
@@ -953,38 +953,35 @@ function QuoteTableRow({ quote, onOpen }: { quote: QuoteListItem; onOpen: (id: s
           {quote.itemCount} {quote.itemCount === 1 ? "producto" : "productos"}
         </span>
       </td>
-      <td className="px-3 py-4 text-right">
+      <td className="px-3 py-3 text-right">
         <span className="whitespace-nowrap text-sm font-black text-slate-900">
           {amount(quote.currency, quote.total)}
         </span>
-        <span className="mt-1 block text-[10px] text-[#526578]">
-          {quote.currency || "Moneda pendiente"}
-        </span>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <StatusBadge status={quote.workflowStatus} />
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <span
-          className={`text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-rose-700" : "text-[#536f87]"}`}
+          className={`whitespace-nowrap text-xs font-bold ${quote.validUntil && new Date(quote.validUntil) < new Date() && ["SENT", "FOLLOW_UP"].includes(quote.workflowStatus) ? "text-rose-700" : "text-[#536f87]"}`}
         >
           {quote.validUntil ? dateLabel(quote.validUntil) : "Por definir"}
         </span>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <span className="block max-w-[115px] truncate text-xs font-bold text-[#536f87]">
           {quote.seller?.name || "Sin asignar"}
         </span>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-3">
         <span className="block max-w-[130px] truncate text-xs font-semibold text-[#536f87]">
           {quote.nextAction || (quote.workflowStatus === "ACCEPTED" ? "Convertir" : "Por definir")}
         </span>
       </td>
-      <td className="px-3 py-4 whitespace-nowrap text-xs text-[#526578]">
+      <td className="px-3 py-3 whitespace-nowrap text-xs text-[#526578]">
         {dateLabel(quote.updatedAt)}
       </td>
-      <td className="px-4 py-4">
+      <td className="px-4 py-3">
         <button
           type="button"
           onClick={() => onOpen(quote.id)}

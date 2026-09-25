@@ -1,0 +1,362 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Gestión de clientes
+
+Administra tu cartera de clientes y su actividad comercial.
+
+Exportar
+Nuevo cliente
+
+Clientes registrados
+
+69
+
+Total filtrado
+
+Clientes activos
+
+55
+
+Estado activo
+
+Por atender
+
+68
+
+Acción comercial pendiente
+
+Oportunidades activas
+
+78
+
+En pipeline
+
+Estado
+ACTIVE
+PROSPECT
+Tipo de cliente
+Empresa
+Consumidor
+Técnico
+Empresa
+Distribuidor
+Responsable
+Carlos Ramírez
+Colaborador 01
+Colaborador 02
+Colaborador 03
+Colaborador 04
+Colaborador 05
+Colaborador 06
+Colaborador 07
+Colaborador 08
+Colaborador 09
+Colaborador 10
+Colaborador 11
+Colaborador 12
+Colaborador 13
+Colaborador 14
+Colaborador 15
+Colaborador 16
+María Torres
+Filtros
+Clientes
+
+69 resultados
+
+CLIENTE	TIPO	CONTACTO	TELÉFONO	EMAIL	CIUDAD	ACTIVIDAD RECIENTE	ESTADO	RESPONSABLE	
+
+Colaborador 01
+Sin documento registrado
+	Consumidor	Colaborador 01	+51 900 200 100	empleado.001@coldpower.local	Lima	
+Sin actividad
+Sin actividad	Activo	Sin asignar	
+
+
+Jean QA M10-03
+Sin documento registrado
+	Consumidor	Jean QA M10-03	999999999	—	—	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+QA B1.1 1790316452351
+Doc. 77889911
+	Consumidor	QA B1.1 1790316452351	999888777	b11.1790316452351@example.test	Lima / Lima / Miraflores	
+Cotización v1 enviada
+25 set. 2026	Prospecto	Sin asignar	
+
+
+QA B1.4 1790311164938
+Doc. 77889922
+	Consumidor	QA B1.4 1790311164938	999888778	b14.1790311136970@example.test	Lima / Lima / San Isidro	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+QA B2.3 1790316095016
+Sin documento registrado
+	Consumidor	QA B2.3 1790316095016	999888771	b23-payment.1790314318995@example.test	—	
+Sin actividad
+Sin actividad	Activo	Sin asignar	
+
+
+QA R3.6 1790309076718
+Sin documento registrado
+	Consumidor	QA R3.6 1790309076718	999076718	—	—	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+QA R3.6 1790309129894
+Sin documento registrado
+	Consumidor	QA R3.6 1790309129894	999129894	—	—	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+QA R3.7 1790310332956
+Sin documento registrado
+	Consumidor	QA R3.7 1790310332956	999332956	r37.1790310332956@example.test	Lima / Lima / San Isidro	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+QA R3.7 1790310377720
+Sin documento registrado
+	Consumidor	QA R3.7 1790310377720	999377721	r37.1790310377720@example.test	Lima / Lima / San Isidro	
+Sin actividad
+Sin actividad	Prospecto	Sin asignar	
+
+
+Cliente corporativo 007
+RUC 20610000000
+	Distribuidor	Cliente corporativo 007 S.A.C.	+51 910 100 100	compras.007@empresa-corporativa.local	Lima / Lima	
+Llamada comercial
+17 set. 2026	Prospecto	María Torres	
+
+
+Cliente corporativo 034
+RUC 20610000027
+	Empresa	Cliente corporativo 034 S.A.C.	+51 910 127 127	compras.034@empresa-corporativa.local	Cusco / Cusco	
+Seguimiento de cotización
+18 set. 2026	Activo	Colaborador 08	
+
+
+Restaurante Costa Azul
+RUC 20501010101
+	Empresa	Restaurante Costa Azul S.A.C.	51910003001	compras@costaazul.pe	Lima / Lima / Miraflores	
+Llamada comercial
+23 set. 2026	Activo	Carlos Ramírez	
+
+
+Cliente corporativo 008
+RUC 20610000001
+	Empresa	Cliente corporativo 008 S.A.C.	+51 910 101 101	compras.008@empresa-corporativa.local	Arequipa / Arequipa	
+Seguimiento de cotización
+16 set. 2026	Activo	Carlos Ramírez	
+
+
+Cliente corporativo 035
+RUC 20610000028
+	Distribuidor	Cliente corporativo 035 S.A.C.	+51 910 128 128	compras.035@empresa-corporativa.local	Piura / Piura	
+Llamada comercial
+17 set. 2026	Activo	Colaborador 09	
+
+
+Cliente corporativo 009
+RUC 20610000002
+	Empresa	Cliente corporativo 009 S.A.C.	+51 910 102 102	compras.009@empresa-corporativa.local	Trujillo / Trujillo	
+Llamada comercial
+15 set. 2026	Activo	Colaborador 01	
+
+
+Cliente corporativo 036
+RUC 20610000029
+	Empresa	Cliente corporativo 036 S.A.C.	+51 910 129 129	compras.036@empresa-corporativa.local	Chiclayo / Chiclayo	
+Seguimiento de cotización
+16 set. 2026	Activo	Colaborador 10	
+
+
+Frío Norte Servicios
+Doc. 10450022001
+	Técnico	Frío Norte Servicios	+51 910 003 002	contacto@frionorte.pe	La Libertad / Trujillo	
+Seguimiento de cotización
+22 set. 2026	Activo	Carlos Ramírez	
+
+
+Cliente corporativo 010
+RUC 20610000003
+	Empresa	Cliente corporativo 010 S.A.C.	+51 910 103 103	compras.010@empresa-corporativa.local	Cusco / Cusco	
+Seguimiento de cotización
+14 set. 2026	Activo	Colaborador 02	
+
+
+Cliente corporativo 037
+RUC 20610000030
+	Empresa	Cliente corporativo 037 S.A.C.	+51 910 130 130	compras.037@empresa-corporativa.local	Lima / Lima	
+Llamada comercial
+15 set. 2026	Prospecto	Colaborador 11	
+
+
+Cliente corporativo 011
+RUC 20610000004
+	Distribuidor	Cliente corporativo 011 S.A.C.	+51 910 104 104	compras.011@empresa-corporativa.local	Piura / Piura	
+Llamada comercial
+13 set. 2026	Activo	Colaborador 03	
+
+
+Cliente corporativo 038
+RUC 20610000031
+	Empresa	Cliente corporativo 038 S.A.C.	+51 910 131 131	compras.038@empresa-corporativa.local	Arequipa / Arequipa	
+Seguimiento de cotización
+14 set. 2026	Activo	Colaborador 12	
+
+
+Cliente corporativo 012
+RUC 20610000005
+	Empresa	Cliente corporativo 012 S.A.C.	+51 910 105 105	compras.012@empresa-corporativa.local	Chiclayo / Chiclayo	
+Seguimiento de cotización
+12 set. 2026	Activo	Colaborador 04	
+
+
+Cliente corporativo 039
+RUC 20610000032
+	Distribuidor	Cliente corporativo 039 S.A.C.	+51 910 132 132	compras.039@empresa-corporativa.local	Trujillo / Trujillo	
+Llamada comercial
+13 set. 2026	Activo	Colaborador 13	
+
+
+Cliente corporativo 013
+RUC 20610000006
+	Empresa	Cliente corporativo 013 S.A.C.	+51 910 106 106	compras.013@empresa-corporativa.local	Lima / Lima	
+Seguimiento comercial 2026-12
+26 dic. 2026	Activo	Colaborador 05	
+
+
+Cliente corporativo 040
+RUC 20610000033
+	Empresa	Cliente corporativo 040 S.A.C.	+51 910 133 133	compras.040@empresa-corporativa.local	Cusco / Cusco	
+Seguimiento de cotización
+12 set. 2026	Activo	Colaborador 14	
+Mostrando 1 a 25 de 69 clientes
+Anterior
+1
+2
+Siguiente
+Resumen de clientes
+
+CLIENTES REGISTRADOS
+
+69
+
+Total filtrado
+
+CLIENTES ACTIVOS
+
+55
+
+Estado activo
+
+POR ATENDER
+
+68
+
+Acción comercial pendiente
+
+OPORTUNIDADES ACTIVAS
+
+78
+
+En pipeline
+
+Distribución por tipo
+Empresa
+44 (64%)
+Distribuidor
+15 (22%)
+Consumidor
+9 (13%)
+Técnico
+1 (4%)
+Ver reporte completo →
+Distribución geográfica
+Lima / Lima
+10 (14%)
+Arequipa / Arequipa
+10 (14%)
+Cusco / Cusco
+10 (14%)
+Piura / Piura
+9 (13%)
+Chiclayo / Chiclayo
+9 (13%)
+Ver reporte completo →
+Requieren atención
+
+Casos que necesitan una acción comercial.
+
+Seguimiento vencido
+59
+Sin responsable
+9
+Oportunidad estancada
+44
+Cotización por responder
+1
+Ver toda la cartera por atender →
+Operaciones CRM
+
+Agenda, actividad, oportunidades e historial cargados desde datos reales.
+
+Fusionar clientes
+Abrir pipeline
+Agenda
+Actividad
+Oportunidades
+Historial

@@ -1,0 +1,53 @@
+{
+  "phase": "after",
+  "qaSet": "final-cotizaciones-aislado",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T22:05:02.889Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "cotizaciones",
+      "route": "/admin/cotizaciones",
+      "status": 200,
+      "startedAt": "2026-09-25T22:04:54.675Z",
+      "action": {
+        "type": "skipped",
+        "label": "QA_SKIP_ACTION_ROUTES"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\cotizaciones-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-cotizaciones-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 46,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-cotizaciones-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 42,
+          "violationIds": []
+        }
+      },
+      "title": "Cotizaciones | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

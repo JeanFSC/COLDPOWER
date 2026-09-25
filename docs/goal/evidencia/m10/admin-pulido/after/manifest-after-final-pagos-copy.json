@@ -1,0 +1,53 @@
+{
+  "phase": "after",
+  "qaSet": "final-pagos-copy",
+  "baseUrl": "http://localhost:3003",
+  "generatedAt": "2026-09-25T21:07:44.106Z",
+  "viewport": {
+    "desktop": "1920x1080",
+    "mobile": "390x844",
+    "deviceScaleFactor": 1
+  },
+  "routes": [
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "status": 200,
+      "startedAt": "2026-09-25T21:07:33.886Z",
+      "action": {
+        "type": "button",
+        "label": "ver pago"
+      },
+      "desktop": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-1920x1080.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-1920x1080.txt"
+      },
+      "mobile": {
+        "screenshotPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-390x844.png",
+        "bodyTextPath": "C:\\Users\\jean_\\Desktop\\COLDPOWER\\docs\\goal\\evidencia\\m10\\admin-pulido\\after\\pagos-390x844.txt"
+      },
+      "axe": {
+        "desktop": {
+          "fileName": "axe-pagos-1920x1080.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 47,
+          "violationIds": []
+        },
+        "mobile": {
+          "fileName": "axe-pagos-390x844.json",
+          "violations": 0,
+          "incomplete": 1,
+          "passes": 45,
+          "violationIds": []
+        }
+      },
+      "title": "Pagos | Panel admin ColdPower | ColdPower"
+    }
+  ],
+  "events": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

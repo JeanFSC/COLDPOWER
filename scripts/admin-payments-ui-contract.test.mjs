@@ -17,5 +17,7 @@ test("pagos: el centro vigente consulta proveedor, confirma y solicita reembolso
   assert.match(workspace, /\/api\/admin\/pagos\/" \+ encodeURIComponent\(paymentId\) \+ "\/refund/);
   assert.match(workspace, /Idempotency-Key/);
   assert.match(workspace, /role="alert"/);
+  assert.match(workspace, /useState<string \| null>\(\(\) => new URLSearchParams\(queryString\)\.get\("paymentId"\)\)/);
+  assert.match(workspace, /open=\{Boolean\(paymentId\)\}/);
   assert.match(manual, /\/api\/admin\/pagos\/manual/);
 });

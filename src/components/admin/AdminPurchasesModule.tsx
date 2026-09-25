@@ -301,21 +301,22 @@ export function AdminPurchasesModule({
           <h2 className="text-sm font-bold tracking-tight text-slate-900">Rendimiento por proveedor</h2>
           {supplierRows.length ? (
             <div className="flex-1 space-y-2.5 pt-3">
-              <div className="flex items-center px-0.5 text-[10.5px] font-medium text-slate-400">
-                <span className="w-28">Proveedor</span>
-                <span className="w-24">Monto</span>
-                <span className="flex-1 text-right">% del total</span>
+              <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(88px,0.8fr)_minmax(0,1fr)_42px] items-center gap-3 px-0.5 text-[10.5px] font-medium text-slate-400">
+                <span>Proveedor</span>
+                <span>Monto</span>
+                <span>Participación</span>
+                <span className="text-right">%</span>
               </div>
               {supplierRows.map((row, index) => (
-                <div key={row.supplierId} className="flex items-center text-xs">
-                  <span className="w-28 truncate font-medium text-slate-700">{row.supplierName} · {row.currency}</span>
-                  <span className="w-24 font-medium text-slate-900">{money(row.amount, row.currency)}</span>
-                  <div className="flex flex-1 items-center gap-2">
+                <div key={row.supplierId} className="grid grid-cols-[minmax(0,1.25fr)_minmax(88px,0.8fr)_minmax(0,1fr)_42px] items-center gap-3 text-xs">
+                  <span className="min-w-0 truncate font-medium text-slate-700" title={`${row.supplierName} · ${row.currency}`}>{row.supplierName} · {row.currency}</span>
+                  <span className="whitespace-nowrap font-medium text-slate-900">{money(row.amount, row.currency)}</span>
+                  <div className="flex min-w-0 items-center gap-2">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                       <div className={`h-2 rounded-full ${supplierColors[index % supplierColors.length]}`} style={{ width: `${Math.max(2, (row.amount / (supplierTotalByCurrency.get(row.currency) ?? 1)) * 100)}%` }} />
                     </div>
-                    <span className="w-8 shrink-0 text-right text-[11px] font-medium text-slate-500">{((row.amount / (supplierTotalByCurrency.get(row.currency) ?? 1)) * 100).toFixed(0)}%</span>
                   </div>
+                  <span className="text-right text-[11px] font-medium text-slate-500">{((row.amount / (supplierTotalByCurrency.get(row.currency) ?? 1)) * 100).toFixed(0)}%</span>
                 </div>
               ))}
             </div>
@@ -359,7 +360,7 @@ export function AdminPurchasesModule({
             <table className="w-full min-w-[900px] text-left text-xs">
               <thead className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  {["OC", "Proveedor", "Local", "Creada", "Esperada", "Monto", "Estado", "Atención", ""].map((heading) => (
+                  {["OC", "Proveedor", "Local", "Creada", "Esperada", "Monto", "Estado", "Atención", "Acciones"].map((heading) => (
                     <th key={heading} className="px-3 py-3 font-medium">{heading}</th>
                   ))}
                 </tr>
@@ -674,19 +675,19 @@ function PurchasesFilterBar({
       <label className="flex h-10 min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-3">
         <input name="query" defaultValue={filters.query ?? ""} placeholder="Buscar por OC, proveedor, producto o referencia..." className="w-full bg-transparent text-xs font-medium text-slate-700 outline-none placeholder:text-slate-400" />
       </label>
-      <select name="status" defaultValue={filters.status ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
+      <select aria-label="Filtrar por estado" name="status" defaultValue={filters.status ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
         <option value="">Todos los estados</option>
         {facets.statuses.map((value) => (
           <option key={value} value={value}>{statusLabel(value)}</option>
         ))}
       </select>
-      <select name="supplierId" defaultValue={filters.supplierId ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
+      <select aria-label="Filtrar por proveedor" name="supplierId" defaultValue={filters.supplierId ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
         <option value="">Todos los proveedores</option>
         {suppliers.map((supplier) => (
           <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
         ))}
       </select>
-      <select name="locationId" defaultValue={filters.locationId ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
+      <select aria-label="Filtrar por local" name="locationId" defaultValue={filters.locationId ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
         <option value="">Todos los almacenes</option>
         {locations.map((location) => (
           <option key={location.id} value={location.id}>{location.name}</option>

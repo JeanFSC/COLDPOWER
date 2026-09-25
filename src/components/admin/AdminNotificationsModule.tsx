@@ -10,7 +10,8 @@ import type {
   listNotificationTemplates,
   NotificationAutomationMetrics,
 } from "@/lib/notification-rules-service";
-import type { PeriodKpi } from "@/lib/period-metrics";
+import { formatPeriodDelta, type PeriodKpi } from "@/lib/period-metrics";
+import { notificationEventLabel } from "@/lib/notification-display";
 
 type Rule = Awaited<ReturnType<typeof listNotificationRules>>[number];
 type Template = Awaited<ReturnType<typeof listNotificationTemplates>>[number];
@@ -45,10 +46,13 @@ const severityMeta: Record<string, { iconBg: string; iconInk: string; iconPath: 
 
 function deltaDisplay(key: string, kpi: PeriodKpi) {
   const badWhenUp = new Set(["unread", "failed", "slaAlerts"]);
-  if (kpi.deltaPct === null) return { text: "Sin datos del período anterior", color: "text-slate-400" };
-  const arrow = kpi.deltaPct > 0 ? "↗" : kpi.deltaPct < 0 ? "↘" : "→";
-  const text = `${arrow} ${Math.abs(kpi.deltaPct)}% vs. período anterior`;
-  const color = kpi.deltaPct === 0 ? "text-slate-400" : badWhenUp.has(key) ? (kpi.deltaPct > 0 ? "text-rose-600" : "text-emerald-600") : "text-emerald-600";
+  const delta = formatPeriodDelta(kpi.current, kpi.previous);
+  const color = delta.direction === "unavailable" || delta.direction === "new"
+    ? "text-slate-400"
+    : badWhenUp.has(key)
+      ? (delta.direction === "up" ? "text-rose-600" : "text-emerald-600")
+      : delta.direction === "down" ? "text-emerald-600" : "text-emerald-600";
+  const text = delta.label;
   return { text, color };
 }
 
@@ -159,7 +163,7 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
                         </div>
                         <div className="min-w-0 truncate">
                           <h4 className="truncate text-[11.5px] font-bold leading-tight text-slate-800">{rule.name}</h4>
-                          <p className="mt-1 truncate text-[10px] leading-none text-slate-400">{rule.eventType}</p>
+                          <p className="mt-1 truncate text-[10px] leading-none text-slate-400" title={`Código de regla: ${rule.eventType}`}>{notificationEventLabel(rule.eventType)}</p>
                         </div>
                       </div>
                       {canManage ? <NotificationRuleToggle rule={rule} /> : <span className="text-[10px] font-semibold text-slate-400">{rule.status === "ACTIVE" ? "Activa" : "Inactiva"}</span>}
@@ -180,7 +184,7 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
               </div>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <div className="relative my-0.5 flex h-28 w-28 shrink-0 items-center justify-center">
+              <div className="relative my-0.5 flex h-24 w-24 shrink-0 items-center justify-center">
                 <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" fill="none" r="14" stroke="#f1f5f9" strokeWidth={4} />
                   {donutSegments.map((segment) => (

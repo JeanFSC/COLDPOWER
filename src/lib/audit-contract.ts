@@ -65,6 +65,8 @@ const ENTITY_LABELS: Record<string, string> = {
   work_item: "Tarea", integration: "Integración", price: "Precio", discount_rule: "Regla de descuento",
   media_asset: "Recurso", clerk_webhook: "Webhook de Clerk", report_schedule: "Reporte programado",
   promotion: "Promoción", location: "Almacén", transfer: "Transferencia", reservation: "Reserva",
+  product_price: "Precio", quote_discount_approval: "Descuento de cotización", purchase_request: "Solicitud de compra",
+  purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
 };
 export function entityLabel(entityType: string): string {
   return ENTITY_LABELS[entityType.toLowerCase()] ?? humanize(entityType);
@@ -86,6 +88,7 @@ const ACTION_LABELS: Record<string, string> = {
   "audit.exported": "Exportó auditoría", "clerk.webhook_processed": "Procesó evento de Clerk",
   "company.settings_restored": "Restauró configuración", "company.settings_updated": "Actualizó configuración", "company.legal_pages_publication_updated": "Cambió publicación legal",
   "crm.lead_created_from_quote": "Creó un lead desde cotización", "crm.pipeline_exported": "Exportó el pipeline",
+  "crm.opportunity_stage_changed": "Cambió la etapa de una oportunidad",
   "crm.whatsapp_lead_created": "Creó un lead desde WhatsApp", "customers.exported": "Exportó clientes",
   "inventory.location_created": "Creó un almacén", "inventory.minimum_stock_updated": "Actualizó el stock mínimo",
   "inventory.movement_created": "Registró un movimiento", "inventory.reservation_consumed": "Consumió una reserva",
@@ -100,6 +103,17 @@ const ACTION_LABELS: Record<string, string> = {
   "pricing.exported": "Exportó precios", "pricing.import_applied": "Aplicó una importación de precios",
   "pricing.price_archived": "Archivó un precio", "pricing.price_created": "Creó un precio",
   "pricing.price_replacement_scheduled": "Programó reemplazo de precio", "pricing.price_updated": "Actualizó un precio",
+  "catalog.families.updated": "Actualizó una familia",
+  "sales.order_status_changed": "Actualizó el estado de un pedido", "sales.quote_converted": "Convirtió una cotización en venta",
+  "sales.checkout_order_created": "Creó un pedido desde checkout",
+  "quote.accepted": "Aceptó la cotización", "quote.sent": "Envió la cotización", "quote.draft_updated": "Actualizó el borrador de cotización",
+  "quote.discount_approved": "Aprobó un descuento de cotización",
+  "payments.webhook_processed": "Procesó una actualización de pago", "payments.confirmed_on_cancelled_order": "Confirmó un pago de pedido cancelado",
+  "payments.confirmed_after_order_paid": "Confirmó un pago posterior al pedido", "payments.status_refreshed": "Actualizó el estado del pago",
+  "payments.refund_confirmed": "Confirmó un reembolso", "payments.refund_requested": "Solicitó un reembolso",
+  "payments.cancelled_with_order": "Canceló el pago con el pedido", "payments.manual_confirmed": "Confirmó el pago manualmente",
+  "payments.provider_created": "Registró un pago en la pasarela",
+  "customer.updated": "Actualizó el cliente",
   "promotions.applied": "Aplicó una promoción", "promotions.created": "Creó una promoción",
   "promotions.exported": "Exportó promociones", "promotions.updated": "Actualizó una promoción",
   "purchases.exported": "Exportó compras", "quotes.exported": "Exportó cotizaciones", "quotes.pdf_generated": "Generó un PDF de cotización",
@@ -107,6 +121,7 @@ const ACTION_LABELS: Record<string, string> = {
   "reports.schedule_created": "Programó un reporte", "sales.cancelled": "Canceló una venta",
   "sales.exported": "Exportó ventas", "sales.invoice_status_updated": "Actualizó el estado de una factura",
   "integrations.tested": "Probó una integración",
+  updated: "Actualizó el registro", confirmed_on_cancelled_order: "Confirmó un pago de pedido cancelado",
   // Dev visual-history seed actions.
   "quotes.created": "Creó la cotización", "opportunities.created": "Creó la oportunidad", "sales.created": "Creó la venta",
   "orders.created": "Creó el pedido", "payments.created": "Registró el pago", "customers.created": "Creó el cliente",
