@@ -27,3 +27,29 @@ Estado: ⏳ en curso · 📋 con brief listo · 🧑 decisión o acción de Jean
 | 21 | Tareas paralelas se pisan | Secuencial (o un worktree por tarea) | Claude | ✅ |
 | 22 | Procesos de Codex que no terminan | Vigilante que detecta el archivo final y cierra el proceso | Claude | ✅ |
 | 23 | Codex sin sandbox | Sin `.env.local` de Neon en las tareas; solo base local | Claude | ⏳ |
+
+## Actualización 2026-09-24 (tarde)
+
+| # | Brecha | Estado |
+|---|---|---|
+| 1 | Base de desarrollo separada | ✅ PostgreSQL 18 local como servicio (5433). 🧑 Neon sigue sin cuota |
+| 2 | Respaldos completos | ✅ `pg_dump` completo + restauración probada (93 tablas). **Manuales**, solo cuando Jean los pida |
+| 3 | Cola de publicación | ✅ herramienta lista. 🧑 Jean decide qué publicar |
+| 6–8, 10, 18 | Home espejo, chrome en 19 rutas, contador, imágenes huérfanas, lint | ✅ |
+| 9, 19–23 | Proceso de orquestación | ✅ protocolo en `docs/goal/ORQUESTACION.md` |
+| 12 | Newsletter / favoritos | ✅ en local · pendiente en Neon |
+| 13 | CMS | ⛔ omitido y oculto por decisión de Jean |
+| 14 | Foto real de punta a punta | ✅ |
+| 15 | Pedidos y despacho | ✅ fixtures y validación |
+| 17 | Legal | ✅ borradores detrás del flag · 🧑 completar `[DEFINIR]` + revisión legal |
+
+### Nuevas (QA brief 17, verificadas por Claude)
+| # | Brecha | Severidad | Estado |
+|---|---|---|---|
+| 24 | Aprobación tardía de un pago REJECTED/ERROR/CANCELLED ignorada en silencio (riesgo de cobro doble sin rastro) | P1 | 📋 R3 |
+| 25 | Recepción de OC y conversión solicitud→OC se rompen al escribir (`currentTarget` null) | P1 | 📋 R3 |
+| 26 | IGV "Por configurar" visible al cliente; falta configurar la tasa y la modalidad | P2 | 📋 R3 · 🧑 Jean define la modalidad |
+| 27 | La validación de RUC bloquea la edición de clientes antiguos | P2 | 📋 R3 |
+| 28 | LCP móvil 4,8 s (meta 2 s) | P1 | 📋 R3 |
+| 29 | Número de WhatsApp comercial sin configurar | — | 🧑 Jean |
+| — | Informe R2 de Gemini: 3 de 4 defectos fueron falsos positivos (probó escribiendo directo en la base) | — | anotado en `gemini/informe-r2.md` |

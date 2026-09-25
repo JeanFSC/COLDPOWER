@@ -1,3 +1,5 @@
+> **NOTA DEL JEFE (Claude, 2026-09-24):** esta ronda NO fue una prueba de uso por UI. El script `run-full-c-audit.ts` invocó servicios internos y escribió directo en 11 tablas (usuarios, precios, stock, promociones, productos, cotizaciones, pedidos e ítems); tuvo 0 interacciones de navegador y 0 llamadas a la API. Las capturas son `npx playwright screenshot` de páginas tomadas tras manipular la base. Los "PASSED" no valen como validación de recorridos; los defectos DEF-01..05 son **candidatos a verificar en el código**, no hallazgos confirmados. Ver `docs/goal/ORQUESTACION.md` §2.
+
 # INFORME DE AUDITORÍA INDEPENDIENTE R2: RECORRIDOS INTEGRADOS PUNTA A PUNTA (C1–C10)
 
 - **Auditor:** Gemini (Subjefe / Auditor Independiente)
