@@ -9,7 +9,6 @@ import {
   Edit3,
   Eye,
   FileClock,
-  Image as ImageIcon,
   Package,
   Pencil,
   Plus,

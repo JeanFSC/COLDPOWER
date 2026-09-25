@@ -45,10 +45,6 @@ function entityLabel(entity: TaxonomyEntity) {
   return entity === "categories" ? "categoría" : entity === "families" ? "familia" : "marca";
 }
 
-function pluralEntityLabel(entity: TaxonomyEntity) {
-  return entity === "categories" ? "categorías" : entity === "families" ? "familias" : "marcas";
-}
-
 function statusLabel(active: boolean) {
   return active ? "Activa" : "Inactiva";
 }
@@ -195,8 +191,6 @@ export function TaxonomyWorkspace({ categories, families, brands, canManageCateg
 
   const detailTitle = selectedItem?.name ?? "Selecciona un nodo";
   const selectedCategory = selection.entity === "families" ? categories.items.find((category) => category.id === selectedItem?.categoryId) : null;
-  const categoryForDetail = selection.entity === "categories" ? selectedItem : selectedCategory;
-
   return (
     <div className="space-y-4 pt-5">
       <header className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">

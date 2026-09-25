@@ -23,7 +23,16 @@ function SignedOutAccountAction() {
   );
 }
 
-function AuthAccountAction() {
+function AuthAccountAction({ devAuthUserId }: { devAuthUserId?: string | null }) {
+  if (devAuthUserId) {
+    return (
+      <Link href="/cuenta" className="home-account-action">
+        <UserRound aria-hidden="true" />
+        <span><strong>Mi cuenta</strong><small>Ver cuenta</small></span>
+      </Link>
+    );
+  }
+
   return (
     <>
       <ClerkLoading><SignedOutAccountAction /></ClerkLoading>
@@ -44,7 +53,7 @@ function AuthAccountAction() {
   );
 }
 
-export function Header({ authEnabled = false, categories }: { authEnabled?: boolean; categories: CatalogCategory[] }) {
+export function Header({ authEnabled = false, categories, devAuthUserId }: { authEnabled?: boolean; categories: CatalogCategory[]; devAuthUserId?: string | null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
@@ -60,7 +69,7 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
           </div>
           <div className="home-header-actions">
             <QuoteListButton showCount className="home-quote-button" />
-            {!isAuthPage ? (authEnabled ? <AuthAccountAction /> : <SignedOutAccountAction />) : null}
+            {!isAuthPage ? (authEnabled ? <AuthAccountAction devAuthUserId={devAuthUserId} /> : <SignedOutAccountAction />) : null}
             <CartButton showLabel className="home-cart-button" />
           </div>
           <div className="home-mobile-actions">

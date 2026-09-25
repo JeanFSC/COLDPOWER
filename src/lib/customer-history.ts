@@ -1,8 +1,9 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { products } from "@/db/schema";
 import { customers } from "@/db/crm-schema";
 import { orderItems, orders } from "@/db/sales-schema";
+import { loadRetailPrices } from "@/lib/retail-price";
 
 export async function listPurchasedProductsForUser(userId: string) {
   const rows = await getDb().select({
@@ -18,7 +19,7 @@ export async function listPurchasedProductsForUser(userId: string) {
     .innerJoin(orders, eq(orderItems.orderId, orders.id))
     .innerJoin(customers, eq(orders.customerId, customers.id))
     .innerJoin(products, eq(orderItems.productId, products.id))
-    .where(and(eq(customers.userId, userId), inArray(orders.status, ["PAID", "PREPARING", "READY_FOR_PICKUP", "SHIPPED", "DELIVERED"])))
+    .where(and(or(eq(orders.userId, userId), eq(customers.userId, userId)), inArray(orders.status, ["PAID", "PREPARING", "READY_FOR_PICKUP", "SHIPPED", "DELIVERED"])))
     .orderBy(desc(orders.createdAt))
     .limit(1000);
   const unique = new Map<string, typeof rows[number]>();
@@ -26,7 +27,9 @@ export async function listPurchasedProductsForUser(userId: string) {
     const previous = unique.get(row.productId);
     unique.set(row.productId, previous ? { ...previous, totalQuantity: previous.totalQuantity + row.totalQuantity } : row);
   }
-  return [...unique.values()];
+  const values = [...unique.values()];
+  const prices = await loadRetailPrices(getDb(), values.map((row) => row.productId));
+  return values.map((row) => ({ ...row, price: prices.get(row.productId) ?? null }));
 }
 
 export async function listOrderItemsForUser(userId: string, orderId: string) {
@@ -35,5 +38,5 @@ export async function listOrderItemsForUser(userId: string, orderId: string) {
     .innerJoin(orders, eq(orderItems.orderId, orders.id))
     .innerJoin(customers, eq(orders.customerId, customers.id))
     .innerJoin(products, eq(orderItems.productId, products.id))
-    .where(and(eq(customers.userId, userId), eq(orders.id, orderId)));
+    .where(and(or(eq(orders.userId, userId), eq(customers.userId, userId)), eq(orders.id, orderId)));
 }

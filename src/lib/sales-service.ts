@@ -226,7 +226,7 @@ export async function listOrdersPage(requestedPage = 1, requestedPageSize = 25) 
   const totalItems = Number(total ?? 0);
   return { rows, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)) };
 }
-export async function listOrdersForUser(userId: string) { return getDb().select({ order: orders, payment: payments }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(payments, eq(payments.orderId, orders.id)).where(eq(customers.userId, userId)).orderBy(desc(orders.createdAt)).limit(200); }
+export async function listOrdersForUser(userId: string) { return getDb().select({ order: orders, payment: payments }).from(orders).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(payments, eq(payments.orderId, orders.id)).where(or(eq(orders.userId, userId), eq(customers.userId, userId))).orderBy(desc(orders.createdAt)).limit(200); }
 
 async function changeOrderStatusInTransaction(tx: Transaction, orderId: string, nextStatus: OrderStatus, actor: Actor, reason?: string, options: ChangeOrderOptions = {}) {
   const [before] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);

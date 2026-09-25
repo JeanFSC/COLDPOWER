@@ -1,0 +1,203 @@
+- generic [active] [ref=f12e1] [box=0,0,1905,1558]:
+  - link "Saltar al contenido" [ref=f12e2] [cursor=pointer] [box=-1,-1,32,24]:
+    - /url: "#main-content"
+  - status [ref=f12e3] [box=0,0,1905,28]:
+    - generic [ref=f12e4] [box=313,0,1280,28]: Vista previa privada — datos comerciales de prueba. No es el sitio de producción.
+  - region "Información de servicio" [ref=f12e5] [box=0,28,1905,40]:
+    - generic [ref=f12e7] [box=73,38,621,19]:
+      - generic [ref=f12e8] [box=73,38,148,19]: Envíos a todo el Perú
+      - generic [ref=f12e15] [box=236,38,234,19]: Repuestos originales y alternativos
+      - generic [ref=f12e20] [box=485,38,208,19]: Asesoría técnica especializada
+  - banner [ref=f12e32] [box=0,68,1905,85]:
+    - generic [ref=f12e33] [box=73,68,1760,84]:
+      - link "Ir al inicio de ColdPower" [ref=f12e34] [cursor=pointer] [box=73,68,300,84]:
+        - /url: /
+        - img "ColdPower" [ref=f12e35] [box=73,73,290,73]
+        - generic [ref=f12e36] [box=113,141,124,7]: SOLUCIONES EN REFRIGERACIÓN
+      - generic [ref=f12e38] [box=405,82,966,56]:
+        - generic [ref=f12e39] [box=404,110,1,1]: Buscar por código, modelo, marca o especificación
+        - searchbox "Buscar por código, modelo, marca o especificación" [ref=f12e44] [box=454,100,843,20]
+        - button "Buscar" [ref=f12e45] [box=1312,82,58,56]
+      - generic [ref=f12e50] [box=1402,84,430,52]:
+        - link "Solicitar cotización" [ref=f12e51] [cursor=pointer] [box=1402,84,160,52]:
+          - /url: /cotizacion
+          - generic [ref=f12e58] [box=1445,99,98,22]: Cotización (0)
+        - link "Mi cuenta Ver cuenta" [ref=f12e59] [cursor=pointer] [box=1575,88,118,44]:
+          - /url: /cuenta
+          - generic [ref=f12e63] [box=1614,95,66,30]:
+            - strong [ref=f12e64] [box=1614,95,66,16]: Mi cuenta
+            - generic [ref=f12e65] [box=1614,112,66,13]: Ver cuenta
+        - link "Ver carrito de compra" [ref=f12e66] [cursor=pointer] [box=1705,84,128,52]:
+          - /url: /carrito
+          - generic [ref=f12e71] [box=1736,99,69,22]: Carrito (0)
+  - navigation "Navegación técnica" [ref=f12e74] [box=0,153,1905,53]:
+    - generic [ref=f12e75] [box=73,153,1760,52]:
+      - link "Todas las categorías" [ref=f12e76] [cursor=pointer] [box=73,160,210,38]:
+        - /url: /catalogo
+      - generic [ref=f12e80] [box=290,160,1430,38]:
+        - link "Compresores" [ref=f12e81] [cursor=pointer] [box=290,160,112,38]:
+          - /url: /catalogo?familia=compresores
+        - link "Refrigeración" [ref=f12e82] [cursor=pointer] [box=475,160,113,38]:
+          - /url: /categoria/refrigeracion
+        - link "Aire acondicionado" [ref=f12e83] [cursor=pointer] [box=661,160,152,38]:
+          - /url: /catalogo?familia=aire-acondicionado
+        - link "Motores y ventiladores" [ref=f12e84] [cursor=pointer] [box=886,160,176,38]:
+          - /url: /catalogo?familia=motores-ventiladores
+        - link "Controles" [ref=f12e85] [cursor=pointer] [box=1135,160,88,38]:
+          - /url: /catalogo?familia=controles
+        - link "Herramientas" [ref=f12e86] [cursor=pointer] [box=1295,160,115,38]:
+          - /url: /catalogo?familia=herramientas
+        - link "Repuestos" [ref=f12e87] [cursor=pointer] [box=1483,160,93,38]:
+          - /url: /categoria/repuestos-y-accesorios-generales
+        - link "Marcas" [ref=f12e88] [cursor=pointer] [box=1649,160,71,38]:
+          - /url: /catalogo?vista=marcas
+      - link "Ofertas" [ref=f12e89] [cursor=pointer] [box=1728,160,105,38]:
+        - /url: /catalogo?vista=ofertas
+  - main [ref=f12e95] [box=0,206,1905,1080]:
+    - generic [ref=f12e97] [box=123,206,1660,450]:
+      - navigation "Migas de pan" [ref=f12e98] [box=123,206,1660,42]:
+        - link "Inicio" [ref=f12e99] [cursor=pointer] [box=123,221,32,18]:
+          - /url: /
+        - generic [ref=f12e102] [box=186,221,55,18]: Mi cuenta
+      - generic [ref=f12e103] [box=123,248,1660,408]:
+        - complementary "Navegación de mi cuenta" [ref=f12e104] [box=123,248,250,408]:
+          - generic [ref=f12e105] [box=124,249,248,79]:
+            - generic [aria-hidden] [ref=f12e106] [box=138,265,46,46]: JC
+            - generic [ref=f12e107] [box=196,268,161,41]:
+              - paragraph [ref=f12e108] [box=196,268,161,21]: Jean Franco Seminario Cerna
+              - paragraph [ref=f12e109] [box=196,290,161,18]: 20222404@aloe.ulima.edu.pe
+          - navigation "Secciones de cuenta" [ref=f12e110] [box=124,328,248,275]:
+            - link "Resumen" [ref=f12e111] [cursor=pointer] [box=131,338,234,40]:
+              - /url: /cuenta
+            - link "Pedidos" [ref=f12e115] [cursor=pointer] [box=131,381,234,40]:
+              - /url: /cuenta/pedidos
+            - link "Cotizaciones" [ref=f12e121] [cursor=pointer] [box=131,424,234,40]:
+              - /url: /cuenta/cotizaciones
+            - link "Pagos" [ref=f12e126] [cursor=pointer] [box=131,467,234,40]:
+              - /url: /cuenta/pagos
+            - link "Volver a comprar" [ref=f12e130] [cursor=pointer] [box=131,510,234,40]:
+              - /url: /cuenta/historial
+            - link "Mis datos" [ref=f12e136] [cursor=pointer] [box=131,554,234,40]:
+              - /url: /cuenta/datos
+          - link "Cerrar sesión" [ref=f12e143] [cursor=pointer] [box=131,614,234,31]:
+            - /url: /
+        - main [ref=f12e148] [box=401,248,1382,387]:
+          - generic [ref=f12e149] [box=401,248,1382,79]:
+            - generic [ref=f12e150] [box=401,248,517,79]:
+              - paragraph [ref=f12e151] [box=401,248,517,14]: Tu espacio ColdPower
+              - heading "Tu cuenta está lista, Jean." [level=1] [ref=f12e152] [box=401,269,517,33]
+              - paragraph [ref=f12e153] [box=401,307,517,20]: Cuando encuentres una referencia, aquí podrás seguir cada paso sin perder el hilo.
+            - generic [ref=f12e154] [box=1664,248,119,32]: Cuenta activa
+          - region [ref=f12e158] [box=401,339,1382,237]:
+            - generic [ref=f12e164] [box=472,359,590,68]:
+              - paragraph [ref=f12e165] [box=472,363,590,20]: Primeros pasos
+              - heading "Empieza por lo que necesitas resolver" [level=2] [ref=f12e166] [box=472,382,590,21]
+              - paragraph [ref=f12e167] [box=472,407,590,20]: Aún no tienes pedidos ni cotizaciones asociadas. Estas son las tres rutas útiles para comenzar.
+            - generic [ref=f12e168] [box=420,440,1343,116]:
+              - link "01 Busca por código o modelo Encuentra la referencia exacta en el catálogo técnico. Explorar" [ref=f12e169] [cursor=pointer] [box=420,440,441,116]:
+                - /url: /catalogo
+                - generic [ref=f12e170] [box=432,453,416,29]:
+                  - generic [ref=f12e171] [box=432,458,14,18]: "01"
+                  - strong [ref=f12e176] [box=490,457,175,21]: Busca por código o modelo
+                - paragraph [ref=f12e177] [box=470,487,379,19]: Encuentra la referencia exacta en el catálogo técnico.
+                - generic [ref=f12e178] [box=784,526,64,18]: Explorar
+              - link "02 Pide una cotización Envíanos el producto, modelo o una foto del equipo. Solicitar" [ref=f12e181] [cursor=pointer] [box=871,440,441,116]:
+                - /url: /cotizacion
+                - generic [ref=f12e182] [box=883,453,416,29]:
+                  - generic [ref=f12e183] [box=883,458,14,18]: "02"
+                  - strong [ref=f12e188] [box=941,457,128,21]: Pide una cotización
+                - paragraph [ref=f12e189] [box=921,487,379,19]: Envíanos el producto, modelo o una foto del equipo.
+                - generic [ref=f12e190] [box=1237,526,63,18]: Solicitar
+              - link "03 Completa tus datos para facturar Guarda tu RUC, teléfono y dirección de entrega. Completar" [ref=f12e193] [cursor=pointer] [box=1322,440,441,116]:
+                - /url: /cuenta/datos
+                - generic [ref=f12e194] [box=1334,453,416,29]:
+                  - generic [ref=f12e195] [box=1334,458,14,18]: "03"
+                  - strong [ref=f12e200] [box=1392,457,217,21]: Completa tus datos para facturar
+                - paragraph [ref=f12e201] [box=1372,487,379,19]: Guarda tu RUC, teléfono y dirección de entrega.
+                - generic [ref=f12e202] [box=1676,526,75,18]: Completar
+            - generic [ref=f12e205] [box=419,555,1,1]: Carrito de cotización
+          - paragraph [ref=f12e206] [box=401,588,1382,31]:
+            - generic [ref=f12e211] [box=424,599,893,20]:
+              - strong [ref=f12e212] [box=424,599,266,18]: Tus datos quedan asociados a tu cuenta.
+              - text: El cliente comercial se determina en servidor y solo tú podrás ver tus pedidos, cotizaciones y pagos.
+          - generic [ref=f12e213] [box=400,618,1,1]: 20222404@aloe.ulima.edu.pe
+  - contentinfo [ref=f12e214] [box=0,1286,1905,272]:
+    - generic [ref=f12e215] [box=73,1286,1760,235]:
+      - generic [ref=f12e216] [box=73,1308,373,197]:
+        - link "Ir al inicio de ColdPower" [ref=f12e217] [cursor=pointer] [box=73,1308,260,84]:
+          - /url: /
+          - img "ColdPower" [ref=f12e218] [box=73,1308,250,83]
+          - generic [ref=f12e219] [box=118,1380,124,7]: SOLUCIONES EN REFRIGERACIÓN
+        - paragraph [ref=f12e220] [box=73,1411,270,57]: Repuestos para refrigeración, aire acondicionado y línea blanca. Tu proyecto, nuestro respaldo.
+      - generic [ref=f12e221] [box=468,1308,227,197]:
+        - heading "Categorías" [level=2] [ref=f12e222] [box=468,1312,227,18]
+        - list [ref=f12e223] [box=468,1341,227,164]:
+          - listitem [ref=f12e224] [box=468,1341,227,24]:
+            - link "Explorar catálogo" [ref=f12e225] [cursor=pointer] [box=468,1346,101,16]:
+              - /url: /catalogo
+          - listitem [ref=f12e226] [box=468,1369,227,24]:
+            - link "Amoladoras" [ref=f12e227] [cursor=pointer] [box=468,1374,70,16]:
+              - /url: /categoria/amoladoras
+          - listitem [ref=f12e228] [box=468,1397,227,24]:
+            - link "Cocinas" [ref=f12e229] [cursor=pointer] [box=468,1402,45,16]:
+              - /url: /categoria/cocinas
+          - listitem [ref=f12e230] [box=468,1425,227,24]:
+            - link "Lavadoras" [ref=f12e231] [cursor=pointer] [box=468,1430,59,16]:
+              - /url: /categoria/lavadoras
+          - listitem [ref=f12e232] [box=468,1453,227,24]:
+            - link "Refrigeración" [ref=f12e233] [cursor=pointer] [box=468,1458,77,16]:
+              - /url: /categoria/refrigeracion
+          - listitem [ref=f12e234] [box=468,1481,227,24]:
+            - link "Solicitar cotización" [ref=f12e235] [cursor=pointer] [box=468,1486,110,16]:
+              - /url: /cotizacion
+      - generic [ref=f12e236] [box=717,1308,227,197]:
+        - heading "Ayuda" [level=2] [ref=f12e237] [box=717,1312,227,18]
+        - list [ref=f12e238] [box=717,1341,227,108]:
+          - listitem [ref=f12e239] [box=717,1341,227,24]:
+            - link "¿Cómo comprar?" [ref=f12e240] [cursor=pointer] [box=717,1346,96,16]:
+              - /url: /faq
+          - listitem [ref=f12e241] [box=717,1369,227,24]:
+            - link "Solicitar una cotización" [ref=f12e242] [cursor=pointer] [box=717,1374,135,16]:
+              - /url: /cotizacion
+          - listitem [ref=f12e243] [box=717,1397,227,24]:
+            - link "Envío y entrega" [ref=f12e244] [cursor=pointer] [box=717,1402,89,16]:
+              - /url: /contacto
+          - listitem [ref=f12e245] [box=717,1425,227,24]:
+            - link "Preguntas frecuentes" [ref=f12e246] [cursor=pointer] [box=717,1430,124,16]:
+              - /url: /faq
+      - generic [ref=f12e247] [box=966,1308,227,197]:
+        - heading "Mi cuenta" [level=2] [ref=f12e248] [box=966,1312,227,18]
+        - list [ref=f12e249] [box=966,1341,227,108]:
+          - listitem [ref=f12e250] [box=966,1341,227,24]:
+            - link "Ingresar" [ref=f12e251] [cursor=pointer] [box=966,1346,49,16]:
+              - /url: /cuenta
+          - listitem [ref=f12e252] [box=966,1369,227,24]:
+            - link "Mis cotizaciones" [ref=f12e253] [cursor=pointer] [box=966,1374,95,16]:
+              - /url: /cuenta/cotizaciones
+          - listitem [ref=f12e254] [box=966,1397,227,24]:
+            - link "Mis pedidos" [ref=f12e255] [cursor=pointer] [box=966,1402,69,16]:
+              - /url: /cuenta/pedidos
+          - listitem [ref=f12e256] [box=966,1425,227,24]:
+            - link "Lista de deseos" [ref=f12e257] [cursor=pointer] [box=966,1430,89,16]:
+              - /url: /cuenta
+      - generic [ref=f12e258] [box=1216,1308,277,197]:
+        - heading "Contáctanos" [level=2] [ref=f12e259] [box=1216,1312,277,18]
+        - paragraph [ref=f12e260] [box=1216,1340,277,14]:
+          - strong [ref=f12e261] [box=1216,1340,83,14]: "Medios de pago:"
+          - text: Tarjetas · Yape · Plin · Efectivo
+      - generic [ref=f12e263] [box=1536,1308,297,93]:
+        - generic [ref=f12e264] [box=1536,1308,297,20]: Recibe novedades y ofertas
+        - generic [ref=f12e265] [box=1536,1336,297,40]:
+          - textbox "Recibe novedades y ofertas" [ref=f12e266] [box=1537,1337,253,38]:
+            - /placeholder: Tu correo electrónico
+          - button "Suscribirme" [ref=f12e267] [box=1790,1337,42,38]
+        - paragraph [ref=f12e270] [box=1536,1384,297,16]: Sin spam. Solo información relevante.
+    - generic [ref=f12e272] [box=73,1522,1760,36]:
+      - paragraph [ref=f12e273] [box=73,1532,251,16]: © 2026 ColdPower. Todos los derechos reservados.
+      - generic [ref=f12e274] [box=1637,1532,195,16]:
+        - link "Libro de reclamaciones" [ref=f12e275] [cursor=pointer] [box=1637,1532,113,16]:
+          - /url: /libro-de-reclamaciones
+        - link "Mapa del sitio" [ref=f12e276] [cursor=pointer] [box=1765,1532,68,16]:
+          - /url: /sitemap.xml
+  - button "Open Next.js Dev Tools" [ref=f12e282] [cursor=pointer] [box=22,1026,32,32]
+  - alert [ref=f12e286] [box=-1,-1,1,1]
