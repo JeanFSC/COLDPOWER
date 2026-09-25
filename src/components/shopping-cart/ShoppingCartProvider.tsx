@@ -31,11 +31,11 @@ export function ShoppingCartProvider({ children }: { children: ReactNode }) {
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const request = useCallback(async (input: string, init: RequestInit | undefined, productId: string | null) => {
+  const request = useCallback(async (input: string, init: RequestInit | undefined, productId: string | null, signal?: AbortSignal) => {
     setPendingProductId(productId);
     setError(null);
     try {
-      const response = await fetch(input, { credentials: "include", cache: "no-store", ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
+      const response = await fetch(input, { credentials: "include", cache: "no-store", signal, ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
       const result = (await response.json().catch(() => ({ success: false }))) as CartResponse;
       if (!response.ok || !result.success || !result.cart) {
         setError(result.message ?? "No se pudo actualizar el carrito. Inténtalo nuevamente.");
@@ -44,26 +44,29 @@ export function ShoppingCartProvider({ children }: { children: ReactNode }) {
       setCart(result.cart);
       setStatus("ready");
       return true;
-    } catch {
+    } catch (requestError) {
+      if (requestError instanceof Error && requestError.name === "AbortError") return false;
       setError("No hay conexión con el carrito. Revisa tu internet e inténtalo nuevamente.");
       return false;
     } finally {
-      setPendingProductId(null);
+      if (!signal?.aborted) setPendingProductId(null);
     }
   }, []);
 
-  const refresh = useCallback(async () => {
-    const ok = await request("/api/carrito", undefined, null);
-    if (!ok) setStatus("error");
+  const refresh = useCallback(async (signal?: AbortSignal) => {
+    const ok = await request("/api/carrito", undefined, null, signal);
+    if (!ok && !signal?.aborted) setStatus("error");
   }, [request]);
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     window.queueMicrotask(() => {
-      if (!cancelled) void refresh();
+      if (!cancelled) void refresh(controller.signal);
     });
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [refresh]);
 

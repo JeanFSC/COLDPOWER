@@ -14,6 +14,7 @@ import { PreviewBanner } from "@/components/shared/PreviewBanner";
 import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 import { coldPowerClerkLocalization } from "@/components/auth/clerkAppearance";
 import { company } from "@/data/company";
+import { getOptionalUserId } from "@/lib/auth";
 import { authConfig, isAuthConfigured } from "@/lib/env";
 import { getCatalogCategories, type CatalogCategory } from "@/lib/catalog-repository";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
@@ -65,9 +66,12 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [categories, publicSettings] = await Promise.all([
+  const [categories, publicSettings, devAuthUserId] = await Promise.all([
     loadShellCategories(),
     getPublicCompanySettings(),
+    process.env.CP_DEV_AUTH_BYPASS === "true" && process.env.CP_DEV_AUTH_USER_ID
+      ? getOptionalUserId()
+      : Promise.resolve(null),
   ]);
   const body = (
     <CartProvider>
@@ -78,7 +82,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <>
               <PreviewBanner />
               <TopBar />
-              <Header authEnabled={isAuthConfigured} categories={categories} />
+              <Header authEnabled={isAuthConfigured} categories={categories} devAuthUserId={devAuthUserId} />
               <TechnicalNav categories={categories} />
             </>
           }

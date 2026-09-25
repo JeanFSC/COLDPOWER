@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { desc, eq } from "drizzle-orm";
-import { requireUser } from "@/lib/auth";
+import Link from "next/link";
+import { desc, eq, or } from "drizzle-orm";
+import { ArrowRight, FileText } from "lucide-react";
 import { getDb } from "@/db";
+import { customerQuoteLinks, customers } from "@/db/crm-schema";
 import { quotes } from "@/db/schema";
 import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { requireUser } from "@/lib/auth";
+import { publicQuoteStatus } from "@/lib/account-overview";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Mis cotizaciones | ColdPower",
   description: "Revisa el estado y el historial de tus solicitudes de cotización en ColdPower.",
@@ -26,57 +32,55 @@ const statusBadge: Record<string, { label: string; variant: "new" | "warning" | 
 
 export default async function MisCotizacionesPage() {
   const { userId } = await requireUser();
-
-  let myQuotes: (typeof quotes.$inferSelect)[] = [];
-
-  try {
-    const db = getDb();
-    myQuotes = await db
-      .select()
-      .from(quotes)
-      .where(eq(quotes.userId, userId))
-      .orderBy(desc(quotes.createdAt));
-  } catch (error) {
-    console.error("ColdPower: no se pudieron cargar las cotizaciones", error);
-  }
+  const ownership = or(eq(quotes.userId, userId), eq(customers.userId, userId));
+  const myQuotes = await getDb()
+    .select({ quote: quotes })
+    .from(quotes)
+    .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
+    .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
+    .where(ownership)
+    .orderBy(desc(quotes.createdAt));
 
   return (
-    <section className="bg-background py-14 sm:py-18">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Mi cuenta</p>
-        <h1 className="mt-3 font-display text-3xl font-black text-dark">Mis cotizaciones</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-text">Aquí puedes ver el estado operativo de cada solicitud y la última actualización del equipo comercial.</p>
+    <div className="account-subpage">
+      <header className="account-subpage-header">
+        <div>
+          <p className="account-eyebrow">Últimas solicitudes</p>
+          <h1 className="account-h1">Mis cotizaciones</h1>
+          <p className="account-subtitle">Aquí puedes ver el estado operativo de cada solicitud y la última actualización del equipo comercial.</p>
+        </div>
+        <span className="account-status-pill"><FileText aria-hidden="true" /> {myQuotes.length} {myQuotes.length === 1 ? "solicitud" : "solicitudes"}</span>
+      </header>
 
-        {myQuotes.length === 0 ? (
-          <div className="mt-8 rounded-md border border-border bg-white p-6">
-            <p className="text-sm text-gray-text">Todavía no tienes solicitudes de cotización registradas.</p>
-          </div>
-        ) : (
-          <div className="mt-8 grid gap-4">
-            {myQuotes.map((quote) => {
-              const status = statusBadge[quote.status] ?? { label: quote.status, variant: "neutral" as const };
-
-              return (
-                <article key={quote.id} className="rounded-md border border-border bg-white p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-mono text-xs font-black text-gray-text">{quote.id}</p>
-                      <h2 className="mt-1 font-display text-lg font-black text-dark">{quote.productName || "Consulta general"}</h2>
-                    </div>
-                    <Badge variant={status.variant}>{status.label}</Badge>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-gray-text">{quote.message}</p>
-                  <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-xs sm:grid-cols-3">
-                    <div><dt className="font-extrabold uppercase tracking-[0.08em] text-gray-text">Solicitada</dt><dd className="mt-1 font-bold text-dark">{quote.createdAt.toLocaleString("es-PE")}</dd></div>
-                    <div><dt className="font-extrabold uppercase tracking-[0.08em] text-gray-text">Última actualización</dt><dd className="mt-1 font-bold text-dark">{quote.updatedAt.toLocaleString("es-PE")}</dd></div>
-                    <div><dt className="font-extrabold uppercase tracking-[0.08em] text-gray-text">Ubicación</dt><dd className="mt-1 font-bold text-dark">{[quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || "Por confirmar"}</dd></div>
+      {myQuotes.length === 0 ? (
+        <div className="account-empty-panel mt-3">
+          <p className="font-bold text-dark">Todavía no tienes solicitudes de cotización registradas.</p>
+          <p className="mt-2 text-sm leading-6 text-gray-text">Envíanos una referencia, modelo o foto del equipo para iniciar una solicitud.</p>
+          <Button href="/cotizacion" variant="primary" size="sm" className="mt-4">Pedir una cotización</Button>
+        </div>
+      ) : (
+        <div className="account-subpage-card mt-3">
+          {myQuotes.map(({ quote }) => {
+            const status = statusBadge[quote.status] ?? { label: publicQuoteStatus(quote.status), variant: "neutral" as const };
+            return (
+              <article key={quote.id} className="account-subpage-row">
+                <div className="min-w-0 flex-1">
+                  <p className="account-mono">{quote.trackingCode}</p>
+                  <h2 className="mt-1">{quote.productName || "Consulta general"}</h2>
+                  <p>{quote.message}</p>
+                  <dl className="account-subpage-dl">
+                    <div><dt>Solicitada</dt><dd>{quote.createdAt.toLocaleDateString("es-PE")}</dd></div>
+                    <div><dt>Última actualización</dt><dd>{quote.updatedAt.toLocaleDateString("es-PE")}</dd></div>
+                    <div><dt>Ubicación</dt><dd>{[quote.department, quote.province, quote.district].filter(Boolean).join(" / ") || "Por confirmar"}</dd></div>
                   </dl>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </section>
+                </div>
+                <Badge variant={status.variant}>{status.label}</Badge>
+              </article>
+            );
+          })}
+        </div>
+      )}
+      <Link href="/cotizacion" className="account-section-link mt-3">Solicitar otra cotización <ArrowRight aria-hidden="true" /></Link>
+    </div>
   );
 }

@@ -31,7 +31,7 @@ function initialForm(profile: AccountProfileEditorValue): FormState {
   };
 }
 
-export function AccountProfileEditor({ profile }: { profile: AccountProfileEditorValue }) {
+export function AccountProfileEditor({ profile, buttonLabel = "Editar información" }: { profile: AccountProfileEditorValue; buttonLabel?: string }) {
   const router = useRouter();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -131,9 +131,9 @@ export function AccountProfileEditor({ profile }: { profile: AccountProfileEdito
         <button
           type="button"
           onClick={openEditor}
-          className="inline-flex h-10 items-center justify-center rounded-pill border border-[#b9d5e9] bg-white px-4 text-sm font-extrabold text-primary transition hover:border-primary hover:bg-[#f3f9fd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-pill border border-[#b9d5e9] bg-white px-4 text-sm font-extrabold text-primary transition hover:border-primary hover:bg-[#f3f9fd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
-          Editar información
+          {buttonLabel}
         </button>
         {feedback ? (
           <p className="inline-flex items-center gap-1.5 text-sm font-bold text-teal" role="status">

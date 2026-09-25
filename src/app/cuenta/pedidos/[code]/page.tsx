@@ -35,8 +35,8 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
       : [details?.agencyName && `Agencia ${details.agencyName}`, [details?.province, details?.department].filter(Boolean).join(", "), details?.recipientName && `Recoge: ${details.recipientName}`].filter(Boolean).join(" · ");
 
   return (
-    <section className="bg-background py-12 sm:py-16">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+    <div className="account-subpage pt-1">
+      <div className="max-w-5xl">
         <Link href="/cuenta/pedidos" className="inline-flex items-center gap-1.5 text-sm font-extrabold text-primary hover:underline"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Mis pedidos</Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -144,6 +144,6 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
           </aside>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

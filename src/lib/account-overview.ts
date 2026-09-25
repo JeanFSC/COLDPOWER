@@ -1,4 +1,4 @@
-import { and, countDistinct, desc, eq, gt, or } from "drizzle-orm";
+import { and, countDistinct, desc, eq, gt, gte, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   customerAddresses,
@@ -17,6 +17,11 @@ import {
   type QuoteCartItem,
 } from "@/db/schema";
 import { isStaffRole, type AppRole } from "@/lib/roles";
+import {
+  accountNonPaymentOrderStatuses,
+  accountPendingPaymentStatuses,
+  accountQuoteAttentionCondition,
+} from "@/lib/account-attention";
 
 export type AccountActivityKind = "quote" | "order" | "payment";
 
@@ -45,7 +50,15 @@ export type AccountProfile = {
 export type AccountOverview = {
   profile: AccountProfile;
   access: { canOpenAdmin: boolean; adminHref: string | null };
-  counts: { quotes: number; orders: number; payments: number; quoteCartItems: number };
+  billing: { hasCompleteData: boolean };
+  counts: {
+    quotes: number;
+    respondedQuotes: number;
+    orders: number;
+    payments: number;
+    pendingPayments: number;
+    quoteCartItems: number;
+  };
   recentActivity: AccountActivity[];
 };
 
@@ -95,8 +108,10 @@ export function publicQuoteStatus(value: string | null | undefined) {
       return "Cotizada";
     case "aprobada":
     case "accepted":
+    case "approved":
       return "Aprobada";
     case "convertida":
+    case "converted":
       return "Convertida";
     case "cerrada":
     case "cerrado":
@@ -104,6 +119,7 @@ export function publicQuoteStatus(value: string | null | undefined) {
     case "nuevo":
       return "Nueva";
     case "contactado":
+    case "follow_up":
       return "En contacto";
     default:
       return "En seguimiento";
@@ -190,13 +206,15 @@ export function emptyAccountOverview(role: AppRole): AccountOverview {
       customerSince: null,
     },
     access: { canOpenAdmin: isStaffRole(role), adminHref: adminHref(role) },
-    counts: { quotes: 0, orders: 0, payments: 0, quoteCartItems: 0 },
+    billing: { hasCompleteData: false },
+    counts: { quotes: 0, respondedQuotes: 0, orders: 0, payments: 0, pendingPayments: 0, quoteCartItems: 0 },
     recentActivity: [],
   };
 }
 
 export async function getAccountOverview(userId: string, role: AppRole): Promise<AccountOverview> {
   const db = getDb();
+  const now = new Date();
   const [account] = await db
     .select({
       userEmail: users.email,
@@ -210,6 +228,8 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       customerEmail: customers.email,
       customerAddress: customers.address,
       customerLocation: customers.location,
+      customerDocumentNumber: customers.documentNumber,
+      customerRuc: customers.ruc,
       contactPreference: customers.contactPreference,
       customerCreatedAt: customers.createdAt,
     })
@@ -244,13 +264,19 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
     eq(customers.userId, userId),
   );
 
-  const [quoteCountRows, orderCountRows, paymentCountRows, cartRows, quoteHistoryRows, quoteRows, orderRows, paymentRows] = await Promise.all([
+  const [quoteCountRows, respondedQuoteCountRows, orderCountRows, paymentCountRows, pendingPaymentCountRows, cartRows, quoteHistoryRows, quoteRows, orderRows, paymentRows] = await Promise.all([
     db
       .select({ total: countDistinct(quotes.id) })
       .from(quotes)
       .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
       .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
       .where(quoteOwnership),
+    db
+      .select({ total: countDistinct(quotes.id) })
+      .from(quotes)
+      .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
+      .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
+      .where(and(quoteOwnership, accountQuoteAttentionCondition(now))),
     db
       .select({ total: countDistinct(orders.id) })
       .from(orders)
@@ -262,6 +288,19 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       .innerJoin(orders, eq(payments.orderId, orders.id))
       .innerJoin(customers, eq(orders.customerId, customers.id))
       .where(orderOwnership),
+    db
+      .select({ total: countDistinct(payments.id) })
+      .from(payments)
+      .innerJoin(orders, eq(payments.orderId, orders.id))
+      .innerJoin(customers, eq(orders.customerId, customers.id))
+      .where(and(
+        orderOwnership,
+        inArray(payments.status, accountPendingPaymentStatuses),
+        or(
+          inArray(orders.status, accountNonPaymentOrderStatuses),
+          and(eq(orders.status, "PAYMENT_PENDING"), or(isNull(orders.paymentDueAt), gte(orders.paymentDueAt, now))),
+        ),
+      )),
     db
       .select({ items: quoteCarts.items })
       .from(quoteCarts)
@@ -390,6 +429,7 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       : null
   );
   const addressValue = address?.address?.trim() || account?.customerAddress?.trim();
+  const billingIdentifier = account?.customerRuc?.trim() || account?.customerDocumentNumber?.trim();
 
   return {
     profile: {
@@ -411,10 +451,13 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       customerSince: account?.customerCreatedAt ?? null,
     },
     access: { canOpenAdmin: isStaffRole(role), adminHref: adminHref(role) },
+    billing: { hasCompleteData: Boolean(billingIdentifier && addressValue) },
     counts: {
       quotes: Number(quoteCountRows[0]?.total ?? 0),
+      respondedQuotes: Number(respondedQuoteCountRows[0]?.total ?? 0),
       orders: Number(orderCountRows[0]?.total ?? 0),
       payments: Number(paymentCountRows[0]?.total ?? 0),
+      pendingPayments: Number(pendingPaymentCountRows[0]?.total ?? 0),
       quoteCartItems: countCartItems(cartRows[0]?.items),
     },
     recentActivity: activities.slice(0, 5),

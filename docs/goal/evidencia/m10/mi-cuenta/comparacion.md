@@ -1,0 +1,49 @@
+# Comparación visual M10-05 — Mi cuenta
+
+## Referencias
+
+- `docs/goal/designs/m10-lote3/cuenta-hub-desktop-1920x1080.png`
+- `docs/goal/designs/m10-lote3/cuenta-hub-mobile-390x844.png`
+- `docs/goal/designs/m10-lote3/cuenta-pedidos-desktop-1920x1080.png`
+- `docs/goal/designs/m10-lote3/cuenta-vacia-desktop-1920x1080.png`
+- `docs/goal/designs/m10-lote3/spec.md`
+
+## Resultado
+
+La implementación conserva la composición de TIENDA y la jerarquía de las láminas: topbar y header comercial reales, navegación técnica, breadcrumb, sidebar de cuenta, hub de actividad, seguimiento, listas recientes y navegación común responsive.
+
+| Área | Lámina | Implementación validada |
+| --- | --- | --- |
+| Shell | Header/topbar/footer de tienda | Se reutiliza el shell real de ColdPower. El footer permanece presente; no se copió la superposición de iconos de la lámina. |
+| Hub con datos | Prioridad, pedido en curso, actividad y volver a comprar | Datos reales del cliente A: 3 pedidos, 2 cotizaciones y 3 pagos. La cantidad de tarjetas varía con los datos, sin inventar ítems. |
+| Hub vacío | Tres rutas iniciales compactas | Las tarjetas ajustan su alto al contenido, mantienen las tres rutas útiles y no dejan espacio interno artificial. |
+| WhatsApp | Bloque de asesoría cuando está configurado | No se muestra en esta ejecución porque Company Settings local no tiene número configurado. |
+| Datos de facturación | Banner solo cuando falta información | No se muestra para el cliente A porque tiene RUC/documento y dirección completos. |
+| Cuenta verificada | Badge condicionado a Clerk | Solo se renderiza cuando el `currentUser` de Clerk coincide con el usuario de la vista y el correo primario está verificado. |
+| Personal | Acceso administrativo | Visible únicamente para el rol persistido de personal; el fixture local usado tiene `role_code=SUPERADMIN`. |
+| Mobile | Pestañas horizontales con scroll y tarjetas apiladas | Validado a 390 × 844; se eliminó el desborde horizontal de la página sin quitar el scroll interno de navegación. |
+
+## Capturas
+
+- Hub con datos: [1920](hub-datos-1920.png), [390](hub-datos-390.png)
+- Hub vacío: [1920](hub-vacio-1920.png), [390](hub-vacio-390.png)
+- Pedidos: [1920](pedidos-1920.png), [390](pedidos-390.png)
+- Cotizaciones: [1920](cotizaciones-1920.png), [390](cotizaciones-390.png)
+- Pagos: [1920](pagos-1920.png), [390](pagos-390.png)
+
+Las diferencias de contenido frente a la lámina son deliberadas: la especificación exige representar datos comerciales reales y el estado vacío real, no ejemplos decorativos.
+
+## Revalidación M10-05 — corrección de atención
+
+- Capturas revisadas con Playwright en 1920 × 1080 y 390 × 844: `hub-revision-1920x1080.png` y `hub-revision-390x844.png`.
+- El cliente A conserva COT-2026-019 y COT-2026-040 solo en actividad reciente; ninguna aparece en `Lo que requiere tu atención`.
+- La región focal confirma 0 acciones administrativas en el header y 1 enlace personal en el menú.
+- Mobile mantiene las pestañas de cuenta como scroll interno sin cortar controles persistentes.
+
+## Revisión de bloqueo - errores honestos y overflow móvil
+
+- Fuente visual: las láminas de hub desktop/mobile de `docs/goal/designs/m10-lote3/`; implementación actual: `hub-revision-1920x1080.png` y `hub-revision-390x844.png`.
+- La composición TIENDA y la jerarquía del hub se mantienen. La ausencia de tarjetas de atención en la captura actual es intencional: las cotizaciones aprobada/convertida y vencida no esperan decisión del cliente.
+- La causa del `scrollWidth` de 483-484px estaba en el ancho mínimo de contenido del grid `Volver a comprar`. La cadena de grid/contenedores ahora admite contracción y la navegación de cuenta conserva su scroll horizontal interno.
+- Validación completa: hub, pedidos, cotizaciones, pagos e historial en 360/390/430px, tanto con datos como vacío: 30/30 casos con documento contenido, HTTP 200 y consola sin errores.
+- Los estados de error no se comparan como un vacío: fallo del hub/subruta muestra `No pudimos cargar tu cuenta` + `Reintentar`; fallo aislado del historial muestra su propio mensaje y conserva el resto del hub.

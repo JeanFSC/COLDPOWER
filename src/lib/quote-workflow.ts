@@ -2,6 +2,9 @@ export const quoteWorkflowStatuses = ["DRAFT", "SENT", "FOLLOW_UP", "ACCEPTED", 
 export type QuoteWorkflowStatus = (typeof quoteWorkflowStatuses)[number];
 export type QuoteDisplayStatus = QuoteWorkflowStatus | "LEGACY_CLOSED";
 
+export const customerDecisionQuoteWorkflowStatuses = ["SENT", "FOLLOW_UP"] as const;
+export const customerDecisionQuoteLegacyStatuses = ["enviada", "nuevo", "contactado", "evaluacion", "requiere_info", "cotizada"] as const;
+
 const transitions: Record<QuoteWorkflowStatus, readonly QuoteWorkflowStatus[]> = {
   DRAFT: ["SENT", "CANCELLED"],
   SENT: ["FOLLOW_UP", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
@@ -43,6 +46,48 @@ export const quoteStatusLabels: Record<QuoteDisplayStatus, string> = {
 export function normalizeQuoteStatus(status: string, workflowStatus: string | null | undefined): QuoteDisplayStatus {
   if (workflowStatus && (quoteWorkflowStatuses as readonly string[]).includes(workflowStatus)) return workflowStatus as QuoteWorkflowStatus;
   return legacyQuoteStatus(status) ?? (["cerrada", "cerrado"].includes(status) ? "LEGACY_CLOSED" : "DRAFT");
+}
+
+function effectiveCustomerDecisionStatus(status: string, workflowStatus: string | null | undefined) {
+  const normalizedWorkflow = normalizeQuoteStatus(status, workflowStatus);
+  const legacy = legacyQuoteStatus(status);
+  if (workflowStatus && (quoteWorkflowStatuses as readonly string[]).includes(workflowStatus)) return normalizedWorkflow;
+  return legacy ?? normalizedWorkflow;
+}
+
+export function limaCalendarDate(value: Date) {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const values = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function startOfLimaDay(now = new Date()) {
+  const date = limaCalendarDate(now);
+  if (!date) return new Date(NaN);
+  return new Date(`${date}T00:00:00-05:00`);
+}
+
+export function isQuoteValidOnLimaDate(validUntil: Date | null | undefined, now = new Date()) {
+  if (!validUntil) return true;
+  const expirationDate = limaCalendarDate(validUntil);
+  const today = limaCalendarDate(now);
+  return Boolean(expirationDate && today && expirationDate >= today);
+}
+
+export function isQuoteAwaitingCustomerDecision(
+  status: string,
+  workflowStatus: string | null | undefined,
+  validUntil: Date | null | undefined,
+  now = new Date(),
+) {
+  const normalized = effectiveCustomerDecisionStatus(status, workflowStatus);
+  return (customerDecisionQuoteWorkflowStatuses as readonly string[]).includes(normalized) && isQuoteValidOnLimaDate(validUntil, now);
 }
 
 export function effectiveQuoteStatus(status: string, workflowStatus: string | null | undefined, validUntil: Date | null | undefined, now = new Date()): QuoteDisplayStatus {

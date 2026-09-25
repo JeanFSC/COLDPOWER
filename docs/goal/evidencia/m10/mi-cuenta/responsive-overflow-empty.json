@@ -1,0 +1,2163 @@
+{
+  "generatedAt": "2026-09-25T21:40:33.065Z",
+  "state": "empty",
+  "baseUrl": "http://localhost:3006/",
+  "gpuArgs": [
+    "--enable-gpu",
+    "--use-angle=d3d11",
+    "--ignore-gpu-blocklist"
+  ],
+  "viewports": [
+    {
+      "width": 360,
+      "height": 844
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 430,
+      "height": 844
+    }
+  ],
+  "routes": [
+    {
+      "name": "hub-data",
+      "path": "/cuenta"
+    },
+    {
+      "name": "pedidos",
+      "path": "/cuenta/pedidos"
+    },
+    {
+      "name": "cotizaciones",
+      "path": "/cuenta/cotizaciones"
+    },
+    {
+      "name": "pagos",
+      "path": "/cuenta/pagos"
+    },
+    {
+      "name": "historial",
+      "path": "/cuenta/historial"
+    }
+  ],
+  "results": [
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "route": {
+        "name": "hub-data",
+        "path": "/cuenta"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 360,
+        "documentClientWidth": 360,
+        "bodyScrollWidth": 360,
+        "bodyClientWidth": 360,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 336,
+            "rectLeft": 12,
+            "rectRight": 348,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 334,
+            "rectLeft": 13,
+            "rectRight": 347,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 220,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 147,
+            "clientWidth": 1,
+            "rectLeft": 24.8,
+            "rectRight": 25.8,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 84,
+            "clientWidth": 84,
+            "rectLeft": 295.9,
+            "rectRight": 379.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "route": {
+        "name": "pedidos",
+        "path": "/cuenta/pedidos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 360,
+        "documentClientWidth": 360,
+        "bodyScrollWidth": 360,
+        "bodyClientWidth": 360,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 336,
+            "rectLeft": 12,
+            "rectRight": 348,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 334,
+            "rectLeft": 13,
+            "rectRight": 347,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 84,
+            "clientWidth": 84,
+            "rectLeft": 295.9,
+            "rectRight": 379.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "route": {
+        "name": "cotizaciones",
+        "path": "/cuenta/cotizaciones"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 360,
+        "documentClientWidth": 360,
+        "bodyScrollWidth": 360,
+        "bodyClientWidth": 360,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 336,
+            "rectLeft": 12,
+            "rectRight": 348,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 334,
+            "rectLeft": 13,
+            "rectRight": 347,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 84,
+            "clientWidth": 84,
+            "rectLeft": 295.9,
+            "rectRight": 379.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "route": {
+        "name": "pagos",
+        "path": "/cuenta/pagos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 360,
+        "documentClientWidth": 360,
+        "bodyScrollWidth": 360,
+        "bodyClientWidth": 360,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 336,
+            "rectLeft": 12,
+            "rectRight": 348,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 334,
+            "rectLeft": 13,
+            "rectRight": 347,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 84,
+            "clientWidth": 84,
+            "rectLeft": 295.9,
+            "rectRight": 379.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "route": {
+        "name": "historial",
+        "path": "/cuenta/historial"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 360,
+        "documentClientWidth": 360,
+        "bodyScrollWidth": 360,
+        "bodyClientWidth": 360,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 336,
+            "rectLeft": 12,
+            "rectRight": 348,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 334,
+            "rectLeft": 13,
+            "rectRight": 347,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 84,
+            "clientWidth": 84,
+            "rectLeft": 295.9,
+            "rectRight": 379.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "route": {
+        "name": "hub-data",
+        "path": "/cuenta"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 366,
+            "rectLeft": 12,
+            "rectRight": 378,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 364,
+            "rectLeft": 13,
+            "rectRight": 377,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 220,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 147,
+            "clientWidth": 1,
+            "rectLeft": 24.8,
+            "rectRight": 25.8,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "route": {
+        "name": "pedidos",
+        "path": "/cuenta/pedidos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 366,
+            "rectLeft": 12,
+            "rectRight": 378,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 364,
+            "rectLeft": 13,
+            "rectRight": 377,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "route": {
+        "name": "cotizaciones",
+        "path": "/cuenta/cotizaciones"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 366,
+            "rectLeft": 12,
+            "rectRight": 378,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 364,
+            "rectLeft": 13,
+            "rectRight": 377,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "route": {
+        "name": "pagos",
+        "path": "/cuenta/pagos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 366,
+            "rectLeft": 12,
+            "rectRight": 378,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 364,
+            "rectLeft": 13,
+            "rectRight": 377,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "route": {
+        "name": "historial",
+        "path": "/cuenta/historial"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 366,
+            "rectLeft": 12,
+            "rectRight": 378,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 364,
+            "rectLeft": 13,
+            "rectRight": 377,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "route": {
+        "name": "hub-data",
+        "path": "/cuenta"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 430,
+        "documentClientWidth": 430,
+        "bodyScrollWidth": 430,
+        "bodyClientWidth": 430,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 406,
+            "rectLeft": 12,
+            "rectRight": 418,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 404,
+            "rectLeft": 13,
+            "rectRight": 417,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 220,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "span",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 147,
+            "clientWidth": 1,
+            "rectLeft": 24.8,
+            "rectRight": 25.8,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "route": {
+        "name": "pedidos",
+        "path": "/cuenta/pedidos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 430,
+        "documentClientWidth": 430,
+        "bodyScrollWidth": 430,
+        "bodyClientWidth": 430,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 406,
+            "rectLeft": 12,
+            "rectRight": 418,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 404,
+            "rectLeft": 13,
+            "rectRight": 417,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "route": {
+        "name": "cotizaciones",
+        "path": "/cuenta/cotizaciones"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 430,
+        "documentClientWidth": 430,
+        "bodyScrollWidth": 430,
+        "bodyClientWidth": 430,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 406,
+            "rectLeft": 12,
+            "rectRight": 418,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 404,
+            "rectLeft": 13,
+            "rectRight": 417,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "route": {
+        "name": "pagos",
+        "path": "/cuenta/pagos"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 430,
+        "documentClientWidth": 430,
+        "bodyScrollWidth": 430,
+        "bodyClientWidth": 430,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 406,
+            "rectLeft": 12,
+            "rectRight": 418,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 404,
+            "rectLeft": 13,
+            "rectRight": 417,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    },
+    {
+      "state": "empty",
+      "viewport": {
+        "width": 430,
+        "height": 844
+      },
+      "route": {
+        "name": "historial",
+        "path": "/cuenta/historial"
+      },
+      "responseStatus": 200,
+      "metrics": {
+        "documentScrollWidth": 430,
+        "documentClientWidth": 430,
+        "bodyScrollWidth": 430,
+        "bodyClientWidth": 430,
+        "overflowers": [
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-wide-container home-category-nav-inner",
+            "scrollWidth": 994,
+            "clientWidth": 406,
+            "rectLeft": 12,
+            "rectRight": 418,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "label",
+            "id": "",
+            "className": "sr-only",
+            "scrollWidth": 363,
+            "clientWidth": 1,
+            "rectLeft": 11,
+            "rectRight": 12,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "nav",
+            "id": "",
+            "className": "account-nav",
+            "scrollWidth": 627,
+            "clientWidth": 404,
+            "rectLeft": 13,
+            "rectRight": 417,
+            "overflowX": "auto"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "sr-only z-[100] rounded-md bg-white px-4 py-3 font-bold text-brand-primary-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4",
+            "scrollWidth": 174,
+            "clientWidth": 32,
+            "rectLeft": -1,
+            "rectRight": 31,
+            "overflowX": "hidden"
+          },
+          {
+            "tag": "div",
+            "id": "",
+            "className": "home-category-links",
+            "scrollWidth": 694,
+            "clientWidth": 694,
+            "rectLeft": 211.4,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 114,
+            "clientWidth": 114,
+            "rectLeft": 381.5,
+            "rectRight": 495.3,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 132,
+            "clientWidth": 132,
+            "rectLeft": 496.9,
+            "rectRight": 628.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 64,
+            "clientWidth": 64,
+            "rectLeft": 630.5,
+            "rectRight": 694.9,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 86,
+            "clientWidth": 86,
+            "rectLeft": 696.5,
+            "rectRight": 782,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 69,
+            "clientWidth": 69,
+            "rectLeft": 783.6,
+            "rectRight": 852.4,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "",
+            "scrollWidth": 52,
+            "clientWidth": 52,
+            "rectLeft": 854,
+            "rectRight": 905.6,
+            "overflowX": "visible"
+          },
+          {
+            "tag": "a",
+            "id": "",
+            "className": "home-offers-link",
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "rectLeft": 912.8,
+            "rectRight": 1005.6,
+            "overflowX": "visible"
+          }
+        ]
+      },
+      "consoleIssues": []
+    }
+  ]
+}
