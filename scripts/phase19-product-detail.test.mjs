@@ -28,7 +28,9 @@ assert.ok(/position-sticky|sticky|TransactionBox/.test(detail), "PDP should keep
 assert.match(transactionBox, /hasPrice/);
 assert.match(transactionBox, /Agregar al carrito/);
 assert.match(transactionBox, /Solicitar cotización/);
-assert.match(transactionBox, /Solo cotizable/);
+assert.match(transactionBox, /<Info className/);
+assert.match(transactionBox, /Disponible .* cotización/);
+assert.doesNotMatch(transactionBox, /disabledLabel="Solo cotizable"/);
 assert.match(read("src/components/product/TechnicalIdentity.tsx"), /filter\(\(spec\) => spec\.label.*spec\.value/);
 assert.match(detail, /lg:hidden/, "PDP should expose a mobile-only action bar");
 assert.match(detail, /fixed\s+inset-x-0\s+bottom-0|sticky\s+bottom-0/, "PDP mobile action bar should remain reachable while scrolling");

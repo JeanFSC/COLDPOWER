@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, MessageCircle, PackageCheck, Truck } from "lucide-react";
+import { CalendarClock, Info, MessageCircle, PackageCheck, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
@@ -55,7 +55,10 @@ export function TransactionBox({ product, promotionalPrice }: TransactionBoxProp
         ) : (
           <>
             <AddToQuoteButton productId={product.id} quantity={quantity} label="Solicitar cotización" size="lg" variant="primary" className="w-full" />
-            <AddToCartButton productId={product.id} purchasable={false} size="md" disabledLabel="Solo cotizable" className="w-full" />
+            <p className="flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-3 text-sm font-semibold text-text-secondary">
+              <Info className="h-4 w-4 shrink-0 text-brand-secondary-600" aria-hidden="true" />
+              Disponible únicamente por cotización.
+            </p>
           </>
         )}
         <WhatsAppLeadButton

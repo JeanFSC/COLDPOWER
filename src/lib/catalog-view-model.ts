@@ -63,6 +63,13 @@ const technicalFields: Array<{ label: string; field: keyof CatalogProductSourceR
   { label: "Unidad de medida", field: "unitOfMeasure" },
 ];
 
+const generatedFamilyDescriptionPattern = /\breferencia\s+de\s+cat(?:á|a)logo\s+de\s+la\s+familia\b/i;
+
+function sanitizeEditorialDescription(value: string | null | undefined) {
+  const description = value?.trim() ?? "";
+  return generatedFamilyDescriptionPattern.test(description) ? "" : description;
+}
+
 export function mapCatalogProductRow(row: CatalogProductSourceRow): Product {
   const name = row.product.commercialName?.trim() || row.product.normalizedName || row.product.originalName;
   const specs: ProductSpec[] = technicalFields.flatMap(({ label, field }) => {
@@ -71,11 +78,7 @@ export function mapCatalogProductRow(row: CatalogProductSourceRow): Product {
     return [{ label, value: field === "unitOfMeasure" ? formatUnitOfMeasure(value) : value.trim() }];
   });
   const familyLabel = row.family.name.trim();
-  const rawEditorialDescription = row.product.editorialDescription?.trim();
-  const hasLegacyGeneratedDescription = Boolean(
-    rawEditorialDescription?.startsWith(`${name}. Referencia de catálogo de la familia `) && rawEditorialDescription.endsWith("."),
-  );
-  const editorialDescription = hasLegacyGeneratedDescription ? "" : rawEditorialDescription;
+  const editorialDescription = sanitizeEditorialDescription(row.product.editorialDescription);
   const application = row.product.application?.trim();
   const modelCode = row.product.modelCode?.trim();
   const technicalFallback = [
@@ -101,7 +104,7 @@ export function mapCatalogProductRow(row: CatalogProductSourceRow): Product {
     discount: row.product.discount ?? undefined,
     stock: null,
     sku: row.product.sku,
-    status: mapSourceStatus(row.product.status),
+    status: mapCommercialStatus(row.product.status, availabilityStatus),
     sourceStatus: row.product.status,
     availabilityStatus,
     publicationStatus: row.product.publicationStatus,
@@ -126,6 +129,22 @@ export function mapSourceStatus(sourceStatus: string): ProductStatus {
   if (value.includes("inactiv") || value.includes("agot")) return "out-of-stock";
   if (value === "in-stock" || value === "low-stock" || value === "on-request" || value === "out-of-stock") return value;
   return "on-request";
+}
+
+function mapCommercialStatus(sourceStatus: string, availabilityStatus: AvailabilityStatus): ProductStatus {
+  switch (availabilityStatus) {
+    case "in_stock":
+      return "in-stock";
+    case "low_stock":
+      return "low-stock";
+    case "out_of_stock":
+      return "out-of-stock";
+    case "on_request":
+      return "on-request";
+    case "unknown":
+    default:
+      return mapSourceStatus(sourceStatus);
+  }
 }
 
 export function getProductAvailabilityLabel(status: AvailabilityStatus | null | undefined) {
