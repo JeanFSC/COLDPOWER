@@ -1,0 +1,20 @@
+{
+  "scenario": "B3.3-partial-receiving",
+  "generatedAt": "2026-09-25T00:13:51.470Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "BLOCKED",
+  "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Registrar recepción', exact: true }).last() to be visible\u001b[22m\n",
+  "purchaseId": "cp-dashboard-v5-cp-compras-dev-purchase-8",
+  "purchaseCode": "OC-DEV-008",
+  "receiptQuantity": 1,
+  "stages": [],
+  "before": {
+    "purchaseStatus": "PENDING",
+    "itemId": "cp-dashboard-v5-cp-compras-dev-item-8",
+    "productId": "product-cp-fit-otr-0313",
+    "ordered": "2",
+    "received": "0",
+    "onHand": "290",
+    "reserved": "0"
+  }
+}

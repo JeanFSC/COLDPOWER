@@ -1,0 +1,12 @@
+{
+  "supplierId": "supplier-0fcbcb9f-b6f7-4c9f-98c9-b28a5afa2ab9",
+  "supplierName": "QA B4.1 Proveedor 1790296358276",
+  "requestId": "purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33",
+  "requestCode": "SOL-20260925-05F81B",
+  "productId": "product-cp-fit-otr-0313",
+  "sku": "CP-FIT-OTR-0313",
+  "locationId": "cp-dashboard-v5-location-lima",
+  "requestNotes": "QA B4.1 solicitud 1790296358276",
+  "approvedBy": "cp-dashboard-v5-user-staff-005",
+  "approvedAt": "2026-09-24 19:34:16.272-05"
+}

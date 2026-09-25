@@ -1,0 +1,32 @@
+{
+  "error": "La solicitud no pasó a SUBMITTED: DRAFT",
+  "evidence": {
+    "scenario": "B4.1-purchase-flow",
+    "phase": "request",
+    "productId": "product-cp-fit-otr-0313",
+    "sku": "CP-FIT-OTR-0313",
+    "locationId": "cp-dashboard-v5-location-lima",
+    "stages": [
+      {
+        "stage": "supplier_ui_mutation",
+        "completed": true,
+        "supplierId": "supplier-d7ab60fc-2015-4763-8a6d-9f24c4445fc5"
+      },
+      {
+        "stage": "request_ui_mutation",
+        "completed": true,
+        "status": "DRAFT"
+      }
+    ],
+    "supplierName": "QA B4.1 Proveedor 1790296255570",
+    "requestNotes": "QA B4.1 solicitud 1790296255570",
+    "supplierId": "supplier-d7ab60fc-2015-4763-8a6d-9f24c4445fc5",
+    "requestId": "purchase-request-70c7255c-6569-4e9d-92d9-45fe59b2b3f1",
+    "requestCode": "SOL-20260925-B21777"
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

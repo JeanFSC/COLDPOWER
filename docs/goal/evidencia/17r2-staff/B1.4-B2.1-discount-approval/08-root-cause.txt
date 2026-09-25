@@ -1,0 +1,1 @@
+El editor de cotizaciones visible por UI solo expone producto, cantidad, vigencia, impuestos y nota; no existe un control para discountPercentage/discountReason. La regla activa no puede producir una solicitud de aprobación desde la UI.

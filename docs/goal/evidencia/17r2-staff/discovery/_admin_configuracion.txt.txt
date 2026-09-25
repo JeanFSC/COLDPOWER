@@ -1,0 +1,115 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Configuración empresarial
+
+Gestiona la información de tu empresa, locales, documentos, integraciones y preferencias del sistema.
+
+Descartar
+Guardar cambios
+Probar integración
+
+Locales
+
+6
+
+0.0% vs. período anterior
+
+Listas de precio
+
+2
+
+Sin base comparable
+
+Series activas
+
+0
+
+Aún no configuradas
+
+Integraciones
+
+0/5
+
+Conectadas / configuradas
+
+Métodos de contacto
+
+0
+
+Teléfono, WhatsApp y correos
+Empresa
+Locales
+Series y documentos
+Precios
+Integraciones
+Branding
+
+Cargando configuración empresarial…
+
+Historial y restauración
+
+Cada guardado crea una versión auditable. Restaurar genera una nueva versión.
+
+Actualizar
+
+No hay versiones guardadas.
+
+Selecciona una versión para revisar sus cambios.
+
+Series y documentos
+
+Prepara la numeración administrativa para los documentos del flujo empresarial.
+
+Series administrativas para cotizaciones, pedidos, ventas y otros documentos del flujo operativo.
+
+Configuración preparada: la numeración automática todavía no consume estas series.
+
+Sin uso automático
+Nueva serie
+
+Sin series registradas. Crea la primera para numerar tus documentos.

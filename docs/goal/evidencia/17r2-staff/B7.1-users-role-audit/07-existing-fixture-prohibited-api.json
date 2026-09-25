@@ -1,0 +1,41 @@
+{
+  "fixtureId": "cp-dashboard-v5-user-staff-001",
+  "configApi": {
+    "status": 403,
+    "headers": {
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-frame-options": "DENY",
+      "permissions-policy": "camera=(), microphone=(), geolocation=()",
+      "x-clerk-auth-reason": "session-token-and-uat-missing",
+      "x-clerk-auth-status": "signed-out",
+      "x-middleware-rewrite": "/api/admin/configuracion",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "content-type": "application/json",
+      "date": "Fri, 25 Sep 2026 01:17:17 GMT",
+      "connection": "keep-alive",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked"
+    },
+    "body": "{\"error\":{\"code\":\"COMPANY_SETTINGS_FORBIDDEN\",\"message\":\"No tienes permiso para ver configuración.\",\"details\":{}}}"
+  },
+  "usersApi": {
+    "status": 403,
+    "headers": {
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-frame-options": "DENY",
+      "permissions-policy": "camera=(), microphone=(), geolocation=()",
+      "x-clerk-auth-reason": "session-token-and-uat-missing",
+      "x-clerk-auth-status": "signed-out",
+      "x-middleware-rewrite": "/api/admin/usuarios",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "content-type": "application/json",
+      "date": "Fri, 25 Sep 2026 01:17:17 GMT",
+      "connection": "keep-alive",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked"
+    },
+    "body": "{\"error\":{\"code\":\"USERS_FORBIDDEN\",\"message\":\"No tienes permiso para ver usuarios.\",\"details\":{}}}"
+  }
+}

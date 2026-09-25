@@ -1,0 +1,7 @@
+-- 
+    SELECT po.id,po.code,po.status,po.location_id,poi.id AS item_id,poi.product_id,poi.quantity_ordered,poi.quantity_received
+    FROM purchases po JOIN purchase_items poi ON poi.purchase_id=po.id WHERE po.id='cp-dashboard-v5-cp-compras-dev-purchase-8';
+    SELECT id,on_hand,reserved,updated_at FROM inventory_balances WHERE product_id='product-cp-fit-otr-0313' AND location_id=(SELECT location_id FROM purchases WHERE id='cp-dashboard-v5-cp-compras-dev-purchase-8');
+  
+cp-dashboard-v5-cp-compras-dev-purchase-8	OC-DEV-008	PENDING	cp-dashboard-v5-location-lima	cp-dashboard-v5-cp-compras-dev-item-8	product-cp-fit-otr-0313	2	0
+cp-dashboard-v5-balance-product-cp-fit-otr-0313-lima	290	0	2026-09-06 09:31:21.556-05

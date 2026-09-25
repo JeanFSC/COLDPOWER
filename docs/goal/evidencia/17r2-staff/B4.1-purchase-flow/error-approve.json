@@ -1,0 +1,24 @@
+{
+  "error": "La solicitud no pasó a APPROVED: SUBMITTED",
+  "evidence": {
+    "scenario": "B4.1-purchase-flow",
+    "phase": "approve",
+    "productId": "product-cp-fit-otr-0313",
+    "sku": "CP-FIT-OTR-0313",
+    "locationId": "cp-dashboard-v5-location-lima",
+    "stages": [
+      {
+        "stage": "request_approval_ui_mutation",
+        "completed": true,
+        "status": "SUBMITTED"
+      }
+    ],
+    "requestId": "purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33",
+    "requestCode": "SOL-20260925-05F81B"
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

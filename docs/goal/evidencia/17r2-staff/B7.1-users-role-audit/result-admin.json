@@ -1,0 +1,46 @@
+{
+  "scenario": "B7.1-users-role-audit",
+  "stage": "admin",
+  "generatedAt": "2026-09-25T01:05:16.051Z",
+  "outcome": "BLOCKED_UI_EXTERNAL_SYNC",
+  "nextStage": null,
+  "targetId": "cp-dashboard-v5-user-staff-016",
+  "targetEmail": "empleado.016@coldpower.local",
+  "stages": [
+    {
+      "stage": "invitation_ui_mutation",
+      "completed": true,
+      "email": "qa.b71.1790298305081@coldpower.pe",
+      "status": 201
+    },
+    {
+      "stage": "role_change_ui_mutation",
+      "completed": false,
+      "requestedRole": "VENTAS",
+      "persistedRole": "REPORTES",
+      "patchStatus": 502
+    }
+  ],
+  "before": {
+    "role": "REPORTES",
+    "status": "ACTIVE",
+    "clerkSyncStatus": "PENDING",
+    "clerkSyncError": "Not Found"
+  },
+  "invitationEmail": "qa.b71.1790298305081@coldpower.pe",
+  "invitation": {
+    "status": 201,
+    "body": "{\"success\":true,\"invitation\":{\"id\":\"inv_3JnYTjbWX1r1ep86DLxrnsWjOHv\",\"emailAddress\":\"qa.b71.1790298305081@coldpower.pe\",\"role\":\"REPORTES\"},\"pendingInvitations\":1}",
+    "message": [
+      "Invitación enviada. El rol se aplicará al aceptar el correo."
+    ]
+  },
+  "afterRoleAttempt": {
+    "role": "REPORTES",
+    "status": "ACTIVE",
+    "clerkSyncStatus": "PENDING",
+    "clerkSyncError": "Not Found",
+    "patchStatus": 502,
+    "patchBody": "{\"error\":\"Clerk no confirmó el rol. No se guardó el cambio local; la sincronización quedó pendiente para reintento.\"}"
+  }
+}

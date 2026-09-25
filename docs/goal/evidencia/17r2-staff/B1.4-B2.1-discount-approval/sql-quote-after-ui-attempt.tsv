@@ -1,0 +1,2 @@
+-- SELECT q.id,q.tracking_code,q.workflow_status,q.discount_approval_status,qi.discount_percentage,qi.discount_status,qi.discount_reason FROM quotes q LEFT JOIN quote_items qi ON qi.quote_id=q.id WHERE q.id='CP-20260924-QQA6';
+CP-20260924-QQA6	CP-20260924-QQA6	DRAFT	NOT_REQUIRED		NOT_REQUIRED

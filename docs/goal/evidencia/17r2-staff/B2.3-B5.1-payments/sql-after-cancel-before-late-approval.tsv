@@ -1,0 +1,3 @@
+-- SELECT id,code,status,version,cancellation_reason FROM orders WHERE id='cp-brief16-orders-order-payment-pending'; SELECT id,status,provider,provider_reference FROM payments WHERE id='cp-brief16-orders-payment-payment-pending';
+cp-brief16-orders-order-payment-pending	CP16-PED-001	CANCELLED	2	Cancelación QA antes de aprobación tardía del proveedor.
+cp-brief16-orders-payment-payment-pending	CANCELLED	mock	CP16-PAY-001

@@ -1,0 +1,4 @@
+-- SELECT q.id,q.tracking_code,q.workflow_status,q.status,q.discount_approval_status,q.email FROM quotes q WHERE q.email='b11.1790293895694@example.test' ORDER BY q.created_at DESC;
+id	tracking_code	workflow_status	status	discount_approval_status	email
+CP-20260924-DU9Y	CP-20260924-DU9Y	DRAFT	borrador	NOT_REQUIRED	b11.1790293895694@example.test
+(1 row)

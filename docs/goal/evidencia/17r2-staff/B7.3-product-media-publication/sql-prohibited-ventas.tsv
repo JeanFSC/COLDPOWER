@@ -1,0 +1,2 @@
+-- SELECT id,sku,publication_status FROM products WHERE id='product-cp-ref-tar-0810';
+product-cp-ref-tar-0810	CP-REF-TAR-0810	hidden

@@ -1,0 +1,15 @@
+-- 
+    SELECT ib.id,ib.product_id,ib.location_id,ib.on_hand,ib.reserved,ib.minimum_stock,ib.updated_at,
+           p.sku,coalesce(p.commercial_name,p.original_name)
+    FROM inventory_balances ib JOIN products p ON p.id=ib.product_id
+    WHERE ib.product_id='prod-new-aud_1790289867163' AND ib.location_id='cp-dashboard-v5-location-lima';
+    SELECT id,type,quantity,previous_on_hand,resulting_on_hand,reason,notes,performed_by,reference_type,reference_id,created_at
+    FROM inventory_movements WHERE product_id='prod-new-aud_1790289867163' AND location_id='cp-dashboard-v5-location-lima' ORDER BY created_at DESC LIMIT 8;
+  
+bal-new-aud_1790289867163	prod-new-aud_1790289867163	cp-dashboard-v5-location-lima	19	4		2026-09-24 19:23:29.396-05	CP-ROT-8284	Compresor Rotativo Gemini Inverter 12000 BTU R410A
+movement-3ecf2344-4ff7-4e2b-9345-ce0c274221a7	ADJUSTMENT_IN	2	17	19	QA B3.4 conteo ciclico 1790295803639	Conteo físico QA B3.4; diferencia documentada para auditoría.	cp-dashboard-v5-user-almacen			2026-09-24 19:23:29.394082-05
+movement-d771e30a-e390-4c38-9c00-f1b52645e206	ADJUSTMENT_IN	2	15	17	QA B3.4 conteo ciclico 1790295719076	Conteo físico QA B3.4; diferencia documentada para auditoría.	cp-dashboard-v5-user-almacen			2026-09-24 19:22:18.809407-05
+movement-47e01762-96ff-4431-8dff-2ded3aba880c	RESERVATION	1	15	15			cp-dashboard-v5-user-gerencia	order	order-02f29d71-9774-41d4-a03e-56f663466c70	2026-09-24 19:06:26.668117-05
+movement-571aabdf-849a-48cf-9f7b-a65a71a05865	RESERVATION	1	15	15			cp-dashboard-v5-user-gerencia	order	order-2611e400-1553-4cf1-9ef7-7d73190e0c2a	2026-09-24 19:05:02.149504-05
+movement-e79da06d-ca37-423b-8877-6ed92d4c9303	RESERVATION	1	15	15			cp-dashboard-v5-user-gerencia	order	order-df167545-2ad6-48c1-9ba2-e22a56866a0d	2026-09-24 19:04:00.942947-05
+movement-4f6a2383-3826-4fcd-9764-48e4c57d592d	RESERVATION	1	15	15			cp-dashboard-v5-user-ventas	order	order-5c14dad0-1389-48e8-9113-77ffd5ffa4fa	2026-09-24 18:52:20.359547-05

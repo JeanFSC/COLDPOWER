@@ -1,0 +1,2 @@
+-- SELECT id,email,role_code,status FROM users WHERE id='cp-dashboard-v5-user-staff-001';
+cp-dashboard-v5-user-staff-001	empleado.001@coldpower.local	VENTAS	ACTIVE

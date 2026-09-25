@@ -1,0 +1,3 @@
+-- SELECT id,name,max_percentage,approval_above_percentage,status,created_by FROM discount_rules WHERE name='QA B1.4 1790294169725'; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE action ILIKE '%discount%' OR entity_type ILIKE '%discount%' ORDER BY created_at DESC LIMIT 10;
+discount-rule-1e0c16ce-ebfa-4433-baca-190d975ff28a	QA B1.4 1790294169725	10.00	10.00	ACTIVE	cp-dashboard-v5-user-gerencia
+pricing.discount_rule_created	discount_rule	discount-rule-1e0c16ce-ebfa-4433-baca-190d975ff28a	cp-dashboard-v5-user-gerencia	GERENCIA

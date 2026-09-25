@@ -3,7 +3,7 @@
 Protocolo obligatorio: `docs/goal/ORQUESTACION.md` (léelo primero). Rama `codex/goal-impecable`, carpeta principal `C:\Users\jean_\Desktop\COLDPOWER`.
 
 ## Entorno exacto
-- **Base:** PostgreSQL 18 local, `127.0.0.1:5433`, con `.env.localdb`.
+- **Base:** restaurada por Claude desde la instantánea limpia `C:\Users\jean_\ColdPowerBackups\coldpower-local-pg18-baseline-qa.dump`, con las migraciones ya aplicadas. PostgreSQL 18 local, `127.0.0.1:5433`, con `.env.localdb`.
   - psql: `C:\PostgreSQL\18\bin\psql.exe -h 127.0.0.1 -p 5433 -U coldpower -d coldpower` (contraseña en `.env.localdb`).
   - **Nunca** uses `.env.local` ni Neon. No toques `.env.local` ni `proxy.ts`.
 - **Servidor QA con rol:**
@@ -70,7 +70,20 @@ Con el comando exacto de arriba (`localhost`), valida por UI con capturas:
 - cotización mínima (nombre + teléfono) desde la tienda;
 - WhatsApp oculto sin número configurado.
 
-(Los hallazgos adicionales del QA de personal (Codex 2) se agregan abajo cuando Claude los verifique.)
+### 7. P1 — Descuento en cotización inaccesible por UI (verificado por Claude)
+- **Backend listo:** `src/lib/quote-service.ts:14,60-68` acepta `discountPercentage` y `discountReason` por línea, y `discountApprovalState` decide si requiere aprobación según la regla.
+- **UI incompleta:** `src/components/admin/QuotesWorkspace.tsx` solo muestra el métrico "Descuento" (línea ~1463) y aprobar/rechazar pendientes (línea ~1308). **No hay control para que VENTAS ingrese un descuento por línea.** Por eso el flujo B1.4 → B2.1 (solicitar → bloqueo → aprobación de GERENCIA) no se puede hacer.
+- **Implementa** en el editor de versión de la cotización (mismo lenguaje visual del drawer, sin rediseñar):
+  - por línea, un input % (0–100) y un motivo (obligatorio si % > 0), visible solo con el permiso de descuento correspondiente (revisa `src/lib/roles.ts`);
+  - un aviso inline cuando supera el umbral de aprobación de la regla;
+  - al guardar, el estado "pendiente de aprobación" y la notificación a GERENCIA (usa lo existente en `quote-service`).
+- **Repite por UI** con el script existente `scripts/qa/b-1-4-discount.mjs` (`QA_BASE_URL=http://localhost:3003`): VENTAS pide 15% → queda bloqueado → GERENCIA aprueba desde la notificación o el drawer → auditoría (SQL sobre la tabla real de aprobaciones de descuento, definida en `src/db`).
+
+### Scripts de QA existentes (reutilízalos)
+En `scripts/qa/` hay 9 scripts Playwright de la ronda 2: `b-1-1-quote`, `b-1-4-discount`, `b-2-3-payments`, `b-3-3-receiving`, `b-3-4-adjustment`, `b-4-1-purchase-flow`, `b-7-1-users`, `b-7-2-company-settings` y `b-7-3-product-publication`, más `b-helpers.mjs`.
+- Base URL por variable: `QA_BASE_URL=http://localhost:3003`.
+- **Tras corregir los puntos 2 y 7, vuelve a correr `b-3-3-receiving`, `b-4-1-purchase-flow` y `b-1-4-discount`**; deben terminar COMPLETADO.
+- Los scripts no deben dejar datos cambiados: si ocultan un producto publicado, lo vuelven a publicar al final.
 
 ## Terminado =
 - Cada punto con prueba de comportamiento y evidencia (captura y SQL) en `docs/goal/evidencia/17r3/`.

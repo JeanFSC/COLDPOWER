@@ -1,0 +1,44 @@
+{
+  "scenario": "B1.1-quote-to-sale",
+  "generatedAt": "2026-09-24T23:52:27.852Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "COMPLETED",
+  "email": "b11.1790293924277@example.test",
+  "quoteName": "QA B1.1 1790293924277",
+  "stages": [
+    {
+      "stage": "public_request",
+      "bodyContainsSuccess": true
+    },
+    {
+      "stage": "staff_pricing",
+      "saved": true
+    },
+    {
+      "stage": "staff_send",
+      "saved": true
+    },
+    {
+      "stage": "customer_response",
+      "saved": true
+    },
+    {
+      "stage": "sale_conversion",
+      "saved": true
+    }
+  ],
+  "apiProbes": [
+    {
+      "name": "ventas_url_company_settings",
+      "status": 200,
+      "url": "http://localhost:3004/admin/configuracion",
+      "body": "Saltar al contenido\n\nCOMERCIAL\n\nClientes\nPipeline\nCotizaciones\nVentas\nPedidos\nPagos\n\nOPERACIÓN\n\nOperaciones\nInventario\nCompras\n\nCATÁLOGO\n\nProductos\nTaxonomía\nPrecios\nPromociones\n\nGESTIÓN\n\nNotificaciones\nNecesitas ayuda?\nColdPower Commerce 2.0\nC&J COLD IMPORT PERÚ E.I.R.L.\nCtrl\nK\n99+\n\nOperaciones y ventas\n\nOperaciones y ventas"
+    },
+    {
+      "name": "ventas_api_company_settings_mutation",
+      "status": 405,
+      "body": ""
+    }
+  ],
+  "quoteId": "CP-20260924-YD5P"
+}

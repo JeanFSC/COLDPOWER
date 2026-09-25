@@ -1,0 +1,97 @@
+{
+  "scenario": "B7.3-product-media-publication",
+  "stage": "run",
+  "generatedAt": "2026-09-25T01:15:48.951Z",
+  "outcome": "COMPLETED",
+  "productId": "product-cp-ref-tar-0810",
+  "sku": "CP-REF-TAR-0810",
+  "slug": "tarjeta-lg-con-cable-6871jb1103h",
+  "imagePath": "C:\\Users\\jean_\\Desktop\\COLDPOWER-wt17b\\public\\images\\home\\placa-equipo.webp",
+  "stages": [
+    {
+      "stage": "initial_hide_ui_mutation",
+      "completed": true,
+      "responseStatus": 200
+    },
+    {
+      "stage": "product_media_ui_mutation",
+      "completed": true,
+      "primaryAssetId": "media-02acf8c2-fc94-4f2d-bf9d-bd21da58692f"
+    },
+    {
+      "stage": "product_publish_ui_mutation",
+      "completed": true,
+      "persistedStatus": "published"
+    },
+    {
+      "stage": "public_product_ui_verification",
+      "completed": true,
+      "status": 200
+    },
+    {
+      "stage": "product_unpublish_ui_mutation",
+      "completed": true,
+      "persistedStatus": "hidden"
+    },
+    {
+      "stage": "public_hidden_verification",
+      "completed": true,
+      "status": 200
+    }
+  ],
+  "before": {
+    "publicationStatus": "published",
+    "slug": "tarjeta-lg-con-cable-6871jb1103h"
+  },
+  "hideBeforeUpload": {
+    "response": {
+      "status": 200,
+      "body": "{\"action\":\"hide\",\"requested\":1,\"updated\":1,\"failed\":[],\"message\":\"1 productos actualizados correctamente.\"}"
+    },
+    "persistedStatus": "hidden"
+  },
+  "media": {
+    "assetId": "media-02acf8c2-fc94-4f2d-bf9d-bd21da58692f",
+    "slot": "primary",
+    "filename": "placa-equipo.webp",
+    "publicUrl": "",
+    "status": "ACTIVE"
+  },
+  "publish": {
+    "response": {
+      "preflight": {
+        "status": 200,
+        "body": "{\"totalSelected\":1,\"eligible\":1,\"blocked\":[]}"
+      },
+      "dialogText": "Revisar publicación\n\nEl governance real evalúa cada referencia antes de persistir el cambio.\n\nSELECCIONADOS\n\n1\n\nLISTOS PARA PUBLICAR\n\n1\n\nBLOQUEADOS\n\n0\nTodas las referencias seleccionadas están listas.\nCancelar\nPublicar 1 productos",
+      "response": {
+        "status": 200,
+        "body": "{\"action\":\"publish\",\"requested\":1,\"updated\":1,\"failed\":[],\"message\":\"1 productos actualizados correctamente.\"}"
+      }
+    },
+    "persistedStatus": "published"
+  },
+  "publicView": {
+    "status": 200,
+    "finalUrl": "http://localhost:3004/producto/tarjeta-lg-con-cable-6871jb1103h",
+    "hasProductName": true,
+    "images": [
+      {
+        "alt": "TARJETA LG CON CABLE 6871JB1103H",
+        "src": "/_next/image?url=%2Fapi%2Fmedia%2Fmedia-02acf8c2-fc94-4f2d-bf9d-bd21da58692f&w=3840&q=75"
+      }
+    ]
+  },
+  "unpublish": {
+    "response": {
+      "status": 200,
+      "body": "{\"action\":\"hide\",\"requested\":1,\"updated\":1,\"failed\":[],\"message\":\"1 productos actualizados correctamente.\"}"
+    },
+    "persistedStatus": "hidden"
+  },
+  "publicAfterUnpublish": {
+    "status": 200,
+    "finalUrl": "http://localhost:3004/producto/tarjeta-lg-con-cable-6871jb1103h",
+    "stillShowsProduct": false
+  }
+}

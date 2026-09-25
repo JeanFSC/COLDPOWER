@@ -1,0 +1,21 @@
+{
+  "scenario": "B1.4-B2.1-discount-approval",
+  "generatedAt": "2026-09-24T23:56:19.745Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "BLOCKED_UI_CONTRACT",
+  "email": "b14.1790294169725@example.test",
+  "ruleName": "QA B1.4 1790294169725",
+  "stages": [
+    {
+      "stage": "discount_rule_ui_mutation",
+      "saved": true
+    },
+    {
+      "stage": "quote_ui_discount_attempt",
+      "discountControlsFound": 0,
+      "controls": 9
+    }
+  ],
+  "rootCause": "El editor de cotizaciones visible por UI solo expone producto, cantidad, vigencia, impuestos y nota; no existe un control para discountPercentage/discountReason. La regla activa no puede producir una solicitud de aprobación desde la UI.",
+  "quoteId": "CP-20260924-QQA6"
+}

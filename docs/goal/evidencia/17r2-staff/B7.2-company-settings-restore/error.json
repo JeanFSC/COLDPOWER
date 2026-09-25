@@ -1,0 +1,20 @@
+{
+  "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Nombre comercial', { exact: true })\u001b[22m\n",
+  "evidence": {
+    "scenario": "B7.2-company-settings-restore",
+    "temporaryName": "ColdPower QA B7.2 1790296799037",
+    "stages": [],
+    "before": {
+      "version": 5,
+      "commercialName": "",
+      "legalName": "",
+      "ruc": "",
+      "updatedBy": "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO"
+    }
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "error": "La cotización no quedó enviable después de editarla.",
+  "evidence": {
+    "scenario": "B1.1-quote-to-sale",
+    "email": "b11.1790293895694@example.test",
+    "quoteName": "QA B1.1 1790293895694",
+    "stages": [
+      {
+        "stage": "public_request",
+        "bodyContainsSuccess": true
+      },
+      {
+        "stage": "staff_pricing",
+        "saved": false,
+        "reason": "El botón Editar no quedó visible."
+      }
+    ],
+    "apiProbes": [],
+    "quoteId": "id"
+  }
+}

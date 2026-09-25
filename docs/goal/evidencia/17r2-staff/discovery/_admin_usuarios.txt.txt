@@ -1,0 +1,262 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Usuarios
+
+Gestiona los usuarios del sistema, sus roles y permisos de acceso.
+
+Invitar usuario
+Permisos por rol
+Exportar
+
+Usuarios activos
+
+65
+
+Dato actual
+
+Invitaciones pendientes
+
+0
+
+Pendientes en Clerk
+
+Roles configurados
+
+5
+
+Roles operativos visibles
+
+Usuarios registrados
+
+65
+
+Según filtros actuales
+
+Superadmins
+
+1
+
+Activos actualmente
+
+Suspendidos
+
+0
+
+Estado persistido
+
+Rol: Todos
+Estado: Todos
+Aplicar
+Exportar
+AVATAR
+	NOMBRE	CORREO	ROL	ESTADO	ÚLTIMO ACCESO	INCORPORACIÓN	ACCIONES
+
+TC
+	Taller San Borja Clima	cliente.c9.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CP
+	Cliente Promoción	cliente.c8.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CB
+	Comprador B	b.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CA
+	Comprador A	a.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TS
+	Taller Electrónica Polar SAC	taller.recurrente.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TP
+	Técnico Luis Paredes	cliente.c5.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+SS
+	Servicios Técnicos Chiclayo SAC	cliente.c4.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TN
+	Taller Frío Norte	cliente.c3.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TM
+	Taller Refrigeración Miraflores	cliente.c2.aud_1790289867163@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TC
+	Taller San Borja Clima	cliente.c9.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CP
+	Cliente Promoción	cliente.c8.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CB
+	Comprador B	b.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CA
+	Comprador A	a.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TS
+	Taller Electrónica Polar SAC	taller.recurrente.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TP
+	Técnico Luis Paredes	cliente.c5.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+SS
+	Servicios Técnicos Chiclayo SAC	cliente.c4.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TN
+	Taller Frío Norte	cliente.c3.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TM
+	Taller Refrigeración Miraflores	cliente.c2.aud_1790289754702@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TC
+	Taller San Borja Clima	cliente.c9.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CP
+	Cliente Promoción	cliente.c8.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CB
+	Comprador B	b.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+CA
+	Comprador A	a.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TS
+	Taller Electrónica Polar SAC	taller.recurrente.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+TP
+	Técnico Luis Paredes	cliente.c5.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+
+
+SS
+	Servicios Técnicos Chiclayo SAC	cliente.c4.aud_1790289646445@example.pe	Cliente	Activo	Nunca registrado	24 set 2026	
+Mostrando 1 a 25 de 65 usuarios
+1
+2
+3
+Permisos por rol
+
+Permisos efectivos actuales. La matriz es de solo lectura.
+
+MÓDULO	SUPERADMIN	GERENCIA	OPERACIONES	ALMACÉN	VENTAS
+Dashboard	
+	
+	
+	
+	
+
+Productos	
+	
+	
+	
+	
+
+Inventario	
+	
+	
+	
+	
+
+Reportes	
+	
+	
+	
+	
+
+Usuarios	
+	
+	
+	
+	
+Invitaciones pendientes
+
+Usuarios invitados que aún no activaron su cuenta.
+
+No hay invitaciones pendientes.
+
+Gestionar invitaciones (0)
+Actividad reciente
+
+Actividad del usuario seleccionado.
+
+Selecciona un usuario para consultar su actividad real.
+
+Ver toda la auditoría
+Invitar nuevo usuario
+
+Crea una invitación de acceso con el rol inicial correspondiente.
+
+Nombre
+Apellido
+Correo
+
+Rol inicial
+
+Superadmin
+Invitar
+
+La invitación se envía con Clerk y queda auditada. El registro público siempre crea CUSTOMER.

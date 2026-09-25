@@ -1,0 +1,23 @@
+{
+  "error": "El pedido provider pendiente no mostró Cancelar pedido.",
+  "evidence": {
+    "scenario": "B2.3-B5.1-payments",
+    "stages": [
+      {
+        "stage": "manual_payment",
+        "saved": true
+      },
+      {
+        "stage": "refund_double_click",
+        "saved": true
+      }
+    ],
+    "apiProbes": [],
+    "checkoutEmail": "b23-payment.1790294695065@example.test",
+    "manualOrderId": "order-2611e400-1553-4cf1-9ef7-7d73190e0c2a",
+    "rejectedPaymentId": "payment-181cab9f-d42e-4c57-88f8-42948ed30d73",
+    "manualPaymentId": "payment-6c97ab36-1ce4-4d60-a76f-173385a80e52",
+    "providerOrderId": "cp-brief16-orders-order-payment-pending",
+    "providerPaymentId": "cp-brief16-orders-payment-payment-pending"
+  }
+}

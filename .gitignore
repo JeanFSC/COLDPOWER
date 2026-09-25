@@ -63,3 +63,4 @@ next-env.d.ts
 # local Cloudflare Tunnel connector and token
 /.cloudflared/
 /tools/cloudflared/
+docs/goal/evidencia/17r2-staff/**/*.png

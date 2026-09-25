@@ -1,0 +1,6 @@
+-- SELECT id,version,commercial_name,legal_name,ruc,updated_by,updated_at FROM company_settings WHERE id='default'; SELECT id,version,actor_id,actor_role,created_at FROM company_settings_history WHERE settings_id='default' ORDER BY version DESC LIMIT 8;
+default	5				user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	2026-09-24 14:59:03.934-05
+settings-history-c02ff5de-eade-444b-9727-f72b745cf930	5	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 11:51:43.497187-05
+settings-history-420d22cd-1421-43a4-be85-43af17423437	4	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 11:50:43.980468-05
+settings-history-60dc924b-d0e0-4b95-8790-83ecc1c26006	3	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 11:49:23.042876-05
+settings-history-b42408f1-606d-4946-adf7-fa443cd6bd23	2	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 11:37:47.54148-05

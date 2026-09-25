@@ -1,0 +1,7 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3004/api/admin/inventario/kardex?productId=prod-new-aud_1790289867163&locationId=cp-dashboard-v5-location-lima&page=1&pageSize=25 :: net::ERR_ABORTED"
+  ]
+}

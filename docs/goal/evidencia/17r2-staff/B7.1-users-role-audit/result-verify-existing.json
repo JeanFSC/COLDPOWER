@@ -1,0 +1,30 @@
+{
+  "scenario": "B7.1-users-role-audit",
+  "stage": "verify-existing",
+  "generatedAt": "2026-09-25T01:17:17.855Z",
+  "outcome": "SUPPLEMENTAL_COMPLETED",
+  "targetId": "cp-dashboard-v5-user-staff-016",
+  "targetEmail": "empleado.016@coldpower.local",
+  "stages": [
+    {
+      "stage": "existing_ventas_permission_verification_supplemental",
+      "completed": true,
+      "expectedApiStatus": 403
+    }
+  ],
+  "fixtureId": "cp-dashboard-v5-user-staff-001",
+  "pageChecks": {
+    "configuration": {
+      "status": 200,
+      "finalUrl": "http://localhost:3004/admin/sin-acceso"
+    },
+    "users": {
+      "status": 200,
+      "finalUrl": "http://localhost:3004/admin/sin-acceso"
+    }
+  },
+  "apiChecks": {
+    "configuration": 403,
+    "users": 403
+  }
+}

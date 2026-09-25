@@ -1,0 +1,2 @@
+-- SELECT id,name,identification,status,currency,created_at FROM suppliers WHERE id='supplier-0fcbcb9f-b6f7-4c9f-98c9-b28a5afa2ab9';
+supplier-0fcbcb9f-b6f7-4c9f-98c9-b28a5afa2ab9	QA B4.1 Proveedor 1790296358276	QA-B41-1790296358276	ACTIVE	PEN	2026-09-24 19:32:41.272192-05

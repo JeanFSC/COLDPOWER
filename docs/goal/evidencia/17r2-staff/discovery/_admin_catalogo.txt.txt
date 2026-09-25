@@ -1,0 +1,465 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Gestión de productos
+
+Administra tu catálogo, calidad de fichas y publicación en todos los canales.
+
+Nuevo producto
+Importar
+Publicar cambios
+
+Total referencias
+
+1,349
+
++1.4% vs. período anterior
+
+Publicados
+
+29
+
++93.3% vs. período anterior
+
+En revisión
+
+1,320
+
++0.3% vs. período anterior
+
+Requieren revisión
+
+57
+
+−20.8% vs. período anterior
+
+Duplicados editoriales pendientes
+
+61
+
+−15.3% vs. período anterior
+
+Categoría
+Todos
+Amoladoras
+Arroceras
+Aspiradoras
+Automotriz
+Bombas de agua
+Campanas extractoras
+Cocinas
+Conexiones y accesorios
+Congeladoras
+Consumibles
+Duchas eléctricas
+Fitness y bienestar
+Herramientas y equipos
+Hervidores
+Lavadoras
+Licuadoras
+Lustradoras
+Microondas
+Multilínea
+Otros electrodomésticos
+Planchas
+Refrigeración
+Secadoras
+Selladoras
+Servicios
+Termas
+Uso general
+Marca
+Todos
+Alfa
+Black+Decker
+Bosch
+Brastemp
+ColdPoint
+ColdPower
+Coldex
+Cubigel
+Daewoo
+Danfoss
+Ducatti
+Elco
+Electrolux
+Embraco
+Emicol
+Eurovalve
+F&D
+FSP
+Fafnir
+GE
+Genpro
+Global Cap
+Hamilton Beach
+Harris
+Imaco
+Indurama
+Kenmore
+Klimatic
+LG
+Last One
+MULTIMARCA
+Mabe
+Mars
+Metusa
+Miray
+Moulinex
+Nidec
+Oster
+PFI
+Pedsu
+Philips
+Practika
+Quality
+Rainbox
+Ranco
+Robertshaw
+SKF
+Saginomiya
+Samsung
+Sanwa
+Siemens
+Sole
+Supco
+Superlon
+Tecumseh
+Trisun
+Vazel
+Whirlpool
+ZKL
+ZSG
+Estado
+Todos
+Publicado
+En revisión
+Borrador
+Oculto
+Archivado
+Calidad
+Todos
+Buena
+Aceptable
+Baja
+Más filtros
+Actualizado: 24 set. 2026, 6:47 p. m.
+Limpiar filtros
+0 seleccionados
+	SKU	PRODUCTO	CATEGORÍA	MARCA	ESTADO	PRECIO	STOCK	CHECKLIST	CALIDAD	ACCIONES
+
+	CP-REF-OTR-0435	
+Imagen referencial
+121
+Otros
+	Refrigeración	Sin marca	En revisión
+	Sin precio	
+1088
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	39%	
+
+
+	CP-LAV-ABR-0586	
+Imagen referencial
+ABRAZADERA 1.5
+Abrazaderas
+	Lavadoras	Sin marca	En revisión	Sin precio	
+314
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	44%	
+
+
+	CP-COC-ABR-0614	
+Imagen referencial
+ABRAZADORA
+Abrazaderas
+	Cocinas	Sin marca	En revisión	Sin precio	
+179
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	44%	
+
+
+	CP-CON-ACE-0815	
+Imagen referencial
+ACEITE 1/8 CLAVUS 68
+Aceites
+	Consumibles	Sin marca	En revisión	Sin precio	
+248
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	49%	
+
+
+	CP-REF-ACE-0827	
+Imagen referencial
+ACEITE CLAVUS R134 DE 1/4
+Aceites
+	Refrigeración	Sin marca	En revisión	S/ 85.00	
+812
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	54%	
+
+
+	CP-REF-ACE-1161	
+Imagen referencial
+ACEITE DE 1 /8 R R134
+Aceites
+	Refrigeración	Sin marca	En revisión	S/ 158.00	
+815
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	49%	
+
+
+	CP-CON-ACE-1274	
+Imagen referencial
+ACEITE DE 1/4 R 600
+Aceites
+	Consumibles	Sin marca	En revisión	Sin precio	
+248
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	54%	
+
+
+	CP-CON-ACE-1275	
+Imagen referencial
+ACEITE DE 1/8 CLAVUS 32
+Aceites
+	Consumibles	Sin marca	En revisión	Sin precio	
+248
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	49%	
+
+
+	CP-REF-ACE-1276	
+Imagen referencial
+ACEITE DE 1/8 CLAVUS R600
+Aceites
+	Refrigeración	Sin marca	En revisión	S/ 231.00	
+815
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	54%	
+
+
+	CP-LIC-ACO-0495	
+Imagen referencial
+ACOPLE +PIN+PLATO OSTER MEXICANO
+Acoples
+	Licuadoras	Oster	En revisión	Sin precio	
+671
+Disponible
+	
+Nombre
+Familia
+Categoría
+Placeholder
+	53%	
+Mostrando 1–10 de 1,349 productos
+1
+2
+3
+4
+5
+10 por página
+25 por página
+50 por página
+100 por página
+Resumen del catálogo
+
+Actualizado ahora
+
+Por categorías
+Ver todas
+Refrigeración
+528
+39%
+Lavadoras
+356
+26%
+Licuadoras
+120
+9%
+Cocinas
+67
+5%
+Bombas de agua
+53
+4%
+Por marcas
+Ver todas
+Sin marca
+742
+55%
+LG
+58
+4%
+Oster
+45
+3%
+Samsung
+41
+3%
+Mabe
+40
+3%
+Calidad del catálogo
+Ver detalle
+52%
+Calidad buena
+Buena
+1
+0%
+Aceptable
+140
+10%
+Baja
+1,208
+90%
+Alertas activas
+Ver todas
+productos requieren revisión
+57
+duplicados editoriales pendientes
+61
+sin imagen principal
+1,349
+sin precio retail
+1,239
+Operaciones masivas
+Asignaciones
+Publicación
+Calidad de fichas
+Duplicados
+
+1. Productos seleccionados
+
+0
+
+Elige los productos sobre los que deseas realizar acciones masivas.
+
+Productos seleccionados
+
+0
+
+Ninguno seleccionado
+
+Selecciona productos desde la tabla para comenzar.
+
+2. Elige la acción
+
+Las acciones se habilitan según tu rol y la selección actual.
+
+Editar categoría desde ficha
+No disponible en lote; usa la ficha editorial
+Asignar marca
+No disponible en lote; usa la ficha editorial
+Actualizar precios
+Gestionar precios en lote
+Actualizar stock
+Actualizar inventario en lote
+Editar atributos
+No disponible en lote; usa la ficha editorial
+Cambiar publicación
+Publicar, ocultar o revisar
+
+3. Configura y revisa el impacto
+
+Define los nuevos valores a aplicar.
+
+Selecciona una acción para ver su configuración.
+Previsualizar cambios
+
+Acciones de publicación
+
+Las publicaciones requieren preflight real antes de persistir.
+
+Publicar seleccionados
+Enviar a revisión
+Despublicar

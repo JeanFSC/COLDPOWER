@@ -1,0 +1,37 @@
+{
+  "scenario": "B7.2-company-settings-restore",
+  "generatedAt": "2026-09-25T00:55:15.187Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "COMPLETED",
+  "temporaryName": "ColdPower QA B7.2 1790297706581",
+  "stages": [
+    {
+      "stage": "settings_save_ui_mutation",
+      "completed": true,
+      "version": 6
+    },
+    {
+      "stage": "settings_restore_ui_mutation",
+      "completed": true,
+      "restoredVersion": 5,
+      "newVersion": 7
+    }
+  ],
+  "before": {
+    "version": 5,
+    "commercialName": "",
+    "legalName": "",
+    "ruc": "",
+    "updatedBy": "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO"
+  },
+  "afterSave": {
+    "version": 6,
+    "commercialName": "ColdPower QA B7.2 1790297706581",
+    "updatedBy": "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO"
+  },
+  "afterRestore": {
+    "version": 7,
+    "commercialName": "",
+    "updatedBy": "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO"
+  }
+}

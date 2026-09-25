@@ -1,0 +1,2 @@
+-- SELECT p.id,p.status,p.amount,pr.id AS refund_id,pr.status AS refund_status,pr.idempotency_key,pr.amount AS refund_amount,pr.reason,count(*) OVER (PARTITION BY pr.payment_id) AS refund_rows FROM payments p LEFT JOIN payment_refunds pr ON pr.payment_id=p.id WHERE p.id='payment-a5e2a254-8e0a-4b73-9816-5083c4370b2e';
+payment-a5e2a254-8e0a-4b73-9816-5083c4370b2e	CONFIRMED	412.25						1

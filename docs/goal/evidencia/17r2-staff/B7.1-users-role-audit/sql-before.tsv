@@ -1,0 +1,4 @@
+-- SELECT id,email,role_code,status,clerk_sync_status,clerk_sync_error,last_role_changed_at FROM users WHERE id='cp-dashboard-v5-user-staff-016'; SELECT action,entity_id,actor_id,actor_role,created_at FROM audit_logs WHERE entity_type='user' AND entity_id='cp-dashboard-v5-user-staff-016' ORDER BY created_at DESC LIMIT 8;
+cp-dashboard-v5-user-staff-016	empleado.016@coldpower.local	REPORTES	ACTIVE	PENDING	Not Found	
+access.user_role_sync_failed	cp-dashboard-v5-user-staff-016	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 20:00:40.404644-05
+access.user_role_sync_failed	cp-dashboard-v5-user-staff-016	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 19:59:54.239548-05

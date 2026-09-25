@@ -1,0 +1,43 @@
+{
+  "error": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').first().getByRole('button', { name: /Publicar 1 productos/ }) to be visible\u001b[22m\n",
+  "evidence": {
+    "scenario": "B7.3-product-media-publication",
+    "stage": "run",
+    "productId": "prod-new-aud_1790289867163",
+    "sku": "CP-ROT-8284",
+    "slug": "compresor-rotativo-gemini-aud_1790289867163",
+    "imagePath": "C:\\Users\\jean_\\Desktop\\COLDPOWER-wt17b\\public\\images\\home\\placa-equipo.webp",
+    "stages": [
+      {
+        "stage": "initial_hide_ui_mutation",
+        "completed": true,
+        "responseStatus": null
+      },
+      {
+        "stage": "product_media_ui_mutation",
+        "completed": true,
+        "primaryAssetId": "media-02acf8c2-fc94-4f2d-bf9d-bd21da58692f"
+      }
+    ],
+    "before": {
+      "publicationStatus": "hidden",
+      "slug": "compresor-rotativo-gemini-aud_1790289867163"
+    },
+    "hideBeforeUpload": {
+      "response": null,
+      "persistedStatus": "hidden"
+    },
+    "media": {
+      "assetId": "media-02acf8c2-fc94-4f2d-bf9d-bd21da58692f",
+      "slot": "primary",
+      "filename": "placa-equipo.webp",
+      "publicUrl": "",
+      "status": "ACTIVE"
+    }
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

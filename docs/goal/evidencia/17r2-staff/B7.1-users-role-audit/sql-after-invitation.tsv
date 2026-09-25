@@ -1,0 +1,2 @@
+-- SELECT action,entity_id,actor_id,actor_role,created_at,"after" FROM audit_logs WHERE action='access.staff_invitation_created' AND "after"->>'email'='qa.b71.1790298305081@coldpower.pe' ORDER BY created_at DESC LIMIT 3;
+access.staff_invitation_created	inv_3JnYTjbWX1r1ep86DLxrnsWjOHv	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	SUPERADMIN	2026-09-24 20:05:06.676257-05	{"role": "REPORTES", "email": "qa.b71.1790298305081@coldpower.pe", "status": "pending", "lastName": "B7.1", "firstName": "QA Staff"}

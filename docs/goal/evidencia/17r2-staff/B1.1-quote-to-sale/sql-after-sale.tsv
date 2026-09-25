@@ -1,0 +1,7 @@
+-- SELECT q.id,q.tracking_code,q.workflow_status,q.status,q.accepted_version_id,s.id AS sale_id,s.code AS sale_code,s.status AS sale_status,o.id AS order_id,o.code AS order_code,o.status AS order_status FROM quotes q LEFT JOIN sales s ON s.quote_id=q.id LEFT JOIN orders o ON o.sale_id=s.id WHERE q.id='CP-20260924-YD5P'; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE entity_id IN ('CP-20260924-YD5P') ORDER BY created_at;
+CP-20260924-YD5P	CP-20260924-YD5P	CONVERTED	convertida	quote-version-e3651da3-0a6f-4f7a-bbda-2c807e3324a1	sale-6da47f1c-19a5-49be-96d5-b7cd37c67737	VTA-7E5E9C01-A	CONFIRMED	order-5c14dad0-1389-48e8-9113-77ffd5ffa4fa	ORD-20260924-94BB73	PAYMENT_PENDING
+crm.lead_created_from_quote	quote	CP-20260924-YD5P		system
+quote.draft_updated	quote	CP-20260924-YD5P	cp-dashboard-v5-user-ventas	OPERACIONES_VENTAS
+quote.sent	quote	CP-20260924-YD5P	cp-dashboard-v5-user-ventas	OPERACIONES_VENTAS
+quote.accepted	quote	CP-20260924-YD5P	cp-dashboard-v5-user-ventas	OPERACIONES_VENTAS
+sales.quote_converted	quote	CP-20260924-YD5P	cp-dashboard-v5-user-ventas	OPERACIONES_VENTAS

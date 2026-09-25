@@ -1,0 +1,2 @@
+-- SELECT pr.id,pr.code,pr.status,pr.location_id,pr.requester_id,pr.notes,pri.product_id,pri.quantity_requested,pri.notes FROM purchase_requests pr JOIN purchase_request_items pri ON pri.request_id=pr.id WHERE pr.id='purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33';
+purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33	SOL-20260925-05F81B	DRAFT	cp-dashboard-v5-location-lima	cp-dashboard-v5-user-compras	QA B4.1 solicitud 1790296358276	product-cp-fit-otr-0313	2	QA B4.1 costo y recepción trazable

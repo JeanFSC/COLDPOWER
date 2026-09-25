@@ -1,0 +1,26 @@
+{
+  "scenario": "B7.3-product-media-publication",
+  "generatedAt": "2026-09-25T01:17:34.806Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "SUPPLEMENTAL_COMPLETED",
+  "stage": "prohibited",
+  "productId": "product-cp-ref-tar-0810",
+  "sku": "CP-REF-TAR-0810",
+  "slug": "tarjeta-lg-con-cable-6871jb1103h",
+  "imagePath": "C:\\Users\\jean_\\Desktop\\COLDPOWER-wt17b\\public\\images\\home\\placa-equipo.webp",
+  "stages": [
+    {
+      "stage": "ventas_prohibited_publication_verification",
+      "completed": true,
+      "expectedApiStatus": 403
+    }
+  ],
+  "ui": {
+    "publishButtonsVisible": 0
+  },
+  "api": {
+    "preflightStatus": 403,
+    "patchStatus": 403
+  },
+  "persistedStatus": "hidden"
+}

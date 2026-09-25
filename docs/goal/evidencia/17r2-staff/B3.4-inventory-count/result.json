@@ -1,0 +1,36 @@
+{
+  "scenario": "B3.4-inventory-count",
+  "generatedAt": "2026-09-25T00:26:31.141Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "COMPLETED",
+  "productId": "prod-new-aud_1790289867163",
+  "sku": "CP-ROT-8284",
+  "locationId": "cp-dashboard-v5-location-lima",
+  "countDelta": 2,
+  "reason": "QA B3.4 conteo ciclico 1790295803639",
+  "notes": "Conteo físico QA B3.4; diferencia documentada para auditoría.",
+  "stages": [
+    {
+      "stage": "inventory_adjustment_ui",
+      "completed": true,
+      "replayedFromExistingQaMutation": true,
+      "reason": "QA B3.4 conteo ciclico 1790295803639"
+    },
+    {
+      "stage": "kardex_ui",
+      "completed": true
+    }
+  ],
+  "reusedPriorMutation": true,
+  "before": {
+    "balanceId": "bal-new-aud_1790289867163",
+    "onHand": "19",
+    "reserved": "4"
+  },
+  "after": {
+    "onHand": "19",
+    "reserved": "4",
+    "matchingMovements": "1",
+    "matchingNotes": "1"
+  }
+}

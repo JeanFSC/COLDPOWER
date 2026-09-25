@@ -1,0 +1,2 @@
+-- SELECT count(*) AS active_discount_rules_before FROM discount_rules WHERE status='ACTIVE';
+0

@@ -1,0 +1,5 @@
+-- SELECT id,code,status,approved_by,approved_at,converted_purchase_id FROM purchase_requests WHERE id='purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33'; SELECT id,action,entity_type,entity_id,actor_role,created_at FROM audit_logs WHERE entity_id='purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33' ORDER BY created_at DESC LIMIT 10;
+purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33	SOL-20260925-05F81B	APPROVED	cp-dashboard-v5-user-staff-005	2026-09-24 19:34:16.272-05	
+audit-f67d0965-470d-47ae-b8fa-f5dac2a0fd5f	purchases.request_approved	purchase_request	purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33	JEFATURA	2026-09-24 19:34:16.266936-05
+audit-b2e7fc50-53d5-4dac-a4d9-98d34f0192a5	purchases.request_submitted	purchase_request	purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33	COMPRAS	2026-09-24 19:32:45.81554-05
+audit-17ddd6c7-e581-44bf-b443-89a55a343c02	purchases.request_created	purchase_request	purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33	COMPRAS	2026-09-24 19:32:42.98721-05

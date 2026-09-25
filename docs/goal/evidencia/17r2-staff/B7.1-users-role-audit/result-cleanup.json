@@ -1,0 +1,16 @@
+{
+  "scenario": "B7.1-users-role-audit",
+  "stage": "cleanup",
+  "generatedAt": "2026-09-25T01:05:27.187Z",
+  "outcome": "COMPLETED",
+  "targetId": "cp-dashboard-v5-user-staff-016",
+  "targetEmail": "empleado.016@coldpower.local",
+  "stages": [
+    {
+      "stage": "invitation_cleanup_ui_mutation",
+      "completed": true,
+      "action": "cancel"
+    }
+  ],
+  "invitationEmail": "qa.b71.1790298305081@coldpower.pe"
+}

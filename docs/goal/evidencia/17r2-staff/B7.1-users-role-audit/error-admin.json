@@ -1,0 +1,21 @@
+{
+  "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('combobox', { name: 'Rol inicial', exact: true }).first() to be visible\u001b[22m\n",
+  "evidence": {
+    "scenario": "B7.1-users-role-audit",
+    "stage": "admin",
+    "targetId": "cp-dashboard-v5-user-staff-016",
+    "targetEmail": "empleado.016@coldpower.local",
+    "stages": [],
+    "before": {
+      "role": "REPORTES",
+      "status": "ACTIVE",
+      "clerkSyncStatus": "SYNCED"
+    },
+    "invitationEmail": "b71.1790297949423@example.test"
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

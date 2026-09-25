@@ -1,0 +1,15 @@
+{
+  "scenario": "B4.1-purchase-flow",
+  "generatedAt": "2026-09-25T00:37:01.662Z",
+  "baseUrl": "http://localhost:3004",
+  "outcome": "BLOCKED",
+  "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"datetime-local\"]').last()\u001b[22m\n",
+  "phase": "convert",
+  "productId": "product-cp-fit-otr-0313",
+  "sku": "CP-FIT-OTR-0313",
+  "locationId": "cp-dashboard-v5-location-lima",
+  "stages": [],
+  "requestId": "purchase-request-7040e62c-51c7-4aee-b19e-e9f017d4ac33",
+  "requestCode": "SOL-20260925-05F81B",
+  "supplierId": "supplier-0fcbcb9f-b6f7-4c9f-98c9-b28a5afa2ab9"
+}
