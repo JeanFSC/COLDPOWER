@@ -1,4 +1,4 @@
-import { and, countDistinct, desc, eq, gt, inArray, isNotNull, or } from "drizzle-orm";
+import { and, countDistinct, desc, eq, gt, gte, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   customerAddresses,
@@ -17,6 +17,11 @@ import {
   type QuoteCartItem,
 } from "@/db/schema";
 import { isStaffRole, type AppRole } from "@/lib/roles";
+import {
+  accountNonPaymentOrderStatuses,
+  accountPendingPaymentStatuses,
+  accountQuoteAttentionCondition,
+} from "@/lib/account-attention";
 
 export type AccountActivityKind = "quote" | "order" | "payment";
 
@@ -209,6 +214,7 @@ export function emptyAccountOverview(role: AppRole): AccountOverview {
 
 export async function getAccountOverview(userId: string, role: AppRole): Promise<AccountOverview> {
   const db = getDb();
+  const now = new Date();
   const [account] = await db
     .select({
       userEmail: users.email,
@@ -270,7 +276,7 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       .from(quotes)
       .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
       .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
-      .where(and(quoteOwnership, or(isNotNull(quotes.respondedAt), inArray(quotes.status, ["cotizada", "aprobada", "convertida"])))),
+      .where(and(quoteOwnership, accountQuoteAttentionCondition(now))),
     db
       .select({ total: countDistinct(orders.id) })
       .from(orders)
@@ -287,7 +293,14 @@ export async function getAccountOverview(userId: string, role: AppRole): Promise
       .from(payments)
       .innerJoin(orders, eq(payments.orderId, orders.id))
       .innerJoin(customers, eq(orders.customerId, customers.id))
-      .where(and(orderOwnership, inArray(payments.status, ["PENDING", "UNDER_REVIEW"]))),
+      .where(and(
+        orderOwnership,
+        inArray(payments.status, accountPendingPaymentStatuses),
+        or(
+          inArray(orders.status, accountNonPaymentOrderStatuses),
+          and(eq(orders.status, "PAYMENT_PENDING"), or(isNull(orders.paymentDueAt), gte(orders.paymentDueAt, now))),
+        ),
+      )),
     db
       .select({ items: quoteCarts.items })
       .from(quoteCarts)

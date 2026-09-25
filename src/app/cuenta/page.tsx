@@ -285,7 +285,6 @@ export default async function CuentaPage() {
   const { profile } = overview;
   const firstName = profile.firstName || profile.name?.trim()?.split(/\s+/)[0] || null;
   const hasActivity = overview.counts.quotes > 0 || overview.counts.orders > 0 || overview.counts.payments > 0 || overview.counts.quoteCartItems > 0;
-  const adminHref = overview.access.adminHref;
 
   if (!hasActivity) {
     return <EmptyAccount firstName={firstName} profile={profile} whatsapp={companySettings.whatsapp ?? null} />;
@@ -301,7 +300,6 @@ export default async function CuentaPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <AccountProfileEditor profile={profile} buttonLabel="Ver mis datos" />
-          {adminHref ? <Link href={adminHref} className="account-header-action">Ir al panel administrativo</Link> : null}
         </div>
       </header>
 

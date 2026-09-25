@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-09-25T21:02:23.119Z",
+  "baseUrl": "http://localhost:3006/",
+  "gpuArgs": [
+    "--enable-gpu",
+    "--use-angle=d3d11",
+    "--ignore-gpu-blocklist"
+  ],
+  "results": [
+    {
+      "viewport": {
+        "name": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "responseStatus": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-05\\docs\\goal\\evidencia\\m10\\mi-cuenta\\hub-revision-1920x1080.png",
+      "state": {
+        "attentionCards": [],
+        "quoteBadge": "Cotizaciones",
+        "adminHeaderCount": 0,
+        "adminMenuCount": 1,
+        "hasLegacyQuoteInAttention": false,
+        "scrollWidth": 1920,
+        "clientWidth": 1920
+      },
+      "axeViolations": 0,
+      "consoleIssues": []
+    },
+    {
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "responseStatus": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-05\\docs\\goal\\evidencia\\m10\\mi-cuenta\\hub-revision-390x844.png",
+      "state": {
+        "attentionCards": [],
+        "quoteBadge": "Cotizaciones",
+        "adminHeaderCount": 0,
+        "adminMenuCount": 1,
+        "hasLegacyQuoteInAttention": false,
+        "scrollWidth": 484,
+        "clientWidth": 390
+      },
+      "axeViolations": 0,
+      "consoleIssues": []
+    }
+  ]
+}

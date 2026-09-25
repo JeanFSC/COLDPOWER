@@ -1,6 +1,6 @@
 import "server-only";
 
-import { desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { customerQuoteLinks, customers } from "@/db/crm-schema";
 import {
@@ -16,6 +16,13 @@ import {
   publicOrderStatus,
   publicQuoteStatus,
 } from "@/lib/account-overview";
+import {
+  accountDeliveryAttentionStatuses,
+  accountQuoteAttentionCondition,
+  isAccountOrderInProgress,
+  isAccountPaymentPending,
+  isQuoteAwaitingCustomerDecision,
+} from "@/lib/account-attention";
 import { buildOrderTimeline } from "@/lib/order-display";
 
 export type AccountAttention = {
@@ -72,20 +79,6 @@ export type AccountHubData = {
   recentOrders: AccountOrderSummary[];
 };
 
-const activeOrderStatuses = new Set([
-  "NEW",
-  "RECEIVED",
-  "PAYMENT_PENDING",
-  "PAID",
-  "PREPARING",
-  "READY",
-  "READY_FOR_PICKUP",
-  "IN_TRANSIT",
-  "SHIPPED",
-]);
-
-const respondedQuoteStatuses = new Set(["cotizada", "aprobada", "convertida"]);
-
 function quoteTitle(productName: string | null, message: string) {
   const product = productName?.trim();
   if (product) return product;
@@ -107,34 +100,41 @@ function publicReference(value: string, prefix: "COT" | "PED") {
     : `${prefix}-${normalized.slice(-8).toUpperCase()}`;
 }
 
-function isRespondedQuote(row: { status: string; respondedAt: Date | null }) {
-  return Boolean(row.respondedAt) || respondedQuoteStatuses.has(row.status.trim().toLowerCase());
-}
-
 export async function getAccountHubData(userId: string, role: Parameters<typeof getAccountOverview>[1]): Promise<AccountHubData> {
   const db = getDb();
+  const now = new Date();
   const overview = await getAccountOverview(userId, role);
   const quoteOwnership = or(eq(quotes.userId, userId), eq(customers.userId, userId));
   const orderOwnership = or(eq(orders.userId, userId), eq(customers.userId, userId));
 
-  const [quoteRows, orderRows, paymentRows] = await Promise.all([
+  const quoteSelection = {
+    id: quotes.id,
+    trackingCode: quotes.trackingCode,
+    productName: quotes.productName,
+    message: quotes.message,
+    status: quotes.status,
+    workflowStatus: quotes.workflowStatus,
+    updatedAt: quotes.updatedAt,
+    validUntil: quotes.validUntil,
+  };
+
+  const [quoteRows, attentionQuoteRows, orderRows, paymentRows] = await Promise.all([
     db
-      .select({
-        id: quotes.id,
-        trackingCode: quotes.trackingCode,
-        productName: quotes.productName,
-        message: quotes.message,
-        status: quotes.status,
-        respondedAt: quotes.respondedAt,
-        updatedAt: quotes.updatedAt,
-        validUntil: quotes.validUntil,
-      })
+      .select(quoteSelection)
       .from(quotes)
       .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
       .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
       .where(quoteOwnership)
       .orderBy(desc(quotes.updatedAt))
       .limit(30),
+    db
+      .select(quoteSelection)
+      .from(quotes)
+      .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
+      .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
+      .where(and(quoteOwnership, accountQuoteAttentionCondition(now)))
+      .orderBy(desc(quotes.updatedAt))
+      .limit(3),
     db
       .select({
         id: orders.id,
@@ -143,6 +143,7 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
         total: orders.total,
         currency: orders.currency,
         deliveryMethod: orders.deliveryMethod,
+        paymentDueAt: orders.paymentDueAt,
         updatedAt: orders.updatedAt,
         location: customers.location,
         estimatedDeliveryAt: shipments.estimatedDeliveryAt,
@@ -161,6 +162,8 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
         amount: payments.amount,
         currency: payments.currency,
         status: payments.status,
+        orderStatus: orders.status,
+        paymentDueAt: orders.paymentDueAt,
         updatedAt: payments.updatedAt,
       })
       .from(payments)
@@ -199,8 +202,8 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
   }
 
   const attention: AccountAttention[] = [];
-  for (const quote of quoteRows) {
-    if (!isRespondedQuote(quote)) continue;
+  for (const quote of attentionQuoteRows) {
+    if (!isQuoteAwaitingCustomerDecision(quote.status, quote.workflowStatus, quote.validUntil, now)) continue;
     attention.push({
       id: `quote-${quote.id}`,
       kind: "quote",
@@ -216,9 +219,7 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
 
   const pendingOrderIds = new Set<string>();
   for (const payment of paymentRows) {
-    if (!(["PENDING", "UNDER_REVIEW"] as string[]).includes(payment.status)) continue;
-    const order = orderRows.find((row) => row.id === payment.orderId);
-    if (!order || !activeOrderStatuses.has(order.status) || pendingOrderIds.has(payment.orderId)) continue;
+    if (!isAccountPaymentPending(payment.status, payment.orderStatus, payment.paymentDueAt, now) || pendingOrderIds.has(payment.orderId)) continue;
     pendingOrderIds.add(payment.orderId);
     attention.push({
       id: `payment-${payment.id}`,
@@ -234,7 +235,7 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
   }
 
   for (const order of orderRows) {
-    if (!(order.status === "IN_TRANSIT" || order.status === "SHIPPED")) continue;
+    if (!(accountDeliveryAttentionStatuses as readonly string[]).includes(order.status) || !isAccountOrderInProgress(order.status, order.paymentDueAt, now)) continue;
     attention.push({
       id: `order-${order.id}`,
       kind: "order",
@@ -251,7 +252,7 @@ export async function getAccountHubData(userId: string, role: Parameters<typeof 
   const attentionPriority = { quote: 0, payment: 1, order: 2 } as const;
   attention.sort((left, right) => attentionPriority[left.kind] - attentionPriority[right.kind]);
 
-  const currentRow = orderRows.find((row) => activeOrderStatuses.has(row.status)) ?? null;
+  const currentRow = orderRows.find((row) => isAccountOrderInProgress(row.status, row.paymentDueAt, now)) ?? null;
   const currentOrder = currentRow
     ? {
         id: currentRow.id,

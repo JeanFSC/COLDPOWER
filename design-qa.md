@@ -701,3 +701,17 @@ final result: blocked — falta comparación visual en el navegador autenticado 
 - automated verification: `corepack pnpm test:contact` PASS (7/7); `corepack pnpm exec tsc --noEmit` PASS; `corepack pnpm build` PASS; targeted ESLint PASS with one pre-existing unused-type warning in `src/lib/media-repository.ts`. The global lint remains blocked by generated `.next/dev` and `.claude/worktrees/verification-execution-rules-09b665` contents (341 errors outside this change). The inventory suite is 19/20 because the external workbook `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx` is absent.
 
 final result: passed
+
+## M10-05 — corrección de atención y deduplicación administrativa — 2026-09-25
+
+- source visual truth: `docs/goal/designs/m10-lote3/cuenta-hub-desktop-1920x1080.png` y `cuenta-hub-mobile-390x844.png`.
+- implementation screenshots: `docs/goal/evidencia/m10/mi-cuenta/hub-revision-1920x1080.png` y `hub-revision-390x844.png`.
+- viewport/pixels/density: desktop 1920 × 1080 CSS / 1920 × 1080 px / deviceScaleFactor 1; mobile 390 × 844 CSS / 390 × 844 px / deviceScaleFactor 1. No density normalization needed.
+- state: usuario cliente autenticado en bypass local; datos comerciales reales; COT-2026-019 `CONVERTED` vencida y COT-2026-040 `ACCEPTED` presentes solo en actividad reciente.
+- full-view comparison: shell TIENDA, topbar/header, breadcrumb, sidebar, hub, pedido en curso y responsive conservan la composición de la lámina; la sección de atención se omite correctamente cuando no existen acciones abiertas.
+- focused comparison: `.account-attention-grid`, badge de Cotizaciones y enlaces administrativos. Playwright confirmó cero tarjetas para 019/040, cero acciones en el header y un único enlace administrativo en el menú.
+- typography, spacing, colors/tokens, assets and copy: no se rediseñaron; el ajuste es de estado y navegación, conservando los tokens y la densidad aprobados.
+- comparison history: revisión inicial detectó estados aprobada/convertida como atención y duplicación administrativa; se corrigieron los filtros server-side, la vigencia Lima, el plural del badge y se capturaron nuevamente ambos viewports.
+- accessibility/runtime: axe 0 violaciones, consola 0 errores, HTTP 200; evidencia adicional en `docs/goal/evidencia/m10/mi-cuenta/revalidation.json`.
+
+final result: passed

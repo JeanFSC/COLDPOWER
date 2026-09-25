@@ -32,3 +32,10 @@ La implementación conserva la composición de TIENDA y la jerarquía de las lá
 - Pagos: [1920](pagos-1920.png), [390](pagos-390.png)
 
 Las diferencias de contenido frente a la lámina son deliberadas: la especificación exige representar datos comerciales reales y el estado vacío real, no ejemplos decorativos.
+
+## Revalidación M10-05 — corrección de atención
+
+- Capturas revisadas con Playwright en 1920 × 1080 y 390 × 844: `hub-revision-1920x1080.png` y `hub-revision-390x844.png`.
+- El cliente A conserva COT-2026-019 y COT-2026-040 solo en actividad reciente; ninguna aparece en `Lo que requiere tu atención`.
+- La región focal confirma 0 acciones administrativas en el header y 1 enlace personal en el menú.
+- Mobile mantiene las pestañas de cuenta como scroll interno sin cortar controles persistentes.

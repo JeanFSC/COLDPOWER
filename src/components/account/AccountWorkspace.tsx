@@ -78,8 +78,12 @@ function NavItem({ href, label, icon: Icon, badge, pathname }: { href: string; l
 function AccountNavigation({ data, pathname }: { data: NavigationData; pathname: string }) {
   const name = data.profile.name?.trim() || "Cuenta ColdPower";
   const email = data.profile.email?.trim() || "Correo no registrado";
-  const quoteBadge = data.counts.respondedQuotes > 0 ? `${data.counts.respondedQuotes} respondida` : undefined;
-  const paymentBadge = data.counts.pendingPayments > 0 ? `${data.counts.pendingPayments} pendiente` : undefined;
+  const quoteBadge = data.counts.respondedQuotes > 0
+    ? String(data.counts.respondedQuotes) + (data.counts.respondedQuotes === 1 ? " respondida" : " respondidas")
+    : undefined;
+  const paymentBadge = data.counts.pendingPayments > 0
+    ? String(data.counts.pendingPayments) + (data.counts.pendingPayments === 1 ? " pendiente" : " pendientes")
+    : undefined;
 
   return (
     <aside className="account-sidebar" aria-label="Navegación de mi cuenta">

@@ -38,3 +38,10 @@ La comparación contra las láminas está en [comparacion.md](./comparacion.md).
 Los tres fallos de `test:all` son contratos antiguos que buscan `ProductCommercialEditor`, `Cantidad cotizada` y `Conversión` dentro de `src/app/admin/catalogo/productos/[id]/page.tsx`; la página vigente usa `ProductDetailWorkspace`. No se añadieron strings decorativos ni se alteró esa página para satisfacer contratos obsoletos.
 
 El servidor de desarrollo de este worktree fue apagado y el puerto 3006 quedó sin listener.
+
+## Revisión Claude — corrección de atención
+
+- `COT-2026-019` (`CONVERTED`, vencida) y `COT-2026-040` (`ACCEPTED`) dejaron de contar como atención y badge.
+- La regla compartida acepta únicamente `SENT`/`FOLLOW_UP` vigentes en fecha Lima; pagos y pedidos excluyen vencidos, cancelados y entregados.
+- El plural del menú ahora es `1 respondida` / `2 respondidas`; el enlace administrativo solo vive en el menú personal.
+- Revalidación GPU Playwright: [desktop](./hub-revision-1920x1080.png), [mobile](./hub-revision-390x844.png), [revalidation.json](./revalidation.json).
