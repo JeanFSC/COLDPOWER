@@ -75,3 +75,12 @@ corepack pnpm exec dotenv -e .env.localdb -v CP_DEV_AUTH_BYPASS=true -v CP_DEV_A
 - **Promociones:**
   - fila de KPIs con altura uniforme (hoy la tarjeta "Aplicaciones" es más alta que las otras 3);
   - en el calendario, las etiquetas de semana alineadas con su línea de inicio (o marcadas como rango), para que "Hoy" (25-set) se lea sin ambigüedad.
+
+## Añadido por Claude tras cerrar M10-04
+- **Detalle de producto (admin):**
+  - unidad con `src/lib/unit-of-measure.ts` (hoy muestra "UNIDAD (BIENES)");
+  - precio con separador de miles (`S/ 1,250.00`);
+  - plural "1 activa";
+  - si el producto ya está publicado, mostrar "Despublicar" (con permiso) en lugar de "Publicar" deshabilitado.
+- **Configuración:** más separación vertical entre el texto de ayuda de un campo y la etiqueta del siguiente.
+- **Imágenes referenciales por familia:** "CARBON AMOLADORA BOSCH" (CP-AMO-CAR-1027) muestra cobre y tornillos. Revisa el mapeo del placeholder por familia.
