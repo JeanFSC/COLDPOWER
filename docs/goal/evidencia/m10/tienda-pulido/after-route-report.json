@@ -1,0 +1,869 @@
+{
+  "phase": "after",
+  "baseUrl": "http://localhost:3006",
+  "productHref": "/producto/capacitor-25-µf-450-v-coldpower",
+  "routeResults": [
+    {
+      "name": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "status": 200,
+      "title": "Buscar productos | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-buscar-capacitor-1920x1080.png"
+    },
+    {
+      "name": "catalogo",
+      "route": "/catalogo",
+      "status": null,
+      "title": "Catálogo técnico | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-catalogo-1920x1080.png"
+    },
+    {
+      "name": "catalogo",
+      "route": "/catalogo",
+      "status": 200,
+      "title": "Catálogo técnico | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-catalogo-390x844.png"
+    },
+    {
+      "name": "carrito",
+      "route": "/carrito",
+      "status": 200,
+      "title": "Carrito de compra | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-carrito-1920x1080.png"
+    },
+    {
+      "name": "carrito",
+      "route": "/carrito",
+      "status": 200,
+      "title": "Carrito de compra | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-carrito-390x844.png"
+    },
+    {
+      "name": "cotizacion",
+      "route": "/cotizacion",
+      "status": 200,
+      "title": "Solicitar cotización | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-cotizacion-1920x1080.png"
+    },
+    {
+      "name": "cotizacion",
+      "route": "/cotizacion",
+      "status": 200,
+      "title": "Solicitar cotización | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-cotizacion-390x844.png"
+    },
+    {
+      "name": "contacto",
+      "route": "/contacto",
+      "status": 200,
+      "title": "Contacto | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-contacto-1920x1080.png"
+    },
+    {
+      "name": "contacto",
+      "route": "/contacto",
+      "status": 200,
+      "title": "Contacto | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-contacto-390x844.png"
+    },
+    {
+      "name": "faq",
+      "route": "/faq",
+      "status": 200,
+      "title": "Preguntas frecuentes | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-faq-1920x1080.png"
+    },
+    {
+      "name": "faq",
+      "route": "/faq",
+      "status": 200,
+      "title": "Preguntas frecuentes | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-faq-390x844.png"
+    },
+    {
+      "name": "nosotros",
+      "route": "/nosotros",
+      "status": 200,
+      "title": "Nosotros | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-nosotros-1920x1080.png"
+    },
+    {
+      "name": "nosotros",
+      "route": "/nosotros",
+      "status": 200,
+      "title": "Nosotros | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-nosotros-390x844.png"
+    },
+    {
+      "name": "libro-reclamaciones",
+      "route": "/libro-de-reclamaciones",
+      "status": 200,
+      "title": "Libro de reclamaciones | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-libro-reclamaciones-1920x1080.png"
+    },
+    {
+      "name": "libro-reclamaciones",
+      "route": "/libro-de-reclamaciones",
+      "status": 200,
+      "title": "Libro de reclamaciones | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-libro-reclamaciones-390x844.png"
+    },
+    {
+      "name": "not-found",
+      "route": "/m10-03-ruta-inexistente",
+      "status": 404,
+      "title": "ColdPower | Catálogo técnico de refrigeración y climatización",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-not-found-1920x1080.png"
+    },
+    {
+      "name": "not-found",
+      "route": "/m10-03-ruta-inexistente",
+      "status": 404,
+      "title": "ColdPower | Catálogo técnico de refrigeración y climatización",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-not-found-390x844.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": null,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-producto-capacitor-25-µf-450-v-coldpower-1920x1080.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": null,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-producto-capacitor-25-µf-450-v-coldpower-390x844.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower-check",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 200,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png"
+    },
+    {
+      "name": "product-behavior-check",
+      "checks": {
+        "hasSourceStatusChip": false,
+        "hasFallbackFamilyDescription": true,
+        "sourceStatusCount": 0,
+        "quoteStateCount": 0,
+        "transactionAboveFold": true,
+        "transactionBox": {
+          "top": 590,
+          "bottom": 1070
+        },
+        "mobileBar": {
+          "top": 0,
+          "bottom": 0
+        }
+      }
+    }
+  ],
+  "journeyResults": [],
+  "axeResults": [
+    {
+      "name": "catalogo",
+      "violations": []
+    },
+    {
+      "name": "catalogo",
+      "violations": []
+    },
+    {
+      "name": "carrito",
+      "violations": []
+    },
+    {
+      "name": "carrito",
+      "violations": []
+    },
+    {
+      "name": "cotizacion",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "cotizacion",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "contacto",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 9
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "contacto",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 9
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "faq",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "faq",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "nosotros",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "nosotros",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "libro-reclamaciones",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "libro-reclamaciones",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "not-found",
+      "violations": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "not-found",
+      "violations": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790346068065 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "pageerror",
+      "text": "Invalid or unexpected token"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/cotizacion?_rsc=vM03xLcNw3L3aJkt :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/contacto :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/app/layout.js :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790346143077 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/css/app/layout.css?v=1790346150804 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/faq?_rsc=eYSmsfESTRR6JM6c :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/nosotros :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/app/layout.js :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790346173113 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/libro-de-reclamaciones?_rsc=d1pzCTCj9vR9kGel :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "POST http://localhost:3006/api/cotizacion/cart :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/m10-03-ruta-inexistente?_rsc=6uq-UT5AIQMW8khm :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/m10-03-ruta-inexistente?_rsc=6uq-UT5AIQMW8khm :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/css/app/layout.css?v=1790346214189 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "pageerror",
+      "text": "Invalid or unexpected token"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/producto/capacitor-25-%C2%B5f-450-v-coldpower :: net::ERR_ABORTED"
+    }
+  ],
+  "networkResults": [
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    }
+  ],
+  "generatedAt": "2026-09-25T14:23:48.504Z"
+}

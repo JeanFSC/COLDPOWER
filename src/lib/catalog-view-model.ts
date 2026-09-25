@@ -1,4 +1,5 @@
 import { getAvailabilityLabel, type AvailabilityStatus, type PublicationStatus } from "@/lib/publication-governance";
+import { formatUnitOfMeasure } from "@/lib/unit-of-measure";
 import type { Product, ProductSpec, ProductStatus } from "@/types/product";
 
 export type CatalogProductSourceRow = {
@@ -66,17 +67,23 @@ export function mapCatalogProductRow(row: CatalogProductSourceRow): Product {
   const name = row.product.commercialName?.trim() || row.product.normalizedName || row.product.originalName;
   const specs: ProductSpec[] = technicalFields.flatMap(({ label, field }) => {
     const value = row.product[field];
-    return typeof value === "string" && value.trim() ? [{ label, value: value.trim() }] : [];
+    if (typeof value !== "string" || !value.trim()) return [];
+    return [{ label, value: field === "unitOfMeasure" ? formatUnitOfMeasure(value) : value.trim() }];
   });
   const familyLabel = row.family.name.trim();
-  const editorialDescription = row.product.editorialDescription?.trim();
-  const shortDescription = editorialDescription || `${name}. Referencia de catálogo para la familia ${familyLabel}.`;
-  const longDescription = editorialDescription || [
-    `${name}.`,
-    `SKU: ${row.product.sku}.`,
-    `Familia: ${familyLabel}.`,
-    "Precio, disponibilidad y compatibilidad exacta deben confirmarse con un asesor ColdPower.",
-  ].join(" ");
+  const rawEditorialDescription = row.product.editorialDescription?.trim();
+  const hasLegacyGeneratedDescription = Boolean(
+    rawEditorialDescription?.startsWith(`${name}. Referencia de catálogo de la familia `) && rawEditorialDescription.endsWith("."),
+  );
+  const editorialDescription = hasLegacyGeneratedDescription ? "" : rawEditorialDescription;
+  const application = row.product.application?.trim();
+  const modelCode = row.product.modelCode?.trim();
+  const technicalFallback = [
+    application ? `Repuesto para ${application}.` : null,
+    modelCode ? `Verifica el código ${modelCode} antes de comprar.` : null,
+  ].filter(Boolean).join(" ");
+  const shortDescription = editorialDescription || technicalFallback;
+  const longDescription = editorialDescription || "";
   const availabilityStatus = row.product.availabilityStatus ?? "unknown";
   return {
     id: row.product.id,

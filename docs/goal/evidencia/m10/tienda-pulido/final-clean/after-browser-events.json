@@ -1,0 +1,88 @@
+{
+  "events": [
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "product-check",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    }
+  ],
+  "routeResults": [
+    {
+      "name": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "status": 200,
+      "title": "Buscar productos | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-clean\\after-buscar-capacitor-1920x1080.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower-check",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 200,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-clean\\after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png"
+    },
+    {
+      "name": "product-behavior-check",
+      "checks": {
+        "hasSourceStatusChip": false,
+        "hasFallbackFamilyDescription": false,
+        "sourceStatusCount": 0,
+        "quoteStateCount": 1,
+        "transactionAboveFold": true,
+        "transactionBox": {
+          "top": 562,
+          "bottom": 1042
+        },
+        "mobileBar": {
+          "top": 0,
+          "bottom": 0
+        }
+      }
+    }
+  ],
+  "journeyResults": [],
+  "axeResults": [],
+  "networkResults": [
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "product-check",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "product-check",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "product-check",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    }
+  ]
+}

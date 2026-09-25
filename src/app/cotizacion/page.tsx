@@ -10,8 +10,8 @@ import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Solicitar cotizacion",
-  description: "Registra una solicitud de cotizacion para equipos y repuestos de ColdPower.",
+  title: "Solicitar cotización",
+  description: "Registra una solicitud de cotización para equipos y repuestos de ColdPower.",
 };
 
 type QuotePageProps = {
@@ -26,7 +26,7 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
   if (product === null) {
     return (
       <CatalogUnavailable
-        title="Las cotizaciones estan temporalmente no disponibles"
+        title="Las cotizaciones están temporalmente no disponibles"
         description="No podemos preparar la cotización en este momento. Inténtalo nuevamente cuando el catálogo vuelva a estar disponible."
       />
     );
@@ -37,9 +37,9 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
       <div className="cp-container">
         <div className="max-w-3xl">
           <SectionTitle
-            eyebrow="Cotizacion"
-            title="Solicita una cotizacion con contexto"
-            description="Selecciona un producto o describe lo que necesitas. El equipo validara compatibilidad, disponibilidad y precio final."
+            eyebrow="Cotización"
+            title="Solicita una cotización con contexto"
+            description="Selecciona un producto o describe lo que necesitas. El equipo validará compatibilidad, disponibilidad y precio final."
           />
         </div>
         <div className="mt-8 grid w-full min-w-0 max-w-full gap-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">

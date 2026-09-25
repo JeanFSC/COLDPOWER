@@ -119,6 +119,27 @@ final result: blocked
 
 final result: passed
 
+## M10-03 tienda — pulido de ficha, cotización y responsive — 2026-09-25
+
+- source visual truth: `docs/goal/usabilidad/capturas/baseline-producto-6871-1920x1080.png` y `baseline-producto-6871-390x844.png`.
+- implementation route: `http://localhost:3006/producto/capacitor-25-%C2%B5f-450-v-coldpower`, servidor Webpack con `.env.localdb`, viewport 1920 × 1080 y 390 × 844 a 100%.
+- implementation evidence: `docs/goal/evidencia/m10/tienda-pulido/final-clean/after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png`, `after-producto-capacitor-25-µf-450-v-coldpower-390x844.png`, `final-journey/after-journey-confirmation-1920x1080.png`.
+
+La comparación final conserva la composición de ficha y galería, elimina el estado fuente editorial, reemplaza el filler de familia por datos reales y lleva el bloque comercial al primer viewport. `Bajo consulta` aparece una vez; la imagen de producto conserva su badge `Imagen referencial`. En móvil la CTA fija permanece visible sin tapar el contenido.
+
+Se validaron búsqueda, ficha, agregado a cotización, formulario mínimo, confirmación, persistencia SQL, 404 y la matriz pública solicitada. El producto y `/faq` tuvieron visitas aisladas `200` en ambos viewports; solo se observó el warning esperado de Clerk de desarrollo. Los warnings/violaciones de axe restantes corresponden a superficies públicas preexistentes y quedan detallados en `docs/goal/evidencia/m10/tienda-pulido/INFORME.md`.
+
+### Product design review
+
+- Attractive: sí; mantiene la referencia y hace dominante la acción comercial.
+- Efficient: sí; estado, cantidad y CTA se leen sin abandonar el primer viewport.
+- Responsive: sí; galería y CTA fijo fueron inspeccionados en 390 × 844.
+- Easy to use: sí; el texto explica qué se confirma y la acción no es ambigua.
+
+Automated verification: TypeScript PASS, lint PASS, build PASS, contratos focalizados PASS; `test:all`/`test:inventory` quedan limitados únicamente por el workbook externo ausente.
+
+final result: passed
+
 ## Catalog filter-bar balance — 2026-09-11
 
 **Source visual truth:** `C:/Users/jean_/AppData/Local/Temp/codex-clipboard-45990dd4-2747-40d6-9b2f-3b1c5996ee9d.png` (1718 × 148 CSS-pixel crop supplied by the user).

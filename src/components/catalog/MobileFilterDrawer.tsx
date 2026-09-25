@@ -35,7 +35,7 @@ export function MobileFilterDrawer({ children }: MobileFilterDrawerProps) {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="inline-flex h-11 items-center justify-center gap-2 rounded-pill border border-border bg-white px-4 text-sm font-bold text-dark shadow-card lg:hidden">
-        <SlidersHorizontal className="h-4 w-4" aria-hidden="true" /> Filtrar catalogo
+        <SlidersHorizontal className="h-4 w-4" aria-hidden="true" /> Filtrar catálogo
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 bg-dark/45 lg:hidden" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>

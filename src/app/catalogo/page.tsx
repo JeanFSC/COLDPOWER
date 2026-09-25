@@ -14,7 +14,7 @@ import type { ProductStatus } from "@/types/product";
 
 export const revalidate = 300;
 export const metadata: Metadata = {
-  title: "Catalogo tecnico",
+  title: "Catálogo técnico",
   description: "Explora equipos y repuestos ColdPower por código, marca, familia y especificaciones técnicas.",
 };
 

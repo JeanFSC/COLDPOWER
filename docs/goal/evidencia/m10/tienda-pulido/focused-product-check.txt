@@ -1,0 +1,32 @@
+# Comprobaciones aisladas posteriores al build
+
+Runtime: `http://localhost:3006`, servidor levantado con `corepack pnpm exec dotenv -e .env.localdb -- next dev --port 3006 --webpack`.
+
+## `/producto/capacitor-25-µf-450-v-coldpower`
+
+| Viewport | HTTP | Estado fuente | Filler familiar | Bajo consulta | Caja transaccional | CTA móvil |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| 1920 × 1080 | 200 | 0 | 0 | 1 | x=1012, y=562, 608 × 480 | n/a |
+| 390 × 844 | 200 | 0 | 0 | 1 | x=16, y=1004.8, 358 × 472 | x=0, y=771, 390 × 73 |
+
+La única salida de consola en estas visitas aisladas fue el warning esperado de Clerk con claves de desarrollo. No hubo `pageerror` ni error de aplicación.
+
+## `/faq`
+
+| Viewport | HTTP | Título | H1 |
+| --- | ---: | --- | --- |
+| 1920 × 1080 | 200 | Preguntas frecuentes \| ColdPower | Qué puedes esperar de ColdPower |
+| 390 × 844 | 200 | Preguntas frecuentes \| ColdPower | Qué puedes esperar de ColdPower |
+
+La matriz rápida también conserva el evento transitorio de `ERR_ABORTED`/recursos de desarrollo para no ocultar ruido del entorno; la visita aislada no lo reproduce.
+
+## `/categoria/refrigeracion`
+
+| Viewport | HTTP | Título | H1 |
+| --- | ---: | --- | --- |
+| 1920 × 1080 | 200 | Refrigeración \| ColdPower | Refrigeración |
+| 390 × 844 | 200 | Refrigeración \| ColdPower | Refrigeración |
+
+La visita aislada únicamente mostró el warning de LCP de imagen de categoría y el warning de Clerk de desarrollo.
+
+Capturas: `focused-categoria-refrigeracion-1920x1080.png` y `focused-categoria-refrigeracion-390x844.png`.

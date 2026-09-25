@@ -33,7 +33,7 @@ export function ProfileForm({ initialName, initialPhone }: { initialName: string
     <form className="mt-6 grid gap-4 border-t border-border pt-6" onSubmit={handleSubmit}>
       <p className="font-extrabold text-dark">Editar perfil</p>
       <label className="grid gap-2 text-sm font-extrabold text-dark" htmlFor="account-name">Nombre<input id="account-name" required value={name} onChange={(event) => setName(event.target.value)} className="h-11 rounded-md border border-border bg-background px-3 text-sm font-medium outline-primary" autoComplete="name" /></label>
-      <label className="grid gap-2 text-sm font-extrabold text-dark" htmlFor="account-phone">Telefono<input id="account-phone" value={phone} onChange={(event) => setPhone(event.target.value)} className="h-11 rounded-md border border-border bg-background px-3 text-sm font-medium outline-primary" autoComplete="tel" inputMode="tel" /></label>
+      <label className="grid gap-2 text-sm font-extrabold text-dark" htmlFor="account-phone">Teléfono<input id="account-phone" value={phone} onChange={(event) => setPhone(event.target.value)} className="h-11 rounded-md border border-border bg-background px-3 text-sm font-medium outline-primary" autoComplete="tel" inputMode="tel" /></label>
       <div className="flex flex-wrap items-center gap-3"><Button type="submit" size="sm" disabled={isSaving}>{isSaving ? "Guardando..." : "Guardar cambios"}</Button>{message ? <p className="text-sm font-bold text-gray-text" role="status">{message}</p> : null}</div>
     </form>
   );

@@ -11,11 +11,12 @@ type AddToCartButtonProps = {
   purchasable: boolean;
   label?: string;
   disabledLabel?: string;
+  quantity?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
 };
 
-export function AddToCartButton({ productId, purchasable, label = "Agregar al carrito", disabledLabel = "Solo cotizable", size = "sm", className }: AddToCartButtonProps) {
+export function AddToCartButton({ productId, purchasable, label = "Agregar al carrito", disabledLabel = "Solo cotizable", quantity = 1, size = "sm", className }: AddToCartButtonProps) {
   const { addItem, pendingProductId } = useShoppingCart();
   const [feedback, setFeedback] = useState<"idle" | "added" | "failed">("idle");
   const pending = pendingProductId === productId;
@@ -43,7 +44,7 @@ export function AddToCartButton({ productId, purchasable, label = "Agregar al ca
       className={className}
       disabled={pending}
       aria-live="polite"
-      onClick={async () => setFeedback((await addItem(productId)) ? "added" : "failed")}
+      onClick={async () => setFeedback((await addItem(productId, quantity)) ? "added" : "failed")}
     >
       {pending ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : feedback === "added" ? <Check className="h-4 w-4" aria-hidden="true" /> : <ShoppingCart className="h-4 w-4" aria-hidden="true" />}
       {pending ? "Agregando…" : feedback === "added" ? "En el carrito" : feedback === "failed" ? "No se pudo agregar" : label}
