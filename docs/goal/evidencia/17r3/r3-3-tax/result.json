@@ -1,0 +1,15 @@
+{
+  "scenario": "r3-3-tax",
+  "generatedAt": "2026-09-25T03:04:26.907Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "role",
+  "productId": "product-cp-ref-mcp-0103",
+  "checks": [
+    {
+      "name": "superadmin-only",
+      "outcome": "passed",
+      "apiStatus": 403
+    }
+  ]
+}

@@ -5,7 +5,6 @@ import {
   closeQaBrowser,
   compactError,
   createQaBrowser,
-  fillPlaceholder,
   probeApi,
   resultRecord,
   runSql,

@@ -1,0 +1,7 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3003/api/admin/inventario/kardex?productId=product-cp-fit-otr-0313&locationId=cp-dashboard-v5-location-lima&page=1&pageSize=25 :: net::ERR_ABORTED"
+  ]
+}

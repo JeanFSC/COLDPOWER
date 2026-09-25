@@ -1,0 +1,27 @@
+{
+  "scenario": "r3-2-purchases",
+  "generatedAt": "2026-09-25T02:21:40.971Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "convert",
+  "productId": "product-cp-fit-otr-0313",
+  "locationId": "cp-dashboard-v5-location-lima",
+  "phases": [
+    {
+      "phase": "convert",
+      "status": "PENDING",
+      "supplierId": "supplier-46d95f11-d186-415d-84ba-1c7a17772cf7",
+      "productId": "product-cp-fit-otr-0313",
+      "quantity": "2",
+      "unitCost": "120.00",
+      "uiMutation": true
+    }
+  ],
+  "requestId": "purchase-request-69a5f711-d47e-478f-992c-8befef1daf79",
+  "requestCode": "SOL-20260925-FAB8B0",
+  "supplierId": "supplier-46d95f11-d186-415d-84ba-1c7a17772cf7",
+  "supplierName": "QA B4.1 Proveedor 1790302344453",
+  "requestNotes": "QA B4.1 solicitud 1790302344453",
+  "purchaseId": "purchase-c52d54f3-642e-4c73-b7fd-ca8bc8190528",
+  "purchaseCode": "OC-20260925-D1301A"
+}

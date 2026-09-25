@@ -17,10 +17,37 @@ import {
 } from "./b-helpers.mjs";
 
 const scenario = "B2.3-B5.1-payments";
+const lateApprovalFixture = {
+  orderId: "cp-brief16-orders-order-payment-pending",
+  paymentId: "cp-brief16-orders-payment-payment-pending",
+};
+
 function rowFromSql(query) {
   const row = runSql(query).split(/\r?\n/)[0]?.trim();
   if (!row) throw new Error("No se encontró el registro de preparación en la base local.");
   return row.split("\t");
+}
+
+function prepareLateApprovalFixture() {
+  const reference = `r3b-ui-late-${Date.now()}`;
+  const eventId = `${reference}-event`;
+  runSql(`
+    BEGIN;
+    DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id='${lateApprovalFixture.orderId}' AND id <> '${lateApprovalFixture.paymentId}');
+    DELETE FROM payment_attempts WHERE payment_id IN (SELECT id FROM payments WHERE order_id='${lateApprovalFixture.orderId}' AND id <> '${lateApprovalFixture.paymentId}');
+    DELETE FROM payment_status_history WHERE payment_id IN (SELECT id FROM payments WHERE order_id='${lateApprovalFixture.orderId}' AND id <> '${lateApprovalFixture.paymentId}');
+    DELETE FROM payment_refunds WHERE payment_id IN (SELECT id FROM payments WHERE order_id='${lateApprovalFixture.orderId}' AND id <> '${lateApprovalFixture.paymentId}');
+    DELETE FROM payments WHERE order_id='${lateApprovalFixture.orderId}' AND id <> '${lateApprovalFixture.paymentId}';
+    DELETE FROM payment_events WHERE payment_id='${lateApprovalFixture.paymentId}';
+    DELETE FROM payment_attempts WHERE payment_id='${lateApprovalFixture.paymentId}';
+    DELETE FROM payment_status_history WHERE payment_id='${lateApprovalFixture.paymentId}';
+    DELETE FROM payment_refunds WHERE payment_id='${lateApprovalFixture.paymentId}';
+    UPDATE orders SET status='PAYMENT_PENDING', cancellation_reason=NULL, cancelled_by=NULL, cancelled_at=NULL, updated_at=NOW() WHERE id='${lateApprovalFixture.orderId}';
+    UPDATE payments SET status='PENDING', provider='mock', method='mock', method_type='PROVIDER', provider_reference='${reference}', metadata=NULL, cancellation_reason=NULL, cancelled_by=NULL, cancelled_at=NULL, updated_at=NOW() WHERE id='${lateApprovalFixture.paymentId}';
+    INSERT INTO payment_events (id,payment_id,provider,provider_event_id,event_type,payload) VALUES ('${eventId}-row','${lateApprovalFixture.paymentId}','mock','${eventId}','payment.approved','{"status":"APPROVED","amount":"90.00","currency":"PEN","simulated":true}'::jsonb);
+    COMMIT;
+  `);
+  return { reference, eventId };
 }
 
 async function createRejectedCheckout(page) {
@@ -32,9 +59,15 @@ async function createRejectedCheckout(page) {
     await clearButton.click();
     await page.waitForTimeout(400);
   }
-  await visit(page, "/producto/compresor-rotativo-gemini-aud_1790289867163");
+  await visit(page, "/producto/carbon-amoladora-bosch");
+  await page.waitForTimeout(1_200);
+  const addToCartResponse = page.waitForResponse((response) => response.url().includes("/api/carrito") && response.request().method() === "POST" && response.status() === 200, { timeout: 15_000 });
   await clickButton(page, "Agregar al carrito");
-  await page.waitForTimeout(1200);
+  await addToCartResponse;
+  await page.getByText(/Carrito \(\d+\)/).first().waitFor({ state: "visible", timeout: 15_000 });
+  await visit(page, "/carrito");
+  const cartBody = await page.locator("body").innerText();
+  if (/Tu carrito estÃ¡ vacÃ­o|Tu carrito está vacío/i.test(cartBody)) throw new Error("El POST de carrito respondió 200, pero el carrito UI quedó vacío antes del checkout.");
   await visit(page, "/checkout");
   await capture("B2.3-B5.1-payments", "00-checkout-delivery", page);
   await clickButton(page, "Continuar");
@@ -77,15 +110,23 @@ async function main() {
     captureSql(scenario, "before-manual", `SELECT o.id,o.code,o.status,o.version,p.id AS payment_id,p.method_type,p.status AS payment_status,p.amount FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id='${manualOrderId}';`);
 
     await visit(page, `/admin/pagos?paymentId=${encodeURIComponent(rejectedPaymentId)}`);
-    await waitForText(page, "Confirmar pago manual");
+    await waitForText(page, "Confirmar pago manual").catch(async () => {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(1_000);
+      await waitForText(page, "Confirmar pago manual");
+    });
     await capture(scenario, "01-manual-payment-drawer", page);
     await page.locator('[aria-label="Monto del pago manual"]').fill(orderAmount || manualAmount);
     await page.locator('[aria-label*="pago manual"]').last().selectOption("TRANSFER");
     await page.locator('[aria-label="Referencia del pago"]').fill(`QA-MANUAL-${Date.now()}`);
     await page.locator('[aria-label*="Motivo de confirmación manual"], [aria-label*="Motivo de confirmaciÃ³n manual"]').fill("Conciliación manual QA B2.3 con comprobante verificado.");
     await capture(scenario, "02-manual-payment-filled", page);
+    const manualPaymentResponse = page.waitForResponse((response) => response.url().endsWith("/api/admin/pagos/manual") && response.request().method() === "POST", { timeout: 20_000 });
     await page.getByRole("button", { name: "Confirmar", exact: true }).last().click();
-    await page.waitForTimeout(1600);
+    const manualPaymentResult = await manualPaymentResponse;
+    const manualPaymentBody = await manualPaymentResult.json().catch(() => ({}));
+    if (!manualPaymentResult.ok()) throw new Error(`El pago manual respondió ${manualPaymentResult.status()}: ${JSON.stringify(manualPaymentBody)}`);
+    await page.waitForTimeout(300);
     await capture(scenario, "03-manual-payment-confirmed", page);
     const confirmedManualRow = rowFromSql(`SELECT p.id,p.amount FROM payments p WHERE p.order_id='${manualOrderId}' AND p.method_type='MANUAL' ORDER BY p.created_at DESC LIMIT 1;`);
     const confirmedManualPaymentId = confirmedManualRow[0];
@@ -94,27 +135,42 @@ async function main() {
     captureSql(scenario, "after-manual", `SELECT o.id,o.status,o.version,p.id AS payment_id,p.status AS payment_status,p.method_type,p.method,p.amount,psh.from_status,psh.to_status,psh.actor_role FROM orders o JOIN payments p ON p.order_id=o.id LEFT JOIN payment_status_history psh ON psh.payment_id=p.id WHERE o.id='${manualOrderId}' ORDER BY psh.created_at;`);
 
     await visit(page, `/admin/pagos?paymentId=${encodeURIComponent(confirmedManualPaymentId)}`);
-    await page.getByText(/Devoluci.n manual/).first().waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByText(/Devoluci.n manual/).first().waitFor({ state: "visible", timeout: 15_000 }).catch(async () => {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(1_000);
+      await page.getByText(/Devoluci.n manual/).first().waitFor({ state: "visible", timeout: 15_000 });
+    });
     const refundReason = `QA B2.3 devolución ${Date.now()}`;
     await fillPlaceholder(page, "Motivo obligatorio", refundReason);
     const refundButton = page.getByRole("button", { name: /Solicitar devoluci.n/, exact: true });
     if (!(await refundButton.isVisible().catch(() => false))) throw new Error("Después del pago manual no apareció el control de devolución.");
     await capture(scenario, "04-refund-before-double-click", page);
+    const manualRefundResponse = page.waitForResponse((response) => response.url().includes(`/api/admin/pagos/${confirmedManualPaymentId}/refund`) && response.request().method() === "POST", { timeout: 20_000 });
     await refundButton.dblclick({ delay: 80 }).catch(async () => { await refundButton.click(); });
+    const manualRefund = await manualRefundResponse;
+    const manualRefundBody = await manualRefund.json().catch(() => ({}));
+    if (!manualRefund.ok() || manualRefundBody.success === false) throw new Error(`El reembolso manual respondió ${manualRefund.status()}: ${JSON.stringify(manualRefundBody)}`);
     await page.waitForTimeout(1200);
     await capture(scenario, "05-refund-after-double-click", page);
     evidence.stages.push({ stage: "refund_double_click", saved: true });
     captureSql(scenario, "after-refund", `SELECT p.id,p.status,p.amount,pr.id AS refund_id,pr.status AS refund_status,pr.idempotency_key,pr.amount AS refund_amount,pr.reason,count(*) OVER (PARTITION BY pr.payment_id) AS refund_rows FROM payments p LEFT JOIN payment_refunds pr ON pr.payment_id=p.id WHERE p.id='${confirmedManualPaymentId}';`);
 
-    const providerRow = rowFromSql("SELECT o.id,p.id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.status='PAYMENT_PENDING' AND p.status='PENDING' AND p.provider='mock' ORDER BY o.created_at ASC LIMIT 1;");
+    const preparedLateApproval = prepareLateApprovalFixture();
+    const providerRow = rowFromSql(`SELECT o.id,p.id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id='${lateApprovalFixture.orderId}' AND p.id='${lateApprovalFixture.paymentId}' AND o.status='PAYMENT_PENDING' AND p.status='PENDING' AND p.provider='mock' LIMIT 1;`);
     const [providerOrderId, providerPaymentId] = providerRow;
     evidence.providerOrderId = providerOrderId;
     evidence.providerPaymentId = providerPaymentId;
+    evidence.preparedLateApproval = preparedLateApproval;
     await visit(page, `/admin/pedidos?orderId=${encodeURIComponent(providerOrderId)}`);
-    await page.getByText("Cargando pedido...").waitFor({ state: "detached", timeout: 20_000 }).catch(() => undefined);
+    await page.getByText(/Cargando pedido/).waitFor({ state: "detached", timeout: 20_000 }).catch(() => undefined);
     await page.waitForTimeout(300);
     await capture(scenario, "06-provider-order-before-cancel", page);
     const cancel = page.getByRole("button", { name: "Cancelar pedido", exact: true });
+    if (!(await cancel.isVisible().catch(() => false))) {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.getByText(/Cargando pedido/).waitFor({ state: "detached", timeout: 20_000 }).catch(() => undefined);
+      await page.waitForTimeout(500);
+    }
     if (!(await cancel.isVisible().catch(() => false))) throw new Error("El pedido provider pendiente no mostró Cancelar pedido.");
     await fillPlaceholder(page, "Obligatorio para cancelar y liberar reservas", "Cancelación QA antes de aprobación tardía del proveedor.");
     await cancel.click();
@@ -124,9 +180,17 @@ async function main() {
     captureSql(scenario, "after-cancel-before-late-approval", `SELECT id,code,status,version,cancellation_reason FROM orders WHERE id='${providerOrderId}'; SELECT id,status,provider,provider_reference FROM payments WHERE id='${providerPaymentId}';`);
 
     await visit(page, `/admin/pagos?paymentId=${encodeURIComponent(providerPaymentId)}`);
-    await waitForText(page, "Actualizar estado");
+    await waitForText(page, "Actualizar estado").catch(async () => {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(500);
+      await waitForText(page, "Actualizar estado");
+    });
     await capture(scenario, "08-provider-payment-pending", page);
+    const lateStatusResponse = page.waitForResponse((response) => response.url().includes(`/api/admin/pagos/${providerPaymentId}/status`) && response.request().method() === "POST", { timeout: 20_000 });
     await clickButton(page, "Actualizar estado");
+    const lateStatus = await lateStatusResponse;
+    const lateStatusBody = await lateStatus.json().catch(() => ({}));
+    if (!lateStatus.ok() || (lateStatusBody.refundRequired !== true && lateStatusBody.requiresRefund !== true)) throw new Error(`La aprobación tardía no quedó en cola de reembolso: ${JSON.stringify(lateStatusBody)}`);
     await page.waitForTimeout(1200);
     await capture(scenario, "09-provider-late-approval", page);
     const lateBody = await page.locator("body").innerText();

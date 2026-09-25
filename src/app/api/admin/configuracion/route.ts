@@ -21,7 +21,7 @@ function adminResponse(settings: typeof companySettings.$inferSelect | null) {
 function plainObject(value: unknown) { return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null; }
 function expectedVersion(value: Record<string, unknown>) { const parsed = Number(value.version); if (!Number.isInteger(parsed) || parsed < 0) throw new Error("version es obligatorio para controlar concurrencia."); return parsed; }
 function partialSettings(body: Record<string, unknown>, before: typeof companySettings.$inferSelect | null) { const previous = before ? Object.fromEntries(companySettingsFields.map((field) => [field, before[field]])) : Object.fromEntries(companySettingsFields.map((field) => [field, null])); return Object.fromEntries(companySettingsFields.map((field) => [field, Object.prototype.hasOwnProperty.call(body, field) ? body[field] : previous[field]])); }
-function invalidatePublicSettings() { revalidateTag("coldpower-company-settings", "max"); invalidateRuntimeCache("company-settings:public"); }
+function invalidatePublicSettings() { revalidateTag("coldpower-company-settings", "max"); invalidateRuntimeCache("company-settings:public"); invalidateRuntimeCache("company-settings:tax"); }
 
 export async function GET() {
   try { await requireApiPermission("settings.business.edit"); const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1); return NextResponse.json(adminResponse(settings ?? null)); }
@@ -34,6 +34,7 @@ export async function PUT(request: Request) {
   let body: unknown; try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
   const value = plainObject(body); if (!value) return apiError("COMPANY_SETTINGS_INVALID", "Configuración empresarial inválida.", 400);
   if (Object.prototype.hasOwnProperty.call(value, "legalPagesPublished") && !can(actor.role, "settings.legal.publish")) return apiError("COMPANY_SETTINGS_LEGAL_PUBLISH_FORBIDDEN", "Solo SUPERADMIN puede publicar las páginas legales.", 403);
+  if ((Object.prototype.hasOwnProperty.call(value, "taxRate") || Object.prototype.hasOwnProperty.call(value, "taxMode")) && actor.role !== "SUPERADMIN") return apiError("COMPANY_SETTINGS_TAX_FORBIDDEN", "Solo SUPERADMIN puede configurar el IGV.", 403);
   try {
     const expected = expectedVersion(value);
     const saved = await getDb().transaction(async (tx) => {

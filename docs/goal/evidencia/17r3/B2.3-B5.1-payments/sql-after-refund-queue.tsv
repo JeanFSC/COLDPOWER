@@ -1,0 +1,2 @@
+-- SELECT o.id,o.status,p.id AS payment_id,p.status AS payment_status,pr.id AS refund_id,pr.status AS refund_status,pr.idempotency_key,count(*) OVER (PARTITION BY pr.payment_id) AS refund_rows FROM orders o JOIN payments p ON p.order_id=o.id LEFT JOIN payment_refunds pr ON pr.payment_id=p.id WHERE o.id='cp-brief16-orders-order-payment-pending';
+cp-brief16-orders-order-payment-pending	CANCELLED	cp-brief16-orders-payment-payment-pending	REFUNDED	refund-8b504c78-b7ca-421f-ab2e-fcbe6d8f7e4b	SUCCEEDED	refund-cp-brief16-orders-payment-payment-pending-full-0	1

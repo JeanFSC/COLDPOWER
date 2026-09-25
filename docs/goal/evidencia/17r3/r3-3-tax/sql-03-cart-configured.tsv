@@ -1,0 +1,2 @@
+-- SELECT c.id,c.user_id,c.status,ci.product_id,ci.quantity FROM shopping_carts c JOIN shopping_cart_items ci ON ci.cart_id=c.id WHERE c.status='ACTIVE' ORDER BY c.updated_at DESC LIMIT 5;
+cart-74baf316-afd4-47f3-88b4-7b5456c8169c	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	ACTIVE	product-cp-ref-mcp-0103	1

@@ -1,0 +1,25 @@
+{
+  "scenario": "B1.4-B2.1-discount-approval",
+  "generatedAt": "2026-09-25T04:40:45.670Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "email": "b14.1790311210474@example.test",
+  "ruleName": "QA B1.4 1790311210474",
+  "stages": [
+    {
+      "stage": "discount_rule_ui_mutation",
+      "saved": true
+    },
+    {
+      "stage": "quote_ui_discount_attempt",
+      "discountControlsFound": 2,
+      "controls": 11
+    }
+  ],
+  "rootCause": null,
+  "publicSearch": {
+    "recoveredAfterReload": true,
+    "firstAttemptError": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#quote-product-suggestions button').filter({ hasText: 'CP-REF-MCP-0103' }).first() to be visible\u001b[22m\n"
+  },
+  "quoteId": "CP-20260924-K7ET"
+}

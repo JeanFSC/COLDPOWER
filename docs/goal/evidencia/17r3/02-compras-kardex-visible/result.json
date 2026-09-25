@@ -1,0 +1,14 @@
+{
+  "scenario": "02-compras-kardex-visible",
+  "generatedAt": "2026-09-25T02:11:46.145Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "sqlOutput": "OC-DEV-008\tPARTIAL_RECEIVED\t1\tpurchase-receipt-edd465c9-41b3-40b5-8a4d-80a5e4eb55aa\tmovement-14774569-8a2a-4ff9-8bb9-d0a0475a34ba\tPURCHASE_RECEIPT\t1\tpurchase_receipt\tpurchase-receipt-edd465c9-41b3-40b5-8a4d-80a5e4eb55aa",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": [
+      "GET http://localhost:3003/api/admin/inventario/kardex?productId=product-cp-fit-otr-0313&locationId=cp-dashboard-v5-location-lima&page=1&pageSize=25 :: net::ERR_ABORTED"
+    ]
+  }
+}

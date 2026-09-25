@@ -1,0 +1,10 @@
+{
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Solicitud registrada').first() to be visible\u001b[22m\n",
+  "evidence": {
+    "scenario": "B1.1-quote-to-sale",
+    "email": "b11.1790316965431@example.test",
+    "quoteName": "QA B1.1 1790316965431",
+    "stages": [],
+    "apiProbes": []
+  }
+}

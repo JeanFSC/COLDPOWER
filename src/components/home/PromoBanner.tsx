@@ -12,7 +12,8 @@ const benefits = [
 
 export function PromoBanner({ settings }: { settings?: CompanySettings }) {
   const coverage = settings?.coverage?.trim() || "Envíos a todo el Perú";
-  const labels = benefits.map((benefit) => benefit.label === "Envíos a todo el Perú" ? coverage : benefit.label);
+  const visibleBenefits = settings?.whatsapp ? benefits : benefits.filter((benefit) => !("whatsapp" in benefit));
+  const labels = visibleBenefits.map((benefit) => benefit.label === "Envíos a todo el Perú" ? coverage : benefit.label);
 
   return (
     <section className="home-section home-section-soft home-promo-section" data-home-block="promo-banner">
@@ -27,7 +28,7 @@ export function PromoBanner({ settings }: { settings?: CompanySettings }) {
           </div>
         </div>
         <div className="home-promo-benefits" aria-label="Beneficios de ColdPower">
-          {benefits.map((benefit, index) => {
+          {visibleBenefits.map((benefit, index) => {
             const Icon = benefit.icon;
             const isWhatsapp = "whatsapp" in benefit && benefit.whatsapp;
             return (

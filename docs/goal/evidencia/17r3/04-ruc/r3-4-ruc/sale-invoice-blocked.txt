@@ -1,0 +1,162 @@
+Saltar al contenido
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Notificaciones
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+2
+
+Operaciones
+
+Administrador
+
+Gestión de ventas
+
+Administra y da seguimiento a todas tus ventas y operaciones.
+
+Exportar
+Registrar venta
+Ventas confirmadas
+3
+
+Compromisos comerciales
+
+Monto vendido
+S/ 680.00
+
+Sin consolidar
+
+Cobrado
+S/ 680.00
+
+Neto de pagos confirmados
+
+Ticket promedio
+S/ 226.67
+
+Por moneda
+
+Alertas
+1
+
+Requieren revisión
+
+Ventas cobradas vs pendientes
+100%
+Cobrado
+Cobrado
+S/ 680.00
+Pendiente
+S/ 0.00
+Ticket promedio
+PEN
+S/ 226.67
+Ventas por método de pago
+Tarjeta
+67%
+Tarjeta de crédito
+33%
+Ventas por canal
+WEB
+67%
+WHATSAPP
+33%
+Estado
+Moneda
+Canal
+Más filtros
+Aplicar
+VENTA	CLIENTE	MONTO	DOCUMENTOS	COBRO	ESTADO	CANAL	VENDEDOR	FECHA	ACCIONES
+VTA-DEV-001
+CP-COT-DEV-001
+	Restaurante Costa Azul	S/ 55.00	
+CP-COT-DEV-001
+PED-DEV-001
+	Cobrada
+S/ 55.00
+	Confirmada	WEB	María Torres	23/09/26	
+
+VTA-DEV-061
+CP-COT-DEV-061
+	Restaurante Costa Azul	S/ 445.00	
+CP-COT-DEV-061
+PED-DEV-061
+	Cobrada
+S/ 445.00
+	Confirmada	WEB	Colaborador 05	9/09/26	
+
+VTA-2026-001
+CP-COT-2026-001
+	Restaurante Costa Azul	S/ 180.00	
+CP-COT-2026-001
+PED-2026-001
+BOL-2026-001
+	Cobrada
+S/ 180.00
+	Confirmada	WHATSAPP	Colaborador 16	5/01/26	
+Mostrando 1 a 3 de 3 ventas
+Centro de operaciones
+
+Acciones y tareas clave para completar el ciclo de ventas.
+
+Cobros pendientes
+
+Sin elementos pendientes.
+
+Gestionar pagos →
+Facturación
+
+VTA-DEV-001
+
+Restaurante Costa Azul
+
+Cobrada
+
+VTA-DEV-061
+
+Restaurante Costa Azul
+
+Cobrada
+
+VTA-2026-001
+
+Restaurante Costa Azul
+
+Cobrada
+Ver por facturar →
+Validación
+
+VTA-2026-001
+
+Restaurante Costa Azul
+
+Cobrada
+Ver alertas →
+Detalle de venta
+Cargando trazabilidad…

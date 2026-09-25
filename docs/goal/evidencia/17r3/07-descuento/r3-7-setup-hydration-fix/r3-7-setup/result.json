@@ -1,0 +1,16 @@
+{
+  "scenario": "r3-7-setup",
+  "generatedAt": "2026-09-25T04:54:31.513Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "setup",
+  "behavior": "discount_rule_ready",
+  "before": "discount-rule-e9f952c5-4df5-4465-8924-5086f6d3398c\tQA B1.4 1790311210474\t10.00\t10.00\tACTIVE\r\ndiscount-rule-9a8cc7eb-fb36-4413-956b-3900a88cfb0a\tQA B1.4 1790311136970\t10.00\t10.00\tACTIVE\r\ndiscount-rule-17105060-a04b-4d0c-82dd-78b8af52fdb7\tQA diagnostic 1790311054529\t10.00\t10.00\tACTIVE\r\ndiscount-rule-5be90cc5-fb99-4245-ae51-73c87d994a08\tQA B1.4 1790311006849\t10.00\t10.00\tACTIVE\r\ndiscount-rule-f0950103-1b36-44ab-a686-5b8d1e279ae8\tQA B1.4 1790310848980\t10.00\t10.00\tACTIVE\r\ndiscount-rule-0140bf71-e5ce-4241-ac45-cee216044a33\tQA B1.4 1790310736377\t10.00\t10.00\tACTIVE\r\ndiscount-rule-911763bd-321c-49a3-abaa-75e2721ac8b3\tQA B1.4 1790310534797\t10.00\t10.00\tACTIVE\r\ndiscount-rule-ae8a28d4-5139-483c-97de-895efb567903\tQA B1.4 1790310482819\t10.00\t10.00\tACTIVE\r\ndiscount-rule-71614d34-782e-49cd-9630-6ebcee4cc772\tQA R3.7 1790310095311\t20.00\t12.00\tACTIVE",
+  "ruleName": "QA R3.7 1790312048776",
+  "ruleSql": "discount-rule-6154dcdb-7f05-471d-bb6d-5b6b0d7c28a7\tQA R3.7 1790312048776\t20.00\t12.00\tACTIVE\tcp-dashboard-v5-user-gerencia",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

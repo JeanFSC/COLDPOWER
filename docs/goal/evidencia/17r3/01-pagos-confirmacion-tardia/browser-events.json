@@ -1,0 +1,12 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3003/_next/static/webpack/app/layout.6df26683d2d5e9a4.hot-update.js :: net::ERR_ABORTED",
+    "GET http://localhost:3003/admin/pagos?paymentId=cp-brief16-orders-payment-payment-pending&_rsc=Q6H5ckNZEL-6UfB0 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/_next/static/webpack/webpack.6df26683d2d5e9a4.hot-update.js :: net::ERR_ABORTED",
+    "GET http://localhost:3003/admin/pagos?paymentId=cp-brief16-orders-payment-payment-pending&_rsc=Q6H5ckNZEL-6UfB0 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/_next/static/webpack/14e9dd22f291ac7e.webpack.hot-update.json :: net::ERR_ABORTED",
+    "GET http://localhost:3003/admin/pagos?paymentId=cp-brief16-orders-payment-payment-pending&_rsc=Q6H5ckNZEL-6UfB0 :: net::ERR_ABORTED"
+  ]
+}

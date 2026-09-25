@@ -31,7 +31,7 @@ const socialMeta = {
 export function Footer({ categories, settings }: { categories: CatalogCategory[]; settings: CompanySettings }) {
   const currentYear = new Date().getFullYear();
   const publicCategories = categories.filter((category) => category.productCount > 0).slice(0, 5);
-  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
+  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : null;
   const configuredLegalLinks = Object.entries(settings.legalLinks ?? {});
   const requiredLegalLinks = [["Términos y condiciones", "/terminos"], ["Política de privacidad", "/privacidad"]] as const;
   const complaintLink = ["Libro de reclamaciones", "/libro-de-reclamaciones"] as const;
@@ -67,7 +67,7 @@ export function Footer({ categories, settings }: { categories: CatalogCategory[]
           {settings.phones?.map((phone) => <a key={phone} href={`tel:${phone.replace(/\s/g, "")}`}><Phone aria-hidden="true" />{phone}</a>)}
           {settings.email ? <a href={`mailto:${settings.email}`}><Mail aria-hidden="true" />{settings.email}</a> : null}
           {settings.locations?.map((location) => <span key={location.name}><MapPin aria-hidden="true" />{location.name}{location.address ? `, ${location.address}` : ""}</span>)}
-          <a href={whatsappHref} target={whatsappHref.startsWith("http") ? "_blank" : undefined} rel={whatsappHref.startsWith("http") ? "noreferrer" : undefined} className="home-footer-whatsapp"><MessageCircle aria-hidden="true" />Escríbenos por WhatsApp</a>
+          {whatsappHref ? <a href={whatsappHref} target="_blank" rel="noreferrer" className="home-footer-whatsapp"><MessageCircle aria-hidden="true" />Escríbenos por WhatsApp</a> : null}
           {paymentMethods ? <p className="home-footer-payment"><strong>Medios de pago:</strong> {paymentMethods}</p> : null}
         </div>
 

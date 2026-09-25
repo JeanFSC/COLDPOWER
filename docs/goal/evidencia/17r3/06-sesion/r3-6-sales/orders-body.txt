@@ -1,0 +1,274 @@
+Saltar al contenido
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+
+CATÁLOGO
+
+Productos
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+
+Ventas
+
+Ventas
+
+Gestión de pedidos
+
+Controla la preparación, despacho y entrega de los pedidos.
+
+Exportar
+Preparar pedido
+Pedidos totales
+174
+
+Todos los pedidos registrados
+
+En preparación
+11
+
+Picking en curso
+
+Listos
+9
+
+Despacho o recojo
+
+Entregados
+27
+
+Completados
+
+Pendientes
+102
+
+Pago, nuevos o recibidos
+
+Estado
+Entrega
+Moneda
+Pago
+Más filtros
+Aplicar
+PEDIDO	CLIENTE	PRODUCTOS	TOTAL	ESTADO LOGÍSTICO	ATENCIÓN	ENTREGA	PAGO	LOCAL	ACCIONES
+PED-2026-048
+CP-COT-2026-048
+	Cliente corporativo 013	
+4/4	S/ 1,419.00	Entregado
+	Normal	Recojo en local	Conciliado	Sucursal Trujillo	
+
+PED-2026-047
+CP-COT-2026-047
+	Cliente corporativo 014	
+3/3	S/ 1,282.00	Entregado
+	Normal	Envío por agencia	Conciliado	Sucursal Piura	
+
+PED-2026-046
+CP-COT-2026-046
+	Cliente corporativo 015	
+2/2	S/ 1,145.00	Entregado
+	Normal	Entrega a domicilio	Conciliado	Almacén Lima	
+
+PED-2026-045
+CP-COT-2026-045
+	Cliente corporativo 016	
+1/1	S/ 1,008.00	Entregado
+	Normal	Recojo en local	Conciliado	Sucursal Cusco	
+
+PED-2026-044
+CP-COT-2026-044
+	Cliente corporativo 018	
+0/4	S/ 871.00	Listo para recojo
+	Normal	Envío por agencia	Pendiente	Sucursal Chiclayo	
+
+PED-2026-043
+CP-COT-2026-043
+	Cliente corporativo 019	
+0/3	S/ 734.00	Listo para recojo
+	Normal	Entrega a domicilio	Pendiente	Tienda Arequipa	
+
+PED-2026-042
+CP-COT-2026-042
+	Cliente corporativo 020	
+0/2	S/ 597.00	Listo para recojo
+	Normal	Recojo en local	Pendiente	Sucursal Trujillo	
+
+PED-2026-041
+CP-COT-2026-041
+	Cliente corporativo 021	
+0/1	S/ 460.00	Listo para recojo
+	Normal	Envío por agencia	Pendiente	Sucursal Piura	
+
+PED-2026-040
+CP-COT-2026-040
+	Cliente corporativo 022	
+4/4	S/ 323.00	Por preparar
+	Normal	Entrega a domicilio	Conciliado	Almacén Lima	
+
+PED-2026-039
+CP-COT-2026-039
+	Cliente corporativo 023	
+3/3	S/ 186.00	Por preparar
+	Normal	Recojo en local	Conciliado	Sucursal Cusco	
+
+PED-2026-038
+CP-COT-2026-038
+	Cliente corporativo 024	
+2/2	S/ 2,649.00	Por preparar
+	Normal	Envío por agencia	Conciliado	Sucursal Chiclayo	
+
+PED-2026-037
+CP-COT-2026-037
+	Cliente corporativo 025	
+1/1	S/ 2,512.00	Por preparar
+	Normal	Entrega a domicilio	Conciliado	Tienda Arequipa	
+
+PED-2026-036
+CP-COT-2026-036
+	Cliente corporativo 026	
+4/4	S/ 2,375.00	Entregado
+	Normal	Recojo en local	Conciliado	Sucursal Trujillo	
+
+CP16-PED-001
+Venta directa
+	Colaborador 01	
+0/1	S/ 90.00	Por preparar
+	Normal	Entrega a domicilio	Sobrepago	Tienda Arequipa	
+
+PED-DEV-001
+CP-COT-DEV-001
+	Restaurante Costa Azul	
+0/1	S/ 55.00	Por preparar
+	Normal	Entrega a domicilio	Conciliado	Almacén Lima	
+
+PED-DEV-024
+CP-COT-DEV-024
+	Cliente corporativo 024	
+0/6	S/ 2,532.00	Recibido
+	Normal	Recojo en local	Pendiente	Tienda Arequipa	
+
+PED-DEV-047
+CP-COT-DEV-047
+	Cliente corporativo 047	
+5/5	S/ 3,945.00	Entregado
+	Normal	Envío por agencia	Conciliado	Almacén Lima	
+
+PED-DEV-070
+CP-COT-DEV-070
+	Cliente corporativo 010	
+0/4	S/ 4,624.00	Pendiente de pago
+	Requiere atención	Entrega a domicilio	Pendiente	Tienda Arequipa	
+
+PED-DEV-002
+CP-COT-DEV-002
+	Frío Norte Servicios	
+0/2	S/ 268.00	Recibido
+	Normal	Envío por agencia	Pendiente	Tienda Arequipa	
+
+PED-DEV-025
+CP-COT-DEV-025
+	Cliente corporativo 025	
+0/1	S/ 501.00	Por preparar
+	Normal	Entrega a domicilio	Conciliado	Almacén Lima	
+
+PED-DEV-048
+CP-COT-DEV-048
+	Cliente corporativo 048	
+0/6	S/ 5,208.00	Recibido
+	Normal	Recojo en local	Pendiente	Tienda Arequipa	
+
+PED-DEV-071
+CP-COT-DEV-071
+	Cliente corporativo 011	
+5/5	S/ 6,175.00	Entregado
+	Normal	Envío por agencia	Conciliado	Almacén Lima	
+
+CP16-PED-002
+Venta directa
+	Colaborador 01	
+0/1	S/ 90.00	Por preparar
+	Vencido	Recojo en local	Conciliado	Tienda Arequipa	
+
+PED-DEV-003
+CP-COT-DEV-003
+	Hotel Valle Sur	
+0/3	S/ 639.00	Recibido
+	Vencido	Recojo en local	Pendiente	Almacén Lima	
+
+PED-DEV-026
+CP-COT-DEV-026
+	Cliente corporativo 026	
+0/2	S/ 1,160.00	Recibido
+	Vencido	Envío por agencia	Pendiente	Tienda Arequipa	
+Mostrando 1 a 25 de 174 pedidos
+1
+2
+3
+4
+5
+Centro de operaciones
+
+Prioriza picking, despacho, recojo e incidencias sin cambiar estados libremente.
+
+Por preparar
+PED-2026-040
+Cliente corporativo 022
+Por preparar
+PED-2026-039
+Cliente corporativo 023
+Por preparar
+PED-2026-038
+Cliente corporativo 024
+Por preparar
+PED-2026-037
+Cliente corporativo 025
+Por preparar
+CP16-PED-001
+Colaborador 01
+Por preparar
+Listos para despacho
+PED-DEV-013
+Cliente corporativo 013
+Listo
+PED-DEV-037
+Cliente corporativo 037
+Listo
+PED-DEV-061
+Restaurante Costa Azul
+Listo
+PED-DEV-109
+Cliente corporativo 049
+Listo
+PED-DEV-085
+Cliente corporativo 025
+Listo
+Listos para recojo
+PED-2026-044
+Cliente corporativo 018
+Listo para recojo
+PED-2026-043
+Cliente corporativo 019
+Listo para recojo
+PED-2026-042
+Cliente corporativo 020
+Listo para recojo
+PED-2026-041
+Cliente corporativo 021
+Listo para recojo
+Incidencias
+
+Sin pedidos en esta cola.

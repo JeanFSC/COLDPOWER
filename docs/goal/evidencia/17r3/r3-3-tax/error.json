@@ -1,0 +1,29 @@
+{
+  "error": "locator.waitFor: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('IGV 18.00%').first() to be visible\u001b[22m\n",
+  "evidence": {
+    "scenario": "r3-3-tax",
+    "phase": "superadmin",
+    "productId": "product-cp-ref-mcp-0103",
+    "checks": [
+      {
+        "name": "settings-unconfigured",
+        "outcome": "passed",
+        "rate": "",
+        "mode": ""
+      },
+      {
+        "name": "settings-configured",
+        "outcome": "passed",
+        "rate": "18.00",
+        "mode": "INCLUDED"
+      }
+    ]
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [
+      "SyntaxError: Invalid or unexpected token"
+    ],
+    "requestFailures": []
+  }
+}

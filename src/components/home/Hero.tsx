@@ -26,12 +26,17 @@ export function Hero({ settings }: { settings?: CompanySettings }) {
   return (
     <section className="home-hero" data-home-block="hero">
       <picture className="home-hero-picture">
-        <source media="(max-width: 1023px)" srcSet="/images/home-espejo/hero-mobile.webp" />
+        <source
+          media="(max-width: 1023px)"
+          srcSet="/images/home-espejo/hero-mobile-390.webp 390w, /images/home-espejo/hero-mobile-780.webp 780w"
+          sizes="100vw"
+        />
         <img
           src="/images/home-espejo/hero-desktop.webp"
           alt="Equipos de refrigeración y climatización en una instalación técnica"
           width="1920"
           height="430"
+          sizes="100vw"
           decoding="async"
           fetchPriority={priority}
           className="home-hero-image"

@@ -1,0 +1,3 @@
+-- SELECT id,recipient_id,type,title,state,link FROM notifications WHERE id='notification-8c5fe43a-36dd-4b02-820f-4da4217fea82'; SELECT id,quote_id,percentage,status,requested_by,approved_by FROM quote_discount_approvals WHERE quote_id='CP-20260924-8LFS';
+notification-8c5fe43a-36dd-4b02-820f-4da4217fea82	cp-dashboard-v5-user-gerencia	QUOTE_DISCOUNT_PENDING	Descuento pendiente de aprobación	UNREAD	/admin/cotizaciones?quoteId=CP-20260924-8LFS
+discount-approval-e7038533-59d3-4c1b-b7aa-1b1712fdc6a7	CP-20260924-8LFS	15.00	PENDING	cp-dashboard-v5-user-staff-001

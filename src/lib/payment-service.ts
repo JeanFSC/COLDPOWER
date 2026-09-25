@@ -19,6 +19,58 @@ export class PaymentDomainError extends Error {
 
 // A new provider attempt may only replace a payment that never succeeded.
 const retryablePaymentStatuses = ["PENDING", "REJECTED", "CANCELLED", "ERROR"] as const as readonly string[];
+const receivedPaymentStatuses = ["CONFIRMED", "APPROVED"] as const;
+const lateApprovalRefundReason = "Aprobación posterior: requiere reembolso";
+type PaymentTransaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+
+function isReceivedPaymentStatus(status: string) {
+  return (receivedPaymentStatuses as readonly string[]).includes(status);
+}
+
+async function summarizeOrderPaymentLedger(
+  tx: PaymentTransaction,
+  order: { id: string; total: string; currency: string },
+  excludedPaymentId?: string,
+) {
+  const paymentWhere = excludedPaymentId
+    ? and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), sql`${payments.id} <> ${excludedPaymentId}`)
+    : and(eq(payments.orderId, order.id), eq(payments.currency, order.currency));
+  const refundWhere = excludedPaymentId
+    ? and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), sql`${payments.id} <> ${excludedPaymentId}`)
+    : and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency));
+  const [paymentRows, refundRows] = await Promise.all([
+    tx.select({ amount: payments.amount, status: payments.status }).from(payments).where(paymentWhere),
+    tx.select({ amount: paymentRefunds.amount, status: paymentRefunds.status }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(refundWhere, eq(paymentRefunds.status, "SUCCEEDED"))),
+  ]);
+  return summarizePaymentLedger(order.total, paymentRows, refundRows);
+}
+
+async function confirmationDisposition(
+  tx: PaymentTransaction,
+  payment: { id: string; status: string; amount: string; currency: string; orderId: string },
+  order: { id: string; code: string; status: string; total: string; currency: string },
+) {
+  if (isReceivedPaymentStatus(payment.status)) {
+    return { entersConfirmed: false, refundRequired: false, overpaidAmount: 0, refundAmount: 0, previousLedger: null };
+  }
+  const previousLedger = await summarizeOrderPaymentLedger(tx, order, payment.id);
+  const expected = amount(order.total);
+  const previousCovered = previousLedger.net + 0.005 >= expected;
+  const overpaidAmount = previousCovered ? 0 : amount(Math.max(0, previousLedger.net + amount(payment.amount) - expected));
+  const refundRequired = order.status !== "PAYMENT_PENDING" || previousCovered || overpaidAmount > 0.005;
+  const refundAmount = refundRequired ? (order.status !== "PAYMENT_PENDING" || previousCovered ? amount(payment.amount) : overpaidAmount) : 0;
+  return { entersConfirmed: true, refundRequired, overpaidAmount, refundAmount, previousLedger };
+}
+
+function lateApprovalMetadata(base: Record<string, unknown> | null, orderCode: string, overpaidAmount: number) {
+  return {
+    ...(base ?? {}),
+    requiresRefund: true,
+    lateApproval: true,
+    lateApprovalOrderCode: orderCode,
+    ...(overpaidAmount > 0.005 ? { overpaidAmount } : {}),
+  };
+}
 
 function storedCheckoutUrl(payment: { status: string; metadata: Record<string, unknown> | null }) {
   const url = payment.metadata?.checkoutUrl;
@@ -99,27 +151,45 @@ export async function refreshPaymentStatus(paymentId: string, actor: Actor | nul
     throw new PaymentDomainError(unconfigured ? "PAYMENT_PROVIDER_NOT_CONFIGURED" : "PAYMENT_STATUS_CHECK_FAILED", error instanceof Error ? error.message : "No se pudo consultar el estado del proveedor.", unconfigured ? 503 : 502);
   }
   const nextStatus = normalizeProviderStatus(rawStatus);
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const [payment] = await tx.select().from(payments).where(eq(payments.id, paymentId)).for("update").limit(1);
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado.", 404);
+    if (payment.status === nextStatus) return { payment, changed: false, idempotent: true };
     if (!canTransitionPayment(payment.status, nextStatus)) return { payment, changed: false };
-    const [updated] = await tx.update(payments).set({ status: nextStatus, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
-    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: nextStatus, changedBy: actor?.userId ?? null, actorRole: actor?.role ?? "PROVIDER", provider: payment.provider, reason: "Consulta de estado del proveedor" });
+    let orderContext: { status: string; code: string } | null = null;
+    let disposition = { entersConfirmed: false, refundRequired: false, overpaidAmount: 0, refundAmount: 0, previousLedger: null as ReturnType<typeof summarizePaymentLedger> | null };
+    if (nextStatus === "CONFIRMED") {
+      const [order] = await tx.select({ id: orders.id, status: orders.status, code: orders.code, total: orders.total, currency: orders.currency }).from(orders).where(eq(orders.id, payment.orderId)).for("update").limit(1);
+      orderContext = order ?? null;
+      if (order) disposition = await confirmationDisposition(tx, payment, order);
+    }
+    const refundRequired = nextStatus === "CONFIRMED" && disposition.refundRequired;
+    const metadata = refundRequired ? lateApprovalMetadata(payment.metadata, orderContext?.code ?? payment.orderId, disposition.overpaidAmount) : payment.metadata;
+    const [updated] = await tx.update(payments).set({ status: nextStatus, metadata, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
+    const statusReason = refundRequired ? lateApprovalRefundReason : "Consulta de estado del proveedor";
+    await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider: payment.provider, providerReference: payment.providerReference, status: nextStatus, amount: payment.amount, currency: payment.currency, idempotencyKey: `status-check:${payment.id}:${payment.status}:${nextStatus}` });
+    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: nextStatus, changedBy: actor?.userId ?? null, actorRole: actor?.role ?? "PROVIDER", provider: payment.provider, reason: statusReason });
     if (nextStatus === "CONFIRMED") await markOrderPaid(tx, payment.orderId, actor?.userId ?? null, "Pago confirmado al consultar proveedor");
+    if (refundRequired) {
+      await tx.insert(auditLogs).values(audit(actor, orderContext?.status === "CANCELLED" ? "payments.confirmed_on_cancelled_order" : "payments.confirmed_after_order_paid", payment.id, payment, updated, { provider: payment.provider, requiresRefund: true, lateApproval: true, refundAmount: disposition.refundAmount, ...(disposition.overpaidAmount > 0.005 ? { overpaidAmount: disposition.overpaidAmount } : {}) }));
+      return { payment: updated, changed: true, requiresRefund: true, lateApprovalOrderCode: orderContext?.code ?? payment.orderId, overpaidAmount: disposition.overpaidAmount, refundAmount: disposition.refundAmount };
+    }
     await tx.insert(auditLogs).values(audit(actor, "payments.status_refreshed", payment.id, payment, updated, { provider: payment.provider, status: nextStatus }));
     return { payment: updated, changed: true };
   });
+  if (result.requiresRefund && result.lateApprovalOrderCode) {
+    try {
+      await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `El proveedor ${paymentId} confirmó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía un cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.payment.id)}&queue=refunds`, metadata: { paymentId: result.payment.id, refundRequired: true, orderCode: result.lateApprovalOrderCode }, dedupeKey: `payment-late-approval:${result.payment.id}` });
+    } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
+  }
+  return result;
 }
 
 async function markOrderPaid(tx: Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0], orderId: string, changedBy: string | null, note: string) {
   const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update").limit(1);
   if (order?.status !== "PAYMENT_PENDING") return order?.status ?? null;
-  const [paymentRows, refundedRows] = await Promise.all([
-    tx.select({ amount: payments.amount, status: payments.status }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency))),
-    tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
-  ]);
-  const netReceived = summarizePaymentLedger(order.total, paymentRows, [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
-  if (netReceived + 0.005 < amount(order.total)) return order.status;
+  const ledger = await summarizeOrderPaymentLedger(tx, order);
+  if (ledger.net + 0.005 < amount(order.total)) return order.status;
   await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id));
   await tx.insert(orderStatusHistory).values({ id: id("order-status"), orderId: order.id, fromStatus: order.status, toStatus: "PAID", changedBy, note });
   // A paid order keeps its stock: its reservations stop expiring with the payment deadline.
@@ -137,7 +207,7 @@ export async function refundPayment(paymentId: string, input: { amount?: string;
     const [payment] = await tx.select().from(payments).where(eq(payments.id, paymentId)).for("update").limit(1);
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado.", 404);
     if (!(payment.status === "CONFIRMED" || payment.status === "APPROVED")) throw new PaymentDomainError("PAYMENT_REFUND_NOT_ALLOWED", "Solo se puede reembolsar un pago confirmado.", 409);
-    const manual = payment.methodType === "MANUAL" && !payment.provider && !payment.providerReference;
+    const manual = payment.methodType === "MANUAL" && !payment.provider;
     if (!manual && (!payment.provider || !payment.providerReference)) throw new PaymentDomainError("PAYMENT_PROVIDER_NOT_CONFIGURED", "El pago no tiene una referencia de proveedor reembolsable.", 503);
     const [reservedRefunds] = await tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, paymentId), inArray(paymentRefunds.status, ["PENDING", "SUCCEEDED"])));
     const available = amount(payment.amount) - amount(reservedRefunds?.total ?? 0);
@@ -217,32 +287,26 @@ export async function processPaymentWebhook(provider: string, rawPayload: string
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado para el evento del proveedor.", 404);
     const payload = sanitizeAuditValue(event.metadata) as Record<string, unknown>;
     await tx.insert(paymentEvents).values({ id: id("payment-event"), paymentId: payment.id, provider, providerEventId: event.providerEventId, eventType: event.eventType, payload });
-    // The customer paid after the order expired and was cancelled: money moved, so this must
-    // not vanish silently. Keep the order cancelled, record it and alert staff to refund.
-    if (nextStatus === "CONFIRMED" && payment.status === "CANCELLED") {
-      const [order] = await tx.select({ status: orders.status, code: orders.code }).from(orders).where(eq(orders.id, payment.orderId)).limit(1);
-      if (order?.status === "CANCELLED") {
-        const lateMetadata = { ...payload, requiresRefund: true, lateApproval: true, lateApprovalOrderCode: order.code };
-        const [updatedLatePayment] = await tx.update(payments).set({ status: "CONFIRMED", metadata: lateMetadata, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
-        await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider, providerReference: event.providerReference, status: "CONFIRMED", amount: payment.amount, currency: payment.currency, idempotencyKey: `webhook:${provider}:${event.providerEventId}` });
-        await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: "CONFIRMED", changedBy: null, actorRole: "PROVIDER", provider, reason: "Aprobación posterior a la cancelación del pedido" });
-        await tx.insert(auditLogs).values(audit(null, "payments.confirmed_on_cancelled_order", payment.id, payment, updatedLatePayment, { provider, providerEventId: event.providerEventId, orderCode: order.code, requiresRefund: true }));
-        return { duplicate: false, paymentId: payment.id, status: "CONFIRMED" as const, ignored: false, lateApprovalOrderCode: order.code, refundRequired: true };
-      }
-    }
+    if (payment.status === nextStatus) return { duplicate: false, paymentId: payment.id, status: payment.status, ignored: true, changed: false, idempotent: true };
     if (!canTransitionPayment(payment.status, nextStatus)) return { duplicate: false, paymentId: payment.id, status: payment.status, ignored: true };
-    const [updatedPayment] = await tx.update(payments).set({ status: nextStatus, metadata: payload, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
-    await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider, providerReference: event.providerReference, status: nextStatus, amount: payment.amount, currency: payment.currency, idempotencyKey: `webhook:${provider}:${event.providerEventId}` });
-    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: nextStatus, changedBy: null, actorRole: "PROVIDER", provider, reason: event.eventType });
+    let orderContext: { id: string; status: string; code: string; total: string; currency: string } | null = null;
+    let disposition = { entersConfirmed: false, refundRequired: false, overpaidAmount: 0, refundAmount: 0, previousLedger: null as ReturnType<typeof summarizePaymentLedger> | null };
     if (nextStatus === "CONFIRMED") {
-      const orderStatus = await markOrderPaid(tx, payment.orderId, null, `Pago aprobado por ${provider}`);
-      if (orderStatus === "CANCELLED") {
-        const [order] = await tx.select({ code: orders.code }).from(orders).where(eq(orders.id, payment.orderId)).limit(1);
-        const [latePayment] = await tx.update(payments).set({ metadata: { ...payload, requiresRefund: true, lateApproval: true, lateApprovalOrderCode: order?.code ?? payment.orderId }, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
-        await tx.insert(auditLogs).values(audit(null, "payments.confirmed_on_cancelled_order", payment.id, payment, latePayment, { provider, providerEventId: event.providerEventId, orderCode: order?.code ?? null, requiresRefund: true }));
-        await tx.insert(auditLogs).values(audit(null, "payments.webhook_processed", payment.id, payment, latePayment, { provider, eventType: event.eventType, providerEventId: event.providerEventId, requiresRefund: true }));
-        return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false, lateApprovalOrderCode: order?.code ?? payment.orderId, refundRequired: true };
-      }
+      const [order] = await tx.select({ id: orders.id, status: orders.status, code: orders.code, total: orders.total, currency: orders.currency }).from(orders).where(eq(orders.id, payment.orderId)).for("update").limit(1);
+      orderContext = order ?? null;
+      if (order) disposition = await confirmationDisposition(tx, payment, order);
+    }
+    const refundRequired = nextStatus === "CONFIRMED" && disposition.refundRequired;
+    const paymentMetadata = refundRequired ? lateApprovalMetadata(payload, orderContext?.code ?? payment.orderId, disposition.overpaidAmount) : payload;
+    const [updatedPayment] = await tx.update(payments).set({ status: nextStatus, metadata: paymentMetadata, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
+    await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider, providerReference: event.providerReference, status: nextStatus, amount: payment.amount, currency: payment.currency, idempotencyKey: `webhook:${provider}:${event.providerEventId}` });
+    await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: nextStatus, changedBy: null, actorRole: "PROVIDER", provider, reason: refundRequired ? lateApprovalRefundReason : event.eventType });
+    if (nextStatus === "CONFIRMED") await markOrderPaid(tx, payment.orderId, null, `Pago aprobado por ${provider}`);
+    if (refundRequired) {
+      const action = orderContext?.status === "CANCELLED" ? "payments.confirmed_on_cancelled_order" : "payments.confirmed_after_order_paid";
+      await tx.insert(auditLogs).values(audit(null, action, payment.id, payment, updatedPayment, { provider, providerEventId: event.providerEventId, orderCode: orderContext?.code ?? null, requiresRefund: true, refundAmount: disposition.refundAmount, ...(disposition.overpaidAmount > 0.005 ? { overpaidAmount: disposition.overpaidAmount } : {}) }));
+      await tx.insert(auditLogs).values(audit(null, "payments.webhook_processed", payment.id, payment, updatedPayment, { provider, eventType: event.eventType, providerEventId: event.providerEventId, requiresRefund: true }));
+      return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false, lateApprovalOrderCode: orderContext?.code ?? payment.orderId, refundRequired: true, overpaidAmount: disposition.overpaidAmount, refundAmount: disposition.refundAmount };
     }
     if (nextStatus === "REFUNDED") {
       const [pendingRefund] = await tx.select().from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, payment.id), eq(paymentRefunds.status, "PENDING"))).orderBy(paymentRefunds.createdAt).limit(1);
@@ -253,7 +317,7 @@ export async function processPaymentWebhook(provider: string, rawPayload: string
     return { duplicate: false, paymentId: payment.id, status: nextStatus, ignored: false };
   });
   if ("lateApprovalOrderCode" in result && result.lateApprovalOrderCode) {
-    try { await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago recibido en pedido cancelado", body: `El proveedor ${provider} aprobó un pago del pedido ${result.lateApprovalOrderCode}, que ya estaba cancelado por vencimiento. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}&queue=refunds`, metadata: { paymentId: result.paymentId, provider, orderCode: result.lateApprovalOrderCode, refundRequired: true }, dedupeKey: `payment-late-approval:${result.paymentId}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
+    try { await notifyStaffOnce({ type: "PAYMENT_FAILED", title: "Pago aprobado con reembolso pendiente", body: `El proveedor ${provider} aprobó un pago del pedido ${result.lateApprovalOrderCode}, pero ya existía otro cobro o el pedido estaba cerrado. Requiere reembolso.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}&queue=refunds`, metadata: { paymentId: result.paymentId, provider, orderCode: result.lateApprovalOrderCode, refundRequired: true }, dedupeKey: `payment-late-approval:${result.paymentId}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el pago tardío", error); }
   }
   if (!result.duplicate && !result.ignored && !("lateApprovalOrderCode" in result) && ["CONFIRMED", "REJECTED", "CANCELLED", "ERROR"].includes(result.status)) {
     try { await notifyStaffOnce({ type: result.status === "CONFIRMED" ? "PAYMENT_APPROVED" : "PAYMENT_FAILED", title: result.status === "CONFIRMED" ? "Pago aprobado" : "Pago fallido", body: `El pago del proveedor ${provider} quedó en estado ${result.status}.`, link: `/admin/pagos?paymentId=${encodeURIComponent(result.paymentId)}`, metadata: { paymentId: result.paymentId, provider, status: result.status }, dedupeKey: `payment-event:${provider}:${result.paymentId}:${result.status}` }); } catch (error) { console.error("ColdPower: no se pudo notificar el resultado del pago", error); }

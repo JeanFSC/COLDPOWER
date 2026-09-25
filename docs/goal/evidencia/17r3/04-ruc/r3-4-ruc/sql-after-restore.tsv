@@ -1,0 +1,2 @@
+-- SELECT id,name,ruc,updated_at FROM customers WHERE id='cp-dashboard-v5-customer-001';
+cp-dashboard-v5-customer-001	Restaurante Costa Azul	20501010101	2026-09-24 22:18:11.496-05

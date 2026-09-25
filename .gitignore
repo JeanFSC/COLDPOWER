@@ -64,3 +64,7 @@ next-env.d.ts
 /.cloudflared/
 /tools/cloudflared/
 docs/goal/evidencia/17r2-staff/**/*.png
+docs/goal/evidencia/17r3/**/*.png
+docs/goal/evidencia/17r3/**/*.webm
+docs/goal/evidencia/17r3/**/*.zip
+docs/goal/evidencia/m10/**/*.png

@@ -73,7 +73,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
     department: "",
     province: "",
     district: "",
-    preferredContact: "whatsapp",
+    preferredContact: companySettings?.whatsapp ? "whatsapp" : companySettings?.email ? "email" : "phone",
     consent: false,
     message: defaultMessage,
   });
@@ -332,7 +332,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
 
       <FieldErrorLabel label="Medio de contacto preferido" field="preferredContact" errors={errors} className="mt-4">
         <select id={fieldIds.preferredContact} value={form.preferredContact} onChange={(event) => updateField("preferredContact", event.target.value as QuoteFormState["preferredContact"])} className={inputClass(errors.preferredContact, "h-11")} aria-invalid={Boolean(errors.preferredContact)} aria-describedby={errors.preferredContact ? `${fieldIds.preferredContact}-error` : undefined}>
-          <option value="whatsapp">WhatsApp</option>
+          {companySettings?.whatsapp ? <option value="whatsapp">WhatsApp</option> : null}
           <option value="phone">Llamada telefonica</option>
           <option value="email">Correo electronico</option>
         </select>

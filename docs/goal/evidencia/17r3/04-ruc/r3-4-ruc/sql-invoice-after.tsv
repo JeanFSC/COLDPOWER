@@ -1,0 +1,2 @@
+-- SELECT id,invoice_status,external_invoice_reference,version,customer_id FROM sales WHERE id='cp-dashboard-v5-sale-001';
+cp-dashboard-v5-sale-001			1	cp-dashboard-v5-customer-001

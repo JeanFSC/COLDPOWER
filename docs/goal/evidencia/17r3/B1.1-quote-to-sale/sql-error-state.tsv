@@ -1,0 +1,1 @@
+-- SELECT q.id,q.tracking_code,q.workflow_status,q.status,q.discount_approval_status,q.email FROM quotes q WHERE q.email='b11.1790316965431@example.test' ORDER BY q.created_at DESC;

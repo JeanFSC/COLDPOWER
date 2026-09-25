@@ -1,0 +1,281 @@
+Saltar al contenido
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Notificaciones
+Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+2
+
+Operaciones
+
+Administrador
+
+Gestión de clientes
+
+Administra tu cartera de clientes y su actividad comercial.
+
+Exportar
+Nuevo cliente
+
+Clientes registrados
+
+1
+
+Total filtrado
+
+Clientes activos
+
+1
+
+Estado activo
+
+Por atender
+
+1
+
+Acción comercial pendiente
+
+Oportunidades activas
+
+2
+
+En pipeline
+
+Estado
+ACTIVE
+Tipo de cliente
+Empresa
+Responsable
+Carlos Ramírez
+Filtros
+Clientes
+
+1 resultados
+
+CLIENTE	TIPO	CONTACTO	TELÉFONO	EMAIL	CIUDAD	ACTIVIDAD RECIENTE	ESTADO	RESPONSABLE	
+
+Restaurante Costa Azul
+RUC 20501010101
+	Empresa	Restaurante Costa Azul S.A.C.	+51 910 003 001	compras@costaazul.pe	Lima / Lima / Miraflores	
+Llamada comercial
+23 set. 2026	Activo	Carlos Ramírez	
+Mostrando 1 a 1 de 1 clientes
+Anterior
+1
+Siguiente
+Resumen de clientes
+
+CLIENTES REGISTRADOS
+
+1
+
+Total filtrado
+
+CLIENTES ACTIVOS
+
+1
+
+Estado activo
+
+POR ATENDER
+
+1
+
+Acción comercial pendiente
+
+OPORTUNIDADES ACTIVAS
+
+2
+
+En pipeline
+
+Distribución por tipo
+Empresa
+1 (100%)
+Ver reporte completo →
+Distribución geográfica
+Lima / Lima / Miraflores
+1 (100%)
+Ver reporte completo →
+Requieren atención
+
+Casos que necesitan una acción comercial.
+
+Seguimiento vencido
+1
+Sin responsable
+0
+Oportunidad estancada
+1
+Cotización por responder
+0
+Ver toda la cartera por atender →
+Operaciones CRM
+
+Agenda, actividad, oportunidades e historial cargados desde datos reales.
+
+Fusionar clientes
+Abrir pipeline
+Agenda
+Actividad
+Oportunidades
+Historial
+
+Tarea mensual 2026-01
+
+Cliente corporativo 060 · Colaborador 15
+
+11/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-01
+
+Frío Norte Servicios · Colaborador 14
+
+18/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-01
+
+Cliente corporativo 059 · Colaborador 13
+
+25/1/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Cliente corporativo 056 · María Torres
+
+11/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Cliente corporativo 055 · Colaborador 11
+
+18/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-02
+
+Hotel Valle Sur · Colaborador 10
+
+25/2/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 053 · Colaborador 09
+
+11/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 052 · Colaborador 08
+
+18/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-03
+
+Cliente corporativo 051 · Lucía Quispe
+
+25/3/2026, 10:00:00 a. m.
+
+Tarea mensual 2026-04
+
+Cliente corporativo 049 · Colaborador 06
+
+11/4/2026, 10:00:00 a. m.
+Cliente 360°
+
+DETALLE 360°
+
+Restaurante Costa Azul
+
+Restaurante Costa Azul S.A.C.
+
+Actividad
+Tarea
+Cerrar
+Resumen
+Actividad
+Oportunidades
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+Contactos
+Direcciones
+Notas
+
+Cotizaciones
+
+0
+
+Oportunidades abiertas
+
+2
+
+Pedidos
+
+3
+
+Ventas
+
+3
+
+Pagos
+
+3
+
+Última actividad
+
+23/9/2026, 9:31:21 a. m.
+DATOS PRINCIPALES
+Tipo
+Empresa
+Estado
+Activo
+Razón social
+Restaurante Costa Azul S.A.C.
+Documento / RUC
+20501010101
+RUC por verificar
+CONTACTO
+Correo
+compras@costaazul.pe
+Teléfono
++51 910 003 001
+WhatsApp
++51 910 003 001
+Preferencia
+Sin dato
+Ubicación
+Lima / Lima / Miraflores
+RESPONSABLE
+Vendedor
+Carlos Ramírez
+Creado
+16/7/2026, 9:31:21 a. m.
+Actualizado
+23/9/2026, 9:31:21 a. m.

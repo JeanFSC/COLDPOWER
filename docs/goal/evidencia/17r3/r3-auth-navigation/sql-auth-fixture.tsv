@@ -1,0 +1,3 @@
+-- SELECT id,email,role,role_code,status FROM users WHERE id='cp-dashboard-v5-user-staff-001'; SELECT id,user_id,name,email FROM customers WHERE user_id='cp-dashboard-v5-user-staff-001';
+cp-dashboard-v5-user-staff-001	empleado.001@coldpower.local	admin	VENTAS	ACTIVE
+cp-brief16-orders-customer-test-user	cp-dashboard-v5-user-staff-001	Colaborador 01	empleado.001@coldpower.local

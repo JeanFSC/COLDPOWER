@@ -8,7 +8,7 @@ import { getOrderForUser } from "@/lib/sales-service";
 import { buildOrderTimeline, deliveryMethodLabels, formatDateTime, formatMoney, orderStatusLabels, paymentStatusLabels } from "@/lib/order-display";
 import { Badge } from "@/components/shared/Badge";
 import { PayOrderButton } from "@/components/account/PayOrderButton";
-import { unconfiguredTaxBreakdown } from "@/lib/tax";
+import { taxBreakdownFromSnapshot } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle del pedido | ColdPower", robots: { index: false, follow: false } };
@@ -27,7 +27,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   const expired = awaitingPayment && order.paymentDueAt !== null && order.paymentDueAt.getTime() <= new Date().getTime();
   const rejected = payment?.status === "REJECTED";
   const details = order.deliveryDetails;
-  const tax = unconfiguredTaxBreakdown();
+  const tax = taxBreakdownFromSnapshot(order);
   const destination = order.deliveryMethod === "PICKUP"
     ? [location?.name, location?.address, location?.city].filter(Boolean).join(" · ")
     : order.deliveryMethod === "DELIVERY"
@@ -130,11 +130,10 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                 <div className="flex justify-between"><dt className="text-gray-text">Subtotal</dt><dd className="font-bold text-dark">{formatMoney(order.subtotal, order.currency)}</dd></div>
                 {Number(order.discountAmount) > 0 ? <div className="flex justify-between"><dt className="text-gray-text">Descuento</dt><dd className="font-bold text-teal">−{formatMoney(order.discountAmount, order.currency)}</dd></div> : null}
                 <div className="flex justify-between"><dt className="text-gray-text">Envío</dt><dd className="font-bold text-dark">{order.deliveryMethod === "PICKUP" ? "Sin costo" : "Por coordinar"}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-text">Op. gravada</dt><dd className="font-bold text-dark">{tax.taxableOperation ? formatMoney(tax.taxableOperation, order.currency) : "Por configurar"}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-text">IGV 18%</dt><dd className="font-bold text-dark">{tax.igv ? formatMoney(tax.igv, order.currency) : "Por configurar"}</dd></div>
+                {tax.status === "CONFIGURED" ? <><div className="flex justify-between"><dt className="text-gray-text">Op. gravada</dt><dd className="font-bold text-dark">{formatMoney(tax.taxableOperation ?? "0.00", order.currency)}</dd></div><div className="flex justify-between"><dt className="text-gray-text">IGV {tax.rate}%</dt><dd className="font-bold text-dark">{formatMoney(tax.igv ?? "0.00", order.currency)}</dd></div></> : null}
                 <div className="mt-2 flex justify-between border-t border-border pt-3"><dt className="font-bold text-dark">Total</dt><dd className="font-display text-xl font-black text-dark">{formatMoney(order.total, order.currency)}</dd></div>
               </dl>
-              <p className="mt-3 text-xs text-gray-text">{tax.note}</p>
+              {tax.status === "CONFIGURED" ? <p className="mt-3 text-xs text-gray-text">Desglose tributario guardado con el pedido.</p> : null}
               <p className="mt-3 text-xs text-gray-text">Pago: <strong className="text-dark">{payment ? paymentStatusLabels[payment.status] ?? payment.status : "Pendiente"}</strong></p>
             </section>
             <section className="rounded-lg border border-border bg-white p-5 shadow-card" aria-label="Entrega">

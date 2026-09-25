@@ -888,7 +888,10 @@ function PurchaseReceptionForm() {
                 max={line.quantityPending}
                 step="1"
                 value={quantities[line.id] ?? ""}
-                onChange={(event) => setQuantities((current) => ({ ...current, [line.id]: event.currentTarget.value }))}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  setQuantities((current) => ({ ...current, [line.id]: value }));
+                }}
                 aria-label={"Cantidad recibida de " + line.sku}
                 placeholder="0"
                 className={inputClass}

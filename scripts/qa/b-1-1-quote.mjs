@@ -1,5 +1,6 @@
 import {
   artifactPath,
+  BASE_URL,
   capture,
   captureSql,
   clickButton,
@@ -11,7 +12,6 @@ import {
   runSql,
   uniqueEmail,
   visit,
-  waitForText,
   writeJson,
   writeText,
 } from "./b-helpers.mjs";
@@ -19,7 +19,6 @@ import {
 const scenario = "B1.1-quote-to-sale";
 const email = uniqueEmail("b11");
 const quoteName = `QA B1.1 ${Date.now()}`;
-const statePath = artifactPath(scenario, "state.json");
 
 async function getQuoteId() {
   const value = runSql(`SELECT id FROM quotes WHERE email='${email}' ORDER BY created_at DESC LIMIT 1;`);
@@ -36,8 +35,22 @@ async function main() {
 
     await visit(page, "/cotizacion");
     await capture(scenario, "01-public-form", page);
-    await page.locator("#quote-product-search").fill("CP-ROT");
-    await page.getByRole("button", { name: /Compresor Rotativo Gemini.*CP-ROT-8284/ }).click();
+    // CP-ROT-8284 was removed from the local published catalog; use the
+    // published compressor fixture shared by the current quote QA flows.
+    const productSuggestion = page.locator("#quote-product-suggestions button").first();
+    let productSelected = false;
+    for (let attempt = 0; attempt < 3 && !productSelected; attempt += 1) {
+      await page.locator("#quote-product-search").fill("CP-REF-MCP-0103");
+      try {
+        await productSuggestion.waitFor({ state: "visible", timeout: 10_000 });
+        await productSuggestion.click();
+        productSelected = true;
+      } catch (error) {
+        if (attempt === 2) throw error;
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+        await page.waitForTimeout(1_000);
+      }
+    }
     await fillLabel(page, "Nombre o razon social", quoteName);
     await fillLabel(page, "DNI", "77889911");
     await fillLabel(page, "Telefono", "999888777");
@@ -49,7 +62,7 @@ async function main() {
     await page.locator("#quote-consent").check();
     await capture(scenario, "02-public-form-filled", page);
     await clickButton(page, "Solicitar cotización");
-    await page.waitForTimeout(1200);
+    await page.getByText("Solicitud registrada", { exact: false }).first().waitFor({ state: "visible", timeout: 30_000 });
     await capture(scenario, "03-public-submitted", page);
     await writeText(artifactPath(scenario, "03-public-body.txt"), await page.locator("body").innerText());
     evidence.stages.push({ stage: "public_request", bodyContainsSuccess: /registrada|enviada|seguimiento/i.test(await page.locator("body").innerText()) });
@@ -63,6 +76,14 @@ async function main() {
     await writeText(artifactPath(scenario, "04-staff-body.txt"), await page.locator("body").innerText());
 
     const editButton = page.getByRole("button", { name: "Editar", exact: true }).first();
+    for (let attempt = 0; attempt < 3 && !(await editButton.isVisible().catch(() => false)); attempt += 1) {
+      await editButton.waitFor({ state: "visible", timeout: 10_000 }).catch(() => undefined);
+      if (await editButton.isVisible().catch(() => false)) break;
+      if (attempt < 2) {
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+        await page.waitForTimeout(2_000);
+      }
+    }
     if (await editButton.isVisible().catch(() => false)) {
       await editButton.click();
       await page.locator('input[type="date"]').last().fill("2026-12-31");
@@ -83,12 +104,17 @@ async function main() {
     await page.locator("select").last().selectOption("EMAIL");
     await page.locator("textarea").last().fill(email);
     await capture(scenario, "07-send-dialog", page);
+    const sendResponse = page.waitForResponse(
+      (response) => response.url().endsWith("/api/admin/cotizaciones/send") && response.status() === 200,
+      { timeout: 30_000 },
+    );
     await clickButton(page, "Guardar");
-    await page.waitForTimeout(1000);
+    await sendResponse;
     await capture(scenario, "08-sent", page);
     evidence.stages.push({ stage: "staff_send", saved: true });
 
     const responseButton = page.getByRole("button", { name: "Registrar respuesta", exact: true }).first();
+    await responseButton.waitFor({ state: "visible", timeout: 30_000 }).catch(() => undefined);
     if (!(await responseButton.isVisible().catch(() => false))) throw new Error("No apareció Registrar respuesta después del envío.");
     await responseButton.click();
     const selects = page.locator("select");
@@ -120,11 +146,11 @@ async function main() {
     captureSql(scenario, "after-sale", `SELECT q.id,q.tracking_code,q.workflow_status,q.status,q.accepted_version_id,s.id AS sale_id,s.code AS sale_code,s.status AS sale_status,o.id AS order_id,o.code AS order_code,o.status AS order_status FROM quotes q LEFT JOIN sales s ON s.quote_id=q.id LEFT JOIN orders o ON o.sale_id=s.id WHERE q.id='${quoteId}'; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE entity_id IN ('${quoteId}') ORDER BY created_at;`);
 
     const prohibitedPage = await session.context.newPage();
-    const forbiddenResponse = await prohibitedPage.goto(`${new URL("/admin/configuracion", "http://localhost:3004").href}`, { waitUntil: "domcontentloaded" });
+    const forbiddenResponse = await prohibitedPage.goto(`${new URL("/admin/configuracion", BASE_URL).href}`, { waitUntil: "domcontentloaded" });
     await prohibitedPage.waitForTimeout(500);
     await capture(scenario, "13-prohibited-url", prohibitedPage);
     evidence.apiProbes.push({ name: "ventas_url_company_settings", status: forbiddenResponse?.status() ?? null, url: prohibitedPage.url(), body: (await prohibitedPage.locator("body").innerText()).slice(0, 1200) });
-    const apiProbe = await session.page.request.fetch("http://localhost:3004/api/admin/configuracion", { method: "POST", headers: { "Content-Type": "application/json" }, data: { tradeName: "forbidden-qa" } });
+    const apiProbe = await session.page.request.fetch(new URL("/api/admin/configuracion", BASE_URL).href, { method: "POST", headers: { "Content-Type": "application/json" }, data: { tradeName: "forbidden-qa" } });
     evidence.apiProbes.push({ name: "ventas_api_company_settings_mutation", status: apiProbe.status(), body: (await apiProbe.text()).slice(0, 1200) });
     await prohibitedPage.close();
     resultRecord(scenario, { outcome: "COMPLETED", ...evidence });

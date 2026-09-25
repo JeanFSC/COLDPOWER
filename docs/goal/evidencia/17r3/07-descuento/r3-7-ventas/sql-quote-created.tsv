@@ -1,0 +1,2 @@
+-- SELECT id,tracking_code,name,phone,email,workflow_status,status FROM quotes WHERE email='r37.1790310377720@example.test' ORDER BY created_at DESC LIMIT 1;
+CP-20260924-8LFS	CP-20260924-8LFS	QA R3.7 1790310377720	999377721	r37.1790310377720@example.test	DRAFT	borrador

@@ -15,6 +15,8 @@ import { canTransitionOrderForDelivery, type CheckoutInput, type ManualPaymentMe
 import { summarizePaymentLedger } from "@/lib/payments-contract";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { recordPromotionalApplicationsInTransaction } from "@/lib/promotion-service";
+import { getCompanyTaxConfiguration } from "@/lib/company-settings-runtime";
+import { calculateTaxBreakdownForLines, isTaxConfigurationComplete, type TaxConfiguration } from "@/lib/tax";
 
 type Actor = { userId: string | null; role?: string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
@@ -23,9 +25,9 @@ function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function money(value: string | number) { return Number(Number(value).toFixed(2)); }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role ?? null, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 
-type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; baseUnitPrice: string; unitPrice: string; currency: string; lineTotal: string; promotionIds: string[]; promotionSteps: PromotionPriceStep[] };
+type ResolvedLine = { productId: string; sku: string; name: string; quantity: number; baseUnitPrice: string; unitPrice: string; currency: string; lineTotal: string; taxType: string | null; promotionIds: string[]; promotionSteps: PromotionPriceStep[] };
 type CommercialLine = ResolvedLine & { baseLineTotal: string; discountAmount: string; promotionIds: string[] };
-export function calculateCheckoutTotals(lines: Array<Pick<CommercialLine, "baseLineTotal" | "lineTotal">>) {
+export function calculateCheckoutTotals(lines: Array<Pick<CommercialLine, "baseLineTotal" | "lineTotal"> & { taxType?: string | null }>, configuration?: TaxConfiguration) {
   const cents = (value: string) => {
     const amount = Number(value);
     if (!Number.isFinite(amount) || amount < 0) throw new Error("CHECKOUT_LINE_TOTAL_INVALID");
@@ -34,13 +36,16 @@ export function calculateCheckoutTotals(lines: Array<Pick<CommercialLine, "baseL
   const subtotalCents = lines.reduce((sum, line) => sum + cents(line.baseLineTotal), 0);
   const totalCents = lines.reduce((sum, line) => sum + cents(line.lineTotal), 0);
   if (totalCents > subtotalCents) throw new Error("CHECKOUT_TOTAL_EXCEEDS_SUBTOTAL");
-  return { subtotal: (subtotalCents / 100).toFixed(2), discountAmount: ((subtotalCents - totalCents) / 100).toFixed(2), total: (totalCents / 100).toFixed(2) };
+  const baseTotals = { subtotal: (subtotalCents / 100).toFixed(2), discountAmount: ((subtotalCents - totalCents) / 100).toFixed(2), total: (totalCents / 100).toFixed(2) };
+  if (!configuration || !isTaxConfigurationComplete(configuration)) return baseTotals;
+  const tax = calculateTaxBreakdownForLines({ lines: lines.map((line) => ({ amount: line.lineTotal, taxType: line.taxType })), configuration });
+  return { ...baseTotals, total: tax.total ?? baseTotals.total, taxAmount: tax.igv ?? "0.00", taxRate: tax.rate, taxMode: tax.mode };
 }
 async function resolveLines(tx: Transaction, input: CheckoutInput, options: { enforcePublicSellability?: boolean } = {}) {
   const quantities = new Map<string, number>();
   for (const item of input.items) quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
   const sellabilityConditions = options.enforcePublicSellability === false ? [] : publicConditions();
-  const productRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName }).from(products).where(and(inArray(products.id, [...quantities.keys()]), ...sellabilityConditions))
+  const productRows = await tx.select({ id: products.id, sku: products.sku, name: products.commercialName, normalizedName: products.normalizedName, taxType: products.taxType }).from(products).where(and(inArray(products.id, [...quantities.keys()]), ...sellabilityConditions))
   if (productRows.length !== quantities.size) throw new Error("Uno o más productos ya no están disponibles en el catálogo.");
   const priceByProduct = await loadRetailPricesWithPromotions(tx, [...quantities.keys()]);
   const lines: ResolvedLine[] = [];
@@ -49,7 +54,7 @@ async function resolveLines(tx: Transaction, input: CheckoutInput, options: { en
     if (!price) throw new Error(`El producto ${product.sku} todavía no tiene precio retail vigente; continúa como cotizable.`);
     const quantity = quantities.get(product.id) ?? 0;
     const unitPrice = Number(price.amount).toFixed(2);
-    lines.push({ productId: product.id, sku: product.sku, name: product.name || product.normalizedName, quantity, baseUnitPrice: price.baseAmount, unitPrice, currency: price.currency, promotionIds: price.promotionIds, promotionSteps: price.promotionSteps, lineTotal: (money(unitPrice) * quantity).toFixed(2) });
+    lines.push({ productId: product.id, sku: product.sku, name: product.name || product.normalizedName, quantity, baseUnitPrice: price.baseAmount, unitPrice, currency: price.currency, taxType: product.taxType, promotionIds: price.promotionIds, promotionSteps: price.promotionSteps, lineTotal: (money(unitPrice) * quantity).toFixed(2) });
   }
   const currencies = new Set(lines.map((line) => line.currency));
   if (currencies.size !== 1) throw new Error("No se puede crear un pedido con monedas mezcladas.");
@@ -102,10 +107,12 @@ type CheckoutOrderOptions = {
   paymentDueAt?: Date | null;
   deliveryDetails?: OrderDeliveryDetails | null;
   checkoutCart?: { id: string; version: number } | null;
+  taxConfiguration?: TaxConfiguration;
 };
 
 export async function createCheckoutOrder(input: CheckoutInput, actor: Actor, options: CheckoutOrderOptions = {}) {
-  const result = await getDb().transaction((tx) => createCheckoutOrderInTransaction(tx, input, actor, options));
+  const taxConfiguration = options.taxConfiguration ?? await getCompanyTaxConfiguration();
+  const result = await getDb().transaction((tx) => createCheckoutOrderInTransaction(tx, input, actor, { ...options, taxConfiguration }));
   await notifyCheckoutCreated(result);
   return result;
 }
@@ -131,12 +138,12 @@ async function createCheckoutOrderInTransaction(tx: Transaction, input: Checkout
     for (const line of lines) { const balance = balanceByProduct.get(line.productId); if (!balance) throw new Error(`INVENTORY_UNKNOWN: No hay saldo cuantitativo confirmado para ${line.sku} en ${location.name}.`); const available = balance.available - balance.reserved; if (available < line.quantity) throw new Error(`Stock insuficiente para ${line.sku} en ${location.name}.`); }
     const customer = await findOrCreateCustomer(tx, input, actor, options.customerId);
     const now = new Date(); const orderId = id("order"); const saleId = id("sale"); const code = `ORD-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`; const saleCode = `VTA-${crypto.randomUUID().slice(0, 10).toUpperCase()}`;
-    const { subtotal, discountAmount, total } = calculateCheckoutTotals(lines); const currency = lines[0].currency;
+    const totals = calculateCheckoutTotals(lines, options.taxConfiguration); const { subtotal, discountAmount, total } = totals; const taxAmount = "taxAmount" in totals ? totals.taxAmount : "0.00"; const taxRate = "taxRate" in totals ? totals.taxRate : null; const taxMode = "taxMode" in totals ? totals.taxMode : "UNCONFIGURED"; const currency = lines[0].currency;
     const [opportunity] = await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${code}`, customerId: customer.id, title: `Pedido ${code}`, origin: options.origin ?? "WEB", stage: "PAYMENT_PENDING", createdBy: actor.userId }).returning();
     await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: opportunity.id, fromStage: null, toStage: "PAYMENT_PENDING", changedBy: actor.userId ?? "anonymous", note: "Oportunidad creada desde checkout" });
-    const [sale] = await tx.insert(sales).values({ id: saleId, code: saleCode, customerId: customer.id, opportunityId: opportunity.id, status: "CONFIRMED", sellerId: actor.userId, channel: options.channel ?? null, subtotal, discountAmount, total, currency, createdAt: now, updatedAt: now }).returning();
+    const [sale] = await tx.insert(sales).values({ id: saleId, code: saleCode, customerId: customer.id, opportunityId: opportunity.id, status: "CONFIRMED", sellerId: actor.userId, channel: options.channel ?? null, subtotal, discountAmount, taxAmount, taxRate, taxMode, total, currency, createdAt: now, updatedAt: now }).returning();
     await tx.insert(saleItems).values(lines.map((line) => ({ id: id("sale-item"), saleId, productId: line.productId, skuSnapshot: line.sku, productNameSnapshot: line.name, quantity: line.quantity, unitPrice: line.unitPrice, currency: line.currency, discountAmount: (money(line.discountAmount) * line.quantity).toFixed(2), lineTotal: line.lineTotal })));
-    const [order] = await tx.insert(orders).values({ id: orderId, code, saleId, customerId: customer.id, opportunityId: opportunity.id, status: "PAYMENT_PENDING", deliveryMethod: input.deliveryMethod, locationId: input.locationId, deliveryAddress: input.address, customerNameSnapshot: input.name, customerPhoneSnapshot: input.phone, customerEmailSnapshot: input.email, sellerId: options.buyerUserId ? null : actor.userId, userId: options.buyerUserId ?? customer.userId ?? null, paymentDueAt: options.paymentDueAt ?? null, deliveryDetails: options.deliveryDetails ?? null, checkoutCartId: options.checkoutCart?.id ?? null, checkoutCartVersion: options.checkoutCart?.version ?? null, subtotal, discountAmount, total, currency, idempotencyKey: input.idempotencyKey, createdAt: now, updatedAt: now }).returning();
+    const [order] = await tx.insert(orders).values({ id: orderId, code, saleId, customerId: customer.id, opportunityId: opportunity.id, status: "PAYMENT_PENDING", deliveryMethod: input.deliveryMethod, locationId: input.locationId, deliveryAddress: input.address, customerNameSnapshot: input.name, customerPhoneSnapshot: input.phone, customerEmailSnapshot: input.email, sellerId: options.buyerUserId ? null : actor.userId, userId: options.buyerUserId ?? customer.userId ?? null, paymentDueAt: options.paymentDueAt ?? null, deliveryDetails: options.deliveryDetails ?? null, checkoutCartId: options.checkoutCart?.id ?? null, checkoutCartVersion: options.checkoutCart?.version ?? null, subtotal, discountAmount, taxAmount, taxRate, taxMode, total, currency, idempotencyKey: input.idempotencyKey, createdAt: now, updatedAt: now }).returning();
     const reservationInputs: InventoryReservationInput[] = lines.map((line) => ({ productId: line.productId, locationId: input.locationId, quantity: line.quantity, performedBy: actor.userId ?? undefined, performedByRole: actor.role ?? undefined, referenceType: "order", referenceId: orderId, expiresAt: options.paymentDueAt ?? null }));
     const reservations = await reserveInventoryBatchInTransaction(tx, reservationInputs);
     await tx.insert(orderItems).values(lines.map((line) => ({ id: id("order-item"), orderId, productId: line.productId, skuSnapshot: line.sku, productNameSnapshot: line.name, quantity: line.quantity, unitPrice: line.unitPrice, currency: line.currency, lineTotal: line.lineTotal, reservationId: reservations.find((reservation) => reservation.productId === line.productId)?.reservationId ?? null })));
@@ -165,6 +172,7 @@ export class CheckoutDomainError extends Error {
 // The idempotency key is derived from the locked cart version on the server, so a retried
 // or double-clicked submit returns the same order instead of creating a second one.
 export async function createCheckoutFromCart(userId: string, input: CartCheckoutInput) {
+  const taxConfiguration = await getCompanyTaxConfiguration();
   const result = await getDb().transaction(async (tx) => {
     const locked = await lockCartForCheckout(tx, userId);
     if (!locked) {
@@ -175,7 +183,7 @@ export async function createCheckoutFromCart(userId: string, input: CartCheckout
     if (!locked.items.length) throw new CheckoutDomainError("CART_EMPTY", "Tu carrito está vacío.");
     const idempotencyKey = `checkout:${locked.cart.id}:v${locked.cart.version}`;
     const paymentDueAt = new Date(Date.now() + commerceConfig.orderPaymentTtlMinutes * 60 * 1000);
-    const created = await createCheckoutOrderInTransaction(tx, { items: locked.items, deliveryMethod: input.deliveryMethod, locationId: input.locationId, name: input.name, phone: input.phone, email: input.email, address: input.address, idempotencyKey }, { userId, role: "customer" }, { buyerUserId: userId, paymentDueAt, deliveryDetails: input.deliveryDetails, checkoutCart: { id: locked.cart.id, version: locked.cart.version }, origin: "WEB", channel: "WEB" });
+    const created = await createCheckoutOrderInTransaction(tx, { items: locked.items, deliveryMethod: input.deliveryMethod, locationId: input.locationId, name: input.name, phone: input.phone, email: input.email, address: input.address, idempotencyKey }, { userId, role: "customer" }, { buyerUserId: userId, paymentDueAt, deliveryDetails: input.deliveryDetails, checkoutCart: { id: locked.cart.id, version: locked.cart.version }, origin: "WEB", channel: "WEB", taxConfiguration });
     await markCartConverted(tx, locked.cart.id);
     return created;
   });

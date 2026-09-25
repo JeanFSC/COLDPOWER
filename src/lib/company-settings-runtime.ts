@@ -4,9 +4,22 @@ import { companySettings } from "@/db/schema";
 import { company } from "@/data/company";
 import { getPlaceholderCompanyFields } from "@/lib/env";
 import { publicCompanySettings, type CompanySettings } from "@/lib/company-settings";
+import { unconfiguredTaxBreakdown, type TaxConfiguration } from "@/lib/tax";
 import { withRuntimeCache } from "@/lib/runtime-cache";
 
 const SETTINGS_ID = "default";
+
+export async function getCompanyTaxConfiguration(): Promise<TaxConfiguration> {
+  return withRuntimeCache("company-settings:tax", async () => {
+    try {
+      const [settings] = await getDb().select({ taxRate: companySettings.taxRate, taxMode: companySettings.taxMode }).from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1);
+      return settings?.taxMode && settings.taxRate !== null ? { rate: settings.taxRate, mode: settings.taxMode } : { rate: null, mode: unconfiguredTaxBreakdown().mode };
+    } catch (error) {
+      console.warn("[ColdPower] Configuración tributaria persistente no disponible.", error instanceof Error ? error.message : error);
+      return { rate: null, mode: unconfiguredTaxBreakdown().mode };
+    }
+  });
+}
 
 function fallbackSettings(): CompanySettings {
   const socials = Object.fromEntries(

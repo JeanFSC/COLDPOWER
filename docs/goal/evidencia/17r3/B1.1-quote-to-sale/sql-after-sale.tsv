@@ -1,0 +1,7 @@
+-- SELECT q.id,q.tracking_code,q.workflow_status,q.status,q.accepted_version_id,s.id AS sale_id,s.code AS sale_code,s.status AS sale_status,o.id AS order_id,o.code AS order_code,o.status AS order_status FROM quotes q LEFT JOIN sales s ON s.quote_id=q.id LEFT JOIN orders o ON o.sale_id=s.id WHERE q.id='CP-20260925-M4DP'; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE entity_id IN ('CP-20260925-M4DP') ORDER BY created_at;
+CP-20260925-M4DP	CP-20260925-M4DP	CONVERTED	convertida	quote-version-fd65e67f-ca5c-443e-9ba2-3ce905846eeb	sale-f921ce99-36b6-43cf-b5a2-814d1a1cf61a	VTA-F948D4C1-D	CONFIRMED	order-465c1960-3808-4a6a-9736-49769df8e3fd	ORD-20260925-470141	PAYMENT_PENDING
+crm.lead_created_from_quote	quote	CP-20260925-M4DP		system
+quote.draft_updated	quote	CP-20260925-M4DP	cp-dashboard-v5-user-staff-001	VENTAS
+quote.sent	quote	CP-20260925-M4DP	cp-dashboard-v5-user-staff-001	VENTAS
+quote.accepted	quote	CP-20260925-M4DP	cp-dashboard-v5-user-staff-001	VENTAS
+sales.quote_converted	quote	CP-20260925-M4DP	cp-dashboard-v5-user-staff-001	VENTAS

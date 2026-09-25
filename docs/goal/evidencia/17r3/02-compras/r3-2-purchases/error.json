@@ -1,0 +1,20 @@
+{
+  "error": "La solicitud encontrada no está en DRAFT: SUBMITTED",
+  "evidence": {
+    "scenario": "r3-2-purchases",
+    "phase": "request",
+    "productId": "product-cp-fit-otr-0313",
+    "locationId": "cp-dashboard-v5-location-lima",
+    "phases": [],
+    "requestId": "purchase-request-69a5f711-d47e-478f-992c-8befef1daf79",
+    "requestCode": "SOL-20260925-FAB8B0",
+    "supplierId": "supplier-46d95f11-d186-415d-84ba-1c7a17772cf7",
+    "supplierName": "QA B4.1 Proveedor 1790302344453",
+    "requestNotes": "QA B4.1 solicitud 1790302344453"
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

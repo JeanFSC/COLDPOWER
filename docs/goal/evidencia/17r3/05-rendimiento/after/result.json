@@ -1,0 +1,64 @@
+{
+  "scenario": "after",
+  "generatedAt": "2026-09-25T03:54:15.381Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "after",
+  "viewport": "390x844",
+  "routes": {
+    "home": {
+      "title": "ColdPower | Catálogo técnico HVAC",
+      "lcpCandidate": "Todo para refrigeracióny aire acondicionadoen un solo lugar",
+      "navigationMs": 1788,
+      "domContentLoadedMs": 1784,
+      "imageCount": 32,
+      "clerkScriptPresentAtCapture": false,
+      "clerkResourceCountAtCapture": 0
+    },
+    "catalogo": {
+      "title": "Catalogo tecnico | ColdPower",
+      "lcpCandidate": "Encuentra la referencia correcta",
+      "navigationMs": 83,
+      "domContentLoadedMs": 81,
+      "imageCount": 19,
+      "clerkScriptPresentAtCapture": false,
+      "clerkResourceCountAtCapture": 0
+    },
+    "producto": {
+      "title": "MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6) | ColdPower",
+      "lcpCandidate": "MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)",
+      "navigationMs": 91,
+      "domContentLoadedMs": 86,
+      "imageCount": 4,
+      "clerkScriptPresentAtCapture": false,
+      "clerkResourceCountAtCapture": 0
+    }
+  },
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": [
+      "GET http://localhost:3003/catalogo?aplicacion=industria-alimentaria&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=linea-blanca&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=aire-acondicionado&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=refrigeracion-comercial&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/contacto?motivo=proyecto&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=industria-alimentaria&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=linea-blanca&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=refrigeracion-comercial&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?aplicacion=aire-acondicionado&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/contacto?motivo=proyecto&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/cotizacion?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/sign-in?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+      "GET http://localhost:3003/sign-in?_rsc=yYFIZSeoywNslChE :: net::ERR_ABORTED",
+      "GET http://localhost:3003/cotizacion?_rsc=yYFIZSeoywNslChE :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?_rsc=u04iZyp5xDVCGfOW :: net::ERR_ABORTED",
+      "GET http://localhost:3003/sign-in?_rsc=sCbHiyJVHOkT42-S :: net::ERR_ABORTED",
+      "GET http://localhost:3003/cotizacion?_rsc=sCbHiyJVHOkT42-S :: net::ERR_ABORTED",
+      "GET http://localhost:3003/producto/motocompresor-tecumseh-thg1346ygs-r134-220-v-1-6?_rsc=sCbHiyJVHOkT42-S :: net::ERR_ABORTED",
+      "GET http://localhost:3003/catalogo?_rsc=sCbHiyJVHOkT42-S :: net::ERR_ABORTED"
+    ]
+  }
+}

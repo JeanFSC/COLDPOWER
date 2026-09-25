@@ -1,0 +1,2 @@
+-- SELECT count(*) AS quotes_before FROM quotes;
+129

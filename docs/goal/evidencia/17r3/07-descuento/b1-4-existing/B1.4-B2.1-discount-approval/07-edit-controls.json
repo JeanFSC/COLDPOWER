@@ -1,0 +1,79 @@
+[
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": "Buscar en el panel administrativo",
+    "placeholder": "Buscar productos, clientes, pedidos, cotizaciones...",
+    "type": null
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": "Buscar cotizaciones",
+    "placeholder": "Buscar por código, cliente, SKU, modelo o correo…",
+    "type": null
+  },
+  {
+    "tag": "SELECT",
+    "name": null,
+    "aria": "Filtrar por estado",
+    "placeholder": null,
+    "type": null
+  },
+  {
+    "tag": "SELECT",
+    "name": null,
+    "aria": "Filtrar por vigencia",
+    "placeholder": null,
+    "type": null
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": null,
+    "placeholder": "Buscar SKU, nombre o familia",
+    "type": null
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": "Cantidad CP-REF-MCP-0103",
+    "placeholder": null,
+    "type": "number"
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": "Descuento CP-REF-MCP-0103",
+    "placeholder": null,
+    "type": "number"
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": "Motivo descuento CP-REF-MCP-0103",
+    "placeholder": "Justificación comercial",
+    "type": null
+  },
+  {
+    "tag": "INPUT",
+    "name": null,
+    "aria": null,
+    "placeholder": null,
+    "type": "date"
+  },
+  {
+    "tag": "SELECT",
+    "name": null,
+    "aria": null,
+    "placeholder": null,
+    "type": null
+  },
+  {
+    "tag": "TEXTAREA",
+    "name": null,
+    "aria": null,
+    "placeholder": null,
+    "type": null
+  }
+]

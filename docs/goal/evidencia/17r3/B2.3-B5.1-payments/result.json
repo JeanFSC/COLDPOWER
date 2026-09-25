@@ -1,0 +1,39 @@
+{
+  "scenario": "B2.3-B5.1-payments",
+  "generatedAt": "2026-09-25T06:03:00.658Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "stages": [
+    {
+      "stage": "manual_payment",
+      "saved": true
+    },
+    {
+      "stage": "refund_double_click",
+      "saved": true
+    },
+    {
+      "stage": "provider_order_cancel",
+      "saved": true
+    },
+    {
+      "stage": "provider_late_approval",
+      "refundQueueVisible": true
+    },
+    {
+      "stage": "refund_required_queue",
+      "inspected": true
+    }
+  ],
+  "apiProbes": [],
+  "checkoutEmail": "b23-payment.1790316084758@example.test",
+  "manualOrderId": "order-219b15c4-a0a5-4a85-8fe1-a4517b77ce24",
+  "rejectedPaymentId": "payment-f8b898b8-64f9-4c03-9550-1d6034171728",
+  "manualPaymentId": "payment-59a1e9ca-dac8-475e-8890-161eb552d123",
+  "providerOrderId": "cp-brief16-orders-order-payment-pending",
+  "providerPaymentId": "cp-brief16-orders-payment-payment-pending",
+  "preparedLateApproval": {
+    "reference": "r3b-ui-late-1790316128170",
+    "eventId": "r3b-ui-late-1790316128170-event"
+  }
+}

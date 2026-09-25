@@ -32,6 +32,8 @@ export type CompanySettingsInput = {
   faviconMediaId: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
+  taxRate: string | null;
+  taxMode: "INCLUDED" | "EXCLUDED" | null;
 };
 
 const MAX_TEXT = 2_000;
@@ -80,6 +82,19 @@ function hexColor(value: unknown, field: string): string | null {
   return clean.toLowerCase();
 }
 
+function taxRate(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  const amount = typeof value === "number" ? value : typeof value === "string" && /^\d+(?:\.\d{1,2})?$/.test(value.trim()) ? Number(value.trim()) : Number.NaN;
+  if (!Number.isFinite(amount) || amount < 0 || amount > 100 || Math.round(amount * 100) !== amount * 100) throw new Error("taxRate debe ser un porcentaje entre 0 y 100 con hasta dos decimales.");
+  return amount.toFixed(2);
+}
+
+function taxMode(value: unknown): "INCLUDED" | "EXCLUDED" | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (value !== "INCLUDED" && value !== "EXCLUDED") throw new Error("taxMode debe ser INCLUDED o EXCLUDED.");
+  return value;
+}
+
 function mediaId(value: unknown, field: string): string | null {
   const clean = optionalText(value, field, 200);
   if (!clean) return null;
@@ -118,6 +133,9 @@ export function validateCompanySettingsInput(body: unknown): CompanySettingsInpu
   const country = optionalText(value.country, "country", 120);
   const ruc = optionalText(value.ruc, "ruc", 40);
   if (ruc && /^(PE|PERU|PERÚ|PERUVIAN)$/i.test(country ?? "") && !isValidPeruvianRuc(ruc)) throw new Error("ruc debe ser válido para Perú.");
+  const configuredTaxRate = taxRate(value.taxRate);
+  const configuredTaxMode = taxMode(value.taxMode);
+  if ((configuredTaxRate === null) !== (configuredTaxMode === null)) throw new Error("taxRate y taxMode deben configurarse juntos.");
   for (const [field, candidate] of [["facebook", value.facebook], ["instagram", value.instagram], ["tiktok", value.tiktok], ["website", value.website]] as const) { const clean = optionalText(candidate, field, 500); if (clean) safeUrl(clean, field); }
   const seenLocations = new Set<string>();
   if (Array.isArray(value.locations)) for (const location of value.locations) { const name = location && typeof location === "object" && !Array.isArray(location) ? (location as Record<string, unknown>).name : null; if (typeof name === "string") { const key = name.trim().toLocaleLowerCase(); if (seenLocations.has(key)) throw new Error("locations no puede contener nombres duplicados."); seenLocations.add(key); } }
@@ -127,6 +145,6 @@ export function validateCompanySettingsInput(body: unknown): CompanySettingsInpu
     whatsapp: optionalText(value.whatsapp, "whatsapp", 40), email, salesEmail, hours: optionalText(value.hours, "hours"), businessHours: optionalText(value.businessHours, "businessHours"), facebook: optionalText(value.facebook, "facebook", 500), instagram: optionalText(value.instagram, "instagram", 500), tiktok: optionalText(value.tiktok, "tiktok", 500), website: optionalText(value.website, "website", 500),
     socials: textMap(value.socials, "socials"), locations: locationsList(value.locations), paymentMethods: textList(value.paymentMethods, "paymentMethods"),
     guaranteeTerms: optionalText(value.guaranteeTerms, "guaranteeTerms"), coverage: optionalText(value.coverage, "coverage"), legalLinks: textMap(value.legalLinks, "legalLinks"), legalPagesPublished: booleanFlag(value.legalPagesPublished, "legalPagesPublished"),
-    logoMediaId: mediaId(value.logoMediaId, "logoMediaId"), faviconMediaId: mediaId(value.faviconMediaId, "faviconMediaId"), primaryColor: hexColor(value.primaryColor, "primaryColor"), secondaryColor: hexColor(value.secondaryColor, "secondaryColor"),
+    logoMediaId: mediaId(value.logoMediaId, "logoMediaId"), faviconMediaId: mediaId(value.faviconMediaId, "faviconMediaId"), primaryColor: hexColor(value.primaryColor, "primaryColor"), secondaryColor: hexColor(value.secondaryColor, "secondaryColor"), taxRate: configuredTaxRate, taxMode: configuredTaxMode,
   };
 }

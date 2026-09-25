@@ -1,0 +1,14 @@
+{
+  "scenario": "r3-6-warehouse",
+  "generatedAt": "2026-09-25T04:01:25.960Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "warehouse",
+  "behavior": "orders_without_amounts",
+  "tableHeader": "PEDIDO\tCLIENTE\tPRODUCTOS\tESTADO LOGÍSTICO\tATENCIÓN\tENTREGA\tLOCAL\tACCIONES\n",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

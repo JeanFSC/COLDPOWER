@@ -1,0 +1,14 @@
+{
+  "scenario": "r3-6-sales",
+  "generatedAt": "2026-09-25T04:02:33.522Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "sales",
+  "behavior": "orders_with_amounts",
+  "tableHeader": "PEDIDO\tCLIENTE\tPRODUCTOS\tTOTAL\tESTADO LOGÍSTICO\tATENCIÓN\tENTREGA\tPAGO\tLOCAL\tACCIONES\n",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

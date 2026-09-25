@@ -1,0 +1,15 @@
+{
+  "scenario": "r3-6-whatsapp",
+  "generatedAt": "2026-09-25T04:05:49.337Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "whatsapp",
+  "behavior": "whatsapp_hidden_without_number",
+  "visibleWhatsApp": [],
+  "whatsappLinks": 0,
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

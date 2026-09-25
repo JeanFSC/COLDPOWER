@@ -372,6 +372,20 @@
       "when": 1790267504754,
       "tag": "0052_soft_marauders",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1790380000000,
+      "tag": "0053_cp061_tax_snapshots",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1790381000000,
+      "tag": "0054_fix_discount_approval_order",
+      "breakpoints": true
     }
   ]
 }

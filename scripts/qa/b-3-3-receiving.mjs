@@ -39,13 +39,13 @@ async function openReceipt(page) {
 
 async function openKardex(page) {
   await visit(page, "/admin/inventario");
-  const search = page.getByPlaceholder("Buscar SKU, nombre o atributo", { exact: true });
+  const search = page.getByPlaceholder("SKU, modelo, refrigerante, voltaje…", { exact: true });
   await search.fill("CP-FIT-OTR-0313");
   await page.waitForTimeout(900);
   const row = page.locator("tr").filter({ hasText: "CP-FIT-OTR-0313" }).first();
   await row.waitFor({ state: "visible", timeout: 15_000 });
   await row.getByRole("button", { name: "Más acciones", exact: true }).click();
-  await page.getByRole("menuitem", { name: "Ver Kardex", exact: true }).click();
+  await page.locator('button:visible').filter({ hasText: "Ver Kardex" }).click();
   await page.getByRole("heading", { name: /Kardex de/ }).waitFor({ state: "visible", timeout: 15_000 });
 }
 
@@ -84,7 +84,7 @@ try {
     SELECT po.status,poi.quantity_ordered,poi.quantity_received,
            (SELECT count(*) FROM purchase_receipts pr WHERE pr.purchase_id=po.id),
            (SELECT count(*) FROM purchase_receipt_items pri JOIN purchase_receipts pr ON pr.id=pri.receipt_id WHERE pr.purchase_id=po.id),
-           (SELECT count(*) FROM inventory_movements im WHERE im.reference_type='PURCHASE_RECEIPT' AND im.reference_id IN (SELECT id FROM purchase_receipts WHERE purchase_id=po.id))
+           (SELECT count(*) FROM inventory_movements im WHERE im.reference_type='purchase_receipt' AND im.reference_id IN (SELECT id FROM purchase_receipts WHERE purchase_id=po.id))
     FROM purchases po JOIN purchase_items poi ON poi.purchase_id=po.id
     WHERE po.id='${purchaseId}' ORDER BY poi.id LIMIT 1;
   `);
@@ -97,7 +97,7 @@ try {
     JOIN purchase_items poi ON poi.purchase_id=po.id
     LEFT JOIN purchase_receipts pr ON pr.purchase_id=po.id
     LEFT JOIN purchase_receipt_items pri ON pri.receipt_id=pr.id AND pri.purchase_item_id=poi.id
-    LEFT JOIN inventory_movements im ON im.reference_type='PURCHASE_RECEIPT' AND im.reference_id=pr.id
+    LEFT JOIN inventory_movements im ON im.reference_type='purchase_receipt' AND im.reference_id=pr.id
     WHERE po.id='${purchaseId}' ORDER BY pr.created_at DESC,im.created_at DESC;
     SELECT id,on_hand,reserved,updated_at FROM inventory_balances WHERE product_id='${before[4]}' AND location_id=(SELECT location_id FROM purchases WHERE id='${purchaseId}');
   `);

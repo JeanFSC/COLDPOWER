@@ -1,0 +1,4 @@
+-- SELECT o.code,o.status,p.status,p.metadata->>'requiresRefund' AS requires_refund,p.metadata->>'lateApproval' AS late_approval FROM orders o JOIN payments p ON p.order_id=o.id WHERE p.id='cp-brief16-orders-payment-payment-pending'; SELECT from_status,to_status,provider,reason FROM payment_status_history WHERE payment_id='cp-brief16-orders-payment-payment-pending' ORDER BY created_at DESC LIMIT 2; SELECT provider_event_id,event_type FROM payment_events WHERE payment_id='cp-brief16-orders-payment-payment-pending' ORDER BY created_at DESC LIMIT 2;
+CP16-PED-001	PAID	CONFIRMED		
+CANCELLED	CONFIRMED	mock	payment.approved
+r3-1790314211111-cancelled-to-confirmed-active-event	payment.approved

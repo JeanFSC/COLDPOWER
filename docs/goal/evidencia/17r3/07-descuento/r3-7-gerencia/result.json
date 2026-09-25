@@ -1,0 +1,17 @@
+{
+  "scenario": "r3-7-gerencia",
+  "generatedAt": "2026-09-25T04:27:52.656Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "gerencia",
+  "behavior": "gerencia_approved_from_notification_and_drawer",
+  "quoteId": "CP-20260924-8LFS",
+  "notificationId": "notification-8c5fe43a-36dd-4b02-820f-4da4217fea82",
+  "notificationRecipient": "cp-dashboard-v5-user-gerencia",
+  "afterSql": "CP-20260924-8LFS\tCP-20260924-8LFS\tAPPROVED\tDRAFT\r\ndiscount-approval-e7038533-59d3-4c1b-b7aa-1b1712fdc6a7\tCP-20260924-8LFS\t15.00\t187.50\tMargen comercial autorizado para recuperar una oportunidad estratégica.\tAPPROVED\tcp-dashboard-v5-user-staff-001\tcp-dashboard-v5-user-gerencia\t2026-09-24 23:27:50.774-05\r\nnotification-785d6c4e-d5bd-4657-ab51-347529faa531\tuser_3HsX8RHS2xwA0sPrSpXAe5SdDOO\tQUOTE_DISCOUNT_PENDING\tUNREAD\t/admin/cotizaciones?quoteId=CP-20260924-8LFS\r\nnotification-dc273475-f44a-4087-9bed-e3f5bae28696\tcp-dashboard-v5-user-staff-005\tQUOTE_DISCOUNT_PENDING\tUNREAD\t/admin/cotizaciones?quoteId=CP-20260924-8LFS\r\nnotification-b7ed05bc-83b1-418f-8792-40a9aed318cf\tcp-dashboard-v5-user-staff-011\tQUOTE_DISCOUNT_PENDING\tUNREAD\t/admin/cotizaciones?quoteId=CP-20260924-8LFS\r\nnotification-8c5fe43a-36dd-4b02-820f-4da4217fea82\tcp-dashboard-v5-user-gerencia\tQUOTE_DISCOUNT_PENDING\tREAD\t/admin/cotizaciones?quoteId=CP-20260924-8LFS\r\nquote.discount_approved\tquote_discount_approval\tdiscount-approval-e7038533-59d3-4c1b-b7aa-1b1712fdc6a7\tcp-dashboard-v5-user-gerencia\tGERENCIA",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

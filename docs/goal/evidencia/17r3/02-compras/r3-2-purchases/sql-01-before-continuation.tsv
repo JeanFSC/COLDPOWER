@@ -1,0 +1,3 @@
+-- SELECT pr.id,pr.code,pr.status,pr.location_id,pr.requester_id,pr.notes,pri.product_id,pri.quantity_requested,pri.notes FROM purchase_requests pr JOIN purchase_request_items pri ON pri.request_id=pr.id WHERE pr.id='purchase-request-69a5f711-d47e-478f-992c-8befef1daf79'; SELECT id,name,identification,status,currency FROM suppliers WHERE id='supplier-46d95f11-d186-415d-84ba-1c7a17772cf7';
+purchase-request-69a5f711-d47e-478f-992c-8befef1daf79	SOL-20260925-FAB8B0	APPROVED	cp-dashboard-v5-location-lima	cp-dashboard-v5-user-compras	QA B4.1 solicitud 1790302344453	product-cp-fit-otr-0313	2	QA B4.1 costo y recepción trazable
+supplier-46d95f11-d186-415d-84ba-1c7a17772cf7	QA B4.1 Proveedor 1790302344453	QA-B41-1790302344453	ACTIVE	PEN

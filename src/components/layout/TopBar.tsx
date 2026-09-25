@@ -4,7 +4,7 @@ import { createWhatsAppLink } from "@/lib/whatsapp";
 
 export async function TopBar() {
   const settings = await getPublicCompanySettings();
-  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : "/contacto";
+  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito asesoría técnica." }) : null;
 
   return (
     <div className="home-utility-bar" role="region" aria-label="Información de servicio">
@@ -16,7 +16,7 @@ export async function TopBar() {
           <i aria-hidden="true" />
           <span><Cog aria-hidden="true" />Asesoría técnica especializada</span>
         </div>
-        <a href={whatsappHref} target={whatsappHref.startsWith("http") ? "_blank" : undefined} rel={whatsappHref.startsWith("http") ? "noreferrer" : undefined} className="home-utility-whatsapp"><MessageCircle aria-hidden="true" />¿Necesitas ayuda? Escríbenos por WhatsApp</a>
+        {whatsappHref ? <a href={whatsappHref} target="_blank" rel="noreferrer" className="home-utility-whatsapp"><MessageCircle aria-hidden="true" />¿Necesitas ayuda? Escríbenos por WhatsApp</a> : null}
       </div>
     </div>
   );

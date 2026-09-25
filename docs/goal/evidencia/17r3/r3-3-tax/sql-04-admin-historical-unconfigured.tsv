@@ -1,0 +1,5 @@
+-- SELECT id,code,total,tax_amount,tax_rate,tax_mode FROM orders WHERE id='cp-visual-year-2026-order-048'; SELECT id,action,entity_type,entity_id,created_at FROM audit_logs WHERE entity_id='cp-visual-year-2026-order-048' ORDER BY created_at DESC LIMIT 10;
+cp-visual-year-2026-order-048	PED-2026-048	1419.00	0.00		UNCONFIGURED
+cp-visual-year-2026-audit-048-8	inventory.adjustment	inventory	cp-visual-year-2026-order-048	2026-12-26 17:00:00-05
+cp-visual-year-2026-audit-048-4	orders.created	order	cp-visual-year-2026-order-048	2026-12-26 13:00:00-05
+cp-dashboard-v5-cp-team-activity-dev-3	orders.created	order	cp-visual-year-2026-order-048	2026-09-24 06:32:14.56-05

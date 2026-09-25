@@ -1,0 +1,24 @@
+{
+  "scenario": "r3-4-ruc",
+  "generatedAt": "2026-09-25T03:18:19.457Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "checks": {
+    "invalidRucBadge": "RUC por verificar",
+    "unchangedHistoricalRucEdit": "HTTP 200 y nombre actualizado sin cambiar RUC",
+    "changedInvalidRuc": "HTTP 400 y RUC persistido intacto",
+    "invoiceWithInvalidRuc": {
+      "status": 422,
+      "code": "CUSTOMER_RUC_REQUIRED_FOR_INVOICE",
+      "saleUnchanged": true
+    },
+    "fixtureRestored": true
+  },
+  "browserEvents": {
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    ],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

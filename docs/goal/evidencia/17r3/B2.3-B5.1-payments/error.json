@@ -1,0 +1,31 @@
+{
+  "error": "La aprobación tardía no quedó en cola de reembolso: {\"payment\":{\"id\":\"cp-brief16-orders-payment-payment-pending\",\"orderId\":\"cp-brief16-orders-order-payment-pending\",\"methodType\":\"PROVIDER\",\"method\":\"mock\",\"provider\":\"mock\",\"providerReference\":\"r3b-ui-late-1790316028297\",\"idempotencyKey\":\"cp-brief16-orders-payment-key-payment-pending\",\"amount\":\"90.00\",\"currency\":\"PEN\",\"status\":\"CONFIRMED\",\"metadata\":{\"lateApproval\":true,\"requiresRefund\":true,\"lateApprovalOrderCode\":\"CP16-PED-001\"},\"cancellationReason\":\"Cancelación QA antes de aprobación tardía del proveedor.\",\"cancelledBy\":\"cp-dashboard-v5-user-gerencia\",\"cancelledAt\":\"2026-09-25T06:00:37.031Z\",\"createdBy\":\"cp-dashboard-v5-user-staff-001\",\"createdAt\":\"2026-09-23T16:43:37.500Z\",\"updatedAt\":\"2026-09-25T06:00:59.109Z\"},\"changed\":true,\"requiresRefund\":true,\"lateApprovalOrderCode\":\"CP16-PED-001\",\"overpaidAmount\":0,\"refundAmount\":90}",
+  "evidence": {
+    "scenario": "B2.3-B5.1-payments",
+    "stages": [
+      {
+        "stage": "manual_payment",
+        "saved": true
+      },
+      {
+        "stage": "refund_double_click",
+        "saved": true
+      },
+      {
+        "stage": "provider_order_cancel",
+        "saved": true
+      }
+    ],
+    "apiProbes": [],
+    "checkoutEmail": "b23-payment.1790315978435@example.test",
+    "manualOrderId": "order-cbe6ec67-66f2-40f8-be60-a5406c8e85cc",
+    "rejectedPaymentId": "payment-328efe91-e836-439c-851a-a4a3096f18ed",
+    "manualPaymentId": "payment-3097ada9-ffe1-4fc3-adea-2ba13836510f",
+    "providerOrderId": "cp-brief16-orders-order-payment-pending",
+    "providerPaymentId": "cp-brief16-orders-payment-payment-pending",
+    "preparedLateApproval": {
+      "reference": "r3b-ui-late-1790316028297",
+      "eventId": "r3b-ui-late-1790316028297-event"
+    }
+  }
+}

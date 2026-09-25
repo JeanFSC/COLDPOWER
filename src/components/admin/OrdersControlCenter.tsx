@@ -18,7 +18,7 @@ import {
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 import type { OrderListItem, OrdersPageResponse } from "@/lib/orders-contract";
-import { unconfiguredTaxBreakdown } from "@/lib/tax";
+import { taxBreakdownFromSnapshot, unconfiguredTaxBreakdown } from "@/lib/tax";
 
 type Detail = {
   order: Record<string, unknown>;
@@ -667,7 +667,7 @@ function OrderDrawer({
   }, [loadDetail]);
   const order = detail?.order;
   const currency = String(order?.currency ?? "PEN");
-  const tax = unconfiguredTaxBreakdown();
+  const tax = detail ? taxBreakdownFromSnapshot(detail.order as Parameters<typeof taxBreakdownFromSnapshot>[0]) : unconfiguredTaxBreakdown();
   const actions = useMemo(
     () =>
       detail
@@ -833,7 +833,7 @@ function OrderDrawer({
               ["Pedido", order?.code],
               ["Cliente", detail.customer?.name],
               ...(canViewAmounts ? [["Total", money(currency, String(order?.total ?? 0))] as [string, unknown]] : []),
-              ...(canViewAmounts ? [["Op. gravada", tax.taxableOperation ? money(currency, tax.taxableOperation) : "Por configurar"] as [string, unknown], ["IGV 18%", tax.igv ? money(currency, tax.igv) : "Por configurar"] as [string, unknown]] : []),
+              ...(canViewAmounts && tax.status === "CONFIGURED" ? [["Op. gravada", money(currency, tax.taxableOperation)] as [string, unknown], [`IGV ${tax.rate}%`, money(currency, tax.igv)] as [string, unknown]] : []),
               ...(canPaymentsView && detail.reconciliation
                 ? [["Cobro", text(detail.reconciliation.status)] as [string, unknown]]
                 : []),
@@ -844,6 +844,7 @@ function OrderDrawer({
               </div>
             ))}
           </div>
+          {canViewAmounts && tax.status === "UNCONFIGURED" ? <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800"><span>Configura el IGV en Configuración para mostrar el desglose tributario.</span><Link href="/admin/configuracion#company-tax" className="shrink-0 font-bold underline underline-offset-2">Abrir Configuración</Link></div> : null}
           <div className="flex flex-wrap gap-1 border-b border-slate-100 pb-2" role="tablist" aria-label="Secciones del pedido">
             {(canPaymentsView
               ? ["Resumen", "Productos", "Preparación", "Entrega", "Pago", "Historial"]

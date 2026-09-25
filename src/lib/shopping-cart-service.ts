@@ -5,7 +5,8 @@ import { shoppingCartItems, shoppingCarts } from "@/db/sales-schema";
 import { getCatalogProductsByIds, publicConditions } from "@/lib/catalog-repository";
 import { resolveProductImage } from "@/lib/product-image";
 import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
-import { unconfiguredTaxBreakdown, type TaxBreakdown } from "@/lib/tax";
+import { calculateTaxBreakdownForLines, unconfiguredTaxBreakdown, type TaxBreakdown } from "@/lib/tax";
+import { getCompanyTaxConfiguration } from "@/lib/company-settings-runtime";
 
 export const CART_SESSION_COOKIE = "coldpower-cart-session";
 export const CART_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
@@ -191,6 +192,12 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
   if (currencies.size > 1) issues.push("MIXED_CURRENCY");
   const canCheckout = issues.length === 0;
   const subtotal = canCheckout ? items.reduce((sum, item) => sum + Number(item.lineTotal ?? 0), 0).toFixed(2) : null;
+  const tax = canCheckout && subtotal !== null
+    ? calculateTaxBreakdownForLines({
+        lines: items.map((item) => ({ amount: item.lineTotal ?? "0.00", taxType: item.taxType })),
+        configuration: await getCompanyTaxConfiguration(),
+      })
+    : unconfiguredTaxBreakdown();
   return {
     cartId,
     version: cart.version,
@@ -200,7 +207,7 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
     currency: currencies.size === 1 ? [...currencies][0] : null,
     canCheckout,
     issues,
-    tax: unconfiguredTaxBreakdown(),
+    tax,
   };
 }
 

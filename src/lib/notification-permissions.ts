@@ -3,6 +3,7 @@ import type { Permission } from "@/lib/roles";
 export const notificationTargetPermissions: Record<string, Permission> = {
   CONTACT_SUBMITTED: "crm.view",
   QUOTE_CREATED: "quotes.view",
+  QUOTE_DISCOUNT_PENDING: "pricing.discount.approve",
   LEAD_CREATED: "crm.view",
   PAYMENT_APPROVED: "payments.view",
   PAYMENT_FAILED: "payments.view",

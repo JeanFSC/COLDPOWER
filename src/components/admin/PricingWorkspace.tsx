@@ -87,7 +87,9 @@ function iconButton(label: string) {
 
 function dateTime(value: Date | string | null | undefined) {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" }).format(new Date(value));
+  return new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" })
+    .format(new Date(value))
+    .replace(/[\u00a0\u202f]/g, " ");
 }
 
 function dateInputValue(value: Date | string | null | undefined) {

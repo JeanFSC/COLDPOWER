@@ -178,7 +178,10 @@ export function PurchaseRequestActions({
                 <span>{item.productId} · {item.quantityRequested} unidades</span>
                 <input
                   value={unitCosts[item.productId] ?? ""}
-                  onChange={(event) => setUnitCosts((current) => ({ ...current, [item.productId]: event.currentTarget.value }))}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setUnitCosts((current) => ({ ...current, [item.productId]: value }));
+                  }}
                   type="number"
                   min="0.01"
                   step="0.01"

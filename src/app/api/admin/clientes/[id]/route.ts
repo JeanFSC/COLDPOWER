@@ -1,10 +1,13 @@
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { getDb } from "@/db";
+import { customers } from "@/db/crm-schema";
 import { getCustomer360 } from "@/lib/customer-repository";
 import { parseCustomerRelationFilters } from "@/lib/customer-contract";
 import { CrmDomainError, updateCustomer } from "@/lib/crm-service";
 import { validateCustomerInput } from "@/lib/crm-validation";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { can } from "@/lib/roles";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -32,7 +35,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     let body: unknown;
     try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
     const raw = body && typeof body === "object" ? body as Record<string, unknown> : {};
-    const input = validateCustomerInput(body && typeof body === "object" ? body as Record<string, unknown> : {}, true);
+    const [existing] = await getDb().select({ ruc: customers.ruc }).from(customers).where(eq(customers.id, id)).limit(1);
+    if (!existing) return apiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
+    const input = validateCustomerInput(body && typeof body === "object" ? body as Record<string, unknown> : {}, true, { existingRuc: existing.ruc });
     const reason = typeof raw.reason === "string" ? raw.reason : "";
     const customer = await updateCustomer(id, input, actor, reason);
     return apiSuccess({ customer });

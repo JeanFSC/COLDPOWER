@@ -198,7 +198,7 @@ function ContactChannels({ phone, whatsapp, email, hours }: { phone: string; wha
       <div className={styles.channelsHeader}><div><p className={styles.cardEyebrow}>Atención directa</p><h2 className={styles.channelsTitle}>Canales de contacto</h2><p className={styles.channelsIntro}>Comunícate con nosotros por el canal que prefieras.</p></div><span className={styles.statusBadge}>Atención comercial</span></div>
       <div className={styles.channelList}>
         <Channel icon={Phone} label="Teléfono" value={phone} description="Habla directamente con un asesor." href={phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined} />
-        <Channel icon={MessageCircle} tone="whatsapp" label="WhatsApp" value={whatsapp} description="Envíanos tu consulta por WhatsApp." href={whatsapp ? createWhatsAppLink({ phone: whatsapp, message: "Hola ColdPower, necesito asesoría para un repuesto o equipo." }) : undefined} />
+        {whatsapp ? <Channel icon={MessageCircle} tone="whatsapp" label="WhatsApp" value={whatsapp} description="Envíanos tu consulta por WhatsApp." href={createWhatsAppLink({ phone: whatsapp, message: "Hola ColdPower, necesito asesoría para un repuesto o equipo." })} /> : null}
         <Channel icon={Mail} label="Correo" value={email} description="Te respondemos a la brevedad." href={email ? `mailto:${email}` : undefined} />
         <Channel icon={Clock3} tone="orange" label="Horario de atención" value={hours} missingLabel="Horario por confirmar" description="Hora de Perú (GMT-5)." />
       </div>

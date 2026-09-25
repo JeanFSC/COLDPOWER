@@ -1,0 +1,8 @@
+-- SELECT q.id,q.tracking_code,q.discount_approval_status,q.workflow_status FROM quotes q WHERE q.id='CP-20260924-8LFS'; SELECT id,quote_id,percentage,amount,reason,status,requested_by,approved_by,approved_at FROM quote_discount_approvals WHERE quote_id='CP-20260924-8LFS'; SELECT id,recipient_id,type,state,link FROM notifications WHERE type='QUOTE_DISCOUNT_PENDING' AND metadata->>'quoteId'='CP-20260924-8LFS' ORDER BY created_at DESC; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE entity_type='quote_discount_approval' AND entity_id IN (SELECT id FROM quote_discount_approvals WHERE quote_id='CP-20260924-8LFS') ORDER BY created_at DESC;
+CP-20260924-8LFS	CP-20260924-8LFS	APPROVED	DRAFT
+discount-approval-e7038533-59d3-4c1b-b7aa-1b1712fdc6a7	CP-20260924-8LFS	15.00	187.50	Margen comercial autorizado para recuperar una oportunidad estratégica.	APPROVED	cp-dashboard-v5-user-staff-001	cp-dashboard-v5-user-gerencia	2026-09-24 23:27:50.774-05
+notification-785d6c4e-d5bd-4657-ab51-347529faa531	user_3HsX8RHS2xwA0sPrSpXAe5SdDOO	QUOTE_DISCOUNT_PENDING	UNREAD	/admin/cotizaciones?quoteId=CP-20260924-8LFS
+notification-dc273475-f44a-4087-9bed-e3f5bae28696	cp-dashboard-v5-user-staff-005	QUOTE_DISCOUNT_PENDING	UNREAD	/admin/cotizaciones?quoteId=CP-20260924-8LFS
+notification-b7ed05bc-83b1-418f-8792-40a9aed318cf	cp-dashboard-v5-user-staff-011	QUOTE_DISCOUNT_PENDING	UNREAD	/admin/cotizaciones?quoteId=CP-20260924-8LFS
+notification-8c5fe43a-36dd-4b02-820f-4da4217fea82	cp-dashboard-v5-user-gerencia	QUOTE_DISCOUNT_PENDING	READ	/admin/cotizaciones?quoteId=CP-20260924-8LFS
+quote.discount_approved	quote_discount_approval	discount-approval-e7038533-59d3-4c1b-b7aa-1b1712fdc6a7	cp-dashboard-v5-user-gerencia	GERENCIA

@@ -1,0 +1,3 @@
+-- SELECT id,tax_rate,tax_mode,version FROM company_settings WHERE id='default'; SELECT p.id,p.sku,p.tax_type,pp.amount,pp.currency FROM products p JOIN product_prices pp ON pp.product_id=p.id WHERE p.id='product-cp-ref-mcp-0103' AND pp.price_type='RETAIL' AND pp.status='ACTIVE' AND pp.active=true AND pp.valid_from <= now() AND (pp.valid_until IS NULL OR pp.valid_until > now()) ORDER BY pp.valid_from DESC NULLS LAST LIMIT 1;
+default			27
+product-cp-ref-mcp-0103	CP-REF-MCP-0103	Gravado - Operación Onerosa	1250.00	PEN

@@ -1,0 +1,16 @@
+{
+  "scenario": "r3-6-quote",
+  "generatedAt": "2026-09-25T04:05:34.633Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "phase": "quote",
+  "behavior": "minimal_quote_submitted",
+  "quoteName": "QA R3.6 1790309129894",
+  "quotePhone": "999129894",
+  "selectedProductText": "MOTOCOMPRESOR TECUMSEH THG1346YGS R134 220 V (1/6)\nTecumseh · CP-REF-MCP-0103",
+  "browserEvents": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

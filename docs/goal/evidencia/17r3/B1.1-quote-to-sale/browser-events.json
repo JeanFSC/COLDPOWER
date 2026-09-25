@@ -1,0 +1,9 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3003/_next/static/css/app/layout.css?v=1790317075988 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=vM03xLcNw3L3aJkt :: net::ERR_ABORTED",
+    "GET http://localhost:3003/api/admin/descuentos :: net::ERR_ABORTED"
+  ]
+}

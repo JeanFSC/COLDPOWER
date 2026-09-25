@@ -25,10 +25,28 @@ async function quoteIdForEmail() {
   return output.split(/\r?\n/)[0].trim();
 }
 
+async function selectPublicProduct(page) {
+  await page.locator("#quote-product-search").fill("CP-REF-MCP-0103");
+  const productSuggestion = page.locator("#quote-product-suggestions button").filter({ hasText: "CP-REF-MCP-0103" }).first();
+  try {
+    await productSuggestion.waitFor({ state: "visible", timeout: 20_000 });
+    return { recoveredAfterReload: false };
+  } catch (firstError) {
+    await capture(scenario, "00-public-search-retry", page);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+    await page.waitForSelector("body", { timeout: 15_000 });
+    await page.waitForTimeout(900);
+    await page.locator("#quote-product-search").fill("CP-REF-MCP-0103");
+    await page.locator("#quote-product-suggestions button").filter({ hasText: "CP-REF-MCP-0103" }).first().waitFor({ state: "visible", timeout: 20_000 });
+    return { recoveredAfterReload: true, firstAttemptError: compactError(firstError) };
+  }
+}
+
 async function submitPublicQuote(page) {
   await visit(page, "/cotizacion");
-  await page.locator("#quote-product-search").fill("CP-ROT");
-  await page.getByRole("button", { name: /Compresor Rotativo Gemini.*CP-ROT-8284/ }).click();
+  const searchResult = await selectPublicProduct(page);
+  const productSuggestion = page.locator("#quote-product-suggestions button").filter({ hasText: "CP-REF-MCP-0103" }).first();
+  await productSuggestion.click();
   await fillLabel(page, "Nombre o razon social", `QA B1.4 ${Date.now()}`);
   await fillLabel(page, "DNI", "77889922");
   await fillLabel(page, "Telefono", "999888778");
@@ -39,9 +57,15 @@ async function submitPublicQuote(page) {
   await page.locator("#quote-message").fill("Recorrido QA B1.4: intento real de solicitud con descuento sujeto a aprobación.");
   await page.locator("#quote-consent").check();
   await capture(scenario, "01-public-filled", page);
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().endsWith("/api/cotizacion") && response.status() === 201,
+    { timeout: 30_000 },
+  );
   await clickButton(page, "Solicitar cotización");
-  await page.waitForTimeout(900);
+  await responsePromise;
+  await page.getByText("Solicitud registrada", { exact: false }).first().waitFor({ state: "visible", timeout: 30_000 });
   await capture(scenario, "02-public-created", page);
+  return searchResult;
 }
 
 async function main() {
@@ -65,13 +89,13 @@ async function main() {
     evidence.stages.push({ stage: "discount_rule_ui_mutation", saved: (await page.locator("body").innerText()).includes(ruleName) });
     captureSql(scenario, "after-rule", `SELECT id,name,max_percentage,approval_above_percentage,status,created_by FROM discount_rules WHERE name='${ruleName}'; SELECT action,entity_type,entity_id,actor_id,actor_role FROM audit_logs WHERE action ILIKE '%discount%' OR entity_type ILIKE '%discount%' ORDER BY created_at DESC LIMIT 10;`);
 
-    await submitPublicQuote(page);
+    evidence.publicSearch = await submitPublicQuote(page);
     const quoteId = await quoteIdForEmail();
     evidence.quoteId = quoteId;
     await visit(page, `/admin/cotizaciones?quoteId=${encodeURIComponent(quoteId)}`);
     await capture(scenario, "06-quote-detail", page);
     const edit = page.getByRole("button", { name: "Editar", exact: true }).first();
-    if (!(await edit.isVisible().catch(() => false))) throw new Error("La cotización creada por UI no mostró Editar.");
+    await edit.waitFor({ state: "visible", timeout: 30_000 });
     await edit.click();
     await page.waitForTimeout(300);
     const controls = await page.locator("input, textarea, select").evaluateAll((elements) => elements.map((element) => ({ tag: element.tagName, name: element.getAttribute("name"), aria: element.getAttribute("aria-label"), placeholder: element.getAttribute("placeholder"), type: element.getAttribute("type") })));

@@ -83,7 +83,7 @@ export default async function AdminConfiguracionPage() {
       documentSeries={documentSeries}
       previousActiveSeriesCount={previousActiveSeriesCount}
       integrations={integrations}
-      controls={<CompanySettingsForm canPublishLegalPages={can(actor.role, "settings.legal.publish")} />}
+      controls={<CompanySettingsForm canPublishLegalPages={can(actor.role, "settings.legal.publish")} canManageTax={actor.role === "SUPERADMIN"} />}
       canManageIntegrations={can(actor.role, "integrations.manage")}
       loadError={loadError}
       afterControls={<CompanySettingsHistoryPanel currentVersion={summary?.version ?? 0} />}

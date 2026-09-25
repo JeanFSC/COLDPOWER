@@ -1,0 +1,7 @@
+-- SELECT id,tax_rate,tax_mode,version FROM company_settings WHERE id='default'; SELECT action,actor_role,entity_type,entity_id,created_at FROM audit_logs WHERE entity_type='company_settings' ORDER BY created_at DESC LIMIT 5;
+default			29
+company.settings_updated	SUPERADMIN	company_settings	default	2026-09-24 22:03:24.295821-05
+company.settings_updated	SUPERADMIN	company_settings	default	2026-09-24 22:02:56.315808-05
+company.settings_updated	SUPERADMIN	company_settings	default	2026-09-24 22:01:23.273671-05
+company.settings_updated	SUPERADMIN	company_settings	default	2026-09-24 22:00:31.396198-05
+company.settings_updated	SUPERADMIN	company_settings	default	2026-09-24 21:59:39.749368-05

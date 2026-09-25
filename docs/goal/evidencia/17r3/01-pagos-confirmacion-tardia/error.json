@@ -1,0 +1,15 @@
+{
+  "error": "Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON",
+  "evidence": {
+    "scenario": "01-pagos-confirmacion-tardia",
+    "runToken": "r3-1790301579332",
+    "fixture": {
+      "orderId": "cp-brief16-orders-order-payment-pending",
+      "orderCode": "CP16-PED-001",
+      "paymentId": "cp-brief16-orders-payment-payment-pending",
+      "amount": "90.00",
+      "currency": "PEN"
+    },
+    "cases": []
+  }
+}

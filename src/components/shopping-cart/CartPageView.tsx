@@ -37,6 +37,8 @@ export function CartPageView() {
   const currency = cart.currency ?? purchasableItems[0]?.currency ?? "PEN";
   const purchaseQuantity = purchasableItems.reduce((sum, item) => sum + item.quantity, 0);
   const purchaseSubtotal = purchasableItems.reduce((sum, item) => sum + Number(item.lineTotal ?? 0), 0);
+  const configuredTax = cart.tax.status === "CONFIGURED";
+  const purchaseTotal = configuredTax && cart.tax.total !== null ? Number(cart.tax.total) : purchaseSubtotal;
 
   async function moveToQuote(productId: string, quantity: number) {
     await addToQuote(productId, quantity);
@@ -99,11 +101,13 @@ export function CartPageView() {
         <dl className="mt-5 grid gap-3 text-sm">
           <div className="flex justify-between gap-4"><dt className="text-white/70">Productos ({purchaseQuantity} u.)</dt><dd className="font-bold">{formatProductPrice(purchaseSubtotal, currency)}</dd></div>
           <div className="flex justify-between gap-4"><dt className="flex items-center gap-1.5 text-white/70"><Truck className="h-4 w-4" aria-hidden="true" />Envío: por coordinar</dt><dd className="font-bold">—</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-white/70">Op. gravada</dt><dd className="font-bold">{cart.tax.taxableOperation ? formatProductPrice(Number(cart.tax.taxableOperation), currency) : "Por configurar"}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-white/70">IGV 18%</dt><dd className="font-bold">{cart.tax.igv ? formatProductPrice(Number(cart.tax.igv), currency) : "Por configurar"}</dd></div>
+          {configuredTax ? <>
+            <div className="flex justify-between gap-4"><dt className="text-white/70">Op. gravada</dt><dd className="font-bold">{formatProductPrice(Number(cart.tax.taxableOperation ?? 0), currency)}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-white/70">IGV {cart.tax.rate}%</dt><dd className="font-bold">{formatProductPrice(Number(cart.tax.igv ?? 0), currency)}</dd></div>
+          </> : null}
         </dl>
-        <div className="mt-5 flex items-end justify-between border-t border-white/15 pt-4"><span className="text-sm text-white/70">Subtotal</span><strong className="font-display text-3xl">{formatProductPrice(purchaseSubtotal, currency)}</strong></div>
-        <p className="mt-2 text-xs leading-5 text-white/70">{cart.tax.status === "UNCONFIGURED" ? cart.tax.note : "El costo de envío se coordina después del pago; no se incluye en este subtotal."}</p>
+        <div className="mt-5 flex items-end justify-between border-t border-white/15 pt-4"><span className="text-sm text-white/70">Total</span><strong className="font-display text-3xl">{formatProductPrice(purchaseTotal, currency)}</strong></div>
+        <p className="mt-2 text-xs leading-5 text-white/70">El costo de envío se coordina después del pago; no se incluye en este total.</p>
         <Button href="/checkout" variant="primary" size="lg" className="mt-6 w-full" disabled={!cart.canCheckout || purchasableItems.length === 0}>Ir a pagar<ArrowRight className="h-5 w-5" aria-hidden="true" /></Button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-white/70"><Lock className="h-3.5 w-3.5" aria-hidden="true" />Para pagar te pediremos iniciar sesión.</p>
       </aside>

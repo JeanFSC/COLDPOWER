@@ -1,0 +1,2 @@
+-- SELECT o.id,o.status,p.id AS payment_id,p.status AS payment_status,pr.status AS refund_status FROM orders o JOIN payments p ON p.order_id=o.id LEFT JOIN payment_refunds pr ON pr.payment_id=p.id WHERE o.id='cp-brief16-orders-order-payment-pending';
+cp-brief16-orders-order-payment-pending	CANCELLED	cp-brief16-orders-payment-payment-pending	CONFIRMED

@@ -26,9 +26,9 @@ async function loadPlaywright() {
 const playwright = await loadPlaywright();
 export const { chromium } = playwright;
 
-export const BASE_URL = process.env.QA_BASE_URL || "http://localhost:3004";
-if (new URL(BASE_URL).host !== "localhost:3004" || new URL(BASE_URL).protocol !== "http:") {
-  throw new Error(`QA_BASE_URL inválida: ${BASE_URL}. El recorrido exige http://localhost:3004.`);
+export const BASE_URL = process.env.QA_BASE_URL || "http://localhost:3003";
+if (new URL(BASE_URL).host !== "localhost:3003" || new URL(BASE_URL).protocol !== "http:") {
+  throw new Error(`QA_BASE_URL inválida: ${BASE_URL}. El recorrido exige http://localhost:3003.`);
 }
 
 export const ARTIFACT_ROOT = path.resolve(process.cwd(), process.env.QA_ARTIFACT_ROOT || "output/playwright/staff-r2");
@@ -76,10 +76,13 @@ export function readLocalDatabaseUrl() {
 
 export function runSql(query) {
   const databaseUrl = readLocalDatabaseUrl();
-  const result = spawnSync(PSQL, ["-X", "-A", "-t", "-F", "\t", "-P", "pager=off", "-d", databaseUrl, "-c", query], {
+  const parsed = new URL(databaseUrl);
+  const password = decodeURIComponent(parsed.password);
+  const result = spawnSync(PSQL, ["-X", "-A", "-t", "-F", "\t", "-P", "pager=off", "-h", "127.0.0.1", "-p", "5433", "-U", "coldpower", "-d", "coldpower", "-c", query], {
     cwd: process.cwd(),
     encoding: "utf8",
     windowsHide: true,
+    env: { ...process.env, PGPASSWORD: password },
   });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`psql falló (${result.status}): ${result.stderr || result.stdout}`);
@@ -94,12 +97,14 @@ export function captureSql(scenario, label, query) {
 
 export async function createQaBrowser(scenario) {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
+  const contextOptions = {
     viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 1,
     locale: "es-PE",
     timezoneId: "America/Lima",
-  });
+  };
+  if (process.env.QA_STORAGE_STATE) contextOptions.storageState = path.resolve(process.cwd(), process.env.QA_STORAGE_STATE);
+  const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
   const events = { consoleErrors: [], pageErrors: [], requestFailures: [] };
   page.on("console", (message) => {
@@ -119,7 +124,7 @@ export async function closeQaBrowser(session) {
 
 export async function visit(page, route, { screenshot, scenario } = {}) {
   const url = new URL(route, BASE_URL);
-  if (url.host !== "localhost:3004") throw new Error(`Navegación fuera del host permitido: ${url.href}`);
+  if (url.host !== "localhost:3003") throw new Error(`Navegación fuera del host permitido: ${url.href}`);
   const response = await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 45_000 });
   await page.waitForSelector("body", { timeout: 15_000 });
   await page.waitForTimeout(900);
@@ -190,7 +195,7 @@ export async function chooseAdminSelect(page, label, optionName, options = {}) {
 
 export async function probeApi(page, route, init = {}) {
   const url = new URL(route, BASE_URL);
-  if (url.host !== "localhost:3004") throw new Error(`API probe fuera del host permitido: ${url.href}`);
+  if (url.host !== "localhost:3003") throw new Error(`API probe fuera del host permitido: ${url.href}`);
   const response = await page.request.fetch(url.href, init);
   const body = await response.text();
   return { status: response.status(), headers: response.headers(), body };

@@ -51,6 +51,7 @@ type DetailLine = {
   baseUnitPrice: string | null;
   discountPercentage: string | null;
   discountAmount: string | null;
+  discountReason: string | null;
   finalUnitPrice: string | null;
   lineTotal: string | null;
   currency: string | null;
@@ -170,7 +171,14 @@ type ProductOption = {
   familyName: string | null;
   brandName: string | null;
 };
-type DraftLine = { productId: string; sku: string; name: string; quantity: number };
+type DraftLine = {
+  productId: string;
+  sku: string;
+  name: string;
+  quantity: number;
+  discountPercentage: string;
+  discountReason: string;
+};
 
 function uniqueProductOptions(items: ProductOption[]) {
   const seen = new Set<string>();
@@ -1381,6 +1389,7 @@ function DetailDrawer({
         <EditQuoteDrawer
           detail={detail}
           close={() => setEditing(false)}
+          canDiscount={can("pricing.discount.apply")}
           onSaved={() => {
             setEditing(false);
             onEdited();
@@ -2015,6 +2024,8 @@ function NewQuoteDrawer({
             sku: item.skuSnapshot,
             name: item.productNameSnapshot,
             quantity: item.quantity,
+            discountPercentage: "0",
+            discountReason: "",
           })),
         );
       })
@@ -2100,6 +2111,8 @@ function NewQuoteDrawer({
               sku: product.sku,
               name: product.productName,
               quantity: 1,
+              discountPercentage: "0",
+              discountReason: "",
             },
           ],
     );
@@ -2315,10 +2328,12 @@ function NewQuoteDrawer({
 function EditQuoteDrawer({
   detail,
   close,
+  canDiscount,
   onSaved,
 }: {
   detail: Detail;
   close: () => void;
+  canDiscount: boolean;
   onSaved: () => void;
 }) {
   const [lines, setLines] = useState<DraftLine[]>(
@@ -2327,6 +2342,8 @@ function EditQuoteDrawer({
       sku: item.skuSnapshot,
       name: item.productNameSnapshot,
       quantity: item.quantity,
+      discountPercentage: item.discountPercentage ?? "0",
+      discountReason: item.discountReason ?? "",
     })),
   );
   const [productQuery, setProductQuery] = useState("");
@@ -2338,6 +2355,27 @@ function EditQuoteDrawer({
   const [message, setMessage] = useState(detail.quote.message || "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [approvalThreshold, setApprovalThreshold] = useState<number | null>(null);
+  useEffect(() => {
+    if (!canDiscount) return;
+    const controller = new AbortController();
+    void fetch("/api/admin/descuentos", { signal: controller.signal, cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: { items?: Array<{ status?: string; approvalAbovePercentage?: string | number; validFrom?: string | null; validUntil?: string | null }> }) => {
+        const now = Date.now();
+        const activeRules = (payload.items ?? [])
+          .filter((rule) => {
+            const startsAt = rule.validFrom ? new Date(rule.validFrom).getTime() : -Infinity;
+            const endsAt = rule.validUntil ? new Date(rule.validUntil).getTime() : Infinity;
+            return rule.status === "ACTIVE" && startsAt <= now && endsAt > now;
+          })
+          .sort((left, right) => Number(right.approvalAbovePercentage ?? 0) - Number(left.approvalAbovePercentage ?? 0));
+        const threshold = activeRules[0]?.approvalAbovePercentage;
+        setApprovalThreshold(threshold === undefined ? null : Number(threshold));
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [canDiscount]);
   useEffect(() => {
     if (productQuery.trim().length < 2) return;
     const controller = new AbortController();
@@ -2351,8 +2389,27 @@ function EditQuoteDrawer({
   }, [productQuery]);
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
-    setSaving(true);
     setError("");
+    const normalizedLines = lines.map((line) => ({
+      ...line,
+      discountPercentage: line.discountPercentage.trim() === "" ? 0 : Number(line.discountPercentage),
+      discountReason: line.discountReason.trim(),
+    }));
+    const invalidPercentage = normalizedLines.find(
+      (line) => !Number.isFinite(line.discountPercentage) || line.discountPercentage < 0 || line.discountPercentage > 100,
+    );
+    if (invalidPercentage) {
+      setError(`El descuento de ${invalidPercentage.sku} debe estar entre 0 y 100%.`);
+      return;
+    }
+    const missingReason = normalizedLines.find(
+      (line) => line.discountPercentage > 0 && !line.discountReason,
+    );
+    if (missingReason) {
+      setError(`Indica el motivo del descuento de ${missingReason.sku}.`);
+      return;
+    }
+    setSaving(true);
     try {
       const response = await fetch(
         `/api/admin/cotizaciones/${encodeURIComponent(detail.quote.id)}`,
@@ -2360,7 +2417,12 @@ function EditQuoteDrawer({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+            items: normalizedLines.map((line) => ({
+              productId: line.productId,
+              quantity: line.quantity,
+              discountPercentage: line.discountPercentage,
+              discountReason: line.discountReason || null,
+            })),
             validUntil: validUntil || null,
             taxMode,
             message,
@@ -2410,6 +2472,8 @@ function EditQuoteDrawer({
                           sku: product.sku,
                           name: product.productName,
                           quantity: 1,
+                          discountPercentage: "0",
+                          discountReason: "",
                         },
                       ]);
                     setProductQuery("");
@@ -2428,38 +2492,93 @@ function EditQuoteDrawer({
           {lines.map((line, index) => (
             <div
               key={line.productId}
-              className="flex items-center gap-3 rounded-lg border border-[#e0eaf2] p-3"
+              className="rounded-lg border border-[#e0eaf2] p-3"
             >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
-                <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
+                  <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
+                </div>
+                <input
+                  aria-label={`Cantidad ${line.sku}`}
+                  type="number"
+                  min={1}
+                  value={line.quantity}
+                  onChange={(event) =>
+                    setLines((current) =>
+                      current.map((item, itemIndex) =>
+                        itemIndex === index
+                          ? { ...item, quantity: Math.max(1, Number(event.target.value)) }
+                          : item,
+                      ),
+                    )
+                  }
+                  className="h-9 w-20 rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
+                  }
+                  className="text-[#526578] hover:text-rose-700"
+                  aria-label={`Quitar ${line.sku}`}
+                >
+                  <X size={16} />
+                </button>
               </div>
-              <input
-                aria-label={`Cantidad ${line.sku}`}
-                type="number"
-                min={1}
-                value={line.quantity}
-                onChange={(event) =>
-                  setLines((current) =>
-                    current.map((item, itemIndex) =>
-                      itemIndex === index
-                        ? { ...item, quantity: Math.max(1, Number(event.target.value)) }
-                        : item,
-                    ),
-                  )
-                }
-                className="h-9 w-20 rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
-                }
-                className="text-[#526578] hover:text-rose-700"
-                aria-label={`Quitar ${line.sku}`}
-              >
-                <X size={16} />
-              </button>
+              {canDiscount ? (
+                <div className="mt-3 grid gap-3 border-t border-[#edf2f6] pt-3 sm:grid-cols-[150px_1fr]">
+                  <label className="grid gap-1 text-[11px] font-extrabold uppercase tracking-wide text-[#526578]">
+                    Descuento (%)
+                    <input
+                      aria-label={`Descuento ${line.sku}`}
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="0.01"
+                      value={line.discountPercentage}
+                      onChange={(event) =>
+                        setLines((current) =>
+                          current.map((item, itemIndex) =>
+                            itemIndex === index
+                              ? { ...item, discountPercentage: event.target.value }
+                              : item,
+                          ),
+                        )
+                      }
+                      className="h-10 rounded-lg border border-[#dfe9f1] px-3 text-sm font-normal normal-case tracking-normal text-slate-900"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-[11px] font-extrabold uppercase tracking-wide text-[#526578]">
+                    Motivo {Number(line.discountPercentage || 0) > 0 ? "(obligatorio)" : "(opcional)"}
+                    <input
+                      aria-label={`Motivo descuento ${line.sku}`}
+                      value={line.discountReason}
+                      onChange={(event) =>
+                        setLines((current) =>
+                          current.map((item, itemIndex) =>
+                            itemIndex === index
+                              ? { ...item, discountReason: event.target.value }
+                              : item,
+                          ),
+                        )
+                      }
+                      maxLength={240}
+                      className="h-10 rounded-lg border border-[#dfe9f1] px-3 text-sm font-normal normal-case tracking-normal text-slate-900"
+                      placeholder="Justificación comercial"
+                    />
+                  </label>
+                  {approvalThreshold !== null && Number(line.discountPercentage || 0) > approvalThreshold ? (
+                    <p
+                      className="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
+                      data-testid={`discount-approval-warning-${line.sku}`}
+                      role="status"
+                    >
+                      Supera el umbral de {approvalThreshold}%. Al guardar quedará pendiente de aprobación de Gerencia.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

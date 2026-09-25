@@ -1,0 +1,10 @@
+{
+  "status": 422,
+  "payload": {
+    "error": {
+      "code": "CUSTOMER_RUC_REQUIRED_FOR_INVOICE",
+      "message": "La venta requiere un RUC válido para emitir comprobante. Corrige la ficha del cliente antes de continuar.",
+      "details": {}
+    }
+  }
+}

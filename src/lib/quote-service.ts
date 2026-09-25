@@ -7,6 +7,7 @@ import { buildQuoteTotals, discountApprovalState, snapshotHash, type CommercialL
 import { canTransitionOpportunity } from "@/lib/crm-validation";
 import { canTransitionQuote, effectiveQuoteStatus, normalizeQuoteStatus, type QuoteWorkflowStatus } from "@/lib/quote-workflow";
 import type { QuoteResponseChannel, QuoteTaxMode } from "@/lib/quote-contract";
+import { notifyStaffOnce } from "@/lib/notifications-service";
 
 type Actor = { userId: string | null; role: AppRole | string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
@@ -19,6 +20,21 @@ function positiveInteger(value: unknown) { const number = Number(value); return 
 function dateValue(value: unknown) { if (value === null || value === undefined || value === "") return null; const date = new Date(String(value)); return Number.isNaN(date.getTime()) ? null : date; }
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 function legacyStatus(status: QuoteWorkflowStatus) { const values: Record<QuoteWorkflowStatus, (typeof quoteStatusHistory.$inferInsert)["toStatus"]> = { DRAFT: "borrador", SENT: "enviada", FOLLOW_UP: "cotizada", ACCEPTED: "aprobada", REJECTED: "cerrada", EXPIRED: "cerrada", CONVERTED: "convertida", CANCELLED: "cerrada" }; return values[status]; }
+
+async function notifyPendingDiscountApproval(quote: { id: string; trackingCode: string; revision: number }) {
+  try {
+    await notifyStaffOnce({
+      type: "QUOTE_DISCOUNT_PENDING",
+      title: "Descuento pendiente de aprobación",
+      body: `La cotización ${quote.trackingCode} tiene un descuento que requiere revisión de Gerencia.`,
+      link: `/admin/cotizaciones?quoteId=${encodeURIComponent(quote.id)}`,
+      metadata: { quoteId: quote.id, trackingCode: quote.trackingCode, revision: quote.revision },
+      dedupeKey: `quote:${quote.id}:discount:${quote.revision}`,
+    });
+  } catch (error) {
+    console.error("ColdPower: no se pudo notificar la aprobación de descuento", error);
+  }
+}
 
 export function opportunityStageForQuoteResponse(response: "SENT" | "ACCEPTED" | "REJECTED" | "NEEDS_CHANGES" | "NO_RESPONSE") {
   return response === "SENT" ? "QUOTE_SENT" : response === "ACCEPTED" ? "ACCEPTED" : response === "REJECTED" ? "LOST" : "FOLLOW_UP";
@@ -59,6 +75,7 @@ async function resolveLinePricing(tx: Transaction, input: QuoteLineInput, actor:
   if (manual && (!can(actor.role as AppRole, "pricing.edit") || !reason)) throw new Error("El precio manual requiere permiso de pricing y un motivo.");
   const discountPercentage = input.discountPercentage === null || input.discountPercentage === undefined || input.discountPercentage === "" ? 0 : Number(input.discountPercentage);
   if (!Number.isFinite(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) throw new Error("El descuento debe estar entre 0 y 100%.");
+  if (discountPercentage > 0 && !can(actor.role as AppRole, "pricing.discount.apply")) throw new Error("No tienes permiso para aplicar descuentos.");
   const rule = await activeDiscountRule(tx);
   const state = discountApprovalState(discountPercentage, rule?.approvalAbovePercentage, rule?.maxPercentage);
   if (state === "BLOCKED") throw new Error("El descuento supera el máximo permitido.");
@@ -108,7 +125,7 @@ export async function createAdminQuote(input: { customerId: string; opportunityI
 }
 
 export async function updateAdminQuoteDraft(quoteId: string, input: { message?: string | null; validUntil?: Date | null; taxMode?: QuoteTaxMode; items?: QuoteLineInput[] }, actor: Actor) {
-  return getDb().transaction(async (tx) => {
+  const updated = await getDb().transaction(async (tx) => {
     const [quote] = await tx.select().from(quotes).where(eq(quotes.id, quoteId)).for("update").limit(1);
     if (!quote) throw new Error("Cotización no encontrada.");
     if (normalizeQuoteStatus(quote.status, quote.workflowStatus) !== "DRAFT") throw new Error("Sólo se puede editar un borrador.");
@@ -126,6 +143,8 @@ export async function updateAdminQuoteDraft(quoteId: string, input: { message?: 
     await tx.insert(auditLogs).values(audit(actor, "quote.draft_updated", "quote", quoteId, { revision: quote.revision }, { revision: updated.revision, itemCount: lines.length }));
     return updated;
   });
+  if (updated.discountApprovalStatus === "PENDING") await notifyPendingDiscountApproval(updated);
+  return updated;
 }
 
 async function quoteSendData<T extends Database | Transaction>(tx: T, quoteId: string) {

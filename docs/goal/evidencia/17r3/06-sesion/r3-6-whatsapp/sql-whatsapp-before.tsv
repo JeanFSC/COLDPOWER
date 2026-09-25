@@ -1,0 +1,2 @@
+-- SELECT id,whatsapp,phone,CASE WHEN NULLIF(TRIM(COALESCE(whatsapp,'')),'') IS NULL THEN false ELSE true END AS whatsapp_configured FROM company_settings;
+default			f

@@ -1,0 +1,2 @@
+-- SELECT o.id,o.code,o.status,o.version,p.id AS payment_id,p.method_type,p.status AS payment_status,p.amount FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id='order-219b15c4-a0a5-4a85-8fe1-a4517b77ce24';
+order-219b15c4-a0a5-4a85-8fe1-a4517b77ce24	ORD-20260925-16CB52	PAYMENT_PENDING	1	payment-f8b898b8-64f9-4c03-9550-1d6034171728	PROVIDER	REJECTED	90.00

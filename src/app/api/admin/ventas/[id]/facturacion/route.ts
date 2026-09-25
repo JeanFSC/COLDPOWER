@@ -1,11 +1,18 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
+import { customers } from "@/db/crm-schema";
 import { auditLogs } from "@/db/schema";
 import { sales } from "@/db/sales-schema";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { isValidPeruvianRuc } from "@/lib/peru-documents";
 
 const invoiceStatuses = ["PENDING", "ISSUED", "VOID", "ERROR"] as const;
+
+class InvoiceCustomerRucError extends Error {
+  readonly code = "CUSTOMER_RUC_REQUIRED_FOR_INVOICE";
+  readonly status = 422;
+}
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
@@ -26,12 +33,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const result = await getDb().transaction(async (tx) => {
       const [before] = await tx.select().from(sales).where(eq(sales.id, id)).for("update").limit(1);
       if (!before) throw new Error("Venta no encontrada.");
+      if (invoiceStatus === "ISSUED") {
+        const [customer] = await tx.select({ ruc: customers.ruc }).from(customers).where(eq(customers.id, before.customerId)).limit(1);
+        if (!customer?.ruc || !isValidPeruvianRuc(customer.ruc)) {
+          throw new InvoiceCustomerRucError("La venta requiere un RUC válido para emitir comprobante. Corrige la ficha del cliente antes de continuar.");
+        }
+      }
       const [after] = await tx.update(sales).set({ invoiceStatus, externalInvoiceReference: externalReference || null, invoiceIssuedAt: invoiceStatus === "ISSUED" ? issuedAt ?? before.invoiceIssuedAt ?? new Date() : before.invoiceIssuedAt, invoiceNote, version: before.version + 1, updatedAt: new Date() }).where(eq(sales.id, id)).returning();
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "sales.invoice_status_updated", entityType: "sale", entityId: id, before: { invoiceStatus: before.invoiceStatus, externalInvoiceReference: before.externalInvoiceReference }, after: { invoiceStatus: after.invoiceStatus, externalInvoiceReference: after.externalInvoiceReference }, metadata: { providerReferenceOnly: true } });
       return after;
     });
     return apiSuccess({ sale: result });
   } catch (error) {
+    if (error instanceof InvoiceCustomerRucError) return apiError(error.code, error.message, error.status);
     const message = error instanceof Error ? error.message : "No se pudo actualizar la facturación.";
     return apiError(message.includes("no encontrada") ? "SALE_NOT_FOUND" : "INVOICE_STATUS_NOT_UPDATED", message, message.includes("no encontrada") ? 404 : 409);
   }

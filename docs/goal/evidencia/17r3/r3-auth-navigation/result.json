@@ -1,0 +1,40 @@
+{
+  "scenario": "r3-auth-navigation",
+  "generatedAt": "2026-09-25T06:18:50.623Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "BLOCKED_AUTH_SESSION",
+  "fixtureId": "cp-dashboard-v5-user-staff-001",
+  "storageState": false,
+  "stages": [
+    {
+      "stage": "home_auth_state",
+      "accountText": "Mi cuenta\nIngresar",
+      "signedInHeader": false
+    },
+    {
+      "stage": "account_navigation",
+      "url": "http://localhost:3003/cuenta",
+      "accountNavigationWorked": true,
+      "documentRequestsAfterClick": []
+    },
+    {
+      "stage": "quote_hover_preserves_form",
+      "before": {
+        "quote-name": "QA R3B sesión persistente",
+        "quote-phone": "999777666",
+        "quote-email": "qa-r3b-session@example.test",
+        "quote-message": "Hola ColdPower, deseo cotizar un equipo o repuesto de refrigeracion.",
+        "quote-consent": "on"
+      },
+      "after": {
+        "quote-name": "QA R3B sesión persistente",
+        "quote-phone": "999777666",
+        "quote-email": "qa-r3b-session@example.test",
+        "quote-message": "Hola ColdPower, deseo cotizar un equipo o repuesto de refrigeracion.",
+        "quote-consent": "on"
+      },
+      "formPreserved": true
+    }
+  ],
+  "blocker": "El bypass CP_DEV_AUTH_* autoriza el servidor, pero este contexto headless no contiene una sesión Clerk; el header muestra Ingresar. Se conservaron las capturas y se validaron navegación/formulario por separado."
+}

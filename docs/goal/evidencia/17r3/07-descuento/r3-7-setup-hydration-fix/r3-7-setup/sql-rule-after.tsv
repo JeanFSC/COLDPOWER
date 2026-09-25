@@ -1,0 +1,2 @@
+-- SELECT id,name,max_percentage,approval_above_percentage,status,created_by FROM discount_rules WHERE name='QA R3.7 1790312048776';
+discount-rule-6154dcdb-7f05-471d-bb6d-5b6b0d7c28a7	QA R3.7 1790312048776	20.00	12.00	ACTIVE	cp-dashboard-v5-user-gerencia

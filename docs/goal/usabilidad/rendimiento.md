@@ -54,3 +54,19 @@ Evidencia: [`lighthouse-home-r2-desktop.json`](../../output/qa-final-local/light
 Los cambios medidos fueron acotados: `picture` con fuentes desktop/mobile y dimensiones explícitas para el hero, logo principal prioritario, reserva mínima del main para reducir saltos, prioridad del hero de catálogo y sin preload de tarjetas fuera del primer viewport. El móvil sigue limitado por el camino de hidratación/Clerk y un retraso de render del LCP de aproximadamente 3.996 s; no se eliminó autenticación ni se degradó seguridad para perseguir una cifra sintética.
 
 Las métricas previas de catálogo y producto permanecen como referencia no repetida en esta iteración; no se presentan como una mejora R2. El objetivo de rendimiento queda **parcialmente cumplido**: Home desktop aprobado, Home móvil y CLS de las rutas antiguas pendientes de una iteración específica con sesión autenticada y datos de media reales.
+
+## Medición R3 — 390×844 en producción local
+
+R3 repitió la comparación con `next build` y `next start --port 3003`, PostgreSQL local y Lighthouse 12.8.2 con throttling DevTools. Antes corresponde a la línea base R3 tomada antes de los cambios; después es la última corrida posterior a la compresión responsive del hero y al aplazamiento público de Clerk. Las cifras son una corrida comparable, no un promedio; Lighthouse fue ruidoso en TBT entre rutas.
+
+| Ruta | Antes: Performance / LCP / FCP / TBT | Después: Performance / LCP / FCP / TBT | CLS | Resultado |
+|---|---|---|---:|---|
+| Home | 0.57 / 6.529 s / 4.948 s / 297 ms | 0.49 / 5.177 s / 4.516 s / 821 ms | 0.000 | LCP mejora 1.352 s; no alcanza 2.5 s |
+| Catálogo | 0.62 / 5.821 s / 5.282 s / 182 ms | 0.40 / 5.859 s / 4.473 s / 1517 ms | 0.000 | FCP mejora; TBT ruidoso y LCP no mejora |
+| Producto | 0.64 / 5.380 s / 4.866 s / 214 ms | 0.46 / 5.977 s / 4.674 s / 803 ms | 0.000 | No cumple LCP/Performance |
+
+Cambios aplicados y verificados: `hero-mobile-390.webp` y `hero-mobile-780.webp` derivados del mismo arte aprobado, `srcset/sizes` para el hero, sin preload de IBM Plex Mono, `prefetchUI={false}` y carga diferida de Clerk en rutas públicas. El hero de Home pasó de 112 KB a 75 KB para el candidato DPR 2. El proveedor se mantiene inmediato en `/admin`, `/cuenta`, `/sign-in`, `/sign-up` y `/auth`; las rutas públicas muestran fallback mientras se aplaza la carga.
+
+La traza final confirma que Clerk JS ya no entra en el camino del LCP público, pero `proxy.ts` sigue realizando el handshake de Clerk en el middleware (archivo fuera del alcance permitido) y el entorno local bajo throttling conserva un TTFB de LCP cercano a 2.1 s. Por eso R3 queda **parcialmente cumplido**: hay mejora objetiva y CLS 0 en las tres rutas, pero no se declara cumplimiento de LCP < 2.0 s ni Performance ≥ 90. Evidencia reproducible: [`result.json`](../../goal/evidencia/17r3/05-rendimiento/after/result.json), JSON Lighthouse, capturas PNG y SQL `sql-catalog-fixture.tsv`/`sql-final.tsv` del mismo directorio.
+
+Lighthouse conserva la limitación conocida de Windows: algunas corridas generan el JSON válido y terminan con `EPERM` al limpiar el directorio temporal de Chrome. Se verificó `Get-Process codex,agy` antes de la medición; no se inició ningún agente adicional. El siguiente trabajo de rendimiento debe aislar el handshake del middleware y repetir varias corridas por ruta antes de tocar más la composición visual.

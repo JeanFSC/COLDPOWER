@@ -1,0 +1,10 @@
+{
+  "status": 400,
+  "payload": {
+    "error": {
+      "code": "CUSTOMER_NOT_UPDATED",
+      "message": "El RUC no es válido: revisa prefijo SUNAT y dígito verificador.",
+      "details": {}
+    }
+  }
+}

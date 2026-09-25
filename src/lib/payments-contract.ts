@@ -93,6 +93,9 @@ export function normalizeProviderStatus(value: string): "PENDING" | "CONFIRMED" 
 export function canTransitionPayment(from: string, to: string) {
   if (from === to) return true;
   if (to === "REFUNDED") return from === "CONFIRMED" || from === "APPROVED";
+  // A provider may approve after an intermediate rejection, error or cancellation.
+  // The confirmation is money movement and must be reconciled, never discarded.
+  if (to === "CONFIRMED" && ["REJECTED", "ERROR", "CANCELLED"].includes(from)) return true;
   if (from === "PENDING" || from === "UNDER_REVIEW") return ["CONFIRMED", "APPROVED", "REJECTED", "CANCELLED", "ERROR"].includes(to);
   if (from === "APPROVED" && to === "CONFIRMED") return true;
   return false;

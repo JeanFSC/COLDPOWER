@@ -1,0 +1,44 @@
+{
+  "scenario": "B1.1-quote-to-sale",
+  "generatedAt": "2026-09-25T06:18:20.016Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "email": "b11.1790317055931@example.test",
+  "quoteName": "QA B1.1 1790317055931",
+  "stages": [
+    {
+      "stage": "public_request",
+      "bodyContainsSuccess": true
+    },
+    {
+      "stage": "staff_pricing",
+      "saved": true
+    },
+    {
+      "stage": "staff_send",
+      "saved": true
+    },
+    {
+      "stage": "customer_response",
+      "saved": true
+    },
+    {
+      "stage": "sale_conversion",
+      "saved": true
+    }
+  ],
+  "apiProbes": [
+    {
+      "name": "ventas_url_company_settings",
+      "status": 200,
+      "url": "http://localhost:3003/admin/configuracion",
+      "body": "Saltar al contenido\nCargando contenido"
+    },
+    {
+      "name": "ventas_api_company_settings_mutation",
+      "status": 405,
+      "body": ""
+    }
+  ],
+  "quoteId": "CP-20260925-M4DP"
+}

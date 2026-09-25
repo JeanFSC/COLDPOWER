@@ -2,6 +2,7 @@ import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { createDiscountRule, setDiscountRuleStatus, updateDiscountRule } from "@/lib/discount-service";
 import { listDiscountRules } from "@/lib/pricing-repository";
+import { can } from "@/lib/roles";
 
 // Las mutaciones se delegan a discount-service, que las ejecuta en transaction y registra auditLogs.
 
@@ -16,7 +17,14 @@ function mapError(error: unknown) {
 
 export async function GET() {
   try {
-    await requireApiPermission("pricing.view");
+    let actor;
+    try {
+      actor = await requireApiPermission("pricing.view");
+    } catch (error) {
+      if (!(error instanceof ApiAuthorizationError)) throw error;
+      actor = await requireApiPermission("pricing.discount.apply");
+    }
+    if (!can(actor.role, "pricing.view") && !can(actor.role, "pricing.discount.apply")) return apiError("PRICING_FORBIDDEN", "No tienes permiso para consultar reglas de descuento.", 403);
     return apiSuccess({ items: await listDiscountRules() });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("PRICING_FORBIDDEN", "No tienes permiso para ver descuentos.", 403);

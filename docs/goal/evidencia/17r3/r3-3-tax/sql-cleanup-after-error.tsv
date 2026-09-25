@@ -1,0 +1,2 @@
+-- SELECT id,tax_rate,tax_mode,version FROM company_settings WHERE id='default';
+default			27

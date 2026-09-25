@@ -384,6 +384,8 @@ export const companySettings = pgTable(
     faviconMediaId: text("favicon_media_id"),
     primaryColor: text("primary_color"),
     secondaryColor: text("secondary_color"),
+    taxRate: numeric("tax_rate", { precision: 5, scale: 2 }),
+    taxMode: quoteTaxModeEnum("tax_mode"),
     version: integer("version").notNull().default(1),
     validationStatus: text("validation_status").notNull().default("VALID"),
     updatedBy: text("updated_by"),

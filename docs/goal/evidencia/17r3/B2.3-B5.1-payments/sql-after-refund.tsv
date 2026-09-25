@@ -1,0 +1,2 @@
+-- SELECT p.id,p.status,p.amount,pr.id AS refund_id,pr.status AS refund_status,pr.idempotency_key,pr.amount AS refund_amount,pr.reason,count(*) OVER (PARTITION BY pr.payment_id) AS refund_rows FROM payments p LEFT JOIN payment_refunds pr ON pr.payment_id=p.id WHERE p.id='payment-59a1e9ca-dac8-475e-8890-161eb552d123';
+payment-59a1e9ca-dac8-475e-8890-161eb552d123	REFUNDED	90.00	refund-5452854f-2b3d-4562-a03b-ed084eedcbb4	SUCCEEDED	refund-payment-59a1e9ca-dac8-475e-8890-161eb552d123-full-0	90.00	QA B2.3 devolución 1790316124768	1

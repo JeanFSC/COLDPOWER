@@ -1,0 +1,7 @@
+-- SELECT count(*) AS orders_total FROM orders; SELECT id,code,total,currency,status FROM orders ORDER BY created_at DESC LIMIT 5;
+174
+cp-visual-year-2026-order-048	PED-2026-048	1419.00	PEN	DELIVERED
+cp-visual-year-2026-order-047	PED-2026-047	1282.00	PEN	DELIVERED
+cp-visual-year-2026-order-046	PED-2026-046	1145.00	PEN	DELIVERED
+cp-visual-year-2026-order-045	PED-2026-045	1008.00	PEN	DELIVERED
+cp-visual-year-2026-order-044	PED-2026-044	871.00	PEN	READY_FOR_PICKUP

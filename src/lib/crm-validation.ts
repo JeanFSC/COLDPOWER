@@ -1,4 +1,4 @@
-import { isValidPeruvianRuc } from "@/lib/peru-documents";
+import { isValidPeruvianRuc, normalizePeruDocument } from "@/lib/peru-documents";
 
 export const customerTypes = ["PERSON", "COMPANY", "CONSUMIDOR", "TECNICO", "EMPRESA", "DISTRIBUIDOR", "MAYORISTA"] as const;
 export type CustomerType = (typeof customerTypes)[number];
@@ -53,7 +53,7 @@ function phone(value: unknown) {
   return raw.replace(/\D/g, "").slice(0, 20);
 }
 
-export function validateCustomerInput(input: Record<string, unknown>, partial = false) {
+export function validateCustomerInput(input: Record<string, unknown>, partial = false, options?: { existingRuc?: unknown }) {
   const name = clean(input.name, 160);
   const email = clean(input.email, 180).toLowerCase();
   const phoneNumber = phone(input.phone);
@@ -67,7 +67,8 @@ export function validateCustomerInput(input: Record<string, unknown>, partial = 
   if (status !== undefined && !(customerStatuses as readonly string[]).includes(String(status))) throw new Error("Estado de cliente inválido.");
   const normalizedType = customerType === undefined ? undefined : String(customerType);
   const ruc = clean(input.ruc, 40);
-  if (ruc && !isValidPeruvianRuc(ruc)) throw new Error("El RUC no es válido: revisa prefijo SUNAT y dígito verificador.");
+  const unchangedRuc = ruc && options?.existingRuc != null && normalizePeruDocument(ruc) === normalizePeruDocument(options.existingRuc);
+  if (ruc && !unchangedRuc && !isValidPeruvianRuc(ruc)) throw new Error("El RUC no es válido: revisa prefijo SUNAT y dígito verificador.");
   if (!partial && (normalizedType === "COMPANY" || normalizedType === "EMPRESA") && !ruc) throw new Error("El RUC es obligatorio para empresas.");
   return {
     ...(partial || name ? { name } : {}),

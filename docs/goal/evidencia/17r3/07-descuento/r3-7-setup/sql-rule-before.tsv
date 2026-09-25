@@ -1,0 +1,1 @@
+-- SELECT id,name,max_percentage,approval_above_percentage,status FROM discount_rules ORDER BY created_at DESC LIMIT 10;

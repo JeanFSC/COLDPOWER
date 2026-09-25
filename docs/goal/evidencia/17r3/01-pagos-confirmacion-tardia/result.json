@@ -1,0 +1,106 @@
+{
+  "scenario": "01-pagos-confirmacion-tardia",
+  "generatedAt": "2026-09-25T05:30:22.408Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "COMPLETED",
+  "runToken": "r3-1790314211111",
+  "fixture": {
+    "orderId": "cp-brief16-orders-order-payment-pending",
+    "orderCode": "CP16-PED-001",
+    "paymentId": "cp-brief16-orders-payment-payment-pending",
+    "amount": "90.00",
+    "currency": "PEN"
+  },
+  "cases": [
+    {
+      "name": "rejected-to-confirmed",
+      "from": "REJECTED",
+      "webhook": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": false,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED",
+          "ignored": false
+        }
+      },
+      "duplicate": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": true,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED"
+        }
+      },
+      "sqlOutput": "CP16-PED-001\tPAID\tCONFIRMED\t\t\r\nREJECTED\tCONFIRMED\tmock\tpayment.approved\r\nr3-1790314211111-rejected-to-confirmed-event\tpayment.approved"
+    },
+    {
+      "name": "error-to-confirmed",
+      "from": "ERROR",
+      "webhook": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": false,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED",
+          "ignored": false
+        }
+      },
+      "duplicate": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": true,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED"
+        }
+      },
+      "sqlOutput": "CP16-PED-001\tPAID\tCONFIRMED\t\t\r\nERROR\tCONFIRMED\tmock\tpayment.approved\r\nr3-1790314211111-error-to-confirmed-event\tpayment.approved"
+    },
+    {
+      "name": "cancelled-to-confirmed-active",
+      "from": "CANCELLED",
+      "webhook": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": false,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED",
+          "ignored": false
+        }
+      },
+      "duplicate": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": true,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED"
+        }
+      },
+      "sqlOutput": "CP16-PED-001\tPAID\tCONFIRMED\t\t\r\nCANCELLED\tCONFIRMED\tmock\tpayment.approved\r\nr3-1790314211111-cancelled-to-confirmed-active-event\tpayment.approved"
+    },
+    {
+      "name": "double-charge-order-already-paid",
+      "webhook": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "duplicate": false,
+          "paymentId": "cp-brief16-orders-payment-payment-pending",
+          "status": "CONFIRMED",
+          "ignored": false,
+          "lateApprovalOrderCode": "CP16-PED-001",
+          "refundRequired": true,
+          "overpaidAmount": 0,
+          "refundAmount": 90
+        }
+      },
+      "sqlOutput": "CP16-PED-001\tPAID\tcp-brief16-orders-payment-payment-pending\tCONFIRMED\ttrue\ttrue\r\nCP16-PED-001\tPAID\tr3-1790314211111-other-payment\tCONFIRMED\t\t\r\npayments.confirmed_after_order_paid\tpayment\tcp-brief16-orders-payment-payment-pending\t{\"provider\": \"mock\", \"orderCode\": \"CP16-PED-001\", \"refundAmount\": 90, \"requiresRefund\": true, \"providerEventId\": \"r3-1790314211111-late-double-charge-event\"}\r\npayments.confirmed_after_order_paid\tpayment\tcp-brief16-orders-payment-payment-pending\t{\"provider\": \"mock\", \"orderCode\": \"CP16-PED-001\", \"requiresRefund\": true, \"providerEventId\": \"r3-1790301642498-late-double-charge-event\", \"otherConfirmedPayment\": true}\r\nuser_3HsX8RHS2xwA0sPrSpXAe5SdDOO\tPAYMENT_FAILED\tPago aprobado con reembolso pendiente\t{\"provider\": \"mock\", \"dedupeKey\": \"payment-late-approval:cp-brief16-orders-payment-payment-pending\", \"orderCode\": \"CP16-PED-001\", \"paymentId\": \"cp-brief16-orders-payment-payment-pending\", \"refundRequired\": true}\r\ncp-dashboard-v5-user-gerencia\tPAYMENT_FAILED\tPago aprobado con reembolso pendiente\t{\"provider\": \"mock\", \"dedupeKey\": \"payment-late-approval:cp-brief16-orders-payment-payment-pending\", \"orderCode\": \"CP16-PED-001\", \"paymentId\": \"cp-brief16-orders-payment-payment-pending\", \"refundRequired\": true}\r\ncp-dashboard-v5-user-ventas\tPAYMENT_FAILED\tPago aprobado con reembolso pendiente\t{\"provider\": \"mock\", \"dedupeKey\": \"payment-late-approval:cp-brief16-orders-payment-payment-pending\", \"orderCode\": \"CP16-PED-001\", \"paymentId\": \"cp-brief16-orders-payment-payment-pending\", \"refundRequired\": true}"
+    }
+  ]
+}

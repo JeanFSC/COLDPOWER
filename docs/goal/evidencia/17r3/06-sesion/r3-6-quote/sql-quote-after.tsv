@@ -1,0 +1,2 @@
+-- SELECT id,tracking_code,name,phone,email,workflow_status,status,origin FROM quotes WHERE name='QA R3.6 1790309129894' AND phone='999129894' ORDER BY created_at DESC LIMIT 1;
+CP-20260924-2UOZ	CP-20260924-2UOZ	QA R3.6 1790309129894	999129894		DRAFT	borrador	WEB

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   CalendarPlus,
   CheckSquare,
@@ -12,6 +12,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { isValidPeruvianRuc } from "@/lib/peru-documents";
 
 type Value = Record<string, unknown>;
 type RelationPage = {
@@ -567,7 +568,19 @@ function Summary({
             ["Tipo", humanLabel(customer.customerType, typeLabels)],
             ["Estado", humanLabel(customer.status, statusLabels)],
             ["Razón social", value(customer, ["legalName", "name"])],
-            ["Documento / RUC", value(customer, ["ruc", "documentNumber"])],
+            [
+              "Documento / RUC",
+              customer.ruc ? (
+                <span className="flex flex-col items-end gap-1">
+                  <span>{customer.ruc}</span>
+                  {!isValidPeruvianRuc(customer.ruc) ? (
+                    <span data-testid="ruc-needs-verification" className="rounded-full bg-[#fff0df] px-2 py-1 text-[9px] font-extrabold text-[#c96f16]">
+                      RUC por verificar
+                    </span>
+                  ) : null}
+                </span>
+              ) : value(customer, ["documentNumber"]),
+            ],
           ]}
         />
         <DetailBlock
@@ -600,7 +613,7 @@ function Summary({
   );
 }
 
-function DetailBlock({ title, rows }: { title: string; rows: string[][] }) {
+function DetailBlock({ title, rows }: { title: string; rows: Array<[string, ReactNode]> }) {
   return (
     <section className="rounded-lg border border-[#edf2f6] p-4">
       <h3 className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#304b66]">{title}</h3>

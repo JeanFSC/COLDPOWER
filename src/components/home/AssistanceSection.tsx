@@ -12,7 +12,8 @@ const adviceSteps = [
 ] as const;
 
 export function AssistanceSection({ settings }: { settings: CompanySettings }) {
-  const whatsappHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito ayuda para encontrar un repuesto." }) : "/contacto?motivo=no-encontre";
+  const helpHref = settings.whatsapp ? createWhatsAppLink({ phone: settings.whatsapp, message: "Hola ColdPower, necesito ayuda para encontrar un repuesto." }) : "/contacto?motivo=no-encontre";
+  const helpLabel = settings.whatsapp ? "Solicitar ayuda por WhatsApp" : "Solicitar ayuda por contacto";
 
   return (
     <div className="home-help-layout" data-home-block="assistance">
@@ -25,8 +26,8 @@ export function AssistanceSection({ settings }: { settings: CompanySettings }) {
             <span key={label} className="home-advice-card"><Icon aria-hidden="true" /><strong>{label}</strong></span>
           ))}
         </div>
-        <Link href={whatsappHref} target={whatsappHref.startsWith("http") ? "_blank" : undefined} rel={whatsappHref.startsWith("http") ? "noreferrer" : undefined} className="home-button home-button-orange home-help-button">
-          <MessageCircle aria-hidden="true" />Solicitar ayuda por WhatsApp <ArrowRight aria-hidden="true" />
+        <Link href={helpHref} target={helpHref.startsWith("http") ? "_blank" : undefined} rel={helpHref.startsWith("http") ? "noreferrer" : undefined} className="home-button home-button-orange home-help-button">
+          <MessageCircle aria-hidden="true" />{helpLabel} <ArrowRight aria-hidden="true" />
         </Link>
       </div>
     </div>

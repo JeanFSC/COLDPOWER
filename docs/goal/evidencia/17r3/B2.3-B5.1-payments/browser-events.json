@@ -1,0 +1,14 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [
+    "SyntaxError: Invalid or unexpected token",
+    "SyntaxError: Invalid or unexpected token"
+  ],
+  "requestFailures": [
+    "POST http://localhost:3003/api/cotizacion/cart :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cuenta/pedidos/ORD-20260925-16CB52?pago=rechazado&_rsc=1NZ1GRm_xXB4KO-m :: net::ERR_ABORTED",
+    "GET http://localhost:3003/_next/static/css/app/layout.css?v=1790316101964 :: net::ERR_ABORTED",
+    "POST http://localhost:3003/pago/prueba/mock_c6b95470-f706-4ac4-8c79-47f884737911 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cuenta/pedidos/ORD-20260925-16CB52?pago=rechazado&_rsc=1NZ1GRm_xXB4KO-m :: net::ERR_ABORTED"
+  ]
+}

@@ -6,7 +6,7 @@ import type { PaymentCreateResult, PaymentProvider, PaymentRefundResult } from "
 
 export const MOCK_PAYMENT_PROVIDER = "mock";
 
-export type MockWebhookPayload = { eventId: string; reference: string; status: "APPROVED" | "REJECTED"; amount: string; currency: string };
+export type MockWebhookPayload = { eventId: string; reference: string; status: "APPROVED" | "REJECTED" | "CANCELLED" | "ERROR"; amount: string; currency: string };
 
 export function signMockPayload(rawPayload: string, secret: string) {
   return createHmac("sha256", secret).update(rawPayload).digest("hex");
@@ -39,19 +39,20 @@ export class MockPaymentProvider implements PaymentProvider {
       .orderBy(desc(paymentEvents.createdAt))
       .limit(1);
     const status = typeof event?.payload?.status === "string" ? event.payload.status : "PENDING";
-    return status === "APPROVED" ? "APPROVED" : status === "REJECTED" ? "REJECTED" : "PENDING";
+    return status === "APPROVED" ? "APPROVED" : status === "REJECTED" ? "REJECTED" : status === "CANCELLED" ? "CANCELLED" : status === "ERROR" ? "ERROR" : "PENDING";
   }
 
   async processWebhook(payload: string, signature: string | null) {
     if (!verifyMockSignature(payload, signature, this.webhookSecret)) throw new Error("Firma del pago de prueba inválida.");
     const parsed = JSON.parse(payload) as Partial<MockWebhookPayload>;
-    if (!parsed.eventId || !parsed.reference || (parsed.status !== "APPROVED" && parsed.status !== "REJECTED")) throw new Error("Evento de pago de prueba incompleto.");
+    const status = parsed.status;
+    if (!parsed.eventId || !parsed.reference || !status || !["APPROVED", "REJECTED", "CANCELLED", "ERROR"].includes(status)) throw new Error("Evento de pago de prueba incompleto.");
     return {
       providerEventId: parsed.eventId,
-      eventType: parsed.status === "APPROVED" ? "payment.approved" : "payment.rejected",
+      eventType: status === "APPROVED" ? "payment.approved" : status === "REJECTED" ? "payment.rejected" : status === "CANCELLED" ? "payment.cancelled" : "payment.error",
       providerReference: parsed.reference,
-      status: parsed.status,
-      metadata: { status: parsed.status, amount: parsed.amount ?? null, currency: parsed.currency ?? null, simulated: true },
+      status,
+      metadata: { status, amount: parsed.amount ?? null, currency: parsed.currency ?? null, simulated: true },
     };
   }
 
