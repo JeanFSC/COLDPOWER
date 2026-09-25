@@ -59,3 +59,6 @@ Cada orden incluye **explícitamente**:
 ## 7. Entorno visible para Jean
 - `localhost:3002` (`dev:local`) queda levantado al terminar cada ronda. Si hay que apagarlo, se reinicia después.
 - El 3000 y el túnel se levantan cuando Neon esté disponible.
+
+## 8. GPU en QA (desde 2026-09-25)
+Todo script de Playwright lanza Chromium con `import { GPU_ARGS } from "./gpu-args.mjs"` y `chromium.launch({ headless: true, args: GPU_ARGS })`. Así el renderizado usa la Radeon RX 5600 XT (D3D11) y no la CPU. `QA_GPU=0` lo desactiva. Node, Next y tsc no pueden usar la GPU: para ellos rige el límite de 2 tareas pesadas.

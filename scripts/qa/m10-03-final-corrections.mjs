@@ -1,3 +1,4 @@
+import { GPU_ARGS } from "./gpu-args.mjs";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -31,7 +32,7 @@ if (!playwrightPath) throw new Error("No se encontró playwright-core en los mó
 
 const { chromium } = await import(pathToFileURL(playwrightPath).href);
 const executablePath = process.env.QA_CHROMIUM_PATH || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const browser = await chromium.launch({ headless: true, executablePath });
+const browser = await chromium.launch({ headless: true, executablePath, args: GPU_ARGS });
 const cases = [
   {
     key: "capacitor-quote-only",

@@ -1,3 +1,4 @@
+import { GPU_ARGS } from "./gpu-args.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -96,7 +97,7 @@ export function captureSql(scenario, label, query) {
 }
 
 export async function createQaBrowser(scenario) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, args: GPU_ARGS });
   const contextOptions = {
     viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 1,
