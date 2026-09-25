@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi cuenta · ColdPower · Lámina M10 lote 3</title>
+    <link rel="stylesheet" href="./node_modules/@fontsource/ibm-plex-sans/latin-400.css" />
+    <link rel="stylesheet" href="./node_modules/@fontsource/ibm-plex-sans/latin-600.css" />
+    <link rel="stylesheet" href="./node_modules/@fontsource/ibm-plex-sans/latin-700.css" />
+    <link rel="stylesheet" href="./node_modules/@fontsource/ibm-plex-mono/latin-400.css" />
+    <link rel="stylesheet" href="./node_modules/@fontsource/ibm-plex-mono/latin-600.css" />
+    <link rel="stylesheet" href="./node_modules/@fortawesome/fontawesome-free/css/all.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module">
+      const ASSET = "../../../../../public";
+      const params = new URLSearchParams(window.location.search);
+      const requestedScreen = params.get("screen") || "hub-desktop";
+      const screen = ["hub-desktop", "hub-mobile", "pedidos", "vacia"].includes(requestedScreen) ? requestedScreen : "hub-desktop";
+
+      const icon = (name, brand = false) => `<i aria-hidden="true" class="fa-${brand ? "brands" : "solid"} fa-${name}"></i>`;
+
+      function storeHeader() {
+        return `
+          <div class="utility-bar">
+            <div class="home-wide utility-inner">
+              <div class="utility-items">
+                <span>${icon("truck")}Envíos a todo el Perú</span><i aria-hidden="true"></i>
+                <span>${icon("arrows-rotate")}Repuestos originales y alternativas</span><i aria-hidden="true"></i>
+                <span>${icon("gear")}Asesoría técnica especializada</span>
+              </div>
+              <a class="utility-whatsapp" href="#ayuda">${icon("whatsapp", true)}¿Necesitas ayuda? Escríbenos por WhatsApp</a>
+            </div>
+          </div>
+          <header class="store-header">
+            <div class="home-wide store-header-inner">
+              <a class="brand-lockup" href="?screen=hub-desktop" aria-label="Ir al inicio de ColdPower">
+                <img src="${ASSET}/brand/logo-coldpower-lockup.webp" alt="ColdPower" />
+                <span>SOLUCIONES EN REFRIGERACIÓN</span>
+              </a>
+              <div class="store-search desktop-search">
+                <label class="sr-only" for="desktop-search">Buscar productos</label>
+                <input id="desktop-search" type="search" placeholder="Busca por código, modelo, marca o producto..." />
+                <button type="button" aria-label="Buscar">${icon("magnifying-glass")}</button>
+              </div>
+              <div class="store-actions desktop-actions">
+                <a class="quote-cta" href="#cotizacion">${icon("file-invoice")} Cotización <span>(0)</span></a>
+                <a class="account-action" href="?screen=hub-desktop">${icon("user")}<span><strong>Mi cuenta</strong><small>Ver cuenta</small></span></a>
+                <a class="cart-action" href="#carrito">${icon("cart-shopping")}<span>Carrito (0)</span>${icon("chevron-down")}</a>
+              </div>
+              <div class="mobile-actions">
+                <a class="mobile-icon" href="#buscar" aria-label="Buscar">${icon("magnifying-glass")}</a>
+                <a class="mobile-icon" href="?screen=hub-mobile" aria-label="Abrir Mi cuenta">${icon("user")}</a>
+                <a class="mobile-icon" href="#cotizacion" aria-label="Abrir cotización">${icon("file-invoice")}</a>
+                <a class="mobile-icon" href="#carrito" aria-label="Abrir carrito">${icon("cart-shopping")}</a>
+                <button class="mobile-icon" type="button" aria-label="Abrir menú">${icon("bars")}</button>
+              </div>
+            </div>
+            <div class="mobile-search">
+              <label class="sr-only" for="mobile-search-input">Buscar productos</label>
+              <div class="store-search">
+                <input id="mobile-search-input" type="search" placeholder="Busca por código, modelo, marca o producto..." />
+                <button type="button" aria-label="Buscar">${icon("magnifying-glass")}</button>
+              </div>
+            </div>
+          </header>
+          <nav class="technical-nav" aria-label="Navegación técnica">
+            <div class="home-wide technical-nav-inner">
+              <a class="all-categories" href="#catalogo">${icon("bars")}Todas las categorías ${icon("chevron-down")}</a>
+              <div class="technical-links">
+                <a href="#compresores">Compresores</a><a href="#refrigeracion">Refrigeración</a><a href="#aire">Aire acondicionado</a>
+                <a href="#motores">Motores y ventiladores</a><a href="#controles">Controles</a><a href="#herramientas">Herramientas</a><a href="#repuestos">Repuestos</a><a href="#marcas">Marcas</a>
+              </div>
+              <a class="offers-link" href="#ofertas">Ofertas ${icon("percent")}</a>
+            </div>
+          </nav>
+        `;
+      }
+
+      const accountItems = [
+        ["hub-desktop", "Resumen", "house", ""],
+        ["pedidos", "Pedidos", "box", "3"],
+        ["cotizaciones", "Cotizaciones", "file-lines", "1 respondida"],
+        ["pagos", "Pagos", "credit-card", "1 pendiente"],
+        ["historial", "Volver a comprar", "rotate-right", ""],
+        ["datos", "Mis datos", "address-card", ""],
+      ];
+
+      function accountNavigation(active, empty = false) {
+        return `
+          <aside class="account-sidebar" aria-label="Navegación de cuenta">
+            <div class="account-user-card">
+              <div class="avatar" aria-hidden="true">JP</div>
+              <div class="account-user-copy"><strong>Jean Pérez</strong><span>jean@empresa.pe</span><em>${icon("circle-check")} Cuenta verificada</em></div>
+            </div>
+            <nav class="account-nav">
+              ${accountItems.map(([key, label, glyph, badge]) => {
+                const href = key === "hub-desktop" ? `?screen=${screen.includes("mobile") ? "hub-mobile" : "hub-desktop"}` : key === "pedidos" ? "?screen=pedidos" : "#" + key;
+                const current = active === key || (active === "hub" && key === "hub-desktop");
+                return `<a class="account-nav-item${current ? " is-active" : ""}" href="${href}" aria-current="${current ? "page" : "false"}">${icon(glyph)}<span>${label}</span>${!empty && badge ? `<b>${badge}</b>` : ""}</a>`;
+              }).join("")}
+            </nav>
+            <div class="account-sidebar-bottom">
+              <a class="staff-link" href="#panel">${icon("arrow-up-right-from-square")} Ir al panel administrativo</a>
+              <a class="logout-link" href="#salir">${icon("arrow-right-from-bracket")} Cerrar sesión</a>
+            </div>
+          </aside>
+        `;
+      }
+
+      function breadcrumb(label) {
+        return `<nav class="breadcrumb" aria-label="Migas de pan"><a href="#inicio">Inicio</a>${icon("chevron-right")}<span>Mi cuenta</span>${label ? `${icon("chevron-right")}<strong>${label}</strong>` : ""}</nav>`;
+      }
+
+      function attentionCards() {
+        return `
+          <section class="content-section attention-section" aria-labelledby="attention-title">
+            <div class="section-heading"><div><p class="eyebrow">Prioridad</p><h2 id="attention-title">Lo que requiere tu atención</h2></div><span class="section-note">3 acciones abiertas</span></div>
+            <div class="attention-grid">
+              <article class="attention-card attention-quote">
+                <div class="attention-icon">${icon("file-invoice")}</div><div class="attention-copy"><strong>Cotización respondida</strong><span class="mono">CP-COT-2026-048</span><small>Revisa el precio y acepta antes del 30 set 2026.</small></div><a class="text-action" href="#cotizacion">Ver y aceptar ${icon("arrow-right")}</a>
+              </article>
+              <article class="attention-card attention-payment">
+                <div class="attention-icon">${icon("credit-card")}</div><div class="attention-copy"><strong>Pago pendiente</strong><span class="mono">PED-2026-044 · S/ 871.00</span><small>Stock reservado hasta hoy, 25 set 2026.</small></div><a class="text-action" href="#pagar">Pagar ahora ${icon("arrow-right")}</a>
+              </article>
+              <article class="attention-card attention-delivery">
+                <div class="attention-icon">${icon("truck-fast")}</div><div class="attention-copy"><strong>Pedido en camino</strong><span class="mono">PED-2026-041</span><small>Tu entrega está prevista para hoy.</small></div><a class="text-action" href="#detalle">Ver detalle ${icon("arrow-right")}</a>
+              </article>
+            </div>
+          </section>
+        `;
+      }
+
+      function orderProgress() {
+        const steps = [
+          ["Recibido", "done", "circle-check"], ["Pagado", "done", "circle-check"], ["Preparando", "done", "circle-check"], ["En camino", "current", "truck-fast"], ["Entregado", "upcoming", "circle"],
+        ];
+        return `
+          <section class="content-section order-panel" aria-labelledby="order-title">
+            <div class="section-heading"><div><p class="eyebrow">Seguimiento en vivo</p><h2 id="order-title">Pedido en curso</h2></div><a class="section-link" href="#pedidos">Ver mis pedidos ${icon("arrow-right")}</a></div>
+            <article class="order-card">
+              <div class="order-card-head"><div><span class="mono">PED-2026-041</span><h3>Repuestos para cámara frigorífica</h3><p>${icon("calendar-day")} Actualizado hoy, 25 set 2026</p></div><span class="status status-blue">En camino</span></div>
+              <ol class="timeline" aria-label="Estado del pedido">
+                ${steps.map(([label, state, glyph]) => `<li class="timeline-item ${state}"><span class="timeline-node">${icon(glyph)}</span><span>${label}</span></li>`).join("")}
+              </ol>
+              <div class="order-card-foot"><span>${icon("truck")} <strong>Entrega a domicilio</strong> · Lima Metropolitana · llega hoy</span><a class="button button-outline" href="#detalle">Ver detalle ${icon("arrow-right")}</a></div>
+            </article>
+          </section>
+        `;
+      }
+
+      function recentPanels() {
+        return `
+          <div class="recent-grid">
+            <section class="content-section compact-section" aria-labelledby="quotes-title">
+              <div class="section-heading"><div><p class="eyebrow">Últimas solicitudes</p><h2 id="quotes-title">Cotizaciones recientes</h2></div><a class="section-link" href="#cotizaciones">Ver todas ${icon("arrow-right")}</a></div>
+              <div class="data-panel">
+                <a class="data-row" href="#cotizacion"><span class="data-main"><strong>CP-COT-2026-048</strong><small>Compresor Embraco EM3...</small></span><span class="data-side"><em class="status status-orange">Respondida</em><small>Vence 30 set</small></span>${icon("chevron-right")}</a>
+                <a class="data-row" href="#cotizacion"><span class="data-main"><strong>CP-COT-2026-045</strong><small>Kit de mantenimiento HVAC</small></span><span class="data-side"><em class="status status-blue-soft">En evaluación</em><small>22 set 2026</small></span>${icon("chevron-right")}</a>
+                <a class="data-row" href="#cotizacion"><span class="data-main"><strong>CP-COT-2026-039</strong><small>Válvula de expansión Danfoss</small></span><span class="data-side"><em class="status status-green">Aprobada</em><small>18 set 2026</small></span>${icon("chevron-right")}</a>
+              </div>
+            </section>
+            <section class="content-section compact-section" aria-labelledby="orders-title">
+              <div class="section-heading"><div><p class="eyebrow">Compras confirmadas</p><h2 id="orders-title">Pedidos recientes</h2></div><a class="section-link" href="?screen=pedidos">Ver todos ${icon("arrow-right")}</a></div>
+              <div class="data-panel">
+                <a class="data-row" href="#detalle"><span class="data-main"><strong>PED-2026-041</strong><small>Repuestos para cámara frigorífica</small></span><span class="data-side"><em class="status status-blue">En camino</em><small>S/ 1,240.00</small></span>${icon("chevron-right")}</a>
+                <a class="data-row" href="#detalle"><span class="data-main"><strong>PED-2026-044</strong><small>Controlador Dixell XR60CX</small></span><span class="data-side"><em class="status status-orange">Pago pendiente</em><small>S/ 871.00</small></span>${icon("chevron-right")}</a>
+                <a class="data-row" href="#detalle"><span class="data-main"><strong>PED-2026-036</strong><small>Motor ventilador YDK 34-6W</small></span><span class="data-side"><em class="status status-green">Entregado</em><small>S/ 320.00</small></span>${icon("chevron-right")}</a>
+              </div>
+            </section>
+          </div>
+        `;
+      }
+
+      function repeatPurchase() {
+        return `
+          <section class="content-section repeat-section" aria-labelledby="repeat-title">
+            <div class="section-heading"><div><p class="eyebrow">Historial de compras</p><h2 id="repeat-title">Volver a comprar</h2></div><a class="section-link" href="#historial">Ver historial ${icon("arrow-right")}</a></div>
+            <div class="repeat-grid">
+              <article class="repeat-card"><div class="repeat-product-icon">${icon("box-open")}</div><div class="repeat-copy"><strong>Compresor Embraco EM3...</strong><span class="mono">SKU S1300069 · último pedido PED-2026-036</span><b>S/ 1,250.00</b></div><a class="button button-orange" href="#carrito">Agregar al carrito</a></article>
+              <article class="repeat-card"><div class="repeat-product-icon">${icon("fan")}</div><div class="repeat-copy"><strong>Motor ventilador YDK 34-6W</strong><span class="mono">SKU YDK34-6W · último pedido PED-2026-036</span><b class="quote-price">Precio por cotizar</b></div><a class="button button-outline" href="#cotizacion">Cotizar</a></article>
+              <article class="repeat-card"><div class="repeat-product-icon">${icon("temperature-half")}</div><div class="repeat-copy"><strong>Controlador Dixell XR60CX</strong><span class="mono">SKU XR60CX · comprado 2 veces</span><b>S/ 480.00</b></div><a class="button button-orange" href="#carrito">Agregar al carrito</a></article>
+            </div>
+          </section>
+        `;
+      }
+
+      function hubContent() {
+        return `
+          ${breadcrumb("")}
+          <div class="account-layout">
+            ${accountNavigation("hub")}
+            <div class="account-content">
+              <header class="account-page-heading">
+                <div><p class="eyebrow">Resumen de cuenta</p><h1>Hola, Jean</h1><p>Retoma tus cotizaciones, sigue tus pedidos y vuelve a comprar lo que ya conoces.</p></div>
+                <a class="button button-outline heading-action" href="#datos">${icon("user-pen")} Ver mis datos</a>
+              </header>
+              <div class="invoice-banner"><div class="invoice-icon">${icon("file-invoice-dollar")}</div><div><strong>Completa tus datos para facturar</strong><span>Agrega tu RUC o dirección de entrega para agilizar tus próximas compras.</span></div><a class="button button-orange" href="#datos">Completar datos ${icon("arrow-right")}</a></div>
+              ${attentionCards()}
+              ${orderProgress()}
+              ${recentPanels()}
+              ${repeatPurchase()}
+            </div>
+          </div>
+        `;
+      }
+
+      const orderRows = [
+        { code: "PED-2026-041", date: "25 set 2026", product: "Repuestos para cámara frigorífica", extra: "+ 2 productos", total: "S/ 1,240.00", delivery: "Entrega a domicilio", status: "En camino", state: "shipping", payment: "Pago confirmado" },
+        { code: "PED-2026-044", date: "24 set 2026", product: "Controlador Dixell XR60CX", extra: "1 producto", total: "S/ 871.00", delivery: "Recojo en tienda", status: "Pago pendiente", state: "pending", payment: "Pendiente" },
+        { code: "PED-2026-036", date: "18 set 2026", product: "Motor ventilador YDK 34-6W", extra: "+ 1 producto", total: "S/ 320.00", delivery: "Agencia Olva Courier", status: "Entregado", state: "delivered", payment: "Confirmado" },
+      ];
+
+      function orderListContent() {
+        return `
+          ${breadcrumb("Pedidos")}
+          <div class="account-layout">
+            ${accountNavigation("pedidos")}
+            <div class="account-content">
+              <header class="account-page-heading orders-heading"><div><p class="eyebrow">Mi cuenta</p><h1>Mis pedidos</h1><p>Estado, pago y entrega de tus compras confirmadas.</p></div><a class="button button-outline heading-action" href="#historial">${icon("rotate-right")} Repetir pedido</a></header>
+              <div class="filters" role="group" aria-label="Filtrar pedidos">
+                <button type="button" class="filter-button is-active" data-filter="all" aria-pressed="true">Todos <b>3</b></button>
+                <button type="button" class="filter-button" data-filter="shipping" aria-pressed="false">En camino <b>1</b></button>
+                <button type="button" class="filter-button" data-filter="pending" aria-pressed="false">Pago pendiente <b>1</b></button>
+                <button type="button" class="filter-button" data-filter="delivered" aria-pressed="false">Entregados <b>1</b></button>
+              </div>
+              <div class="orders-list" id="orders-list">
+                ${orderRows.map((row) => `<article class="order-list-card" data-status="${row.state}"><div class="order-list-main"><div class="order-list-top"><span class="mono">${row.code}</span><span class="status status-${row.state === "pending" ? "orange" : row.state === "delivered" ? "green" : "blue"}">${row.status}</span></div><h2>${row.product}</h2><p>${row.extra} · ${row.date}</p></div><dl class="order-list-meta"><div><dt>Total</dt><dd>${row.total}</dd></div><div><dt>Entrega</dt><dd>${row.delivery}</dd></div><div><dt>Pago</dt><dd>${row.payment}</dd></div></dl><div class="order-list-actions"><a class="button button-outline" href="#detalle">Ver detalle ${icon("arrow-right")}</a><a class="repeat-action" href="#historial">${icon("rotate-right")} Repetir pedido</a></div></article>`).join("")}
+              </div>
+              <div class="orders-footnote">${icon("circle-info")} Los estados y montos se calculan con la información persistida del pedido. Si necesitas ayuda, <a href="#ayuda">escríbenos por WhatsApp</a>.</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function emptyContent() {
+        return `
+          ${breadcrumb("")}
+          <div class="account-layout empty-layout">
+            ${accountNavigation("hub", true)}
+            <div class="account-content">
+              <header class="account-page-heading empty-heading"><div><p class="eyebrow">Tu espacio ColdPower</p><h1>Tu cuenta está lista, Jean</h1><p>Cuando encuentres una referencia, aquí podrás seguir cada paso sin perder el hilo.</p></div><span class="account-state-pill">${icon("circle-check")} Cuenta activa</span></header>
+              <section class="empty-welcome" aria-labelledby="empty-title"><div class="empty-welcome-copy"><span class="empty-mark">${icon("star")}</span><div><p class="eyebrow">Primeros pasos</p><h2 id="empty-title">Empieza por lo que necesitas resolver</h2><p>Aún no tienes pedidos ni cotizaciones asociadas. Estas son las tres rutas útiles para comenzar.</p></div></div><div class="empty-steps">
+                <a class="empty-step" href="#buscar"><span class="step-number">01</span><span class="step-icon">${icon("magnifying-glass")}</span><span><strong>Busca por código o modelo</strong><small>Encuentra la referencia exacta en el catálogo técnico.</small></span>${icon("arrow-right")}</a>
+                <a class="empty-step" href="#cotizacion"><span class="step-number">02</span><span class="step-icon">${icon("file-invoice")}</span><span><strong>Pide una cotización</strong><small>Envíanos el producto, modelo o una foto del equipo.</small></span>${icon("arrow-right")}</a>
+                <a class="empty-step" href="#datos"><span class="step-number">03</span><span class="step-icon">${icon("address-card")}</span><span><strong>Completa tus datos para facturar</strong><small>Guarda tu RUC, teléfono y dirección de entrega.</small></span>${icon("arrow-right")}</a>
+              </div></section>
+              <section class="empty-help" id="ayuda"><div class="help-icon">${icon("whatsapp", true)}</div><div><p class="eyebrow">Asesoría técnica</p><h2>¿No sabes qué repuesto necesitas?</h2><p>Un asesor puede ayudarte a ubicarlo con el modelo o una foto del equipo.</p></div><a class="button whatsapp-button" href="#whatsapp">${icon("whatsapp", true)} Solicitar ayuda por WhatsApp ${icon("arrow-right")}</a></section>
+              <section class="empty-privacy"><span>${icon("lock")}</span><p><strong>Tus datos quedan asociados a tu cuenta.</strong> El cliente comercial se determina en servidor y solo tú podrás ver sus pedidos, cotizaciones y pagos.</p></section>
+            </div>
+          </div>
+        `;
+      }
+
+      function footer() {
+        return `
+          <footer class="store-footer">
+            <div class="home-wide footer-grid">
+              <div class="footer-brand"><a href="?screen=hub-desktop" aria-label="ColdPower"><img src="${ASSET}/brand/logo-coldpower-lockup-light.webp" alt="ColdPower" /><span>SOLUCIONES EN REFRIGERACIÓN</span></a><p>Repuestos para refrigeración, aire acondicionado y línea blanca. Tu proyecto, nuestro respaldo.</p><div class="socials"><a href="#facebook" aria-label="Facebook">${icon("facebook", true)}</a><a href="#instagram" aria-label="Instagram">${icon("instagram", true)}</a><a href="#linkedin" aria-label="LinkedIn">${icon("linkedin", true)}</a><a href="#youtube" aria-label="YouTube">${icon("youtube", true)}</a></div></div>
+              <div class="footer-list"><h2>Categorías</h2><a href="#catalogo">Explorar catálogo</a><a href="#compresores">Compresores</a><a href="#refrigeracion">Refrigeración</a><a href="#aire">Aire acondicionado</a><a href="#repuestos">Repuestos</a></div>
+              <div class="footer-list"><h2>Ayuda</h2><a href="#faq">¿Cómo comprar?</a><a href="#cotizacion">Solicitar una cotización</a><a href="#envio">Envío y entrega</a><a href="#faq">Preguntas frecuentes</a></div>
+              <div class="footer-list"><h2>Mi cuenta</h2><a href="?screen=hub-desktop">Ingresar</a><a href="#cotizaciones">Mis cotizaciones</a><a href="?screen=pedidos">Mis pedidos</a><a href="#historial">Lista de deseos</a></div>
+              <div class="footer-contact"><h2>Contáctanos</h2><a href="tel:+51987654321">${icon("phone")} +51 987 654 321</a><a href="mailto:ventas@coldpower.com.pe">${icon("envelope")} ventas@coldpower.com.pe</a><span>${icon("location-dot")} Lima, Perú</span><a class="footer-whatsapp" href="#whatsapp">${icon("whatsapp", true)} Escríbenos por WhatsApp</a></div>
+              <div class="footer-newsletter"><h2>Recibe novedades y ofertas</h2><form class="newsletter-form"><input type="email" placeholder="Tu correo electrónico" aria-label="Tu correo electrónico" /><button type="button" aria-label="Suscribirme">${icon("arrow-right")}</button></form><small>Sin spam. Solo información relevante.</small></div>
+            </div>
+            <div class="footer-bottom"><div class="home-wide"><span>© 2026 ColdPower. Todos los derechos reservados.</span><div><a href="#terminos">Términos y condiciones</a><a href="#privacidad">Política de privacidad</a><a href="#reclamaciones">Libro de reclamaciones</a><a href="#sitemap">Mapa del sitio</a></div></div></div>
+          </footer>
+        `;
+      }
+
+      function render() {
+        const content = screen === "pedidos" ? orderListContent() : screen === "vacia" ? emptyContent() : hubContent();
+        document.body.className = `screen-${screen}`;
+        document.querySelector("#app").innerHTML = `${storeHeader()}<main id="main-content" class="account-main"><div class="account-wide">${content}</div></main>${footer()}`;
+        bindInteractions();
+      }
+
+      function bindInteractions() {
+        document.querySelectorAll(".store-search button").forEach((button) => button.addEventListener("click", () => showToast("La búsqueda se conectará al catálogo persistente.")));
+        document.querySelectorAll(".newsletter-form button").forEach((button) => button.addEventListener("click", () => showToast("El newsletter usa la configuración comercial de la tienda.")));
+        document.querySelectorAll(".mobile-actions button").forEach((button) => button.addEventListener("click", () => showToast("Menú de tienda")));
+        document.querySelectorAll(".filter-button").forEach((button) => button.addEventListener("click", () => {
+          const selected = button.dataset.filter;
+          document.querySelectorAll(".filter-button").forEach((item) => { const active = item === button; item.classList.toggle("is-active", active); item.setAttribute("aria-pressed", String(active)); });
+          document.querySelectorAll(".order-list-card").forEach((row) => { row.hidden = selected !== "all" && row.dataset.status !== selected; });
+        }));
+        document.querySelectorAll("a[href^=\"#\"]").forEach((link) => link.addEventListener("click", (event) => {
+          const target = link.getAttribute("href");
+          if (target && target !== "#" && !document.querySelector(target)) { event.preventDefault(); showToast("Acción disponible en la implementación conectada."); }
+        }));
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        const toast = document.querySelector("#toast");
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2400);
+      }
+
+      render();
+    </script>
+  </body>
+</html>

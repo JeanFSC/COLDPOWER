@@ -1,3 +1,16 @@
+# Public Home V2 — Design QA — 2026-09-22
+
+- source visual truth: `C:\Users\jean_\.codex\attachments\5fcd37c9-7265-4731-8f2f-1665e1ab89f3\image-1.png` plus `pasted-text-1.txt`.
+- implementation report: `docs/qa/public-home-v2-redesign-2026-09-22.md`.
+- implementation route: `/` in the current COLDPOWER checkout.
+- browser evidence: authenticated Brave Personal QA tab, CSS viewport 1920 × 1080 at 100% zoom; responsive checks at 1440, 1024 and 390 CSS widths. The browser connector emitted the implementation capture but did not expose a filesystem path for it.
+- visual state: header/search/nav, HVAC hero, real catalog categories/products/brands, workflow, benefits, commercial banner, sectors, assistance, FAQ and footer reviewed against the supplied reference.
+- data state: PostgreSQL returned 1 category, 4 products and 3 brands. No synthetic catalog data, prices, stock, compatibility or availability was introduced. The category grid compacts to the real data count.
+- interaction evidence: real `Embraco` search, FAQ `aria-expanded`, mobile menu, real CTAs, and no horizontal overflow at the requested responsive widths.
+- automated evidence: TypeScript PASS; ESLint PASS with 0 errors and 20 pre-existing warnings; focused catalog/compatibility tests 3/3 PASS; production build PASS. Inventory is 19/20 because the external canonical workbook is absent. The ESLint config now ignores local `.claude/**` and `.remember/**` tooling artifacts.
+
+final result: passed
+
 # ColdPower visual QA
 
 - source visual truth path: `C:\Users\JEAN\.codex\attachments\31ec516c-03fb-4ae4-af3a-050d0e2a8425\image-1.png`

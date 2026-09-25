@@ -6,8 +6,8 @@ import type { Permission } from "@/lib/roles";
 export const taxonomyEntities = ["categories", "families", "brands"] as const;
 export type TaxonomyEntity = (typeof taxonomyEntities)[number];
 export type TaxonomyFilters = { entity: TaxonomyEntity; query?: string; active?: boolean; categoryId?: string; page?: number; pageSize?: number };
-export type TaxonomyItem = { id: string; name: string; slug: string; active: boolean; categoryId: string | null; categoryName: string | null; productCount: number; publishedProductCount: number; createdAt: Date; updatedAt: Date };
-export type TaxonomyPage = { entity: TaxonomyEntity; items: TaxonomyItem[]; page: number; pageSize: number; totalItems: number; totalPages: number; metrics: { total: number; active: number; inactive: number; used: number; unused: number } };
+export type TaxonomyItem = { id: string; name: string; slug: string; active: boolean; categoryId: string | null; categoryName: string | null; productCount: number; publishedProductCount: number; reviewProductCount: number; createdAt: Date; updatedAt: Date };
+export type TaxonomyPage = { entity: TaxonomyEntity; items: TaxonomyItem[]; page: number; pageSize: number; totalItems: number; totalPages: number; metrics: { total: number; active: number; inactive: number; used: number; unused: number; productsWithoutBrand: number } };
 export class TaxonomyInvalidFilterError extends Error { constructor() { super("TAXONOMY_INVALID_FILTER"); this.name = "TaxonomyInvalidFilterError"; } }
 
 export function isTaxonomyEntity(value: string | null | undefined): value is TaxonomyEntity { return Boolean(value && taxonomyEntities.includes(value as TaxonomyEntity)); }
@@ -36,13 +36,13 @@ export async function getTaxonomyPage(filters: TaxonomyFilters): Promise<Taxonom
   if (filters.entity === "categories") {
     const where = conditionsFor(categories, filters);
     const [rows, total, activeRows, inactiveRows, usedRows] = await Promise.all([
-      db.select({ id: categories.id, name: categories.name, slug: categories.slug, active: categories.active, createdAt: categories.createdAt, updatedAt: categories.updatedAt, productCount: count(products.id), publishedProductCount: sql<number>`count(*) filter (where ${products.publicationStatus} = 'published')` }).from(categories).leftJoin(products, effectiveCategoryJoin()).where(and(...where)).groupBy(categories.id).orderBy(asc(categories.name)).limit(pageSize).offset((page - 1) * pageSize),
+      db.select({ id: categories.id, name: categories.name, slug: categories.slug, active: categories.active, createdAt: categories.createdAt, updatedAt: categories.updatedAt, productCount: countDistinct(products.id), publishedProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'published')`, reviewProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'review')` }).from(categories).leftJoin(products, effectiveCategoryJoin()).where(and(...where)).groupBy(categories.id).orderBy(asc(categories.name)).limit(pageSize).offset((page - 1) * pageSize),
       db.select({ value: count() }).from(categories).where(and(...where)),
       db.select({ value: count() }).from(categories).where(and(...where, eq(categories.active, true))),
       db.select({ value: count() }).from(categories).where(and(...where, eq(categories.active, false))),
       db.select({ value: countDistinct(categories.id) }).from(categories).innerJoin(products, effectiveCategoryJoin()).where(and(...where)),
     ]);
-    items = rows.map((row) => ({ ...row, categoryId: null, categoryName: null, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount) }));
+    items = rows.map((row) => ({ ...row, categoryId: null, categoryName: null, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount), reviewProductCount: normalizeCount(row.reviewProductCount) }));
     totalItems = normalizeCount(total[0]?.value); active = normalizeCount(activeRows[0]?.value); inactive = normalizeCount(inactiveRows[0]?.value); used = normalizeCount(usedRows[0]?.value);
   }
 
@@ -50,30 +50,34 @@ export async function getTaxonomyPage(filters: TaxonomyFilters): Promise<Taxonom
     const where = conditionsFor(families, filters);
     if (filters.categoryId) where.push(eq(families.categoryId, filters.categoryId));
     const [rows, total, activeRows, inactiveRows, usedRows] = await Promise.all([
-      db.select({ id: families.id, name: families.name, slug: families.slug, active: families.active, categoryId: families.categoryId, categoryName: categories.name, createdAt: families.createdAt, updatedAt: families.updatedAt, productCount: count(products.id), publishedProductCount: sql<number>`count(*) filter (where ${products.publicationStatus} = 'published')` }).from(families).innerJoin(categories, eq(categories.id, families.categoryId)).leftJoin(products, effectiveFamilyJoin()).where(and(...where)).groupBy(families.id, categories.name).orderBy(asc(families.name)).limit(pageSize).offset((page - 1) * pageSize),
+      db.select({ id: families.id, name: families.name, slug: families.slug, active: families.active, categoryId: families.categoryId, categoryName: categories.name, createdAt: families.createdAt, updatedAt: families.updatedAt, productCount: countDistinct(products.id), publishedProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'published')`, reviewProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'review')` }).from(families).innerJoin(categories, eq(categories.id, families.categoryId)).leftJoin(products, effectiveFamilyJoin()).where(and(...where)).groupBy(families.id, categories.name).orderBy(asc(families.name)).limit(pageSize).offset((page - 1) * pageSize),
       db.select({ value: count() }).from(families).where(and(...where)),
       db.select({ value: count() }).from(families).where(and(...where, eq(families.active, true))),
       db.select({ value: count() }).from(families).where(and(...where, eq(families.active, false))),
       db.select({ value: countDistinct(families.id) }).from(families).innerJoin(products, effectiveFamilyJoin()).where(and(...where)),
     ]);
-    items = rows.map((row) => ({ ...row, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount) }));
+    items = rows.map((row) => ({ ...row, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount), reviewProductCount: normalizeCount(row.reviewProductCount) }));
     totalItems = normalizeCount(total[0]?.value); active = normalizeCount(activeRows[0]?.value); inactive = normalizeCount(inactiveRows[0]?.value); used = normalizeCount(usedRows[0]?.value);
   }
 
   if (filters.entity === "brands") {
     const where = conditionsFor(brands, filters);
     const [rows, total, activeRows, inactiveRows, usedRows] = await Promise.all([
-      db.select({ id: brands.id, name: brands.name, slug: brands.slug, active: brands.active, createdAt: brands.createdAt, updatedAt: brands.updatedAt, productCount: count(products.id), publishedProductCount: sql<number>`count(*) filter (where ${products.publicationStatus} = 'published')` }).from(brands).leftJoin(products, effectiveBrandJoin()).where(and(...where)).groupBy(brands.id).orderBy(asc(brands.name)).limit(pageSize).offset((page - 1) * pageSize),
+      db.select({ id: brands.id, name: brands.name, slug: brands.slug, active: brands.active, createdAt: brands.createdAt, updatedAt: brands.updatedAt, productCount: countDistinct(products.id), publishedProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'published')`, reviewProductCount: sql<number>`count(distinct ${products.id}) filter (where ${products.publicationStatus} = 'review')` }).from(brands).leftJoin(products, effectiveBrandJoin()).where(and(...where)).groupBy(brands.id).orderBy(asc(brands.name)).limit(pageSize).offset((page - 1) * pageSize),
       db.select({ value: count() }).from(brands).where(and(...where)),
       db.select({ value: count() }).from(brands).where(and(...where, eq(brands.active, true))),
       db.select({ value: count() }).from(brands).where(and(...where, eq(brands.active, false))),
       db.select({ value: countDistinct(brands.id) }).from(brands).innerJoin(products, effectiveBrandJoin()).where(and(...where)),
     ]);
-    items = rows.map((row) => ({ ...row, categoryId: null, categoryName: null, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount) }));
+    items = rows.map((row) => ({ ...row, categoryId: null, categoryName: null, productCount: normalizeCount(row.productCount), publishedProductCount: normalizeCount(row.publishedProductCount), reviewProductCount: normalizeCount(row.reviewProductCount) }));
     totalItems = normalizeCount(total[0]?.value); active = normalizeCount(activeRows[0]?.value); inactive = normalizeCount(inactiveRows[0]?.value); used = normalizeCount(usedRows[0]?.value);
   }
 
-  return { entity: filters.entity, items, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active, inactive, used, unused: Math.max(0, totalItems - used) } };
+  const [unbranded] = await db
+    .select({ value: count(products.id) })
+    .from(products)
+    .where(and(isNull(products.brandId), isNull(products.editorialBrandId)));
+  return { entity: filters.entity, items, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active, inactive, used, unused: Math.max(0, totalItems - used), productsWithoutBrand: normalizeCount(unbranded?.value) } };
 }
 
 export async function getTaxonomyDetail(entity: TaxonomyEntity, id: string, page = 1, pageSize = 25) {

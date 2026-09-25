@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Image as ImageIcon, LoaderCircle, Star, Trash2 } from "lucide-react";
+import { CheckCircle2, Image as ImageIcon, LoaderCircle, Trash2 } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
 
 export type ProductMediaItem = {
@@ -125,10 +125,11 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
         </div>
       </div>
       {canEdit ? (
-        <label className="grid gap-1 rounded-xl border border-[#cfe0f7] bg-[#f5f9ff] p-3 text-[10px] font-extrabold text-[#526b84]">
-          Subir imagen y marcarla como principal
-          <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" disabled={busyAssetId !== null} onChange={(event) => void uploadAndAssociate(event)} className="text-[10px] font-semibold text-[#526b84] disabled:opacity-50" />
-          <span className="font-normal text-[#8296a9]">Se guarda en la biblioteca, queda auditada y reemplaza la principal anterior.</span>
+        <label className="grid cursor-pointer gap-2 rounded-xl border border-dashed border-[#b9d3f4] bg-[#f5f9ff] p-4 text-[12px] font-extrabold text-[#526b84] transition hover:border-[#2277ee] hover:bg-[#eef5ff] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+          <span className="flex items-center gap-2 text-[#2277ee]"><ImageIcon className="h-4 w-4" aria-hidden="true" /> Subir imagen principal</span>
+          <span className="font-normal text-[#607894]">PNG, JPG, WEBP o SVG. Se guardará en la biblioteca, quedará auditada y reemplazará la principal anterior.</span>
+          <span className="inline-flex h-8 w-fit items-center rounded-md bg-white px-3 text-[11px] font-extrabold text-[#2277ee] shadow-sm">Seleccionar imagen</span>
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" disabled={busyAssetId !== null} onChange={(event) => void uploadAndAssociate(event)} className="hidden" />
         </label>
       ) : (
         <p className="rounded-xl border border-dashed border-[#dce6ee] bg-[#fbfcfd] p-3 text-[10px] text-[#71869c]">No tienes permiso para administrar media.</p>
@@ -147,11 +148,11 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
                   <p className="truncate text-[10px] font-bold text-[#304b66]">{isPrimary ? "Imagen principal" : "Galería"}</p>
                   <p className="truncate text-[9px] text-[#8296a9]">{asset.altText || "Sin texto alternativo"}</p>
                 </div>
-                {isPrimary ? <Star className="h-3.5 w-3.5 shrink-0 fill-[#ffb020] text-[#ffb020]" aria-label="Imagen principal" /> : null}
+                {isPrimary ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#0b8f5a]" aria-label="Imagen principal" /> : null}
               </div>
               {canEdit ? (
                 <div className="mt-2 flex flex-wrap gap-1.5 border-t border-[#edf2f6] pt-2">
-                  {!isPrimary ? <button type="button" disabled={busyAssetId !== null} onClick={() => void markPrimary(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#cfe0f7] px-2 text-[9px] font-extrabold text-[#2277ee] disabled:opacity-40"><Star className="h-3 w-3" aria-hidden="true" />Usar como principal</button> : null}
+                  {!isPrimary ? <button type="button" disabled={busyAssetId !== null} onClick={() => void markPrimary(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#cfe0f7] px-2 text-[9px] font-extrabold text-[#2277ee] disabled:opacity-40"><CheckCircle2 className="h-3 w-3" aria-hidden="true" />Usar como principal</button> : null}
                   <button type="button" disabled={busyAssetId !== null} onClick={() => void removeAsset(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#ffd0d0] px-2 text-[9px] font-extrabold text-[#d94848] disabled:opacity-40"><Trash2 className="h-3 w-3" aria-hidden="true" />Quitar</button>
                   {busy ? <LoaderCircle className="ml-auto h-3.5 w-3.5 animate-spin text-[#8296a9]" aria-label="Procesando" /> : null}
                 </div>

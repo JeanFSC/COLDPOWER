@@ -892,6 +892,7 @@ export async function getAdminCatalogProductDetail(id: string, options: boolean 
   return {
     sourceIdentity: {
       sku: product.sku,
+      slug: product.slug,
       originalName: product.originalName,
       normalizedName: product.normalizedName,
       categoryId: product.categoryId,

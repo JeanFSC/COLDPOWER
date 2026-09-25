@@ -70,3 +70,8 @@ corepack pnpm exec dotenv -e .env.localdb -v CP_DEV_AUTH_BYPASS=true -v CP_DEV_A
 - Consola sin errores. axe sin violaciones en los módulos tocados. Recorrido rápido por UI de una acción por módulo (sin romper nada).
 - `tsc`, lint 0/0, `test-all` (solo el Excel externo) y build.
 - Informe por punto (A1…B-Catálogo). Sin commit.
+
+## Añadido por Claude tras cerrar M10-01
+- **Promociones:**
+  - fila de KPIs con altura uniforme (hoy la tarjeta "Aplicaciones" es más alta que las otras 3);
+  - en el calendario, las etiquetas de semana alineadas con su línea de inicio (o marcadas como rango), para que "Hoy" (25-set) se lea sin ambigüedad.

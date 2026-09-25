@@ -115,6 +115,8 @@ export function PurchasesOperations({
   canReceive = true,
   initialRequestProductId,
   initialRequestLocationId,
+  initialOrderSupplierId,
+  initialOrderLocationId,
 }: {
   suppliers: Supplier[];
   locations: Location[];
@@ -124,6 +126,8 @@ export function PurchasesOperations({
   canReceive?: boolean;
   initialRequestProductId?: string;
   initialRequestLocationId?: string;
+  initialOrderSupplierId?: string;
+  initialOrderLocationId?: string;
 }) {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error">("success");
@@ -136,8 +140,8 @@ export function PurchasesOperations({
   const [requestLocationId, setRequestLocationId] = useState(initialRequestLocationId ?? "");
   const [requestSource, setRequestSource] = useState("MANUAL");
   const [requestProductId, setRequestProductId] = useState(initialRequestProductId ?? "");
-  const [orderSupplierId, setOrderSupplierId] = useState("");
-  const [orderLocationId, setOrderLocationId] = useState("");
+  const [orderSupplierId, setOrderSupplierId] = useState(initialOrderSupplierId ?? "");
+  const [orderLocationId, setOrderLocationId] = useState(initialOrderLocationId ?? "");
   const [orderProductId, setOrderProductId] = useState("");
   const [receptionPurchaseId, setReceptionPurchaseId] = useState("");
   const [receptionProductId, setReceptionProductId] = useState("");
