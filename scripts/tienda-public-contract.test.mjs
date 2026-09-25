@@ -73,7 +73,9 @@ test("SKU exacto redirige a ficha y la ficha tiene SEO de producto", () => {
   assert.match(transaction, /hasPrice/);
   assert.match(transaction, /Agregar al carrito/);
   assert.match(transaction, /Solicitar cotización/);
-  assert.match(transaction, /Solo cotizable/);
+  assert.match(transaction, /<Info className/);
+  assert.match(transaction, /Disponible .* cotización/);
+  assert.doesNotMatch(transaction, /disabledLabel="Solo cotizable"/);
 });
 
 test("carrito separa compra real de referencias cotizables", () => {

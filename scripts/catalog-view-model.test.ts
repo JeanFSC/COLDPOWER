@@ -91,18 +91,57 @@ test("maps inactive source status to a visible non-available state", () => {
   assert.equal(product.price, null);
 });
 
-test("does not expose the legacy generated family sentence as editorial copy", () => {
+test("uses persisted availability for a priced commercial product", () => {
+  const product = mapCatalogProductRow({
+    product: {
+      id: "product-cp-priced-001",
+      sku: "CP-PRICED-001",
+      slug: "priced-product-cp-001",
+      originalName: "Priced product",
+      normalizedName: "Priced product",
+      productType: "Repuesto",
+      compatibilityBrands: null,
+      modelCode: null,
+      application: null,
+      voltage: null,
+      power: null,
+      frequency: null,
+      rpm: null,
+      amperage: null,
+      capacitance: null,
+      refrigerant: null,
+      horsepower: null,
+      temperature: null,
+      dimensions: null,
+      length: null,
+      connectionSize: null,
+      unitOfMeasure: "NIU",
+      status: "Activo",
+      availabilityStatus: "in_stock",
+      price: 90,
+      priceCurrency: "PEN",
+    },
+    category: { name: "Refrigeración", slug: "refrigeracion" },
+    family: { name: "Repuestos", slug: "repuestos" },
+    brand: null,
+  });
+
+  assert.equal(product.price, 90);
+  assert.equal(product.status, "in-stock");
+});
+
+test("does not expose the exact generated family sentence stored in the catalog", () => {
   const product = mapCatalogProductRow({
     product: {
       id: "product-cp-003",
       sku: "CP-003",
       slug: "capacitor-cp-003",
-      originalName: "Capacitor",
-      normalizedName: "Capacitor",
+      originalName: "REFRIGERACIÓN - CAPACITOR 25UF 450V COLDPOWER",
+      normalizedName: "CAPACITOR 25 µF 450 V COLDPOWER",
       productType: "Capacitor",
       compatibilityBrands: null,
       modelCode: null,
-      application: "Refrigeradoras",
+      application: "Refrigeradoras / sistemas de refrigeración",
       voltage: null,
       power: null,
       frequency: null,
@@ -117,7 +156,44 @@ test("does not expose the legacy generated family sentence as editorial copy", (
       connectionSize: null,
       unitOfMeasure: "NIU",
       status: "Activo",
-      editorialDescription: "Capacitor. Referencia de catálogo de la familia Capacitores para Refrigeración.",
+      editorialDescription: "CAPACITOR 25 µF 450 V COLDPOWER. Referencia de catálogo de la familia Capacitores para Refrigeración.",
+    },
+    category: { name: "Refrigeración", slug: "refrigeracion" },
+    family: { name: "Capacitores", slug: "refrigeracion-capacitores" },
+    brand: null,
+  });
+
+  assert.equal(product.shortDescription, "Repuesto para Refrigeradoras / sistemas de refrigeración.");
+  assert.equal(product.longDescription, "");
+});
+
+test("suppresses generated family copy even when the product name is repeated", () => {
+  const product = mapCatalogProductRow({
+    product: {
+      id: "product-cp-004",
+      sku: "CP-004",
+      slug: "capacitor-cp-004",
+      originalName: "Capacitor",
+      normalizedName: "CAPACITOR 25 µF 450 V COLDPOWER",
+      productType: "Capacitor",
+      compatibilityBrands: null,
+      modelCode: null,
+      application: "Refrigeradoras",
+      voltage: null,
+      power: null,
+      frequency: null,
+      rpm: null,
+      amperage: null,
+      capacitance: null,
+      refrigerant: null,
+      horsepower: null,
+      temperature: null,
+      dimensions: null,
+      length: null,
+      connectionSize: null,
+      unitOfMeasure: "NIU",
+      status: "Activo",
+      editorialDescription: "CAPACITOR 25 µF 450 V COLDPOWER CAPACITOR 25 µF 450 V COLDPOWER. Referencia de catálogo de la familia Capacitores para Refrigeración.",
     },
     category: { name: "Refrigeración", slug: "refrigeracion" },
     family: { name: "Capacitores", slug: "refrigeracion-capacitores" },

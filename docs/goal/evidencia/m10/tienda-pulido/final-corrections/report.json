@@ -1,0 +1,128 @@
+{
+  "baseUrl": "http://localhost:3006",
+  "results": [
+    {
+      "label": "capacitor-quote-only-desktop",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-corrections\\capacitor-quote-only-1920x1080.png",
+      "check": {
+        "expected": "quote-only",
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "responseStatus": 200,
+        "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+        "fillerCount": 0,
+        "soloCotizableButtons": 0,
+        "hasInformationalQuoteNote": true,
+        "hasQuoteState": true,
+        "hasPrice": false,
+        "hasAddToCart": false,
+        "hasQuoteCta": false,
+        "disabledButtons": [],
+        "metaDescription": "Repuesto para Refrigeradoras / sistemas de refrigeración.",
+        "documentScrollWidth": 1920,
+        "transactionAboveFold": true
+      }
+    },
+    {
+      "label": "capacitor-quote-only-mobile",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-corrections\\capacitor-quote-only-390x844.png",
+      "check": {
+        "expected": "quote-only",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "responseStatus": 200,
+        "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+        "fillerCount": 0,
+        "soloCotizableButtons": 0,
+        "hasInformationalQuoteNote": true,
+        "hasQuoteState": true,
+        "hasPrice": false,
+        "hasAddToCart": false,
+        "hasQuoteCta": false,
+        "disabledButtons": [],
+        "metaDescription": "Repuesto para Refrigeradoras / sistemas de refrigeración.",
+        "documentScrollWidth": 390,
+        "transactionAboveFold": false
+      }
+    },
+    {
+      "label": "carbon-priced-desktop",
+      "route": "/producto/carbon-amoladora-bosch",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-corrections\\carbon-priced-1920x1080.png",
+      "check": {
+        "expected": "priced",
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "responseStatus": 200,
+        "title": "CARBON AMOLADORA BOSCH | ColdPower",
+        "fillerCount": 0,
+        "soloCotizableButtons": 0,
+        "hasInformationalQuoteNote": false,
+        "hasQuoteState": false,
+        "hasPrice": true,
+        "hasAddToCart": true,
+        "hasQuoteCta": true,
+        "disabledButtons": [],
+        "metaDescription": "Repuesto para Amoladoras.",
+        "documentScrollWidth": 1920,
+        "transactionAboveFold": true
+      }
+    },
+    {
+      "label": "carbon-priced-mobile",
+      "route": "/producto/carbon-amoladora-bosch",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-corrections\\carbon-priced-390x844.png",
+      "check": {
+        "expected": "priced",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "responseStatus": 200,
+        "title": "CARBON AMOLADORA BOSCH | ColdPower",
+        "fillerCount": 0,
+        "soloCotizableButtons": 0,
+        "hasInformationalQuoteNote": false,
+        "hasQuoteState": false,
+        "hasPrice": true,
+        "hasAddToCart": true,
+        "hasQuoteCta": true,
+        "disabledButtons": [],
+        "metaDescription": "Repuesto para Amoladoras.",
+        "documentScrollWidth": 390,
+        "transactionAboveFold": false
+      }
+    }
+  ],
+  "consoleIssues": [
+    {
+      "label": "capacitor-quote-only-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "capacitor-quote-only-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "carbon-priced-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "carbon-priced-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    }
+  ],
+  "generatedAt": "2026-09-25T18:43:57.070Z"
+}

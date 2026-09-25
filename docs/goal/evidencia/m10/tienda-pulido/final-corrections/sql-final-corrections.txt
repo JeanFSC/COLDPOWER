@@ -1,0 +1,18 @@
+Read-only SQL evidence against the local PostgreSQL database.
+
+Command:
+C:/PostgreSQL/18/bin/psql.exe -h 127.0.0.1 -p 5433 -U coldpower -d coldpower
+
+Query:
+SELECT sku, original_name, normalized_name, commercial_name, editorial_description, application, model_code
+FROM products
+WHERE sku = 'CP-REF-CAP-0412';
+
+Result:
+sku                 | original_name                                      | normalized_name                    | commercial_name | editorial_description                                                                                         | application                                  | model_code
+CP-REF-CAP-0412     | REFRIGERACIÓN - CAPACITOR 25UF 450V COLDPOWER     | CAPACITOR 25 µF 450 V COLDPOWER   |                 | CAPACITOR 25 µF 450 V COLDPOWER. Referencia de catálogo de la familia Capacitores para Refrigeración.          | Refrigeradoras / sistemas de refrigeración  |
+
+The source field is products.editorial_description. The row was not updated or deleted.
+
+Price-state reference used for the visual regression:
+CP-AMO-CAR-1027 | carbon-amoladora-bosch | RETAIL | 90.00 | PEN | ACTIVE | active=true | availability_status=in_stock

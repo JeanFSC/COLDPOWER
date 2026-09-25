@@ -143,6 +143,23 @@ final result: blocked
 
 final result: passed
 
+## M10-03 final corrections - 2026-09-25
+
+- Visual evidence: `docs/goal/evidencia/m10/tienda-pulido/final-corrections/capacitor-quote-only-1920x1080.png`, `capacitor-quote-only-390x844.png`, `carbon-priced-1920x1080.png` and `carbon-priced-390x844.png`.
+- Quote-only product: the exact catalog filler is absent from the page and meta description; the former disabled `Solo cotizable` control is replaced by an informational note with an icon.
+- Priced product: the real `S/ 90.00` RETAIL price renders with active `Agregar al carrito` and `Cotizar` actions. Persisted `availability_status = in_stock` is respected by the view-model.
+- Responsive checks: CSS viewports 1920 x 1080 and 390 x 844, no horizontal overflow; desktop transaction panels remain above the fold and mobile fixed actions remain visible.
+- Browser console: no application errors; only the expected Clerk development-key warning was observed.
+
+### Product design review
+
+- Attractive: yes; the note communicates the quote-only state without looking like a dead control.
+- Efficient: yes; commercial state, explanation and next action remain grouped.
+- Responsive: yes; both target viewports rendered without overflow and the mobile action bar stayed reachable.
+- Easy to use: yes; every visible control has an action, while quote-only availability is explicit text.
+
+final result: passed
+
 ## M10-03 tienda — pulido de ficha, cotización y responsive — 2026-09-25
 
 - source visual truth: `docs/goal/usabilidad/capturas/baseline-producto-6871-1920x1080.png` y `baseline-producto-6871-390x844.png`.
