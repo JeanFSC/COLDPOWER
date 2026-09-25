@@ -5,6 +5,7 @@ import { shoppingCartItems, shoppingCarts } from "@/db/sales-schema";
 import { getCatalogProductsByIds, publicConditions } from "@/lib/catalog-repository";
 import { resolveProductImage } from "@/lib/product-image";
 import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
+import { unconfiguredTaxBreakdown, type TaxBreakdown } from "@/lib/tax";
 
 export const CART_SESSION_COOKIE = "coldpower-cart-session";
 export const CART_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
@@ -30,6 +31,7 @@ export type CartLineView = {
   brand: string | null;
   category: string | null;
   family: string | null;
+  taxType: string | null;
   image: string | null;
   quantity: number;
   unitPrice: string | null;
@@ -48,9 +50,10 @@ export type CartView = {
   currency: string | null;
   canCheckout: boolean;
   issues: Array<"UNAVAILABLE_ITEMS" | "QUOTE_ONLY_ITEMS" | "MIXED_CURRENCY">;
+  tax: TaxBreakdown;
 };
 
-const emptyView: CartView = { cartId: null, version: 0, items: [], totalQuantity: 0, subtotal: null, currency: null, canCheckout: false, issues: [] };
+const emptyView: CartView = { cartId: null, version: 0, items: [], totalQuantity: 0, subtotal: null, currency: null, canCheckout: false, issues: [], tax: unconfiguredTaxBreakdown() };
 
 function newId(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
@@ -171,6 +174,7 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
       brand: product?.brand ?? null,
       category: product?.category ?? null,
       family: product?.family ?? null,
+      taxType: product?.taxType ?? null,
       image: product ? resolveProductImage(product).src : null,
       quantity: row.quantity,
       unitPrice: price?.amount ?? null,
@@ -196,6 +200,7 @@ async function buildCartView(db: Database, cartId: string): Promise<CartView> {
     currency: currencies.size === 1 ? [...currencies][0] : null,
     canCheckout,
     issues,
+    tax: unconfiguredTaxBreakdown(),
   };
 }
 

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companySettings } from "@/db/schema";
 import { company } from "@/data/company";
+import { getPlaceholderCompanyFields } from "@/lib/env";
 import { publicCompanySettings, type CompanySettings } from "@/lib/company-settings";
 import { withRuntimeCache } from "@/lib/runtime-cache";
 
@@ -17,7 +18,7 @@ function fallbackSettings(): CompanySettings {
     commercialName: company.commercialName,
     ruc: company.ruc,
     phone: company.primaryPhone,
-    whatsapp: company.whatsapp,
+    whatsapp: getPlaceholderCompanyFields().includes("NEXT_PUBLIC_WHATSAPP_NUMBER") ? null : company.whatsapp,
     email: company.commercialEmail,
     salesEmail: company.commercialEmail,
     address: company.address,
@@ -32,7 +33,7 @@ function fallbackSettings(): CompanySettings {
 export async function getPublicCompanySettings(): Promise<CompanySettings> {
   // Public, non-sensitive data (company contact/schedule) requested on every
   // page including admin routes via the root layout; short process-local
-  // cache avoids a Neon round trip per navigation.
+  // cache avoids a database round trip per navigation.
   return withRuntimeCache("company-settings:public", async () => {
     try {
       const [settings] = await getDb().select().from(companySettings).where(eq(companySettings.id, SETTINGS_ID)).limit(1);

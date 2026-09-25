@@ -1,0 +1,25 @@
+import { chromium } from "playwright";
+import { getDb } from "../../../src/db";
+import { products } from "../../../src/db/schema";
+import { count } from "drizzle-orm";
+
+async function main() {
+  console.log("Checking DB...");
+  const db = getDb();
+  const [{ total }] = await db.select({ total: count() }).from(products);
+  console.log("Total products in DB:", total);
+
+  console.log("Launching browser...");
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  await page.goto("http://localhost:3007/", { waitUntil: "networkidle" });
+  await page.screenshot({ path: "docs/goal/usabilidad/gemini/capturas/test-browser-probe.png" });
+  await browser.close();
+  console.log("Probe complete! Screenshot saved.");
+  process.exit(0);
+}
+
+main().catch((err) => {
+  console.error("Probe error:", err);
+  process.exit(1);
+});

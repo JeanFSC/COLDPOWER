@@ -18,6 +18,7 @@ import {
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 import type { OrderListItem, OrdersPageResponse } from "@/lib/orders-contract";
+import { unconfiguredTaxBreakdown } from "@/lib/tax";
 
 type Detail = {
   order: Record<string, unknown>;
@@ -107,7 +108,7 @@ function historyTransition(row: Record<string, unknown>) {
   }
   return "Registro";
 }
-function money(currency: string, value: string | number) {
+function money(currency: string, value: string | number | null | undefined) {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(Number(value));
 }
 function tone(value: string) {
@@ -141,11 +142,13 @@ export function OrdersControlCenter({
   queryString,
   canManage,
   canPaymentsView,
+  canViewAmounts,
 }: {
   page: OrdersPageResponse;
   queryString: string;
   canManage: boolean;
   canPaymentsView: boolean;
+  canViewAmounts: boolean;
 }) {
   const [detailId, setDetailId] = useState<string | null>(() => {
     const params = new URLSearchParams(queryString);
@@ -294,7 +297,7 @@ export function OrdersControlCenter({
                   "Pedido",
                   "Cliente",
                   "Productos",
-                  "Total",
+                  ...(canViewAmounts ? ["Total"] : []),
                   "Estado logístico",
                   "Atención",
                   "Entrega",
@@ -310,7 +313,7 @@ export function OrdersControlCenter({
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {page.items.map((item) => (
-                <OrderRow key={item.id} item={item} onOpen={setDetailId} canPaymentsView={canPaymentsView} />
+                <OrderRow key={item.id} item={item} onOpen={setDetailId} canPaymentsView={canPaymentsView} canViewAmounts={canViewAmounts} />
               ))}
             </tbody>
           </table>
@@ -327,11 +330,11 @@ export function OrdersControlCenter({
                   <p className="text-xs font-semibold text-blue-600">{item.code}</p>
                   <p className="mt-1 text-[11px] text-slate-500">{item.customerName}</p>
                 </div>
-                <strong className="text-xs text-slate-900">{money(item.currency, item.total)}</strong>
+                {canViewAmounts ? <strong className="text-xs text-slate-900">{money(item.currency, item.total)}</strong> : null}
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <Badge value={item.status} />
-                {canPaymentsView ? <Badge value={item.paymentStatus ? item.paymentReconciliation : "NO_PAYMENT"} /> : null}
+                {canPaymentsView ? <Badge value={item.paymentReconciliation ?? "NO_PAYMENT"} /> : null}
               </div>
             </button>
           ))}
@@ -362,6 +365,7 @@ export function OrdersControlCenter({
         orderId={detailId}
         canManage={canManage}
         canPaymentsView={canPaymentsView}
+        canViewAmounts={canViewAmounts}
         onClose={() => setDetailId(null)}
       />
     </div>
@@ -391,10 +395,12 @@ function OrderRow({
   item,
   onOpen,
   canPaymentsView,
+  canViewAmounts,
 }: {
   item: OrderListItem;
   onOpen: (id: string) => void;
   canPaymentsView: boolean;
+  canViewAmounts: boolean;
 }) {
   return (
     <tr className="transition-colors hover:bg-slate-50/60">
@@ -417,7 +423,7 @@ function OrderRow({
           {item.pickedQuantity}/{item.totalQuantity}
         </span>
       </td>
-      <td className="px-3 py-3 font-semibold text-slate-900">{money(item.currency, item.total)}</td>
+      {canViewAmounts ? <td className="px-3 py-3 font-semibold text-slate-900">{money(item.currency, item.total)}</td> : null}
       <td className="px-3 py-3">
         <Badge value={item.status} />
         <LogisticsStepper status={item.status} />
@@ -428,7 +434,7 @@ function OrderRow({
       <td className="px-3 py-3 text-slate-500">{text(item.deliveryMethod)}</td>
       {canPaymentsView ? (
         <td className="px-3 py-3">
-          <Badge value={item.paymentStatus ? item.paymentReconciliation : "NO_PAYMENT"} />
+          <Badge value={item.paymentReconciliation ?? "NO_PAYMENT"} />
         </td>
       ) : null}
       <td className="px-3 py-3 text-slate-500">{item.locationName ?? "N/D"}</td>
@@ -606,11 +612,13 @@ function OrderDrawer({
   orderId,
   canManage,
   canPaymentsView,
+  canViewAmounts,
   onClose,
 }: {
   orderId: string | null;
   canManage: boolean;
   canPaymentsView: boolean;
+  canViewAmounts: boolean;
   onClose: () => void;
 }) {
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -659,6 +667,7 @@ function OrderDrawer({
   }, [loadDetail]);
   const order = detail?.order;
   const currency = String(order?.currency ?? "PEN");
+  const tax = unconfiguredTaxBreakdown();
   const actions = useMemo(
     () =>
       detail
@@ -823,7 +832,8 @@ function OrderDrawer({
             {[
               ["Pedido", order?.code],
               ["Cliente", detail.customer?.name],
-              ["Total", money(currency, String(order?.total ?? 0))],
+              ...(canViewAmounts ? [["Total", money(currency, String(order?.total ?? 0))] as [string, unknown]] : []),
+              ...(canViewAmounts ? [["Op. gravada", tax.taxableOperation ? money(currency, tax.taxableOperation) : "Por configurar"] as [string, unknown], ["IGV 18%", tax.igv ? money(currency, tax.igv) : "Por configurar"] as [string, unknown]] : []),
               ...(canPaymentsView && detail.reconciliation
                 ? [["Cobro", text(detail.reconciliation.status)] as [string, unknown]]
                 : []),

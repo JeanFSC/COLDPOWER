@@ -248,11 +248,15 @@ export function CheckoutForm({ cart, locations, defaults }: Props) {
           ))}
         </ul>
         <div className="mt-4 flex justify-between text-sm"><span className="text-gray-light">Envío</span><span className="font-bold">{form.deliveryMethod === "PICKUP" ? "Sin costo" : "Por coordinar"}</span></div>
+        <div className="mt-4 grid gap-2 border-t border-white/10 pt-4 text-sm">
+          <div className="flex justify-between"><span className="text-gray-light">Op. gravada</span><span className="font-bold">{cart.tax.taxableOperation ? formatProductPrice(Number(cart.tax.taxableOperation), currency) : "Por configurar"}</span></div>
+          <div className="flex justify-between"><span className="text-gray-light">IGV 18%</span><span className="font-bold">{cart.tax.igv ? formatProductPrice(Number(cart.tax.igv), currency) : "Por configurar"}</span></div>
+        </div>
         <div className="mt-4 flex items-end justify-between border-t border-white/10 pt-4">
           <span className="text-sm text-gray-light">Total</span>
           <strong className="font-display text-3xl">{cart.subtotal ? formatProductPrice(Number(cart.subtotal), currency) : "—"}</strong>
         </div>
-        <p className="mt-4 text-xs leading-5 text-gray-light">Los precios se verifican otra vez al confirmar. No guardamos datos de tarjeta.</p>
+        <p className="mt-4 text-xs leading-5 text-gray-light">{cart.tax.status === "UNCONFIGURED" ? cart.tax.note : "Los precios se verifican otra vez al confirmar. No guardamos datos de tarjeta."}</p>
       </aside>
     </div>
   );

@@ -3,7 +3,7 @@ import test from "node:test";
 import { assertOpportunityTransition, canTransitionOpportunity, validateCustomerInput, validateOpportunityInput } from "../src/lib/crm-validation";
 
 test("CRM valida tipos de cliente y conserva datos opcionales", () => {
-  const customer = validateCustomerInput({ name: "  Cliente real ", customerType: "EMPRESA", ruc: "20123456789" });
+  const customer = validateCustomerInput({ name: "  Cliente real ", customerType: "EMPRESA", ruc: "20123456786" });
   assert.equal(customer.name, "Cliente real");
   assert.equal(customer.customerType, "EMPRESA");
   assert.throws(() => validateCustomerInput({ name: "x", customerType: "FICTICIO" }));

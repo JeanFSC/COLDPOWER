@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { CartView } from "@/lib/shopping-cart-service";
+import { unconfiguredTaxBreakdown } from "@/lib/tax";
 
 // Purchase cart state. The server (/api/carrito, Postgres) is the only source of truth: every
 // change is a request, and the UI renders the view the server returns (prices included).
@@ -19,7 +20,7 @@ type ShoppingCartContextValue = {
   dismissError: () => void;
 };
 
-const emptyCart: CartView = { cartId: null, version: 0, items: [], totalQuantity: 0, subtotal: null, currency: null, canCheckout: false, issues: [] };
+const emptyCart: CartView = { cartId: null, version: 0, items: [], totalQuantity: 0, subtotal: null, currency: null, canCheckout: false, issues: [], tax: unconfiguredTaxBreakdown() };
 const ShoppingCartContext = createContext<ShoppingCartContextValue | null>(null);
 
 type CartResponse = { success: boolean; cart?: CartView; message?: string };

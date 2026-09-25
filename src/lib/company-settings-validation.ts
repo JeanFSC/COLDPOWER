@@ -1,3 +1,5 @@
+import { isValidPeruvianRuc } from "@/lib/peru-documents";
+
 export type CompanySettingsInput = {
   legalName: string | null;
   tradeName: string | null;
@@ -115,7 +117,7 @@ export function validateCompanySettingsInput(body: unknown): CompanySettingsInpu
   if (salesEmail && !/^\S+@\S+\.\S+$/.test(salesEmail)) throw new Error("salesEmail no tiene un formato válido.");
   const country = optionalText(value.country, "country", 120);
   const ruc = optionalText(value.ruc, "ruc", 40);
-  if (ruc && /^(PE|PERU|PERÚ|PERUVIAN)$/i.test(country ?? "") && !/^\d{11}$/.test(ruc)) throw new Error("ruc debe contener 11 dígitos para Perú.");
+  if (ruc && /^(PE|PERU|PERÚ|PERUVIAN)$/i.test(country ?? "") && !isValidPeruvianRuc(ruc)) throw new Error("ruc debe ser válido para Perú.");
   for (const [field, candidate] of [["facebook", value.facebook], ["instagram", value.instagram], ["tiktok", value.tiktok], ["website", value.website]] as const) { const clean = optionalText(candidate, field, 500); if (clean) safeUrl(clean, field); }
   const seenLocations = new Set<string>();
   if (Array.isArray(value.locations)) for (const location of value.locations) { const name = location && typeof location === "object" && !Array.isArray(location) ? (location as Record<string, unknown>).name : null; if (typeof name === "string") { const key = name.trim().toLocaleLowerCase(); if (seenLocations.has(key)) throw new Error("locations no puede contener nombres duplicados."); seenLocations.add(key); } }

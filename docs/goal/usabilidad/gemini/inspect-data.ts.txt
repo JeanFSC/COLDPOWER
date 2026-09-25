@@ -1,0 +1,29 @@
+import { getDb } from "@/db";
+import { locations, products, inventoryBalances, productPrices } from "@/db/schema";
+import { eq, and, gt } from "drizzle-orm";
+
+async function main() {
+  const db = getDb();
+  const locs = await db.select().from(locations).where(eq(locations.active, true));
+  console.log("LOCATIONS:", JSON.stringify(locs.map(l => ({ id: l.id, name: l.name, address: l.address })), null, 2));
+
+  const prodsWithStock = await db.select({
+    id: products.id,
+    sku: products.sku,
+    name: products.commercialName,
+    slug: products.slug,
+    stock: inventoryBalances.onHand,
+    reserved: inventoryBalances.reserved,
+    locationId: inventoryBalances.locationId
+  }).from(products)
+    .innerJoin(inventoryBalances, eq(inventoryBalances.productId, products.id))
+    .where(and(gt(inventoryBalances.onHand, 2), eq(products.publicationStatus, "published")))
+    .limit(5);
+  console.log("PRODS WITH STOCK:", JSON.stringify(prodsWithStock, null, 2));
+  process.exit(0);
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

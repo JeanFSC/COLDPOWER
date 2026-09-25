@@ -1,12 +1,13 @@
 "use client";
 
-import { CalendarClock, PackageCheck, Truck } from "lucide-react";
+import { CalendarClock, MessageCircle, PackageCheck, Truck } from "lucide-react";
 import { useEffect } from "react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { formatProductPrice } from "@/lib/formatters";
 import { trackCatalogEvent } from "@/lib/analytics";
+import { WhatsAppLeadButton } from "@/components/shared/WhatsAppLeadButton";
 import type { RetailPriceWithPromotion } from "@/lib/retail-price";
 
 type TransactionBoxProps = { product: Product; promotionalPrice?: RetailPriceWithPromotion | null };
@@ -51,6 +52,14 @@ export function TransactionBox({ product, promotionalPrice }: TransactionBoxProp
             <AddToCartButton productId={product.id} purchasable={false} size="md" className="w-full" />
           </>
         )}
+        <WhatsAppLeadButton
+          title={`Consulta por ${product.name}`}
+          productIds={[product.id]}
+          items={[{ name: product.name, sku: product.sku, quantity: 1, url: `/producto/${product.slug}` }]}
+          className="w-full"
+        >
+          <MessageCircle className="h-5 w-5" aria-hidden="true" />Consultar por WhatsApp
+        </WhatsAppLeadButton>
       </div>
       <p className="mt-4 text-center text-xs leading-5 text-text-secondary">{hasPrice ? "Para pagar necesitas iniciar sesión. Cotizar no requiere cuenta." : "No necesitas iniciar sesión para solicitar una cotización."}</p>
     </aside>

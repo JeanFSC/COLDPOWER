@@ -57,6 +57,7 @@ const fieldIds: Record<QuoteField, string> = {
   preferredContact: "preferred-contact",
   consent: "quote-consent",
   message: "quote-message",
+  items: "quote-items",
 };
 
 export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
@@ -87,7 +88,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
   const [formMessage, setFormMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<(ApiSuccess & { payload: QuotePayload }) | null>(null);
-  const { clearCart: clearQuoteList } = useCart();
+  const { clearCart: clearQuoteList, items: quoteListItems } = useCart();
 
   useEffect(() => {
     trackCatalogEvent("quote_started", { productSlug: initialProduct?.slug });
@@ -139,7 +140,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
     };
   }, [query, searchRetry, selectedProduct?.name]);
 
-  const payload = buildQuotePayload(form, selectedProduct);
+  const payload = buildQuotePayload(form, selectedProduct, quoteListItems.length);
   if (success) {
     return (
       <QuoteSuccess
@@ -153,7 +154,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormMessage("");
-    const validation = validateQuotePayload(payload);
+    const validation = validateQuotePayload(payload, { requireItems: true });
     if (!validation.ok) {
       setErrors(validation.errors);
       setFormMessage("Corrige los campos marcados antes de enviar la solicitud.");
@@ -259,7 +260,6 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
         <FieldErrorLabel label="Tipo de cliente" field="customerType" errors={errors}>
           <select
             id={fieldIds.customerType}
-            required
             value={form.customerType}
             onChange={(event) => {
               updateField("customerType", event.target.value as QuoteFormState["customerType"]);
@@ -279,7 +279,6 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
         <FieldErrorLabel label={documentLabel} field="documentNumber" errors={errors}>
           <input
             id={fieldIds.documentNumber}
-            required
             value={form.documentNumber}
             onChange={(event) => updateField("documentNumber", event.target.value)}
             className={inputClass(errors.documentNumber)}
@@ -293,7 +292,6 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
         <FieldErrorLabel label="Telefono" field="phone" errors={errors}>
           <input
             id={fieldIds.phone}
-            required
             value={form.phone}
             onChange={(event) => updateField("phone", event.target.value)}
             className={inputClass(errors.phone)}
@@ -302,7 +300,6 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
             inputMode="tel"
             aria-invalid={Boolean(errors.phone)}
             aria-describedby={errors.phone ? `${fieldIds.phone}-error` : undefined}
-            aria-required="true"
           />
         </FieldErrorLabel>
       </div>
@@ -323,18 +320,18 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <FieldErrorLabel label="Departamento" field="department" errors={errors}>
-          <input id={fieldIds.department} required value={form.department} onChange={(event) => updateField("department", event.target.value)} className={inputClass(errors.department)} placeholder="Ej. Lima" autoComplete="address-level1" aria-invalid={Boolean(errors.department)} />
+          <input id={fieldIds.department} value={form.department} onChange={(event) => updateField("department", event.target.value)} className={inputClass(errors.department)} placeholder="Ej. Lima" autoComplete="address-level1" aria-invalid={Boolean(errors.department)} />
         </FieldErrorLabel>
         <FieldErrorLabel label="Provincia" field="province" errors={errors}>
-          <input id={fieldIds.province} required value={form.province} onChange={(event) => updateField("province", event.target.value)} className={inputClass(errors.province)} placeholder="Ej. Lima" autoComplete="address-level2" aria-invalid={Boolean(errors.province)} />
+          <input id={fieldIds.province} value={form.province} onChange={(event) => updateField("province", event.target.value)} className={inputClass(errors.province)} placeholder="Ej. Lima" autoComplete="address-level2" aria-invalid={Boolean(errors.province)} />
         </FieldErrorLabel>
         <FieldErrorLabel label="Distrito" field="district" errors={errors}>
-          <input id={fieldIds.district} required value={form.district} onChange={(event) => updateField("district", event.target.value)} className={inputClass(errors.district)} placeholder="Ej. Miraflores" autoComplete="address-level3" aria-invalid={Boolean(errors.district)} />
+          <input id={fieldIds.district} value={form.district} onChange={(event) => updateField("district", event.target.value)} className={inputClass(errors.district)} placeholder="Ej. Miraflores" autoComplete="address-level3" aria-invalid={Boolean(errors.district)} />
         </FieldErrorLabel>
       </div>
 
       <FieldErrorLabel label="Medio de contacto preferido" field="preferredContact" errors={errors} className="mt-4">
-        <select id={fieldIds.preferredContact} required value={form.preferredContact} onChange={(event) => updateField("preferredContact", event.target.value as QuoteFormState["preferredContact"])} className={inputClass(errors.preferredContact, "h-11")} aria-invalid={Boolean(errors.preferredContact)} aria-describedby={errors.preferredContact ? `${fieldIds.preferredContact}-error` : undefined}>
+        <select id={fieldIds.preferredContact} value={form.preferredContact} onChange={(event) => updateField("preferredContact", event.target.value as QuoteFormState["preferredContact"])} className={inputClass(errors.preferredContact, "h-11")} aria-invalid={Boolean(errors.preferredContact)} aria-describedby={errors.preferredContact ? `${fieldIds.preferredContact}-error` : undefined}>
           <option value="whatsapp">WhatsApp</option>
           <option value="phone">Llamada telefonica</option>
           <option value="email">Correo electronico</option>
@@ -372,17 +369,18 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
           <span>{isSearching ? "Buscando referencias..." : selectedProduct ? `Seleccionado: ${selectedProduct.sku}` : notFound ? "Se enviara como consulta general" : "Escribe al menos 2 caracteres"}</span>
           <button type="button" className="font-extrabold text-primary hover:underline" onClick={chooseNotFound}>No encontre mi producto</button>
         </div>
+        {errors.items ? <p id={`${fieldIds.items}-error`} className="mt-2 text-xs font-bold text-danger" role="alert">{errors.items}</p> : null}
       </div>
 
       <FieldErrorLabel label="Mensaje" field="message" errors={errors} className="mt-4">
-        <textarea id={fieldIds.message} required value={form.message} onChange={(event) => updateField("message", event.target.value)} rows={5} className={inputClass(errors.message, "min-h-32 py-3")} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? `${fieldIds.message}-error` : "quote-message-help"} aria-required="true" />
+        <textarea id={fieldIds.message} value={form.message} onChange={(event) => updateField("message", event.target.value)} rows={5} className={inputClass(errors.message, "min-h-32 py-3")} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? `${fieldIds.message}-error` : "quote-message-help"} />
         <span id="quote-message-help" className="text-xs font-semibold text-gray-text">Incluye marca, modelo, capacidad o foto disponible del repuesto si aplica.</span>
       </FieldErrorLabel>
 
       <div className="mt-4 rounded-md border border-border bg-background p-3">
         <label htmlFor={fieldIds.consent} className="flex items-start gap-3 text-sm font-semibold text-dark">
-          <input id={fieldIds.consent} required type="checkbox" checked={form.consent} onChange={(event) => updateField("consent", event.target.checked)} className="mt-1 h-4 w-4 accent-primary" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? `${fieldIds.consent}-error` : undefined} />
-          <span>Acepto que ColdPower use estos datos para responder mi solicitud de cotizacion.</span>
+          <input id={fieldIds.consent} type="checkbox" checked={form.consent} onChange={(event) => updateField("consent", event.target.checked)} className="mt-1 h-4 w-4 accent-primary" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? `${fieldIds.consent}-error` : undefined} />
+          <span>Acepto que ColdPower use estos datos para responder mi solicitud de cotizacion (opcional).</span>
         </label>
         {errors.consent ? <p id={`${fieldIds.consent}-error`} className="mt-2 text-xs font-bold text-danger" role="alert">{errors.consent}</p> : null}
       </div>
@@ -390,7 +388,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
       {formMessage ? <p className="mt-4 rounded-md border border-danger/25 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger" role="alert" aria-live="assertive">{formMessage}</p> : null}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}><Send className="h-5 w-5" aria-hidden="true" />{isSubmitting ? "Enviando solicitud..." : "Solicitar cotización"}</Button>
-        <WhatsAppLeadButton title="Consulta desde formulario de cotizacion" initialName={form.name} initialPhone={form.phone} initialEmail={form.email} productIds={selectedProduct ? [selectedProduct.id] : []} items={selectedProduct ? [{ name: selectedProduct.name, sku: selectedProduct.sku, quantity: 1 }] : []} className="w-full sm:w-auto" disabled={isSubmitting}><MessageCircle className="h-5 w-5" aria-hidden="true" />Continuar por WhatsApp</WhatsAppLeadButton>
+        <WhatsAppLeadButton title="Consulta desde formulario de cotizacion" initialName={form.name} initialPhone={form.phone} initialEmail={form.email} productIds={selectedProduct ? [selectedProduct.id] : []} items={selectedProduct ? [{ name: selectedProduct.name, sku: selectedProduct.sku, quantity: 1, url: `/producto/${selectedProduct.slug}` }] : []} className="w-full sm:w-auto" disabled={isSubmitting}><MessageCircle className="h-5 w-5" aria-hidden="true" />Continuar por WhatsApp</WhatsAppLeadButton>
       </div>
       <div className="mt-5 rounded-md border border-teal/25 bg-teal/10 p-4 text-sm leading-6 text-dark">
         <p className="font-extrabold">Seguimiento de tu solicitud</p>

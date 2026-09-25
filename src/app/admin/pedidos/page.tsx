@@ -21,13 +21,15 @@ export default async function AdminPedidosPage({
     if (typeof value === "string") query.set(key, value);
     else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
   }
-  const page = await getOrdersPage(parseOrdersFilters(query));
+  const canViewAmounts = can(actor.role, "sales.view") || can(actor.role, "payments.view");
+  const page = await getOrdersPage(parseOrdersFilters(query), { includeAmounts: canViewAmounts, includeFinancial: can(actor.role, "payments.view") });
   return (
     <OrdersControlCenter
       page={page}
       queryString={query.toString()}
       canManage={can(actor.role, "orders.manage")}
       canPaymentsView={can(actor.role, "payments.view")}
+      canViewAmounts={canViewAmounts}
     />
   );
 }

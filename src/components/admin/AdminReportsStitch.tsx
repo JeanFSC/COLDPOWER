@@ -57,7 +57,7 @@ function number(value: number | null | undefined) {
 }
 function dateLabel(value: string) {
   return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "short" }).format(
-    new Date(`${value}T12:00:00`),
+    new Date(`${value}T12:00:00-05:00`),
   );
 }
 

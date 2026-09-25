@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/shared/Button";
 import { trackCatalogEvent } from "@/lib/analytics";
 
-export type WhatsAppLeadItem = { name: string; sku?: string; quantity?: number };
+export type WhatsAppLeadItem = { name: string; sku?: string; quantity?: number; url?: string };
 type Props = { children: ReactNode; title?: string; initialName?: string; initialPhone?: string; initialEmail?: string; productIds?: string[]; items?: WhatsAppLeadItem[]; className?: string; variant?: "primary" | "secondary" | "outline" | "ghost" | "whatsapp"; size?: "sm" | "md" | "lg"; disabled?: boolean; "aria-label"?: string };
 
 export function WhatsAppLeadButton({ children, title, initialName = "", initialPhone = "", initialEmail = "", productIds = [], items = [], className, variant = "whatsapp", size = "md", disabled = false, "aria-label": ariaLabel }: Props) {

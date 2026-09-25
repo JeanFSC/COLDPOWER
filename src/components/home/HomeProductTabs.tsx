@@ -6,7 +6,7 @@ import { HomeProductCard } from "@/components/home/HomeProductCard";
 
 type Tab = { id: string; label: string; products: Product[] };
 
-export function HomeProductTabs({ products }: { products: Product[] }) {
+export function HomeProductTabs({ products, bestSellerProductId = null }: { products: Product[]; bestSellerProductId?: string | null }) {
   const [activeId, setActiveId] = useState("best-sellers");
   const base = products.slice(0, 6);
   const newProducts = products.slice(6, 12);
@@ -49,7 +49,12 @@ export function HomeProductTabs({ products }: { products: Product[] }) {
         {activeTab.products.length > 0 ? (
           <div className="home-product-grid">
             {activeTab.products.map((product, index) => (
-              <HomeProductCard key={product.id} product={product} priority={index < 2} />
+              <HomeProductCard
+                key={product.id}
+                product={product}
+                priority={false}
+                isBestSeller={activeTab.id === "best-sellers" && index === 0 && product.id === bestSellerProductId}
+              />
             ))}
           </div>
         ) : (

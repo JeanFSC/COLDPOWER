@@ -41,3 +41,27 @@ No se cubrieron completamente 768/1024/1440, red 3G/corte, expiración de sesió
 ## Resultado global A
 
 La tienda completa compra directa, cotización transaccional y seguimiento con datos locales. No se cierra como “sin defectos”: A1.2, A1.4, A2.4 y A3.2 siguen sin cumplir el objetivo completo o sin cobertura suficiente.
+
+## R2 - correcciones ejecutadas
+
+Fecha: 2026-09-24. Alcance: `docs/goal/briefs/17-R2-correcciones.md`. La base usada en las pruebas de datos fue PostgreSQL 18 local (`127.0.0.1:5433`, `.env.localdb`); no se usó Neon ni se tocaron los puertos 3004/3007.
+
+| Corrección | Resultado verificable |
+|---|---|
+| Header móvil | ✅ A 360×800, 390×844 y 430×932 el logo y las cinco acciones permanecen visibles; `scrollWidth === clientWidth`; el menú móvil abre y conserva sus enlaces. Evidencia: [`home-header-360x800.png`](../evidencia/17r2/home-header-360x800.png), [`home-header-390x844.png`](../evidencia/17r2/home-header-390x844.png), [`home-header-430x932.png`](../evidencia/17r2/home-header-430x932.png). |
+| WhatsApp desde producto/cotización | ✅ El número se lee únicamente desde Company Settings; el mensaje incluye nombre, SKU y URL canónica. Con el número local sin configurar, el CTA no se muestra ni inventa un contacto; queda pendiente configurar el dato comercial y repetir el recorrido autenticado. |
+| Búsqueda de catálogo | ✅ Búsqueda server-side paginada por tokens y campos técnicos; `uF`, `µF` y `μF` se normalizan, igual que espacios y acentos. La prueba contra el catálogo PG local pasó; la consulta técnica sin producto publicado sigue mostrando estado vacío honesto. |
+| Almacén sin finanzas | ✅ La proyección de pedidos, métricas, detalle y exportación oculta importes sin `sales.view`/`payments.view`; los contratos de pedidos/RBAC pasan. |
+| Más vendido | ✅ La etiqueta se muestra solo para el primer producto del ranking real de ventas confirmadas; sin ranking no se fabrica una insignia. |
+| Cotización | ✅ El mínimo real queda en nombre + teléfono o email + ítems; DNI, RUC, dirección y demás campos son opcionales en la entrada inicial y se reservan para la conversión. La persistencia transaccional y los estados server-side pasan. |
+| IGV | ⚠️ Se muestran Operación gravada, IGV y Total, pero el resultado queda `Por configurar` porque el esquema local tiene `tax_type` de producto y no tiene tasa/modo de compañía ni columnas fiscales de pedido suficientes. No se inventó una inclusión de precios ni un importe operativo. |
+| DNI/RUC | ✅ DNI exige 8 dígitos; RUC exige 11 dígitos, prefijos 10/15/17/20 y módulo 11. |
+| Fechas | ✅ Auditoría, ventas, pedidos y reportes usan día calendario de Lima; la frontera 23:30 Lima queda cubierta por prueba automatizada. |
+
+### Gate visual R2
+
+La composición del Home se mantuvo contra la referencia entregada; solo se hicieron correcciones de layout móvil, prioridad de carga y estados funcionales. La inspección pública en 1920×1080 y 390×844 no registró errores de consola. Sin embargo, el navegador disponible devolvió `dev-browser-missing`/`signed-out`, por lo que esta pasada no es una aprobación de sesión autenticada.
+
+El PostgreSQL local no tiene media activa para productos: las tarjetas muestran `Imagen referencial`. No se sustituyeron esas imágenes con datos inventados; el gate de fidelidad de fotografías de producto permanece **BLOCK** hasta cargar/verificar media comercial real. Captura general: [`home-1920x1080.png`](../evidencia/17r2/home-1920x1080.png).
+
+La prueba de inventario tampoco se puede cerrar porque falta el XLSX fuente externo; el fallo exacto es `ENOENT` para `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx`, no un fallo de la lógica R2.

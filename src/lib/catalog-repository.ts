@@ -1,6 +1,7 @@
-import { and, asc, count, desc, eq, ilike, inArray, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, ne, or, sql, sum, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
 import { brands, categories, families, productPrices, productRelations, products } from "@/db/schema";
+import { saleItems, sales } from "@/db/sales-schema";
 import { getPublishedMediaForEntities } from "@/lib/media-repository";
 import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
 import { mapCatalogProductRow, type CatalogProductSourceRow } from "@/lib/catalog-view-model";
@@ -31,6 +32,19 @@ function normalizePagination(query: CatalogQuery) {
   return { page: Math.max(1, Math.floor(query.page ?? 1)), pageSize: Math.min(MAX_CATALOG_PAGE_SIZE, Math.max(1, Math.floor(query.pageSize ?? DEFAULT_CATALOG_PAGE_SIZE))) };
 }
 
+export function normalizeCatalogSearchTerm(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[µμ]/g, "u")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function normalizedSearchField(field: Parameters<typeof ilike>[0]) {
+  return sql`regexp_replace(translate(lower(coalesce(${field}, '')), 'áéíóúüñµμ', 'aeiouunuu'), '[^a-z0-9]+', '', 'g')`;
+}
+
 export function publicConditions() {
   return [eq(products.publicationStatus, "published"), or(eq(products.requiresReview, false), isNull(products.requiresReview))!, or(eq(products.possibleDuplicate, false), isNull(products.possibleDuplicate))!, sql`lower(${products.status}) in ('activo', 'active')`];
 }
@@ -39,11 +53,17 @@ function buildConditions(query: CatalogQuery, publicOnly = query.publicOnly !== 
   const conditions: SQL[] = publicOnly ? [...publicConditions()] : [];
   const search = query.query?.trim();
   if (search) {
-    const fields = [products.sku, products.originalName, products.normalizedName, products.commercialName, products.productType, products.modelCode, products.application, products.refrigerant, products.voltage, products.power, products.capacitance, products.dimensions, products.length, products.connectionSize, categories.name, families.name, brands.name];
+    const fields = [products.sku, products.originalName, products.normalizedName, products.commercialName, products.productType, products.modelCode, products.application, products.refrigerant, products.voltage, products.power, products.capacitance, products.dimensions, products.length, products.connectionSize, products.frequency, products.rpm, products.amperage, products.horsepower, products.temperature, products.unitOfMeasure, categories.name, families.name, brands.name];
+    const normalizedFields = fields.map((field) => normalizedSearchField(field));
     const terms = search.split(/\s+/).filter(Boolean);
     const termConditions = terms.map((term) => {
-      const variants = new Set([term, term.replace(/u/gi, "µ"), term.replace(/µ/g, "u")]);
-      return or(...[...variants].flatMap((variant) => fields.map((field) => ilike(field, `%${variant}%`))))!;
+      const micro = String.fromCodePoint(0x00b5);
+      const variants = new Set([term, term.replace(/u/gi, micro), term.replace(/[µμ]/g, "u")]);
+      const normalizedTerm = normalizeCatalogSearchTerm(term);
+      return or(
+        ...[...variants].flatMap((variant) => fields.map((field) => ilike(field, `%${variant}%`))),
+        ...(normalizedTerm ? normalizedFields.map((field) => ilike(field, `%${normalizedTerm}%`)) : []),
+      )!;
     });
     conditions.push(and(...termConditions)!);
   }
@@ -56,7 +76,7 @@ function buildConditions(query: CatalogQuery, publicOnly = query.publicOnly !== 
 }
 
 function catalogSelection() {
-  return { product: { id: products.id, sku: products.sku, slug: products.slug, originalName: products.originalName, normalizedName: products.normalizedName, commercialName: products.commercialName, featured: products.featured, productType: products.productType, compatibilityBrands: products.compatibilityBrands, modelCode: products.modelCode, application: products.application, voltage: products.voltage, power: products.power, frequency: products.frequency, rpm: products.rpm, amperage: products.amperage, capacitance: products.capacitance, refrigerant: products.refrigerant, horsepower: products.horsepower, temperature: products.temperature, dimensions: products.dimensions, length: products.length, connectionSize: products.connectionSize, unitOfMeasure: products.unitOfMeasure, status: products.status, publicationStatus: products.publicationStatus, availabilityStatus: products.availabilityStatus, editorialDescription: products.editorialDescription }, category: { id: categories.id, name: categories.name, slug: categories.slug }, family: { id: families.id, name: families.name, slug: families.slug }, brand: { id: brands.id, name: brands.name, slug: brands.slug } };
+  return { product: { id: products.id, sku: products.sku, slug: products.slug, originalName: products.originalName, normalizedName: products.normalizedName, commercialName: products.commercialName, featured: products.featured, productType: products.productType, taxType: products.taxType, compatibilityBrands: products.compatibilityBrands, modelCode: products.modelCode, application: products.application, voltage: products.voltage, power: products.power, frequency: products.frequency, rpm: products.rpm, amperage: products.amperage, capacitance: products.capacitance, refrigerant: products.refrigerant, horsepower: products.horsepower, temperature: products.temperature, dimensions: products.dimensions, length: products.length, connectionSize: products.connectionSize, unitOfMeasure: products.unitOfMeasure, status: products.status, publicationStatus: products.publicationStatus, availabilityStatus: products.availabilityStatus, editorialDescription: products.editorialDescription }, category: { id: categories.id, name: categories.name, slug: categories.slug }, family: { id: families.id, name: families.name, slug: families.slug }, brand: { name: brands.name, id: brands.id, slug: brands.slug } };
 }
 
 function effectiveCategoryJoin() { return or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!; }
@@ -200,6 +220,19 @@ export async function getCatalogRelatedProducts(productId: string, familyId?: st
 export async function getCatalogStats(publicOnly = false) {
   const [row] = await getDb().select({ total: count(products.id) }).from(products).where(publicOnly ? and(...publicConditions()) : undefined);
   return { totalProducts: Number(row?.total ?? 0) };
+}
+
+export async function getBestSellerProductId() {
+  const quantity = sum(saleItems.quantity);
+  const [row] = await getDb()
+    .select({ productId: saleItems.productId, quantity })
+    .from(saleItems)
+    .innerJoin(sales, eq(saleItems.saleId, sales.id))
+    .where(eq(sales.status, "CONFIRMED"))
+    .groupBy(saleItems.productId)
+    .orderBy(desc(quantity), asc(saleItems.productId))
+    .limit(1);
+  return row?.productId ?? null;
 }
 
 export function makeCatalogSearchPattern(value: string) { return sql`%${value.trim()}%`; }

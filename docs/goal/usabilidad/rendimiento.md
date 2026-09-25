@@ -39,3 +39,18 @@ La advertencia de Next sobre `NODE_ENV=development` es del harness del bypass lo
 1. Reservar dimensiones/layout estable para el footer y repetir Lighthouse.
 2. Medir y optimizar el camino crítico móvil (LCP), con captura antes/después por ruta.
 3. Añadir medición de latencia por módulo admin y repetir en 768/1024/1440.
+
+## Medición R2 posterior a correcciones mínimas
+
+Se repitió Lighthouse 12.8.2 sobre Home en el artefacto de producción de 3003, con PostgreSQL 18 local y sin cambiar la composición aprobada. Las cifras anteriores son las que ya constaban en este informe; las nuevas evidencias están en `output/qa-final-local`.
+
+| Ruta | Antes | R2 | Cambio | Resultado |
+|---|---:|---:|---:|---|
+| Home / desktop 1920 | Perf 0.95; LCP 1.434 s; CLS 0.0000 | Perf 0.97; LCP 1.205 s; CLS 0.0000 | LCP -0.229 s | ✅ cumple las tres metas |
+| Home / móvil 390 | Perf 0.77; LCP 5.159 s; CLS 0.0000 | Perf 0.81; LCP 4.822 s; CLS 0.0000 | LCP -0.337 s | ❌ sigue sin cumplir Perf/LCP |
+
+Evidencia: [`lighthouse-home-r2-desktop.json`](../../output/qa-final-local/lighthouse-home-r2-desktop.json) y [`lighthouse-home-r2-mobile.json`](../../output/qa-final-local/lighthouse-home-r2-mobile.json). En Windows Lighthouse escribió correctamente ambos JSON, pero terminó con `EPERM` al limpiar el directorio temporal de Chrome; por eso se conserva la métrica del artefacto y se reporta la salida no ideal del CLI.
+
+Los cambios medidos fueron acotados: `picture` con fuentes desktop/mobile y dimensiones explícitas para el hero, logo principal prioritario, reserva mínima del main para reducir saltos, prioridad del hero de catálogo y sin preload de tarjetas fuera del primer viewport. El móvil sigue limitado por el camino de hidratación/Clerk y un retraso de render del LCP de aproximadamente 3.996 s; no se eliminó autenticación ni se degradó seguridad para perseguir una cifra sintética.
+
+Las métricas previas de catálogo y producto permanecen como referencia no repetida en esta iteración; no se presentan como una mejora R2. El objetivo de rendimiento queda **parcialmente cumplido**: Home desktop aprobado, Home móvil y CLS de las rutas antiguas pendientes de una iteración específica con sesión autenticada y datos de media reales.

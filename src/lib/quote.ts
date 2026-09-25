@@ -1,8 +1,11 @@
 ﻿import type { Product } from "@/types/product";
 import { quoteConfig } from "@/lib/env";
 
+import { isValidPeruvianDni, isValidPeruvianRuc } from "@/lib/peru-documents";
+
 export type QuoteCustomerType = "natural" | "company";
 export type QuotePreferredContact = "whatsapp" | "phone" | "email";
+
 
 export type QuotePayload = {
   name: string;
@@ -19,10 +22,10 @@ export type QuotePayload = {
   productName?: string;
   sku?: string;
   message: string;
+  itemCount?: number;
 };
 
-export type QuoteField = keyof Pick<
-  QuotePayload,
+export type QuoteField =
   | "name"
   | "customerType"
   | "documentNumber"
@@ -34,7 +37,7 @@ export type QuoteField = keyof Pick<
   | "preferredContact"
   | "consent"
   | "message"
->;
+  | "items";
 
 export type QuoteProductReference = Pick<Product, "slug" | "name" | "sku">;
 
@@ -45,7 +48,6 @@ export type QuoteValidationResult =
 type RateLimitBucket = { count: number; resetAt: number };
 type RateLimitResult = { allowed: boolean; limit: number; remaining: number; retryAfterMs: number; resetAt: number };
 
-const minimumMessageLength = 12;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedCustomerTypes = new Set<QuoteCustomerType>(["natural", "company"]);
 const allowedPreferredContacts = new Set<QuotePreferredContact>(["whatsapp", "phone", "email"]);
@@ -71,10 +73,11 @@ const quoteRateLimitStore =
   globalRateLimitStore.__coldpowerQuoteRateLimit ??
   (globalRateLimitStore.__coldpowerQuoteRateLimit = new Map<string, RateLimitBucket>());
 
-export function validateQuotePayload(payload: unknown): QuoteValidationResult {
+export function validateQuotePayload(payload: unknown, options: { requireItems?: boolean } = {}): QuoteValidationResult {
   const input = isRecord(payload) ? payload : {};
-  const customerType = isQuoteCustomerType(input.customerType) ? input.customerType : "";
-  const preferredContact = isQuotePreferredContact(input.preferredContact) ? input.preferredContact : "";
+  const customerType = isQuoteCustomerType(input.customerType) ? input.customerType : "natural";
+  const requestedPreferredContact = isQuotePreferredContact(input.preferredContact) ? input.preferredContact : null;
+  const itemCount = typeof input.itemCount === "number" && Number.isInteger(input.itemCount) ? Math.max(0, input.itemCount) : 0;
   const data = {
     name: sanitizeText(input.name, maxLengths.name),
     customerType,
@@ -84,34 +87,26 @@ export function validateQuotePayload(payload: unknown): QuoteValidationResult {
     department: sanitizeText(input.department, maxLengths.department),
     province: sanitizeText(input.province, maxLengths.province),
     district: sanitizeText(input.district, maxLengths.district),
-    preferredContact,
+    preferredContact: requestedPreferredContact ?? "whatsapp",
     consent: input.consent === true,
     productSlug: sanitizeText(input.productSlug, maxLengths.productSlug),
     productName: sanitizeText(input.productName, maxLengths.productName),
     sku: sanitizeText(input.sku, maxLengths.sku),
     message: sanitizeText(input.message, maxLengths.message),
+    itemCount,
   } as QuotePayload;
   const errors: Partial<Record<QuoteField, string>> = {};
 
   if (!data.name) errors.name = "Ingresa tu nombre para que un asesor pueda identificarte.";
-  if (!data.customerType) errors.customerType = "Selecciona si cotizas como persona natural o empresa.";
-  if (!data.documentNumber) {
-    errors.documentNumber = data.customerType === "company" ? "Ingresa el RUC de la empresa." : "Ingresa tu DNI.";
-  } else {
-    const expectedDigits = data.customerType === "company" ? 11 : 8;
-    if (data.documentNumber.length !== expectedDigits) {
-      errors.documentNumber = data.customerType === "company" ? "El RUC debe tener 11 dígitos." : "El DNI debe tener 8 dígitos.";
-    }
+  if (data.documentNumber) {
+    const valid = data.customerType === "company" ? isValidPeruvianRuc(data.documentNumber) : isValidPeruvianDni(data.documentNumber);
+    if (!valid) errors.documentNumber = data.customerType === "company" ? "Ingresa un RUC peruano válido (11 dígitos y prefijo SUNAT)." : "El DNI debe tener exactamente 8 dígitos.";
   }
-  if (!data.phone) errors.phone = "Ingresa un teléfono de contacto.";
-  else if (data.phone.replace(/\D/g, "").length < 7) errors.phone = "Ingresa un teléfono válido con código de ciudad o país.";
+  if (!data.phone && !data.email) errors.phone = "Ingresa un teléfono o un correo para que podamos contactarte.";
+  else if (data.phone && data.phone.replace(/\D/g, "").length < 7) errors.phone = "Ingresa un teléfono válido con código de ciudad o país.";
   if (data.email && !emailPattern.test(data.email)) errors.email = "Ingresa un correo válido o deja este campo vacío.";
-  if (!data.department) errors.department = "Selecciona tu departamento.";
-  if (!data.province) errors.province = "Selecciona tu provincia.";
-  if (!data.district) errors.district = "Selecciona tu distrito.";
-  if (!data.preferredContact) errors.preferredContact = "Selecciona tu medio de contacto preferido.";
-  if (!data.consent) errors.consent = "Debes aceptar el tratamiento de tus datos para enviar la solicitud.";
-  if (data.message.length < minimumMessageLength) errors.message = `Escribe un mensaje de al menos ${minimumMessageLength} caracteres.`;
+  if (options.requireItems && !data.productSlug && itemCount < 1) errors.items = "Agrega al menos una referencia a la solicitud.";
+  if (!data.message) data.message = "Solicitud de cotización desde el catálogo.";
 
   if (Object.keys(errors).length > 0) return { ok: false, data: null, errors };
   return { ok: true, data, errors: {} };
@@ -155,8 +150,9 @@ export function generateQuoteId(date = new Date(), random = Math.random()) {
 export function buildQuotePayload(
   form: Pick<QuotePayload, "name" | "customerType" | "documentNumber" | "phone" | "email" | "department" | "province" | "district" | "preferredContact" | "consent" | "message">,
   product?: QuoteProductReference,
+  itemCount = 0,
 ): QuotePayload {
-  return { ...form, productSlug: product?.slug, productName: product?.name, sku: product?.sku };
+  return { ...form, productSlug: product?.slug, productName: product?.name, sku: product?.sku, itemCount: itemCount + (product ? 1 : 0) };
 }
 
 export function buildQuoteWhatsAppMessage(payload: QuotePayload, quoteId?: string) {

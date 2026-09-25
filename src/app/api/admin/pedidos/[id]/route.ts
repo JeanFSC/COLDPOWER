@@ -5,7 +5,7 @@ import { orderStatuses, type OrderStatus } from "@/lib/sales-validation";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { can } from "@/lib/roles";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) { try { const actor = await requireApiPermission("orders.view"); const { id } = await params; const detail = await getOrderDetail(id, { includeFinancial: can(actor.role, "payments.view") }); return detail ? apiSuccess(detail) : apiError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404); } catch(error) { if(error instanceof ApiAuthorizationError)return apiError("ORDERS_FORBIDDEN","No tienes permiso para ver pedidos.",403); return apiError("ORDER_DETAIL_UNAVAILABLE","No se pudo cargar el pedido.",503); } }
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) { try { const actor = await requireApiPermission("orders.view"); const { id } = await params; const canViewAmounts = can(actor.role, "sales.view") || can(actor.role, "payments.view"); const detail = await getOrderDetail(id, { includeFinancial: can(actor.role, "payments.view"), includeAmounts: canViewAmounts }); return detail ? apiSuccess(detail) : apiError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404); } catch(error) { if(error instanceof ApiAuthorizationError)return apiError("ORDERS_FORBIDDEN","No tienes permiso para ver pedidos.",403); return apiError("ORDER_DETAIL_UNAVAILABLE","No se pudo cargar el pedido.",503); } }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;

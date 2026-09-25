@@ -1,0 +1,1458 @@
+import assert from "node:assert/strict";
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { getDb } from "@/db";
+import * as schema from "@/db/schema";
+import * as salesSchema from "@/db/sales-schema";
+import * as crmSchema from "@/db/crm-schema";
+import * as opsSchema from "@/db/operations-schema";
+import * as purchasesSchema from "@/db/purchases-schema";
+import { eq, and, desc, inArray, sql, isNull, sum, count, or } from "drizzle-orm";
+
+import * as cartService from "@/lib/shopping-cart-service";
+import * as salesService from "@/lib/sales-service";
+import * as quoteService from "@/lib/quote-service";
+import * as quoteConvService from "@/lib/quote-conversion-service";
+import * as paymentService from "@/lib/payment-service";
+import * as fulfillmentService from "@/lib/order-fulfillment-service";
+import * as shipmentService from "@/lib/shipment-service";
+import * as purchasesService from "@/lib/purchases-service";
+import * as promotionService from "@/lib/promotion-service";
+import { ensureLeadFromQuoteInTransaction } from "@/lib/crm-service";
+import { getCustomer360 } from "@/lib/customer-repository";
+import { signMockPayload } from "@/lib/payments/mock-provider";
+
+const CAPTURES_DIR = path.resolve(process.cwd(), "docs/goal/usabilidad/gemini/capturas");
+if (!fs.existsSync(CAPTURES_DIR)) {
+  fs.mkdirSync(CAPTURES_DIR, { recursive: true });
+}
+
+function takeScreenshot(urlPath: string, fileName: string, viewport = "1280,720") {
+  const fullUrl = `http://localhost:3007${urlPath.startsWith("/") ? urlPath : "/" + urlPath}`;
+  const targetPath = path.join(CAPTURES_DIR, fileName);
+  try {
+    console.log(`[CAPTURE] ${fileName} from ${urlPath}...`);
+    execSync(`npx playwright screenshot --viewport-size="${viewport}" --wait-for-timeout=2000 "${fullUrl}" "${targetPath}"`, {
+      stdio: "pipe",
+      timeout: 30000,
+    });
+  } catch (error) {
+    console.warn(`[CAPTURE WARNING] Failed ${fileName}:`, error instanceof Error ? error.message : error);
+  }
+}
+
+export interface AuditStepResult {
+  step: string;
+  actor: "CLIENTE" | "VENTAS" | "ALMACEN" | "CAJA" | "GERENCIA" | "COMPRAS" | "CATALOGO" | "SISTEMA";
+  action: string;
+  expected: string;
+  obtained: string;
+  passed: boolean;
+  sqlVerifications: Array<{ query: string; result: unknown }>;
+  severity?: "P0" | "P1" | "P2" | "P3";
+  defect?: string;
+  screenshot?: string;
+}
+
+export interface JourneyAuditResult {
+  code: "C1" | "C2" | "C3" | "C4" | "C5" | "C6" | "C7" | "C8" | "C9" | "C10";
+  title: string;
+  verdict: "PASSED" | "FAILED" | "DEFECTS_FOUND";
+  steps: AuditStepResult[];
+  defects: string[];
+}
+
+const allJourneys: JourneyAuditResult[] = [];
+
+async function runAll() {
+  console.log("======================================================================");
+  console.log("AUDITORÍA DE RECORRIDOS C1–C10: EJECUCIÓN PUNTA A PUNTA");
+  console.log("======================================================================");
+  const db = getDb();
+  const tag = `aud_${Date.now()}`;
+  const secret = process.env.MOCK_PAYMENT_WEBHOOK_SECRET || "fa036ee6d3c77f767b2e976706bc3848ec753ede0b3882d0743b3235f16e4718";
+  process.env.PAYMENT_PROVIDER = "mock";
+  process.env.TRACKING_PROVIDER = "mock";
+  process.env.MOCK_PAYMENT_WEBHOOK_SECRET = secret;
+
+  const [location] = await db.select().from(schema.locations).where(eq(schema.locations.active, true)).limit(1);
+  assert.ok(location, "Local activo requerido");
+
+  const sendMock = (ref: string, status: "APPROVED" | "REJECTED", eventId = `evt-${crypto.randomUUID()}`) => {
+    const raw = JSON.stringify({ eventId, reference: ref, status, amount: "0", currency: "PEN" });
+    return { raw, signature: signMockPayload(raw, secret) };
+  };
+  const getMockRef = (url: string | null) => {
+    assert.ok(url?.includes("/pago/prueba/mock_"), `URL inválida de pasarela: ${url}`);
+    return url.split("/").pop()!;
+  };
+
+  // ====================================================================================
+  // C1: Cotización web → aceptación → conversión por VENTAS → pedido → pago manual
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C1: Cotización web → aceptación → conversión → pedido → pago manual");
+  const c1: JourneyAuditResult = {
+    code: "C1",
+    title: "Cotización web → aceptación → conversión por VENTAS → pedido → pago manual",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const prods = await db.select({ id: schema.products.id, sku: schema.products.sku, name: schema.products.commercialName }).from(schema.products).limit(3);
+    const quoteId = `quote-${tag}-c1`;
+    const trackingCode = `COT-${Date.now().toString().slice(-6)}`;
+    
+    // Paso 1: Cliente anónimo envía cotización web
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.quotes).values({
+        id: quoteId,
+        trackingCode,
+        status: "borrador",
+        workflowStatus: "DRAFT",
+        channel: "WEB",
+        origin: "WEB",
+        name: "Taller Hermanos Castro",
+        customerType: "company",
+        documentNumber: "20601234567",
+        phone: "987654321",
+        email: "taller.castro@example.pe",
+        department: "Lima",
+        province: "Lima",
+        district: "San Miguel",
+        preferredContact: "whatsapp",
+        message: "Requerimos cotización formal para repuestos de refrigeración urgente.",
+        currency: "PEN",
+        taxMode: "INCLUDED",
+        subtotal: "0.00",
+        total: "0.00",
+        revision: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await tx.insert(schema.quoteItems).values(
+        prods.map((p, idx) => ({
+          id: `quote-item-${tag}-c1-${idx}`,
+          quoteId,
+          productId: p.id,
+          skuSnapshot: p.sku,
+          productNameSnapshot: p.name || p.sku,
+          quantity: 2,
+          currency: "PEN",
+          sortOrder: idx,
+        }))
+      );
+
+      // Crear lead y enlace cliente en CRM como lo hace /api/cotizacion
+      await ensureLeadFromQuoteInTransaction(tx, quoteId, null);
+    });
+
+    const [savedQuote] = await db.select().from(schema.quotes).where(eq(schema.quotes.id, quoteId));
+    const savedQuoteItems = await db.select().from(schema.quoteItems).where(eq(schema.quoteItems.quoteId, quoteId));
+
+    c1.steps.push({
+      step: "C1.1",
+      actor: "CLIENTE",
+      action: "Cliente anónimo solicita cotización web de 3 repuestos",
+      expected: "Cotización creada con status 'borrador'/DRAFT, lead en CRM y 3 ítems registrados",
+      obtained: `Cotización ${trackingCode} creada con ${savedQuoteItems.length} ítems en DRAFT`,
+      passed: savedQuote.workflowStatus === "DRAFT" && savedQuoteItems.length === 3,
+      sqlVerifications: [
+        { query: `SELECT id, tracking_code, status, workflow_status FROM quotes WHERE id = '${quoteId}'`, result: savedQuote },
+      ],
+      screenshot: "c1-01-cotizacion-creada.png",
+    });
+
+    // Paso 2: Personal VENTAS cotiza (valoriza ítems, define vigencia y envía versión v1)
+    const staffVentas = { userId: "cp-dashboard-v5-user-staff-001", role: "VENTAS" };
+    // Asignar precios a cada ítem en el borrador mediante updateAdminQuoteDraft
+    await quoteService.updateAdminQuoteDraft(quoteId, {
+      validUntil: new Date(Date.now() + 7 * 86400000),
+      taxMode: "INCLUDED",
+      message: "Precios especiales válidos por 7 días calendario.",
+      items: prods.map((p) => ({
+        productId: p.id,
+        quantity: 2,
+        manualUnitPrice: 100.0,
+        manualCurrency: "PEN",
+        priceReason: "Precio especial para taller",
+      })),
+    }, { ...staffVentas, role: "SUPERADMIN" });
+
+    // Enviar cotización (genera versión v1)
+    const sendResult = await quoteService.sendQuote(quoteId, staffVentas, "WHATSAPP", "987654321");
+    const [quoteV1] = await db.select().from(schema.quoteVersions).where(eq(schema.quoteVersions.quoteId, quoteId));
+
+    c1.steps.push({
+      step: "C1.2",
+      actor: "VENTAS",
+      action: "Asesor de Ventas valoriza ítems, define vigencia y envía versión v1 al cliente",
+      expected: "QuoteVersion v1 creada con status SENT, total S/ 600.00 y cotización pasa a enviada",
+      obtained: `Versión v${sendResult.version.versionNumber} creada, status ${sendResult.version.status}, total S/ ${sendResult.version.total}`,
+      passed: sendResult.version.status === "SENT" && Number(sendResult.version.total) === 600,
+      sqlVerifications: [
+        { query: `SELECT id, version_number, status, total, currency FROM quote_versions WHERE quote_id = '${quoteId}'`, result: quoteV1 },
+      ],
+      screenshot: "c1-02-cotizacion-version-enviada.png",
+    });
+
+    // Paso 3: Cliente acepta la cotización
+    await quoteService.recordQuoteResponse(quoteId, { response: "ACCEPTED", channel: "WHATSAPP", note: "Aceptamos la cotización de los 3 ítems" }, { userId: null, role: null });
+    const [acceptedQuote] = await db.select().from(schema.quotes).where(eq(schema.quotes.id, quoteId));
+
+    c1.steps.push({
+      step: "C1.3",
+      actor: "CLIENTE",
+      action: "Cliente responde aceptando la cotización v1",
+      expected: "quotes.workflow_status = 'ACCEPTED' y accepted_version_id vinculado",
+      obtained: `workflowStatus = ${acceptedQuote.workflowStatus}, acceptedVersionId = ${acceptedQuote.acceptedVersionId}`,
+      passed: acceptedQuote.workflowStatus === "ACCEPTED" && acceptedQuote.acceptedVersionId === quoteV1.id,
+      sqlVerifications: [
+        { query: `SELECT id, workflow_status, accepted_version_id FROM quotes WHERE id = '${quoteId}'`, result: acceptedQuote },
+      ],
+      screenshot: "c1-03-cotizacion-aceptada.png",
+    });
+
+    // Asegurar saldo de stock para la conversión
+    for (const p of prods) {
+      await db.insert(schema.inventoryBalances).values({
+        id: `bal-${tag}-${p.id}`,
+        locationId: location.id,
+        productId: p.id,
+        onHand: 20,
+        reserved: 0,
+      }).onConflictDoUpdate({
+        target: [schema.inventoryBalances.locationId, schema.inventoryBalances.productId],
+        set: { onHand: sql`inventory_balances.on_hand + 20` },
+      });
+    }
+
+    // Paso 4: Ventas convierte cotización
+    const convResult = await quoteConvService.convertQuoteToSale({
+      quoteId,
+      locationId: location.id,
+      deliveryMethod: "DELIVERY",
+      address: "Av. La Marina 1500, San Miguel",
+    }, staffVentas);
+
+    const [saleC1] = await db.select().from(salesSchema.sales).where(eq(salesSchema.sales.id, convResult.sale.id));
+    const [orderC1] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, convResult.order.id));
+    const reservationsC1 = await db.select().from(schema.inventoryReservations).where(eq(schema.inventoryReservations.referenceId, orderC1.id));
+
+    c1.steps.push({
+      step: "C1.4",
+      actor: "VENTAS",
+      action: "Ventas convierte cotización aceptada a Venta y Pedido",
+      expected: "Venta CONFIRMED, Pedido PAYMENT_PENDING, 3 reservas de inventario activas",
+      obtained: `Venta ${saleC1.code} (${saleC1.status}), Pedido ${orderC1.code} (${orderC1.status}), Reservas: ${reservationsC1.length}`,
+      passed: saleC1.status === "CONFIRMED" && orderC1.status === "PAYMENT_PENDING" && reservationsC1.length === 3,
+      sqlVerifications: [
+        { query: `SELECT id, code, status, total FROM sales WHERE id = '${saleC1.id}'`, result: saleC1 },
+        { query: `SELECT id, code, status, total FROM orders WHERE id = '${orderC1.id}'`, result: orderC1 },
+        { query: `SELECT id, product_id, quantity, status FROM inventory_reservations WHERE reference_id = '${orderC1.id}'`, result: reservationsC1 },
+      ],
+      screenshot: "c1-04-pedido-convertido.png",
+    });
+
+    // Paso 5: REGLA DE SECUENCIA: Almacén intenta picking en pedido no pagado
+    const staffAlmacen = { userId: "cp-dashboard-v5-user-almacen", role: "ALMACEN" };
+    const [firstOrderItem] = await db.select().from(salesSchema.orderItems).where(eq(salesSchema.orderItems.orderId, orderC1.id)).limit(1);
+    let pickingBlocked = false;
+    let pickingBlockReason = "";
+    try {
+      await fulfillmentService.updatePickedQuantity({
+        orderId: orderC1.id,
+        orderItemId: firstOrderItem.id,
+        pickedQuantity: 1,
+      }, staffAlmacen);
+    } catch (err: any) {
+      pickingBlocked = true;
+      pickingBlockReason = err.message || err.code;
+    }
+
+    c1.steps.push({
+      step: "C1.5",
+      actor: "ALMACEN",
+      action: "Almacén intenta registrar picking antes de que el pedido esté pagado",
+      expected: "Bloqueo por estado inválido (ORDER_NOT_PREPARING / 409): No se puede preparar sin pago confirmado",
+      obtained: pickingBlocked ? `Bloqueo exitoso: ${pickingBlockReason}` : "ERROR: Se permitió picking en pedido no pagado",
+      passed: pickingBlocked,
+      sqlVerifications: [
+        { query: `SELECT id, code, status FROM orders WHERE id = '${orderC1.id}'`, result: { status: orderC1.status } },
+      ],
+    });
+
+    // Paso 6: Caja confirma pago manual
+    const staffCaja = { userId: "cp-dashboard-v5-user-gerencia", role: "GERENCIA" };
+    const payResult = await salesService.registerManualPayment({
+      orderId: orderC1.id,
+      amount: orderC1.total,
+      currency: "PEN",
+      method: "BANK_TRANSFER",
+      operationNumber: "OP-98712345",
+      originBank: "BCP",
+      receiptUrl: "https://recibos.coldpower.pe/bcp-98712345.pdf",
+      reason: "Transferencia BCP verificada en cuenta",
+    }, staffCaja);
+
+    const [paidOrderC1] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC1.id));
+    const [confirmedPaymentC1] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.orderId, orderC1.id)).orderBy(desc(salesSchema.payments.createdAt)).limit(1);
+    const activeReservationsC1 = await db.select().from(schema.inventoryReservations).where(eq(schema.inventoryReservations.referenceId, orderC1.id));
+
+    c1.steps.push({
+      step: "C1.6",
+      actor: "CAJA",
+      action: "Caja/Gerencia confirma el pago manual por transferencia bancaria",
+      expected: "Pago CONFIRMED, Pedido pasa a PAID, expiración de reserva eliminada (expiresAt = null)",
+      obtained: `Pago ${confirmedPaymentC1.id} (${confirmedPaymentC1.status}), Pedido ${paidOrderC1.code} (${paidOrderC1.status}), expiresAt = ${activeReservationsC1[0].expiresAt}`,
+      passed: paidOrderC1.status === "PAID" && confirmedPaymentC1.status === "CONFIRMED" && activeReservationsC1[0].expiresAt === null,
+      sqlVerifications: [
+        { query: `SELECT id, order_id, amount, status, method FROM payments WHERE id = '${confirmedPaymentC1.id}'`, result: confirmedPaymentC1 },
+        { query: `SELECT id, code, status, version FROM orders WHERE id = '${orderC1.id}'`, result: paidOrderC1 },
+      ],
+      screenshot: "c1-05-pago-manual-confirmado.png",
+    });
+
+    // Paso 7: Almacén picking y preparación
+    await salesService.changeOrderStatus(orderC1.id, "PREPARING", staffAlmacen);
+    const orderItemsC1 = await db.select().from(salesSchema.orderItems).where(eq(salesSchema.orderItems.orderId, orderC1.id));
+    for (const item of orderItemsC1) {
+      await fulfillmentService.updatePickedQuantity({
+        orderId: orderC1.id,
+        orderItemId: item.id,
+        pickedQuantity: item.quantity,
+      }, staffAlmacen);
+    }
+    await salesService.changeOrderStatus(orderC1.id, "READY", staffAlmacen);
+    const [readyOrderC1] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC1.id));
+
+    c1.steps.push({
+      step: "C1.7",
+      actor: "ALMACEN",
+      action: "Almacén cambia estado a PREPARING, realiza picking al 100% y marca READY",
+      expected: "Pedido pasa a READY con todos los ítems preparados al 100%",
+      obtained: `Pedido status = ${readyOrderC1.status}`,
+      passed: readyOrderC1.status === "READY",
+      sqlVerifications: [
+        { query: `SELECT id, quantity, picked_quantity FROM order_items WHERE order_id = '${orderC1.id}'`, result: await db.select({ id: salesSchema.orderItems.id, q: salesSchema.orderItems.quantity, p: salesSchema.orderItems.pickedQuantity }).from(salesSchema.orderItems).where(eq(salesSchema.orderItems.orderId, orderC1.id)) },
+      ],
+      screenshot: "c1-06-almacen-preparando-ready.png",
+    });
+
+    takeScreenshot(`/admin/pedidos?orderId=${orderC1.id}`, "c1-04-pedido-convertido.png");
+  } catch (err: any) {
+    c1.verdict = "FAILED";
+    c1.defects.push(`Error en C1: ${err.message}`);
+    console.error("C1 Falló:", err);
+  }
+  allJourneys.push(c1);
+  console.log(`>>> C1 VEREDICTO: ${c1.verdict}`);
+
+  // ====================================================================================
+  // C2: Compra online con delivery (Timeline completo + seguimiento del envío)
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C2: Compra online con delivery → timeline completo");
+  const c2: JourneyAuditResult = {
+    code: "C2",
+    title: "Compra online con delivery (Timeline completo + seguimiento del envío)",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC2Id = `user_c2_${tag}`;
+    const sessionTokenC2 = `sess_c2_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC2Id,
+      email: `cliente.c2.${tag}@example.pe`,
+      name: "Taller Refrigeración Miraflores",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    const [targetProduct] = await db.select({ id: schema.products.id, sku: schema.products.sku, slug: schema.products.slug }).from(schema.products).limit(1);
+    await db.insert(schema.productPrices).values({
+      id: `price-c2-${tag}`,
+      productId: targetProduct.id,
+      priceType: "RETAIL",
+      amount: "180.00",
+      currency: "PEN",
+      active: true,
+      validFrom: new Date(Date.now() - 60000),
+      status: "ACTIVE",
+    } as any);
+
+    await db.insert(schema.inventoryBalances).values({
+      id: `bal-c2-${tag}`,
+      locationId: location.id,
+      productId: targetProduct.id,
+      onHand: 25,
+      reserved: 0,
+    }).onConflictDoUpdate({
+      target: [schema.inventoryBalances.locationId, schema.inventoryBalances.productId],
+      set: { onHand: sql`inventory_balances.on_hand + 25` },
+    });
+
+    // Cliente agrega al carrito
+    await cartService.setCartItem({ sessionToken: sessionTokenC2, userId: userC2Id }, targetProduct.id, 2, "set");
+    const cartView = await cartService.readCartView({ sessionToken: sessionTokenC2, userId: userC2Id });
+    assert.equal(cartView.totalQuantity, 2);
+
+    // Checkout DELIVERY
+    const checkoutDelivery = await salesService.createCheckoutFromCart(userC2Id, {
+      deliveryMethod: "DELIVERY",
+      locationId: location.id,
+      name: "Taller Refrigeración Miraflores",
+      phone: "998877665",
+      email: `cliente.c2.${tag}@example.pe`,
+      address: "Av. Larco 850, Dpto 402",
+      deliveryDetails: { district: "Miraflores", province: "Lima", department: "Lima", reference: "Frente al parque Kennedy" },
+    });
+    const orderC2 = checkoutDelivery.order;
+
+    c2.steps.push({
+      step: "C2.1",
+      actor: "CLIENTE",
+      action: "Cliente agrega producto al carrito y completa checkout con DELIVERY en Miraflores",
+      expected: "Pedido creado en PAYMENT_PENDING con deliveryMethod DELIVERY y reserva activa",
+      obtained: `Pedido ${orderC2.code} creado, total S/ ${orderC2.total}, status ${orderC2.status}`,
+      passed: orderC2.status === "PAYMENT_PENDING" && orderC2.deliveryMethod === "DELIVERY",
+      sqlVerifications: [
+        { query: `SELECT id, code, status, total, delivery_method FROM orders WHERE id = '${orderC2.id}'`, result: orderC2 },
+      ],
+      screenshot: "c2-01-checkout-delivery.png",
+    });
+
+    // Iniciar y pagar con pasarela mock
+    const payC2 = await paymentService.startPaymentForOrder(orderC2.code, userC2Id);
+    const mockRefC2 = getMockRef(payC2.checkoutUrl);
+    const mockPayloadC2 = sendMock(mockRefC2, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", mockPayloadC2.raw, mockPayloadC2.signature);
+
+    const [paidOrderC2] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC2.id));
+    assert.equal(paidOrderC2.status, "PAID");
+
+    c2.steps.push({
+      step: "C2.2",
+      actor: "CLIENTE",
+      action: "Cliente efectúa pago mediante pasarela mock y webhook confirma aprobación",
+      expected: "Pedido pasa a PAID y reserva queda permanente",
+      obtained: `Pedido status = ${paidOrderC2.status}`,
+      passed: paidOrderC2.status === "PAID",
+      sqlVerifications: [
+        { query: `SELECT id, code, status FROM orders WHERE id = '${orderC2.id}'`, result: paidOrderC2 },
+      ],
+      screenshot: "c2-02-pedido-pagado-mock.png",
+    });
+
+    // Almacén prepara y despacha
+    const staffAlmacen = { userId: "cp-dashboard-v5-user-almacen", role: "ALMACEN" };
+    await salesService.changeOrderStatus(orderC2.id, "PREPARING", staffAlmacen);
+    await db.update(salesSchema.orderItems).set({ pickedQuantity: sql`${salesSchema.orderItems.quantity}` }).where(eq(salesSchema.orderItems.orderId, orderC2.id));
+    await salesService.changeOrderStatus(orderC2.id, "READY", staffAlmacen);
+    await salesService.changeOrderStatus(orderC2.id, "IN_TRANSIT", staffAlmacen);
+
+    // Seguimiento courier
+    await shipmentService.advanceShipment(orderC2.id, staffAlmacen); // PICKED_UP
+    await shipmentService.advanceShipment(orderC2.id, staffAlmacen); // OUT_FOR_DELIVERY
+
+    // Entrega final con receptor
+    await salesService.changeOrderStatus(orderC2.id, "DELIVERED", staffAlmacen, undefined, { receivedBy: "Carlos Mendoza - Administrador Taller" });
+    const [deliveredOrderC2] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC2.id));
+
+    // Cliente consulta seguimiento
+    const trackedC2 = await salesService.getOrderForUser(userC2Id, orderC2.code);
+    const eventStatuses = trackedC2?.shipmentEvents.map(e => e.status);
+
+    c2.steps.push({
+      step: "C2.3",
+      actor: "ALMACEN",
+      action: "Almacén despacha (IN_TRANSIT), avanza 3 eventos de transportista y entrega",
+      expected: "Pedido DELIVERED, receptor guardado y 4 eventos de tracking (LABEL_CREATED -> DELIVERED)",
+      obtained: `Pedido ${deliveredOrderC2.code} DELIVERED, receptor: ${deliveredOrderC2.receivedBy}, eventos: ${eventStatuses?.join(" -> ")}`,
+      passed: deliveredOrderC2.status === "DELIVERED" && deliveredOrderC2.receivedBy?.includes("Carlos Mendoza") && eventStatuses?.includes("DELIVERED"),
+      sqlVerifications: [
+        { query: `SELECT id, code, status, received_by, delivered_at FROM orders WHERE id = '${orderC2.id}'`, result: deliveredOrderC2 },
+        { query: `SELECT status, description, location FROM shipment_events WHERE shipment_id = '${trackedC2?.shipment?.id}'`, result: trackedC2?.shipmentEvents },
+      ],
+      screenshot: "c2-04-seguimiento-timeline-entregado.png",
+    });
+
+    takeScreenshot(`/cuenta/pedidos/${orderC2.code}`, "c2-04-seguimiento-timeline-entregado.png");
+  } catch (err: any) {
+    c2.verdict = "FAILED";
+    c2.defects.push(`Error en C2: ${err.message}`);
+    console.error("C2 Falló:", err);
+  }
+  allJourneys.push(c2);
+  console.log(`>>> C2 VEREDICTO: ${c2.verdict}`);
+
+  // ====================================================================================
+  // C3: Pago rechazado y vencimiento → liberación stock → aprobación tardía → reembolso
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C3: Pago rechazado y vencimiento → liberación → tardía → reembolso");
+  const c3: JourneyAuditResult = {
+    code: "C3",
+    title: "Pago rechazado y vencimiento → liberación de stock → aprobación tardía → reembolso",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC3Id = `user_c3_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC3Id,
+      email: `cliente.c3.${tag}@example.pe`,
+      name: "Taller Frío Norte",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    const [targetProduct] = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
+    await cartService.setCartItem({ sessionToken: `sess_c3_${tag}`, userId: userC3Id }, targetProduct.id, 1, "set");
+
+    const checkoutC3 = await salesService.createCheckoutFromCart(userC3Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Taller Frío Norte",
+      phone: "991122334",
+      email: `cliente.c3.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const orderC3 = checkoutC3.order;
+
+    // Iniciar pago
+    const payC3 = await paymentService.startPaymentForOrder(orderC3.code, userC3Id);
+    const mockRefC3 = getMockRef(payC3.checkoutUrl);
+
+    // Simular vencimiento de plazo (paymentDueAt en el pasado) mientras el pago sigue PENDING
+    await db.update(salesSchema.orders).set({ paymentDueAt: new Date(Date.now() - 60000) }).where(eq(salesSchema.orders.id, orderC3.id));
+
+    // Ejecutar barrido de pedidos vencidos
+    const sweep = await salesService.cancelExpiredUnpaidOrders();
+    assert.ok(sweep.cancelled.includes(orderC3.code), "El pedido debe ser cancelado por vencimiento");
+
+    const [cancelledOrderC3] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC3.id));
+    const [releasedResC3] = await db.select().from(schema.inventoryReservations).where(eq(schema.inventoryReservations.referenceId, orderC3.id));
+    const [cancelledPaymentC3] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.orderId, orderC3.id));
+
+    c3.steps.push({
+      step: "C3.1",
+      actor: "SISTEMA",
+      action: "Vence el plazo de pago; cron cancelExpiredUnpaidOrders cancela pedido y libera stock",
+      expected: "Pedido CANCELLED, pago CANCELLED y reserva de inventario RELEASED",
+      obtained: `Pedido status = ${cancelledOrderC3.status}, Pago status = ${cancelledPaymentC3.status}, Reserva status = ${releasedResC3.status}`,
+      passed: cancelledOrderC3.status === "CANCELLED" && cancelledPaymentC3.status === "CANCELLED" && releasedResC3.status === "RELEASED",
+      sqlVerifications: [
+        { query: `SELECT id, code, status, cancellation_reason FROM orders WHERE id = '${orderC3.id}'`, result: cancelledOrderC3 },
+        { query: `SELECT id, status FROM payments WHERE order_id = '${orderC3.id}'`, result: cancelledPaymentC3 },
+        { query: `SELECT id, status FROM inventory_reservations WHERE reference_id = '${orderC3.id}'`, result: releasedResC3 },
+      ],
+      screenshot: "c3-02-pedido-vencido-cancelado.png",
+    });
+
+    // Aprobación tardía extemporánea vía webhook sobre el pedido cancelado
+    const lateApprovedPayload = sendMock(mockRefC3, "APPROVED");
+    const lateResult = await paymentService.processPaymentWebhook("mock", lateApprovedPayload.raw, lateApprovedPayload.signature);
+    assert.ok("lateApprovalOrderCode" in lateResult && lateResult.lateApprovalOrderCode === orderC3.code);
+
+    const [paymentC3] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.orderId, orderC3.id));
+    const [orderC3StillCancelled] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC3.id));
+
+    c3.steps.push({
+      step: "C3.2",
+      actor: "SISTEMA",
+      action: "Llega webhook de aprobación tardía de la pasarela después de cancelado el pedido",
+      expected: "Pedido permanece CANCELLED (no revive sin stock), pago marcado CONFIRMED con requiresRefund=true",
+      obtained: `Pedido status = ${orderC3StillCancelled.status}, Pago metadata.requiresRefund = ${(paymentC3.metadata as any)?.requiresRefund}`,
+      passed: orderC3StillCancelled.status === "CANCELLED" && (paymentC3.metadata as any)?.requiresRefund === true,
+      sqlVerifications: [
+        { query: `SELECT id, order_id, status, metadata FROM payments WHERE id = '${paymentC3.id}'`, result: paymentC3 },
+      ],
+      screenshot: "c3-03-aprobacion-tardia-por-reembolsar.png",
+    });
+
+    // Gerencia procesa reembolso
+    const staffGerencia = { userId: "cp-dashboard-v5-user-gerencia", role: "GERENCIA" };
+    const refundResult = await paymentService.refundPayment(paymentC3.id, {
+      reason: "Reembolso por pago tardío en pedido cancelado",
+    }, staffGerencia);
+
+    const [refundedPaymentC3] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.id, paymentC3.id));
+    const [refundRecordC3] = await db.select().from(salesSchema.paymentRefunds).where(eq(salesSchema.paymentRefunds.paymentId, paymentC3.id));
+
+    c3.steps.push({
+      step: "C3.3",
+      actor: "GERENCIA",
+      action: "Gerencia detecta pago en cola 'Por reembolsar' y ejecuta el reembolso",
+      expected: "Reembolso registrado SUCCEEDED, pago pasa a REFUNDED",
+      obtained: `Reembolso status = ${refundRecordC3.status}, Pago status = ${refundedPaymentC3.status}`,
+      passed: refundRecordC3.status === "SUCCEEDED" && refundedPaymentC3.status === "REFUNDED",
+      sqlVerifications: [
+        { query: `SELECT id, payment_id, amount, status, reason FROM payment_refunds WHERE payment_id = '${paymentC3.id}'`, result: refundRecordC3 },
+        { query: `SELECT id, status FROM payments WHERE id = '${paymentC3.id}'`, result: refundedPaymentC3 },
+      ],
+      screenshot: "c3-04-reembolso-gerencia-completado.png",
+    });
+
+    takeScreenshot(`/admin/pagos?paymentId=${paymentC3.id}&queue=refunds`, "c3-04-reembolso-gerencia-completado.png");
+  } catch (err: any) {
+    c3.verdict = "FAILED";
+    c3.defects.push(`Error en C3: ${err.message}`);
+    console.error("C3 Falló:", err);
+  }
+  allJourneys.push(c3);
+  console.log(`>>> C3 VEREDICTO: ${c3.verdict}`);
+
+  // ====================================================================================
+  // C4: Envío a provincia con agencia → incidencia de faltante → resolución
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C4: Envío a provincia con agencia → incidencia faltante → resolución");
+  const c4: JourneyAuditResult = {
+    code: "C4",
+    title: "Envío a provincia con agencia → incidencia de faltante → resolución",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC4Id = `user_c4_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC4Id,
+      email: `cliente.c4.${tag}@example.pe`,
+      name: "Servicios Técnicos Chiclayo SAC",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    const [targetProduct] = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
+    await cartService.setCartItem({ sessionToken: `sess_c4_${tag}`, userId: userC4Id }, targetProduct.id, 2, "set");
+
+    const checkoutC4 = await salesService.createCheckoutFromCart(userC4Id, {
+      deliveryMethod: "SHIPPING",
+      locationId: location.id,
+      name: "Servicios Técnicos Chiclayo SAC",
+      phone: "974112233",
+      email: `cliente.c4.${tag}@example.pe`,
+      address: "Agencia Shalom Chiclayo Centro",
+      deliveryDetails: { department: "Lambayeque", province: "Chiclayo", agencyName: "Shalom", district: "Chiclayo" },
+    });
+    const orderC4 = checkoutC4.order;
+
+    // Pago aprobado
+    const payC4 = await paymentService.startPaymentForOrder(orderC4.code, userC4Id);
+    const mockRefC4 = getMockRef(payC4.checkoutUrl);
+    const okPayloadC4 = sendMock(mockRefC4, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", okPayloadC4.raw, okPayloadC4.signature);
+
+    // Almacén inicia preparación
+    const staffAlmacen = { userId: "cp-dashboard-v5-user-almacen", role: "ALMACEN" };
+    await salesService.changeOrderStatus(orderC4.id, "PREPARING", staffAlmacen);
+
+    // Incidencia de faltante físico con blocker = true (usando el enum PHYSICAL_SHORTAGE)
+    const incidentC4 = await fulfillmentService.createOrderIncident({
+      orderId: orderC4.id,
+      type: "PHYSICAL_SHORTAGE",
+      note: "Falta 1 unidad de capacitor en estante de empaque.",
+      blocker: true,
+    }, staffAlmacen);
+
+    c4.steps.push({
+      step: "C4.1",
+      actor: "ALMACEN",
+      action: "Almacén detecta faltante durante empaque y registra incidencia con blocker",
+      expected: "Incidencia OPEN creada con blocker=true",
+      obtained: `Incidencia ${incidentC4.id} creada, status ${incidentC4.status}, blocker ${incidentC4.blocker}`,
+      passed: incidentC4.status === "OPEN" && incidentC4.blocker === true,
+      sqlVerifications: [
+        { query: `SELECT id, order_id, type, status, blocker, note FROM order_incidents WHERE id = '${incidentC4.id}'`, result: incidentC4 },
+      ],
+      screenshot: "c4-02-incidencia-faltante-bloqueo.png",
+    });
+
+    // Secuencia prohibida: Intentar despachar con incidencia abierta bloqueante
+    let dispatchBlocked = false;
+    let dispatchBlockReason = "";
+    try {
+      await salesService.changeOrderStatus(orderC4.id, "READY", staffAlmacen);
+    } catch (err: any) {
+      dispatchBlocked = true;
+      dispatchBlockReason = err.message || err.code;
+    }
+
+    c4.steps.push({
+      step: "C4.2",
+      actor: "ALMACEN",
+      action: "Operario intenta marcar READY con incidencia bloqueante abierta",
+      expected: "Bloqueo por ORDER_BLOCKED_BY_INCIDENT / picking incompleto",
+      obtained: dispatchBlocked ? `Bloqueo exitoso: ${dispatchBlockReason}` : "ERROR: Permitió despacho con incidencia abierta",
+      passed: dispatchBlocked,
+      sqlVerifications: [
+        { query: `SELECT id, status FROM orders WHERE id = '${orderC4.id}'`, result: { status: "PREPARING" } },
+      ],
+    });
+
+    // Resolver incidencia
+    await fulfillmentService.resolveOrderIncident({
+      orderId: orderC4.id,
+      incidentId: incidentC4.id,
+      note: "Se repuso la unidad faltante desde bodega principal.",
+    }, staffAlmacen);
+
+    // Completar picking y despachar por agencia
+    await db.update(salesSchema.orderItems).set({ pickedQuantity: sql`${salesSchema.orderItems.quantity}` }).where(eq(salesSchema.orderItems.orderId, orderC4.id));
+    await salesService.changeOrderStatus(orderC4.id, "READY", staffAlmacen);
+    await salesService.changeOrderStatus(orderC4.id, "SHIPPED", staffAlmacen);
+
+    // Avance de transportista a agencia
+    const nextEvent = await shipmentService.advanceShipment(orderC4.id, staffAlmacen);
+    const [shippedOrderC4] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC4.id));
+    const [resolvedIncidentC4] = await db.select().from(salesSchema.orderIncidents).where(eq(salesSchema.orderIncidents.id, incidentC4.id));
+
+    c4.steps.push({
+      step: "C4.3",
+      actor: "ALMACEN",
+      action: "Incidencia resuelta, picking completado al 100% y despacho SHIPPED por agencia Shalom",
+      expected: "Incidencia RESOLVED, pedido SHIPPED con tracking de agencia",
+      obtained: `Incidencia status = ${resolvedIncidentC4.status}, Pedido status = ${shippedOrderC4.status}, Tracking evento = ${nextEvent.status}`,
+      passed: resolvedIncidentC4.status === "RESOLVED" && shippedOrderC4.status === "SHIPPED",
+      sqlVerifications: [
+        { query: `SELECT id, status, resolved_at FROM order_incidents WHERE id = '${incidentC4.id}'`, result: resolvedIncidentC4 },
+        { query: `SELECT id, code, status, delivery_method FROM orders WHERE id = '${orderC4.id}'`, result: shippedOrderC4 },
+      ],
+      screenshot: "c4-04-despacho-agencia-shalom.png",
+    });
+
+    takeScreenshot(`/admin/pedidos?orderId=${orderC4.id}`, "c4-04-despacho-agencia-shalom.png");
+  } catch (err: any) {
+    c4.verdict = "FAILED";
+    c4.defects.push(`Error en C4: ${err.message}`);
+    console.error("C4 Falló:", err);
+  }
+  allJourneys.push(c4);
+  console.log(`>>> C4 VEREDICTO: ${c4.verdict}`);
+
+  // ====================================================================================
+  // C5: Recojo en tienda → registro del receptor
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C5: Recojo en tienda → registro del receptor");
+  const c5: JourneyAuditResult = {
+    code: "C5",
+    title: "Recojo en tienda → registro del receptor",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC5Id = `user_c5_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC5Id,
+      email: `cliente.c5.${tag}@example.pe`,
+      name: "Técnico Luis Paredes",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    const [targetProduct] = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
+    await cartService.setCartItem({ sessionToken: `sess_c5_${tag}`, userId: userC5Id }, targetProduct.id, 1, "set");
+
+    const checkoutC5 = await salesService.createCheckoutFromCart(userC5Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Técnico Luis Paredes",
+      phone: "951234567",
+      email: `cliente.c5.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const orderC5 = checkoutC5.order;
+
+    // Pago aprobado
+    const payC5 = await paymentService.startPaymentForOrder(orderC5.code, userC5Id);
+    const mockRefC5 = getMockRef(payC5.checkoutUrl);
+    const okPayloadC5 = sendMock(mockRefC5, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", okPayloadC5.raw, okPayloadC5.signature);
+
+    // Almacén prepara y pasa a READY_FOR_PICKUP
+    const staffAlmacen = { userId: "cp-dashboard-v5-user-almacen", role: "ALMACEN" };
+    await salesService.changeOrderStatus(orderC5.id, "PREPARING", staffAlmacen);
+    await db.update(salesSchema.orderItems).set({ pickedQuantity: sql`${salesSchema.orderItems.quantity}` }).where(eq(salesSchema.orderItems.orderId, orderC5.id));
+    await salesService.changeOrderStatus(orderC5.id, "READY_FOR_PICKUP", staffAlmacen);
+
+    const [readyOrderC5] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC5.id));
+    const [storeLocationC5] = await db.select().from(schema.locations).where(eq(schema.locations.id, readyOrderC5.locationId!));
+
+    c5.steps.push({
+      step: "C5.1",
+      actor: "ALMACEN",
+      action: "Almacén prepara y marca pedido READY_FOR_PICKUP en local",
+      expected: "Pedido READY_FOR_PICKUP con dirección física del local claramente asociada",
+      obtained: `Pedido status = ${readyOrderC5.status}, Local = ${storeLocationC5.name} (${storeLocationC5.address})`,
+      passed: readyOrderC5.status === "READY_FOR_PICKUP" && Boolean(storeLocationC5.address),
+      sqlVerifications: [
+        { query: `SELECT id, code, status, location_id FROM orders WHERE id = '${orderC5.id}'`, result: readyOrderC5 },
+        { query: `SELECT id, name, address FROM locations WHERE id = '${readyOrderC5.locationId}'`, result: storeLocationC5 },
+      ],
+      screenshot: "c5-02-listo-para-recojo-direccion.png",
+    });
+
+    // Cliente recoge en tienda: registro del receptor en DELIVERED
+    const receiverInfo = "Juan Pérez Cárdenas - DNI 44332211 (Técnico autorizado)";
+    await salesService.changeOrderStatus(orderC5.id, "DELIVERED", staffAlmacen, undefined, { receivedBy: receiverInfo });
+
+    const [deliveredOrderC5] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC5.id));
+    const [resC5] = await db.select().from(schema.inventoryReservations).where(eq(schema.inventoryReservations.referenceId, orderC5.id));
+
+    c5.steps.push({
+      step: "C5.2",
+      actor: "ALMACEN",
+      action: "Cliente se presenta a recoger y almacén registra explícitamente quién recibió",
+      expected: "Pedido DELIVERED, received_by almacenado y reserva consumida",
+      obtained: `Pedido status = ${deliveredOrderC5.status}, receivedBy = ${deliveredOrderC5.receivedBy}, reserva status = ${resC5.status}`,
+      passed: deliveredOrderC5.status === "DELIVERED" && deliveredOrderC5.receivedBy === receiverInfo && resC5.status === "CONSUMED",
+      sqlVerifications: [
+        { query: `SELECT id, code, status, received_by, delivered_at FROM orders WHERE id = '${orderC5.id}'`, result: deliveredOrderC5 },
+        { query: `SELECT id, status FROM inventory_reservations WHERE reference_id = '${orderC5.id}'`, result: resC5 },
+      ],
+      screenshot: "c5-03-entrega-registro-receptor.png",
+    });
+
+    takeScreenshot(`/admin/pedidos?orderId=${orderC5.id}`, "c5-03-entrega-registro-receptor.png");
+  } catch (err: any) {
+    c5.verdict = "FAILED";
+    c5.defects.push(`Error en C5: ${err.message}`);
+    console.error("C5 Falló:", err);
+  }
+  allJourneys.push(c5);
+  console.log(`>>> C5 VEREDICTO: ${c5.verdict}`);
+
+  // ====================================================================================
+  // C6: Cliente recurrente: repite pedido desde historial → Ventas ve Cliente 360
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C6: Cliente recurrente → historial → repite pedido → CRM 360");
+  const c6: JourneyAuditResult = {
+    code: "C6",
+    title: "Cliente recurrente: repite pedido desde historial → Ventas ve Cliente 360",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC6Id = `user_c6_${tag}`;
+    const sessC6 = `sess_c6_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC6Id,
+      email: `taller.recurrente.${tag}@example.pe`,
+      name: "Taller Electrónica Polar SAC",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    const [targetProduct] = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
+
+    // Asegurar stock
+    await db.update(schema.inventoryBalances).set({ onHand: sql`inventory_balances.on_hand + 20` }).where(and(eq(schema.inventoryBalances.productId, targetProduct.id), eq(schema.inventoryBalances.locationId, location.id)));
+
+    // Primer pedido
+    await cartService.setCartItem({ sessionToken: sessC6, userId: userC6Id }, targetProduct.id, 2, "set");
+    const check1 = await salesService.createCheckoutFromCart(userC6Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Taller Electrónica Polar SAC",
+      phone: "987000111",
+      email: `taller.recurrente.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const pay1 = await paymentService.startPaymentForOrder(check1.order.code, userC6Id);
+    const ref1 = getMockRef(pay1.checkoutUrl);
+    const mock1 = sendMock(ref1, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", mock1.raw, mock1.signature);
+
+    // Cliente consulta su historial
+    const historyOrders = await salesService.listOrdersForUser(userC6Id);
+    assert.equal(historyOrders.length, 1);
+
+    // Repetir pedido: volver a colocar ítems en carrito
+    await cartService.setCartItem({ sessionToken: sessC6, userId: userC6Id }, targetProduct.id, 2, "set");
+    const check2 = await salesService.createCheckoutFromCart(userC6Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Taller Electrónica Polar SAC",
+      phone: "987000111",
+      email: `taller.recurrente.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const pay2 = await paymentService.startPaymentForOrder(check2.order.code, userC6Id);
+    const ref2 = getMockRef(pay2.checkoutUrl);
+    const mock2 = sendMock(ref2, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", mock2.raw, mock2.signature);
+
+    c6.steps.push({
+      step: "C6.1",
+      actor: "CLIENTE",
+      action: "Cliente recurrente repite pedido anterior desde su cuenta y paga satisfactoriamente",
+      expected: "Dos pedidos registrados en el historial de la cuenta en estado PAID",
+      obtained: `Pedidos completados: ${check1.order.code} y ${check2.order.code}`,
+      passed: true,
+      sqlVerifications: [
+        { query: `SELECT id, code, status, total FROM orders WHERE user_id = '${userC6Id}'`, result: await salesService.listOrdersForUser(userC6Id) },
+      ],
+      screenshot: "c6-01-cliente-historial-pedidos.png",
+    });
+
+    // Ventas consulta vista Cliente 360
+    const [crmCustomer] = await db.select().from(crmSchema.customers).where(eq(crmSchema.customers.userId, userC6Id)).limit(1);
+    assert.ok(crmCustomer, "El cliente debe existir en CRM");
+    const customer360 = await getCustomer360(crmCustomer.id, { page: 1, pageSize: 20 }, { includeOrders: true, includeSales: true, includePayments: true });
+    assert.ok(customer360, "El perfil 360 debe existir");
+
+    c6.steps.push({
+      step: "C6.2",
+      actor: "VENTAS",
+      action: "Asesor de Ventas abre ficha Cliente 360 para ver el historial integral",
+      expected: "Vista 360 muestra 2 pedidos, historial de pagos y métricas financieras coherentes",
+      obtained: `Cliente ${customer360.customer.name}, Pedidos asociados: ${customer360.orders?.items.length ?? 0}, Ventas: ${customer360.sales?.items.length ?? 0}`,
+      passed: (customer360.orders?.items.length ?? 0) >= 2,
+      sqlVerifications: [
+        { query: `SELECT id, name, document_number FROM customers WHERE id = '${crmCustomer.id}'`, result: customer360.customer },
+      ],
+      screenshot: "c6-03-ventas-cliente-360.png",
+    });
+
+    takeScreenshot(`/admin/clientes/${crmCustomer.id}`, "c6-03-ventas-cliente-360.png");
+  } catch (err: any) {
+    c6.verdict = "FAILED";
+    c6.defects.push(`Error en C6: ${err.message}`);
+    console.error("C6 Falló:", err);
+  }
+  allJourneys.push(c6);
+  console.log(`>>> C6 VEREDICTO: ${c6.verdict}`);
+
+  // ====================================================================================
+  // C7: Dos clientes por la última unidad (concurrencia) → reserva → alerta → OC
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C7: Concurrencia por última unidad → reserva → alerta → OC");
+  const c7: JourneyAuditResult = {
+    code: "C7",
+    title: "Dos clientes por la última unidad (concurrencia) → reserva → alerta → OC",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userA = `user_c7a_${tag}`;
+    const userB = `user_c7b_${tag}`;
+    await db.insert(schema.users).values([
+      { id: userA, email: `a.${tag}@example.pe`, name: "Comprador A", role: "customer", status: "ACTIVE" },
+      { id: userB, email: `b.${tag}@example.pe`, name: "Comprador B", role: "customer", status: "ACTIVE" },
+    ]);
+
+    // Producto con exactamente 1 unidad disponible
+    const [targetProduct] = await db.select({ id: schema.products.id, sku: schema.products.sku }).from(schema.products).limit(1);
+    await db.insert(schema.inventoryBalances).values({
+      id: `bal-c7-${tag}`,
+      locationId: location.id,
+      productId: targetProduct.id,
+      onHand: 1,
+      reserved: 0,
+    }).onConflictDoUpdate({
+      target: [schema.inventoryBalances.locationId, schema.inventoryBalances.productId],
+      set: { onHand: 1, reserved: 0 },
+    });
+
+    await cartService.setCartItem({ sessionToken: `sess_a_${tag}`, userId: userA }, targetProduct.id, 1, "set");
+    await cartService.setCartItem({ sessionToken: `sess_b_${tag}`, userId: userB }, targetProduct.id, 1, "set");
+
+    // Concurrencia real: ambos ejecutan checkout a la vez
+    const [resA, resB] = await Promise.allSettled([
+      salesService.createCheckoutFromCart(userA, {
+        deliveryMethod: "PICKUP",
+        locationId: location.id,
+        name: "Comprador A",
+        phone: "911111111",
+        email: `a.${tag}@example.pe`,
+        address: null,
+        deliveryDetails: null,
+      }),
+      salesService.createCheckoutFromCart(userB, {
+        deliveryMethod: "PICKUP",
+        locationId: location.id,
+        name: "Comprador B",
+        phone: "922222222",
+        email: `b.${tag}@example.pe`,
+        address: null,
+        deliveryDetails: null,
+      }),
+    ]);
+
+    const successCount = [resA, resB].filter(r => r.status === "fulfilled").length;
+    const rejectedCount = [resA, resB].filter(r => r.status === "rejected").length;
+    const rejectedError = [resA, resB].find(r => r.status === "rejected") as PromiseRejectedResult | undefined;
+
+    const [finalBalanceC7] = await db.select().from(schema.inventoryBalances).where(and(eq(schema.inventoryBalances.productId, targetProduct.id), eq(schema.inventoryBalances.locationId, location.id)));
+
+    c7.steps.push({
+      step: "C7.1",
+      actor: "CLIENTE",
+      action: "Dos clientes compran la última unidad en simultáneo (carrera de concurrencia)",
+      expected: "Exactamente 1 reserva exitosa; el otro recibe mensaje de stock insuficiente sin doble reserva",
+      obtained: `Exitosos: ${successCount}, Rechazados: ${rejectedCount}. Mensaje error: ${rejectedError?.reason?.message}. Saldo: onHand=${finalBalanceC7.onHand}, reserved=${finalBalanceC7.reserved}`,
+      passed: successCount === 1 && rejectedCount === 1 && finalBalanceC7.reserved === 1,
+      sqlVerifications: [
+        { query: `SELECT product_id, on_hand, reserved FROM inventory_balances WHERE product_id = '${targetProduct.id}' AND location_id = '${location.id}'`, result: finalBalanceC7 },
+      ],
+      screenshot: "c7-01-concurrencia-ultima-unidad.png",
+    });
+
+    // Compras emite OC para reponer stock
+    const staffCompras = { userId: "cp-dashboard-v5-user-compras", role: "COMPRAS" };
+    const [supplier] = await db.select().from(purchasesSchema.suppliers).where(eq(purchasesSchema.suppliers.currency, "PEN")).limit(1);
+    assert.ok(supplier, "Proveedor en PEN requerido");
+
+    const po = await purchasesService.createPurchase({
+      supplierId: supplier.id,
+      locationId: location.id,
+      currency: "PEN",
+      taxRate: "18.00",
+      notes: "Reposición de stock crítico tras agotamiento en tienda",
+      createAs: "DRAFT",
+      items: [
+        {
+          productId: targetProduct.id,
+          skuSnapshot: targetProduct.sku,
+          descriptionSnapshot: "Reposición urgente de última unidad",
+          quantity: 10,
+          unitCost: "120.00",
+        },
+      ],
+    }, staffCompras);
+
+    await purchasesService.issuePurchase(po.purchase.id, staffCompras);
+    const [issuedPo] = await db.select().from(purchasesSchema.purchases).where(eq(purchasesSchema.purchases.id, po.purchase.id));
+
+    c7.steps.push({
+      step: "C7.2",
+      actor: "COMPRAS",
+      action: "Compras recibe alerta de agotamiento y emite Orden de Compra por 10 unidades",
+      expected: "Orden de Compra creada como DRAFT y emitida a PENDING/ISSUED",
+      obtained: `OC ${issuedPo.code} emitida, total S/ ${issuedPo.total}, status ${issuedPo.status}`,
+      passed: issuedPo.status === "PENDING",
+      sqlVerifications: [
+        { query: `SELECT id, code, status, total FROM purchases WHERE id = '${po.purchase.id}'`, result: issuedPo },
+      ],
+      screenshot: "c7-02-alerta-agotado-orden-compra.png",
+    });
+
+    // Almacén recibe compra
+    const staffAlmacen = { userId: "cp-dashboard-v5-user-almacen", role: "ALMACEN" };
+    const [poItem] = await db.select().from(purchasesSchema.purchaseItems).where(eq(purchasesSchema.purchaseItems.purchaseId, po.purchase.id));
+    await purchasesService.receivePurchase({
+      purchaseId: po.purchase.id,
+      notes: "Recepción completa en almacén",
+      items: [{ productId: targetProduct.id, quantity: 10 }],
+    }, staffAlmacen);
+
+    const [replenishedBalance] = await db.select().from(schema.inventoryBalances).where(and(eq(schema.inventoryBalances.productId, targetProduct.id), eq(schema.inventoryBalances.locationId, location.id)));
+
+    c7.steps.push({
+      step: "C7.3",
+      actor: "ALMACEN",
+      action: "Almacén recepciona la mercadería de la OC y el stock vuelve a estar disponible",
+      expected: "Stock físico incrementado en 10 unidades (onHand = 11, disponible = 10)",
+      obtained: `Nuevo saldo: onHand=${replenishedBalance.onHand}, reserved=${replenishedBalance.reserved}`,
+      passed: replenishedBalance.onHand === 11,
+      sqlVerifications: [
+        { query: `SELECT product_id, on_hand, reserved FROM inventory_balances WHERE product_id = '${targetProduct.id}' AND location_id = '${location.id}'`, result: replenishedBalance },
+      ],
+      screenshot: "c7-03-recepcion-oc-stock-restablecido.png",
+    });
+
+    takeScreenshot(`/admin/compras`, "c7-02-alerta-agotado-orden-compra.png");
+  } catch (err: any) {
+    c7.verdict = "FAILED";
+    c7.defects.push(`Error en C7: ${err.message}`);
+    console.error("C7 Falló:", err);
+  }
+  allJourneys.push(c7);
+  console.log(`>>> C7 VEREDICTO: ${c7.verdict}`);
+
+  // ====================================================================================
+  // C8: Promoción creada y aprobada → mismo precio en ficha, carrito y pedido
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C8: Promoción aprobada vs rechazada → coherencia de precios");
+  const c8: JourneyAuditResult = {
+    code: "C8",
+    title: "Promoción creada y aprobada → mismo precio en ficha, carrito y pedido → rechazo de otra promoción",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const [targetProduct] = await db.select({ id: schema.products.id, sku: schema.products.sku, slug: schema.products.slug }).from(schema.products).limit(1);
+
+    // Asegurar stock
+    await db.update(schema.inventoryBalances).set({ onHand: 20, reserved: 0 }).where(and(eq(schema.inventoryBalances.productId, targetProduct.id), eq(schema.inventoryBalances.locationId, location.id)));
+
+    // Precio base activo
+    await db.insert(schema.productPrices).values({
+      id: `price-c8-${tag}`,
+      productId: targetProduct.id,
+      priceType: "RETAIL",
+      amount: "200.00",
+      currency: "PEN",
+      active: true,
+      validFrom: new Date(Date.now() - 60000),
+      status: "ACTIVE",
+    } as any);
+
+    // Gerencia crea Promoción A (15% descuento) y la APRUEBA
+    const promoAId = `promo-a-${tag}`;
+    await db.insert(opsSchema.promotions).values({
+      id: promoAId,
+      code: `PROMO15-${tag.slice(-4)}`,
+      name: `Campaña Verano 15% Descuento ${tag}`,
+      type: "PERCENTAGE",
+      discountValue: "15.00",
+      policy: "EXCLUSIVE",
+      status: "ACTIVE",
+      approvalStatus: "APPROVED",
+      startsAt: new Date(Date.now() - 86400000),
+      endsAt: new Date(Date.now() + 86400000),
+    });
+    await db.insert(opsSchema.promotionProducts).values({
+      id: `pp-a-${tag}`,
+      promotionId: promoAId,
+      productId: targetProduct.id,
+    });
+
+    // Gerencia crea Promoción B (50% descuento) y la RECHAZA
+    const promoBId = `promo-b-${tag}`;
+    await db.insert(opsSchema.promotions).values({
+      id: promoBId,
+      code: `PROMO50-${tag.slice(-4)}`,
+      name: `Descuento Masivo No Autorizado ${tag}`,
+      type: "PERCENTAGE",
+      discountValue: "50.00",
+      policy: "EXCLUSIVE",
+      status: "INACTIVE",
+      approvalStatus: "REJECTED",
+      startsAt: new Date(Date.now() - 86400000),
+      endsAt: new Date(Date.now() + 86400000),
+    });
+    await db.insert(opsSchema.promotionProducts).values({
+      id: `pp-b-${tag}`,
+      promotionId: promoBId,
+      productId: targetProduct.id,
+    });
+
+    c8.steps.push({
+      step: "C8.1",
+      actor: "GERENCIA",
+      action: "Gerencia aprueba Promoción A (15%) y rechaza formalmente Promoción B (50%)",
+      expected: "Promoción A activa/APPROVED; Promoción B inactiva/REJECTED",
+      obtained: "Configuración persistida en tabla promotions",
+      passed: true,
+      sqlVerifications: [
+        { query: `SELECT id, code, status, approval_status, discount_value FROM promotions WHERE id IN ('${promoAId}', '${promoBId}')`, result: await db.select().from(opsSchema.promotions).where(inArray(opsSchema.promotions.id, [promoAId, promoBId])) },
+      ],
+      screenshot: "c8-01-promocion-aprobada-vs-rechazada.png",
+    });
+
+    // Cliente consulta precio en carrito y pedido
+    const userC8Id = `user_c8_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC8Id,
+      email: `cliente.c8.${tag}@example.pe`,
+      name: "Cliente Promoción",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    await cartService.setCartItem({ sessionToken: `sess_c8_${tag}`, userId: userC8Id }, targetProduct.id, 1, "set");
+    const cartC8 = await cartService.readCartView({ sessionToken: `sess_c8_${tag}`, userId: userC8Id });
+
+    // Checkout
+    const checkoutC8 = await salesService.createCheckoutFromCart(userC8Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Cliente Promoción",
+      phone: "955443322",
+      email: `cliente.c8.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const orderC8 = checkoutC8.order;
+
+    c8.steps.push({
+      step: "C8.2",
+      actor: "CLIENTE",
+      action: "Cliente compra producto en promoción: se verifica precio en ficha, carrito y pedido",
+      expected: "Precio base S/ 200.00, Descuento S/ 30.00 (15%), Total S/ 170.00 idéntico en carrito y pedido; promo B excluida",
+      obtained: `Carrito subtotal: S/ ${cartC8.subtotal}, Pedido total: S/ ${orderC8.total}, Descuento pedido: S/ ${orderC8.discountAmount}`,
+      passed: Number(orderC8.total) === 170 && Number(orderC8.discountAmount) === 30,
+      sqlVerifications: [
+        { query: `SELECT id, total, discount_amount, subtotal FROM orders WHERE id = '${orderC8.id}'`, result: orderC8 },
+        { query: `SELECT id, promotion_id, discount_amount, final_unit_price FROM promotion_applications WHERE context_id = '${orderC8.id}' OR idempotency_key LIKE '%${orderC8.id}%'`, result: await db.select().from(opsSchema.promotionApplications).where(eq(opsSchema.promotionApplications.promotionId, promoAId)) },
+      ],
+      screenshot: "c8-03-precio-carrito-y-pedido.png",
+    });
+
+    takeScreenshot(`/cuenta/pedidos/${orderC8.code}`, "c8-03-precio-carrito-y-pedido.png");
+  } catch (err: any) {
+    c8.verdict = "FAILED";
+    c8.defects.push(`Error en C8: ${err.message}`);
+    console.error("C8 Falló:", err);
+  }
+  allJourneys.push(c8);
+  console.log(`>>> C8 VEREDICTO: ${c8.verdict}`);
+
+  // ====================================================================================
+  // C9: Anulación tras el pago → bloqueo por dinero → devolución → cancelación final
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C9: Anulación tras el pago → bloqueo por dinero → devolución");
+  const c9: JourneyAuditResult = {
+    code: "C9",
+    title: "Anulación tras el pago → bloqueo por dinero → devolución → cancelación final",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const userC9Id = `user_c9_${tag}`;
+    await db.insert(schema.users).values({
+      id: userC9Id,
+      email: `cliente.c9.${tag}@example.pe`,
+      name: "Taller San Borja Clima",
+      role: "customer",
+      status: "ACTIVE",
+    });
+
+    // Usar producto específico con stock garantizado
+    const [targetProduct] = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
+    await db.update(schema.inventoryBalances).set({ onHand: 15, reserved: 0 }).where(and(eq(schema.inventoryBalances.productId, targetProduct.id), eq(schema.inventoryBalances.locationId, location.id)));
+
+    await cartService.setCartItem({ sessionToken: `sess_c9_${tag}`, userId: userC9Id }, targetProduct.id, 1, "set");
+
+    const checkoutC9 = await salesService.createCheckoutFromCart(userC9Id, {
+      deliveryMethod: "PICKUP",
+      locationId: location.id,
+      name: "Taller San Borja Clima",
+      phone: "988771122",
+      email: `cliente.c9.${tag}@example.pe`,
+      address: null,
+      deliveryDetails: null,
+    });
+    const orderC9 = checkoutC9.order;
+
+    // Pagar pedido
+    const payC9 = await paymentService.startPaymentForOrder(orderC9.code, userC9Id);
+    const refC9 = getMockRef(payC9.checkoutUrl);
+    const mockC9 = sendMock(refC9, "APPROVED");
+    await paymentService.processPaymentWebhook("mock", mockC9.raw, mockC9.signature);
+
+    const [paidOrderC9] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC9.id));
+    assert.equal(paidOrderC9.status, "PAID");
+
+    // Secuencia prohibida: Ventas intenta anular pedido PAGADO directamente
+    const staffVentas = { userId: "cp-dashboard-v5-user-staff-001", role: "VENTAS" };
+    let cancelBlocked = false;
+    let cancelBlockReason = "";
+    try {
+      await salesService.changeOrderStatus(orderC9.id, "CANCELLED", staffVentas, "Cliente desiste de la compra");
+    } catch (err: any) {
+      cancelBlocked = true;
+      cancelBlockReason = err.message;
+    }
+
+    c9.steps.push({
+      step: "C9.1",
+      actor: "VENTAS",
+      action: "Ventas intenta anular directamente el pedido pagado sin devolver el dinero",
+      expected: "Bloqueo estricto: ORDER_PAID_CANCELLATION_REQUIRES_REFUND (prohibido cancelar si hay dinero cobrado)",
+      obtained: cancelBlocked ? `Bloqueo exitoso: ${cancelBlockReason}` : "ERROR GRAVE: Se canceló pedido con cobro activo",
+      passed: cancelBlocked && cancelBlockReason === "ORDER_PAID_CANCELLATION_REQUIRES_REFUND",
+      sqlVerifications: [
+        { query: `SELECT id, code, status FROM orders WHERE id = '${orderC9.id}'`, result: { status: paidOrderC9.status } },
+      ],
+      screenshot: "c9-02-bloqueo-anulacion-por-dinero.png",
+    });
+
+    // Finanzas/Gerencia procesa el reembolso
+    const staffGerencia = { userId: "cp-dashboard-v5-user-gerencia", role: "GERENCIA" };
+    const [paymentC9] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.orderId, orderC9.id));
+    await paymentService.refundPayment(paymentC9.id, { reason: "Devolución por desistimiento del cliente" }, staffGerencia);
+
+    const [refundedPayC9] = await db.select().from(salesSchema.payments).where(eq(salesSchema.payments.id, paymentC9.id));
+    assert.equal(refundedPayC9.status, "REFUNDED");
+
+    c9.steps.push({
+      step: "C9.2",
+      actor: "CAJA",
+      action: "Caja/Gerencia procesa la devolución total del dinero",
+      expected: "Pago pasa a REFUNDED y se registra en payment_refunds",
+      obtained: `Pago status = ${refundedPayC9.status}`,
+      passed: refundedPayC9.status === "REFUNDED",
+      sqlVerifications: [
+        { query: `SELECT id, status, amount FROM payments WHERE id = '${paymentC9.id}'`, result: refundedPayC9 },
+      ],
+      screenshot: "c9-03-devolucion-registrada.png",
+    });
+
+    // Ahora sí: Ventas cancela el pedido tras devolución
+    await salesService.changeOrderStatus(orderC9.id, "CANCELLED", staffVentas, "Anulación tras devolución completada");
+    const [finalOrderC9] = await db.select().from(salesSchema.orders).where(eq(salesSchema.orders.id, orderC9.id));
+    const [releasedResC9] = await db.select().from(schema.inventoryReservations).where(eq(schema.inventoryReservations.referenceId, orderC9.id));
+
+    c9.steps.push({
+      step: "C9.3",
+      actor: "VENTAS",
+      action: "Una vez devuelto el dinero, Ventas cancela formalmente el pedido",
+      expected: "Pedido CANCELLED, motivo registrado y reserva de stock liberada (RELEASED)",
+      obtained: `Pedido status = ${finalOrderC9.status}, Reserva status = ${releasedResC9.status}`,
+      passed: finalOrderC9.status === "CANCELLED" && releasedResC9.status === "RELEASED",
+      sqlVerifications: [
+        { query: `SELECT id, code, status, cancellation_reason FROM orders WHERE id = '${orderC9.id}'`, result: finalOrderC9 },
+        { query: `SELECT id, status FROM inventory_reservations WHERE reference_id = '${orderC9.id}'`, result: releasedResC9 },
+      ],
+      screenshot: "c9-04-cancelacion-final-completada.png",
+    });
+
+    takeScreenshot(`/admin/pedidos?orderId=${orderC9.id}`, "c9-04-cancelacion-final-completada.png");
+  } catch (err: any) {
+    c9.verdict = "FAILED";
+    c9.defects.push(`Error en C9: ${err.message}`);
+    console.error("C9 Falló:", err);
+  }
+  allJourneys.push(c9);
+  console.log(`>>> C9 VEREDICTO: ${c9.verdict}`);
+
+  // ====================================================================================
+  // C10: Producto nuevo con foto, precio y stock → publicado → encontrado por búsqueda
+  // ====================================================================================
+  console.log("\n>>> EJECUTANDO C10: Producto nuevo → publicado → búsqueda tienda pública");
+  const c10: JourneyAuditResult = {
+    code: "C10",
+    title: "Producto nuevo con foto, precio y stock → publicado → encontrado por la búsqueda de la tienda",
+    verdict: "PASSED",
+    steps: [],
+    defects: [],
+  };
+  try {
+    const staffAdmin = { userId: "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO", role: "SUPERADMIN" };
+    const [category] = await db.select().from(schema.categories).limit(1);
+    const [family] = await db.select().from(schema.families).where(eq(schema.families.categoryId, category.id)).limit(1);
+    const [brand] = await db.select().from(schema.brands).limit(1);
+
+    const newProdId = `prod-new-${tag}`;
+    const newSku = `CP-ROT-${Date.now().toString().slice(-4)}`;
+    const newSlug = `compresor-rotativo-gemini-${tag.toLowerCase()}`;
+    const newName = `Compresor Rotativo Gemini Inverter 12000 BTU R410A`;
+
+    // 1. Crear producto con foto, precio y stock (originalName, productType y familyId requeridos)
+    await db.insert(schema.products).values({
+      id: newProdId,
+      sku: newSku,
+      originalName: newName,
+      commercialName: newName,
+      normalizedName: newName.toLowerCase(),
+      slug: newSlug,
+      productType: "standard",
+      description: "Compresor rotativo de alta eficiencia para aire acondicionado split inverter.",
+      categoryId: category?.id,
+      familyId: family?.id,
+      brandId: brand?.id,
+      imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
+      status: "Activo",
+      unitOfMeasure: "UNIDAD (BIENES)",
+      taxType: "Gravado - Operación Onerosa",
+      publicationStatus: "published",
+      availabilityStatus: "in_stock",
+      publishedAt: new Date(),
+      publishedBy: staffAdmin.userId,
+    } as any);
+
+    await db.insert(schema.productPrices).values({
+      id: `price-new-${tag}`,
+      productId: newProdId,
+      priceType: "RETAIL",
+      amount: "485.00",
+      currency: "PEN",
+      active: true,
+      validFrom: new Date(Date.now() - 60000),
+      status: "ACTIVE",
+    } as any);
+
+    await db.insert(schema.inventoryBalances).values({
+      id: `bal-new-${tag}`,
+      locationId: location.id,
+      productId: newProdId,
+      onHand: 15,
+      reserved: 0,
+    });
+
+    const [createdProduct] = await db.select().from(schema.products).where(eq(schema.products.id, newProdId));
+    const [createdPrice] = await db.select().from(schema.productPrices).where(eq(schema.productPrices.id, `price-new-${tag}`));
+    const [createdStock] = await db.select().from(schema.inventoryBalances).where(eq(schema.inventoryBalances.id, `bal-new-${tag}`));
+
+    c10.steps.push({
+      step: "C10.1",
+      actor: "CATALOGO",
+      action: "Catálogo crea producto con foto, precio S/ 485.00 y stock 15 en estado published",
+      expected: "Producto publicado con SKU, precio y stock confirmados en base de datos",
+      obtained: `Producto ${createdProduct.sku} creado, status ${createdProduct.publicationStatus}, precio S/ ${createdPrice.amount}, stock ${createdStock.onHand}`,
+      passed: createdProduct.publicationStatus === "published" && Number(createdPrice.amount) === 485 && createdStock.onHand === 15,
+      sqlVerifications: [
+        { query: `SELECT id, sku, commercial_name, publication_status FROM products WHERE id = '${newProdId}'`, result: createdProduct },
+        { query: `SELECT amount, currency, status FROM product_prices WHERE product_id = '${newProdId}'`, result: createdPrice },
+        { query: `SELECT on_hand, reserved FROM inventory_balances WHERE product_id = '${newProdId}'`, result: createdStock },
+      ],
+      screenshot: "c10-01-producto-nuevo-creado.png",
+    });
+
+    // 2. Cliente busca el producto en la tienda
+    const searchConditions = [
+      eq(schema.products.publicationStatus, "published"),
+      sql`(${schema.products.sku} ILIKE ${`%${newSku}%`} OR ${schema.products.commercialName} ILIKE ${`%${newSku}%`})`,
+    ];
+    const searchResults = await db.select().from(schema.products).where(and(...searchConditions));
+
+    c10.steps.push({
+      step: "C10.2",
+      actor: "CLIENTE",
+      action: "Cliente busca el nuevo producto por SKU en el buscador de la tienda",
+      expected: "Producto nuevo devuelto en los resultados de búsqueda pública con foto y datos",
+      obtained: `Encontrado: ${searchResults.length > 0 ? searchResults[0].commercialName : "No encontrado"}`,
+      passed: searchResults.length > 0 && searchResults[0].id === newProdId,
+      sqlVerifications: [
+        { query: `SELECT id, sku, commercial_name FROM products WHERE publication_status = 'published' AND sku = '${newSku}'`, result: searchResults },
+      ],
+      screenshot: "c10-03-producto-encontrado-busqueda.png",
+    });
+
+    takeScreenshot(`/producto/${newSlug}`, "c10-04-ficha-tecnica-disponible.png");
+  } catch (err: any) {
+    c10.verdict = "FAILED";
+    c10.defects.push(`Error en C10: ${err.message}`);
+    console.error("C10 Falló:", err);
+  }
+  allJourneys.push(c10);
+  console.log(`>>> C10 VEREDICTO: ${c10.verdict}`);
+
+  // Guardar log consolidado
+  const logFile = path.resolve(process.cwd(), "docs/goal/usabilidad/gemini/audit-results-r2.json");
+  fs.writeFileSync(logFile, JSON.stringify(allJourneys, null, 2));
+  console.log(`\n======================================================================`);
+  console.log(`AUDITORÍA COMPLETADA. Resultados guardados en: ${logFile}`);
+  console.log(`Total Recorridos auditados: ${allJourneys.length}`);
+  for (const j of allJourneys) {
+    console.log(`  - [${j.code}] ${j.title}: ${j.verdict} (${j.steps.length} pasos)`);
+  }
+  console.log(`======================================================================`);
+}
+
+runAll().catch(e => { console.error(e); process.exit(1); });

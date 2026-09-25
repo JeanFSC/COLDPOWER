@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -19,28 +18,25 @@ const applicationLinks = [
   { label: "Industria alimentaria", icon: Factory, href: "/catalogo?aplicacion=industria-alimentaria" },
 ] as const;
 
+const priority = "high";
+
 export function Hero({ settings }: { settings?: CompanySettings }) {
   const coverage = settings?.coverage?.trim() || "Envíos a todo el Perú";
 
   return (
     <section className="home-hero" data-home-block="hero">
-      <Image
-        src="/images/home-espejo/hero-desktop.webp"
-        alt="Equipos de refrigeración y climatización en una instalación técnica"
-        fill
-        priority
-        sizes="100vw"
-        className="home-hero-image home-hero-image-desktop"
-      />
-      <Image
-        src="/images/home-espejo/hero-mobile.webp"
-        alt=""
-        fill
-        priority
-        sizes="780px"
-        className="home-hero-image home-hero-image-mobile"
-        aria-hidden="true"
-      />
+      <picture className="home-hero-picture">
+        <source media="(max-width: 1023px)" srcSet="/images/home-espejo/hero-mobile.webp" />
+        <img
+          src="/images/home-espejo/hero-desktop.webp"
+          alt="Equipos de refrigeración y climatización en una instalación técnica"
+          width="1920"
+          height="430"
+          decoding="async"
+          fetchPriority={priority}
+          className="home-hero-image"
+        />
+      </picture>
       <div className="home-hero-shade" aria-hidden="true" />
       <div className="home-container home-hero-inner">
         <div className="home-hero-copy">

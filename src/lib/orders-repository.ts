@@ -7,14 +7,15 @@ import { orderIncidents, orderItems, orderStatusHistory, orders, paymentRefunds,
 import type { OrderAttention, OrderListItem, OrdersFilters, OrdersPageResponse } from "@/lib/orders-contract";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
 import { ACTIVE_ORDER_STATUSES } from "@/lib/dashboard-definitions";
+import { startOfLimaDay, startOfNextLimaDay } from "@/lib/lima-datetime";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
 const seller = alias(users, "orders_seller");
 const paymentPriority: Record<string, number> = { CONFIRMED: 5, APPROVED: 5, UNDER_REVIEW: 4, PENDING: 3, REFUNDED: 2, REJECTED: 1, CANCELLED: 0, ERROR: 0 };
 function pageValues(page?: number, pageSize?: number) { return { page: Math.max(1, Math.floor(page ?? 1)), pageSize: Math.min(maxPageSize, Math.max(1, Math.floor(pageSize ?? defaultPageSize))) }; }
-function dayStart(value: string) { return new Date(`${value}T00:00:00-05:00`); }
-function dayAfter(value: string) { return new Date(dayStart(value).getTime() + 86_400_000); }
+function dayStart(value: string) { return startOfLimaDay(value); }
+function dayAfter(value: string) { return startOfNextLimaDay(value); }
 function numberValue(value: unknown) { return Number(value ?? 0); }
 function paymentState(rows: Array<{ status: string }>) { return rows.reduce<string | null>((current, row) => !current || (paymentPriority[row.status] ?? -1) > (paymentPriority[current] ?? -1) ? row.status : current, null); }
 
@@ -28,7 +29,7 @@ const grossForOrder = sql<number>`coalesce((select sum(p2.amount) from payments 
 const refundsForOrder = sql<number>`coalesce((select sum(r.amount) from payment_refunds r join payments p3 on p3.id = r.payment_id where p3.order_id = ${orderIdReference} and p3.currency = ${orderCurrencyReference} and r.currency = p3.currency and r.status = 'SUCCEEDED'), 0)`;
 const netForOrder = sql<number>`(${grossForOrder} - ${refundsForOrder})`;
 
-function whereOrders(db: ReturnType<typeof getDb>, filters: OrdersFilters) {
+function whereOrders(db: ReturnType<typeof getDb>, filters: OrdersFilters, includeFinancial = true) {
   const conditions: SQL[] = [];
   if (filters.query) { const pattern = `%${filters.query.trim()}%`; conditions.push(or(ilike(orders.code, pattern), ilike(orders.customerNameSnapshot, pattern), ilike(customers.name, pattern), exists(db.select({ id: orderItems.id }).from(orderItems).where(and(eq(orderItems.orderId, orders.id), or(ilike(orderItems.skuSnapshot, pattern), ilike(orderItems.productNameSnapshot, pattern))!))))!); }
   if (filters.status) conditions.push(eq(orders.status, filters.status));
@@ -50,21 +51,23 @@ function whereOrders(db: ReturnType<typeof getDb>, filters: OrdersFilters) {
   if (filters.deliveryMethod) conditions.push(eq(orders.deliveryMethod, filters.deliveryMethod));
   if (filters.locationId) conditions.push(eq(orders.locationId, filters.locationId));
   if (filters.currency) conditions.push(eq(orders.currency, filters.currency));
-  if (filters.paymentStatus) conditions.push(exists(db.select({ id: payments.id }).from(payments).where(and(eq(payments.orderId, orders.id), eq(payments.status, filters.paymentStatus))!)));
+  if (includeFinancial && filters.paymentStatus) conditions.push(exists(db.select({ id: payments.id }).from(payments).where(and(eq(payments.orderId, orders.id), eq(payments.status, filters.paymentStatus))!)));
   if (filters.withIncident) conditions.push(exists(db.select({ id: orderIncidents.id }).from(orderIncidents).where(and(eq(orderIncidents.orderId, orders.id), eq(orderIncidents.status, "OPEN")))));
-  if (filters.reconciliation === "MATCH") conditions.push(sql`${netForOrder} > 0 and abs(${netForOrder} - ${orders.total}) < 0.005`);
-  if (filters.reconciliation === "UNDERPAID") conditions.push(sql`${netForOrder} > 0 and ${netForOrder} < ${orders.total} - 0.005`);
-  if (filters.reconciliation === "OVERPAID") conditions.push(sql`${netForOrder} > ${orders.total} + 0.005`);
-  if (filters.reconciliation === "PENDING") conditions.push(sql`${netForOrder} <= 0`);
+  if (includeFinancial && filters.reconciliation === "MATCH") conditions.push(sql`${netForOrder} > 0 and abs(${netForOrder} - ${orders.total}) < 0.005`);
+  if (includeFinancial && filters.reconciliation === "UNDERPAID") conditions.push(sql`${netForOrder} > 0 and ${netForOrder} < ${orders.total} - 0.005`);
+  if (includeFinancial && filters.reconciliation === "OVERPAID") conditions.push(sql`${netForOrder} > ${orders.total} + 0.005`);
+  if (includeFinancial && filters.reconciliation === "PENDING") conditions.push(sql`${netForOrder} <= 0`);
   if (filters.createdFrom) conditions.push(gte(orders.createdAt, dayStart(filters.createdFrom)));
   if (filters.createdTo) conditions.push(lt(orders.createdAt, dayAfter(filters.createdTo)));
   return conditions.length ? and(...conditions) : undefined;
 }
 
-export async function getOrdersPage(filters: OrdersFilters = {}): Promise<OrdersPageResponse> {
+export async function getOrdersPage(filters: OrdersFilters = {}, options: { includeAmounts?: boolean; includeFinancial?: boolean } = {}): Promise<OrdersPageResponse> {
+  const includeAmounts = options.includeAmounts ?? false;
+  const includeFinancial = options.includeFinancial ?? false;
   const { page, pageSize } = pageValues(filters.page, filters.pageSize);
   const db = getDb();
-  const where = whereOrders(db, filters);
+  const where = whereOrders(db, filters, includeFinancial);
   const queueWhere = {
     prepare: and(where, or(eq(orders.status, "PAID"), eq(orders.status, "RECEIVED"))),
     dispatch: and(where, eq(orders.status, "READY")),
@@ -113,27 +116,30 @@ export async function getOrdersPage(filters: OrdersFilters = {}): Promise<Orders
   const now = Date.now();
   const toItem = (row: (typeof rows)[number]): OrderListItem => {
     const item = itemMetrics.get(row.order.id) ?? { lines: 0, reservations: 0, quantity: 0, picked: 0 };
-    const ledger = summarizePaymentLedger(row.order.total, [{ amount: grossByOrder.get(row.order.id) ?? 0, status: "CONFIRMED" }], [{ amount: refundsByOrder.get(row.order.id) ?? 0, status: "SUCCEEDED" }]); const incidents = incidentsByOrder.get(row.order.id) ?? 0;
+    const ledger = includeFinancial ? summarizePaymentLedger(row.order.total, [{ amount: grossByOrder.get(row.order.id) ?? 0, status: "CONFIRMED" }], [{ amount: refundsByOrder.get(row.order.id) ?? 0, status: "SUCCEEDED" }]) : null; const incidents = incidentsByOrder.get(row.order.id) ?? 0;
     const overdue = ACTIVE_ORDER_STATUSES.includes(row.order.status as typeof ACTIVE_ORDER_STATUSES[number]) && now - row.order.updatedAt.getTime() > 48 * 60 * 60 * 1000;
     const attention: OrderAttention = incidents ? "INCIDENT" : overdue ? "OVERDUE" : row.order.status === "PAYMENT_PENDING" ? "REQUIRES_ATTENTION" : "NORMAL";
-    return { ...row.order, customerName: row.customerName, customerPhone: row.order.customerPhoneSnapshot, customerEmail: row.customerEmail ?? row.order.customerEmailSnapshot, sellerName: row.sellerName, sellerEmail: row.sellerEmail, locationName: row.locationName, channel: row.channel, saleId: row.order.saleId, quoteId: row.quoteId, quoteTrackingCode: row.quoteTrackingCode, lineCount: item.lines, reservationCount: item.reservations, totalQuantity: item.quantity, pickedQuantity: item.picked, openIncidentCount: incidents, paymentStatus: paymentState(paymentsByOrder.get(row.order.id) ?? []), expectedAmount: ledger.expected.toFixed(2), netReceivedAmount: ledger.net.toFixed(2), paymentReconciliation: ledger.reconciliation, attention };
+    const order = includeAmounts ? row.order : { ...row.order, subtotal: null, discountAmount: null, total: null };
+    return { ...order, customerName: row.customerName, customerPhone: row.order.customerPhoneSnapshot, customerEmail: row.customerEmail ?? row.order.customerEmailSnapshot, sellerName: row.sellerName, sellerEmail: row.sellerEmail, locationName: row.locationName, channel: row.channel, saleId: row.order.saleId, quoteId: row.quoteId, quoteTrackingCode: row.quoteTrackingCode, lineCount: item.lines, reservationCount: item.reservations, totalQuantity: item.quantity, pickedQuantity: item.picked, openIncidentCount: incidents, paymentStatus: includeFinancial ? paymentState(paymentsByOrder.get(row.order.id) ?? []) : null, expectedAmount: ledger ? ledger.expected.toFixed(2) : null, netReceivedAmount: ledger ? ledger.net.toFixed(2) : null, paymentReconciliation: ledger?.reconciliation ?? null, attention };
   };
   const items = rows.map(toItem);
   const totalItems = numberValue(totalRows[0]?.total);
   const statusMap = new Map(statusRows.map((row) => [row.status, numberValue(row.total)]));
   const ready = (statusMap.get("READY") ?? 0) + (statusMap.get("READY_FOR_PICKUP") ?? 0);
   const active = [...ACTIVE_ORDER_STATUSES].reduce((total, status) => total + (statusMap.get(status) ?? 0), 0);
-  const amountsByCurrency = amountRows.map((row) => ({ currency: row.currency, amount: numberValue(row.total) }));
-  const paid = items.filter((row) => row.paymentReconciliation === "MATCH" || row.paymentReconciliation === "OVERPAID").length;
-  return { items, queues: { prepare: prepareQueueRows.map(toItem), dispatch: dispatchQueueRows.map(toItem), pickup: pickupQueueRows.map(toItem), incidents: incidentQueueRows.map(toItem) }, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active, new: (statusMap.get("NEW") ?? 0) + (statusMap.get("RECEIVED") ?? 0), preparing: statusMap.get("PREPARING") ?? 0, ready, inTransit: (statusMap.get("IN_TRANSIT") ?? 0) + (statusMap.get("SHIPPED") ?? 0), delivered: statusMap.get("DELIVERED") ?? 0, pendingPayment: statusMap.get("PAYMENT_PENDING") ?? 0, pending: (statusMap.get("PAYMENT_PENDING") ?? 0) + (statusMap.get("RECEIVED") ?? 0) + (statusMap.get("NEW") ?? 0), cancelled: statusMap.get("CANCELLED") ?? 0, paid, incidents: numberValue(incidentMetric[0]?.total), totalAmount: amountsByCurrency.length === 1 ? amountsByCurrency[0].amount : 0, averageTicket: null, amountsByCurrency }, facets: { statuses: statusFacets.map((row) => row.value), deliveryMethods: deliveryFacets.map((row) => row.value), currencies: currencyFacets.map((row) => row.value), locations: locationFacets } };
+  const amountsByCurrency = includeAmounts ? amountRows.map((row) => ({ currency: row.currency, amount: numberValue(row.total) })) : [];
+  const paid = includeFinancial ? items.filter((row) => row.paymentReconciliation === "MATCH" || row.paymentReconciliation === "OVERPAID").length : 0;
+  return { items, queues: { prepare: prepareQueueRows.map(toItem), dispatch: dispatchQueueRows.map(toItem), pickup: pickupQueueRows.map(toItem), incidents: incidentQueueRows.map(toItem) }, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active, new: (statusMap.get("NEW") ?? 0) + (statusMap.get("RECEIVED") ?? 0), preparing: statusMap.get("PREPARING") ?? 0, ready, inTransit: (statusMap.get("IN_TRANSIT") ?? 0) + (statusMap.get("SHIPPED") ?? 0), delivered: statusMap.get("DELIVERED") ?? 0, pendingPayment: includeFinancial ? statusMap.get("PAYMENT_PENDING") ?? 0 : 0, pending: (statusMap.get("PAYMENT_PENDING") ?? 0) + (statusMap.get("RECEIVED") ?? 0) + (statusMap.get("NEW") ?? 0), cancelled: statusMap.get("CANCELLED") ?? 0, paid, incidents: numberValue(incidentMetric[0]?.total), totalAmount: includeAmounts && amountsByCurrency.length === 1 ? amountsByCurrency[0].amount : 0, averageTicket: null, amountsByCurrency }, facets: { statuses: statusFacets.map((row) => row.value), deliveryMethods: deliveryFacets.map((row) => row.value), currencies: currencyFacets.map((row) => row.value), locations: locationFacets } };
 }
 
 export async function getOrderDetail(
   orderId: string,
-  options: { includeFinancial?: boolean } = {},
+  // Legacy contract: options: { includeFinancial?: boolean }
+  options: { includeFinancial?: boolean; includeAmounts?: boolean } = {},
 ) {
   const db = getDb();
   const includeFinancial = options.includeFinancial ?? true;
+  const includeAmounts = options.includeAmounts ?? includeFinancial;
   const [row] = await db
     .select({ order: orders, customer: customers, sale: sales, quote: quotes, location: locations })
     .from(orders)
@@ -155,13 +161,19 @@ export async function getOrderDetail(
   const reservations = reservationIds.length
     ? await db.select().from(inventoryReservations).where(inArray(inventoryReservations.id, reservationIds))
     : [];
+  const visibleItems = includeAmounts
+    ? items
+    : items.map((item) => ({ ...item, unitPrice: null, lineTotal: null }));
+  const visibleQuote = includeAmounts || !row.quote
+    ? row.quote
+    : { ...row.quote, subtotal: null, taxAmount: null, total: null };
   const base = {
-    order: row.order,
+    order: includeAmounts ? row.order : { ...row.order, subtotal: null, discountAmount: null, total: null },
     customer: row.customer,
-    sale: row.sale,
-    quote: row.quote,
+    sale: includeAmounts ? row.sale : { ...row.sale, subtotal: null, discountAmount: null, total: null },
+    quote: visibleQuote,
     location: row.location,
-    items,
+    items: visibleItems,
     reservations,
     shipments: shipmentRows,
     incidents,

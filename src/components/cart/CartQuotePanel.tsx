@@ -66,7 +66,7 @@ export function CartQuotePanel() {
     const product = catalogProducts.find((candidate) => candidate.id === item.productId);
     return product ? [{ ...item, product }] : [];
   });
-  const leadItems = resolvedItems.map((item) => ({ name: item.product.name, sku: item.product.sku, quantity: item.quantity }));
+  const leadItems = resolvedItems.map((item) => ({ name: item.product.name, sku: item.product.sku, quantity: item.quantity, url: `/producto/${item.product.slug}` }));
 
   return (
     <aside className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-white p-5 shadow-card sm:p-6" aria-label="Lista de cotización">

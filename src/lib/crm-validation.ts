@@ -1,3 +1,5 @@
+import { isValidPeruvianRuc } from "@/lib/peru-documents";
+
 export const customerTypes = ["PERSON", "COMPANY", "CONSUMIDOR", "TECNICO", "EMPRESA", "DISTRIBUIDOR", "MAYORISTA"] as const;
 export type CustomerType = (typeof customerTypes)[number];
 export const customerStatuses = ["ACTIVE", "INACTIVE", "PROSPECT"] as const;
@@ -65,7 +67,7 @@ export function validateCustomerInput(input: Record<string, unknown>, partial = 
   if (status !== undefined && !(customerStatuses as readonly string[]).includes(String(status))) throw new Error("Estado de cliente inválido.");
   const normalizedType = customerType === undefined ? undefined : String(customerType);
   const ruc = clean(input.ruc, 40);
-  if (ruc && !/^\d{11}$/.test(ruc)) throw new Error("El RUC debe contener 11 dígitos.");
+  if (ruc && !isValidPeruvianRuc(ruc)) throw new Error("El RUC no es válido: revisa prefijo SUNAT y dígito verificador.");
   if (!partial && (normalizedType === "COMPANY" || normalizedType === "EMPRESA") && !ruc) throw new Error("El RUC es obligatorio para empresas.");
   return {
     ...(partial || name ? { name } : {}),

@@ -1,0 +1,1845 @@
+[
+  {
+    "code": "C1",
+    "title": "Cotización web → aceptación → conversión por VENTAS → pedido → pago manual",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C1.1",
+        "actor": "CLIENTE",
+        "action": "Cliente anónimo solicita cotización web de 3 repuestos",
+        "expected": "Cotización creada con status 'borrador'/DRAFT, lead en CRM y 3 ítems registrados",
+        "obtained": "Cotización COT-867241 creada con 3 ítems en DRAFT",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, tracking_code, status, workflow_status FROM quotes WHERE id = 'quote-aud_1790289867163-c1'",
+            "result": {
+              "id": "quote-aud_1790289867163-c1",
+              "trackingCode": "COT-867241",
+              "userId": null,
+              "name": "Taller Hermanos Castro",
+              "customerType": "company",
+              "documentNumber": "20601234567",
+              "phone": "987654321",
+              "email": "taller.castro@example.pe",
+              "department": "Lima",
+              "province": "Lima",
+              "district": "San Miguel",
+              "preferredContact": "whatsapp",
+              "consentAt": null,
+              "productSlug": null,
+              "productName": null,
+              "sku": null,
+              "message": "Requerimos cotización formal para repuestos de refrigeración urgente.",
+              "status": "borrador",
+              "workflowStatus": "DRAFT",
+              "currentVersionNumber": 0,
+              "revision": 1,
+              "acceptedVersionId": null,
+              "acceptedAt": null,
+              "acceptedBy": null,
+              "assignedSellerId": null,
+              "origin": "WEB",
+              "currency": "PEN",
+              "subtotal": "0.00",
+              "discountAmount": null,
+              "taxAmount": null,
+              "total": "0.00",
+              "taxMode": "INCLUDED",
+              "discountApprovalStatus": "NOT_REQUIRED",
+              "validUntil": null,
+              "sentAt": null,
+              "sentBy": null,
+              "respondedAt": null,
+              "respondedBy": null,
+              "responseChannel": null,
+              "responseNote": null,
+              "acceptanceNote": null,
+              "rejectionReasonCode": null,
+              "rejectionReason": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "clientIp": null,
+              "createdAt": "2026-09-24T22:44:27.242Z",
+              "updatedAt": "2026-09-24T22:44:27.242Z"
+            }
+          }
+        ],
+        "screenshot": "c1-01-cotizacion-creada.png"
+      },
+      {
+        "step": "C1.2",
+        "actor": "VENTAS",
+        "action": "Asesor de Ventas valoriza ítems, define vigencia y envía versión v1 al cliente",
+        "expected": "QuoteVersion v1 creada con status SENT, total S/ 600.00 y cotización pasa a enviada",
+        "obtained": "Versión v1 creada, status SENT, total S/ 600.00",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, version_number, status, total, currency FROM quote_versions WHERE quote_id = 'quote-aud_1790289867163-c1'",
+            "result": {
+              "id": "quote-version-91ff4166-6252-4cef-bc60-416924a6b527",
+              "quoteId": "quote-aud_1790289867163-c1",
+              "versionNumber": 1,
+              "status": "SENT",
+              "createdAt": "2026-09-24T22:44:27.314Z",
+              "createdBy": "cp-dashboard-v5-user-staff-001",
+              "sentAt": "2026-09-24T22:44:27.322Z",
+              "sentBy": "cp-dashboard-v5-user-staff-001",
+              "currency": "PEN",
+              "subtotal": "600.00",
+              "discountAmount": "0.00",
+              "taxAmount": "0.00",
+              "total": "600.00",
+              "taxMode": "INCLUDED",
+              "validUntil": "2026-10-01T22:44:27.288Z",
+              "termsSnapshot": {
+                "message": "Precios especiales válidos por 7 días calendario."
+              },
+              "companySnapshot": {
+                "id": "default",
+                "ruc": null,
+                "email": null,
+                "hours": null,
+                "phone": null,
+                "phones": null,
+                "tiktok": null,
+                "address": null,
+                "country": null,
+                "socials": null,
+                "version": 5,
+                "website": null,
+                "coverage": null,
+                "district": null,
+                "facebook": null,
+                "province": null,
+                "whatsapp": null,
+                "instagram": null,
+                "legalName": null,
+                "locations": null,
+                "tradeName": null,
+                "updatedAt": "2026-09-24T19:59:03.934Z",
+                "updatedBy": "user_3HsX8RHS2xwA0sPrSpXAe5SdDOO",
+                "department": null,
+                "legalLinks": null,
+                "salesEmail": null,
+                "logoMediaId": null,
+                "primaryColor": null,
+                "businessHours": null,
+                "commercialName": null,
+                "faviconMediaId": null,
+                "guaranteeTerms": null,
+                "paymentMethods": [
+                  "CREDIT_CARD",
+                  "DEBIT_CARD",
+                  "YAPE",
+                  "PLIN",
+                  "CASH"
+                ],
+                "secondaryColor": null,
+                "validationStatus": "VALID",
+                "legalPagesPublished": false
+              },
+              "customerSnapshot": {
+                "id": "customer-00ee3f6d-48d7-49de-8b18-ca770aa11575",
+                "ruc": null,
+                "name": "Taller Hermanos Castro",
+                "email": "taller.castro@example.pe",
+                "notes": null,
+                "phone": "987654321",
+                "status": "PROSPECT",
+                "userId": null,
+                "address": null,
+                "location": "Lima / Lima / San Miguel",
+                "mergedAt": null,
+                "mergedBy": null,
+                "whatsapp": "987654321",
+                "createdAt": "2026-09-24T22:37:06.098Z",
+                "legalName": null,
+                "updatedAt": "2026-09-24T22:44:27.265Z",
+                "mergeReason": null,
+                "customerType": "EMPRESA",
+                "documentNumber": "20601234567",
+                "lastActivityAt": null,
+                "assignedSellerId": null,
+                "contactPreference": null,
+                "canonicalCustomerId": null
+              },
+              "contentHash": "11e2ab74cfa440b1cc93831e32c187b1021aeeadc506846e2d3434deef6659a2",
+              "acceptedAt": null,
+              "acceptedBy": null,
+              "acceptedChannel": null,
+              "acceptanceNote": null
+            }
+          }
+        ],
+        "screenshot": "c1-02-cotizacion-version-enviada.png"
+      },
+      {
+        "step": "C1.3",
+        "actor": "CLIENTE",
+        "action": "Cliente responde aceptando la cotización v1",
+        "expected": "quotes.workflow_status = 'ACCEPTED' y accepted_version_id vinculado",
+        "obtained": "workflowStatus = ACCEPTED, acceptedVersionId = quote-version-91ff4166-6252-4cef-bc60-416924a6b527",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, workflow_status, accepted_version_id FROM quotes WHERE id = 'quote-aud_1790289867163-c1'",
+            "result": {
+              "id": "quote-aud_1790289867163-c1",
+              "trackingCode": "COT-867241",
+              "userId": null,
+              "name": "Taller Hermanos Castro",
+              "customerType": "company",
+              "documentNumber": "20601234567",
+              "phone": "987654321",
+              "email": "taller.castro@example.pe",
+              "department": "Lima",
+              "province": "Lima",
+              "district": "San Miguel",
+              "preferredContact": "whatsapp",
+              "consentAt": null,
+              "productSlug": null,
+              "productName": null,
+              "sku": null,
+              "message": "Precios especiales válidos por 7 días calendario.",
+              "status": "aprobada",
+              "workflowStatus": "ACCEPTED",
+              "currentVersionNumber": 1,
+              "revision": 4,
+              "acceptedVersionId": "quote-version-91ff4166-6252-4cef-bc60-416924a6b527",
+              "acceptedAt": "2026-09-24T22:44:27.338Z",
+              "acceptedBy": null,
+              "assignedSellerId": null,
+              "origin": "WEB",
+              "currency": "PEN",
+              "subtotal": "600.00",
+              "discountAmount": "0.00",
+              "taxAmount": "0.00",
+              "total": "600.00",
+              "taxMode": "INCLUDED",
+              "discountApprovalStatus": "NOT_REQUIRED",
+              "validUntil": "2026-10-01T22:44:27.288Z",
+              "sentAt": "2026-09-24T22:44:27.328Z",
+              "sentBy": "cp-dashboard-v5-user-staff-001",
+              "respondedAt": "2026-09-24T22:44:27.338Z",
+              "respondedBy": null,
+              "responseChannel": "WHATSAPP",
+              "responseNote": "Aceptamos la cotización de los 3 ítems",
+              "acceptanceNote": null,
+              "rejectionReasonCode": null,
+              "rejectionReason": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "clientIp": null,
+              "createdAt": "2026-09-24T22:44:27.242Z",
+              "updatedAt": "2026-09-24T22:44:27.338Z"
+            }
+          }
+        ],
+        "screenshot": "c1-03-cotizacion-aceptada.png"
+      },
+      {
+        "step": "C1.4",
+        "actor": "VENTAS",
+        "action": "Ventas convierte cotización aceptada a Venta y Pedido",
+        "expected": "Venta CONFIRMED, Pedido PAYMENT_PENDING, 3 reservas de inventario activas",
+        "obtained": "Venta VTA-F8FD57AB-4 (CONFIRMED), Pedido ORD-20260924-9097C2 (PAYMENT_PENDING), Reservas: 3",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, total FROM sales WHERE id = 'sale-009a9b0c-1523-4fd5-9f37-8f896f64a408'",
+            "result": {
+              "id": "sale-009a9b0c-1523-4fd5-9f37-8f896f64a408",
+              "code": "VTA-F8FD57AB-4",
+              "customerId": "customer-00ee3f6d-48d7-49de-8b18-ca770aa11575",
+              "opportunityId": "opportunity-886ac382-f5b2-464e-8282-527a8a5534fc",
+              "quoteId": "quote-aud_1790289867163-c1",
+              "status": "CONFIRMED",
+              "sellerId": "cp-dashboard-v5-user-staff-013",
+              "channel": null,
+              "subtotal": "600.00",
+              "discountAmount": "0.00",
+              "total": "600.00",
+              "currency": "PEN",
+              "notes": null,
+              "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "invoiceStatus": null,
+              "externalInvoiceReference": null,
+              "invoiceIssuedAt": null,
+              "invoiceNote": null,
+              "version": 1,
+              "createdAt": "2026-09-24T22:44:27.363Z",
+              "updatedAt": "2026-09-24T22:44:27.363Z"
+            }
+          },
+          {
+            "query": "SELECT id, code, status, total FROM orders WHERE id = 'order-679cd974-8ab6-4c44-89d9-bbcd9616d701'",
+            "result": {
+              "id": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+              "code": "ORD-20260924-9097C2",
+              "saleId": "sale-009a9b0c-1523-4fd5-9f37-8f896f64a408",
+              "customerId": "customer-00ee3f6d-48d7-49de-8b18-ca770aa11575",
+              "opportunityId": "opportunity-886ac382-f5b2-464e-8282-527a8a5534fc",
+              "status": "PAYMENT_PENDING",
+              "deliveryMethod": "DELIVERY",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Av. La Marina 1500, San Miguel",
+              "customerNameSnapshot": "Taller Hermanos Castro",
+              "customerPhoneSnapshot": "987654321",
+              "customerEmailSnapshot": "taller.castro@example.pe",
+              "sellerId": "cp-dashboard-v5-user-staff-013",
+              "subtotal": "600.00",
+              "discountAmount": "0.00",
+              "total": "600.00",
+              "currency": "PEN",
+              "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": null,
+              "paymentDueAt": null,
+              "deliveryDetails": null,
+              "checkoutCartId": null,
+              "checkoutCartVersion": null,
+              "version": 1,
+              "createdAt": "2026-09-24T22:44:27.363Z",
+              "updatedAt": "2026-09-24T22:44:27.363Z"
+            }
+          },
+          {
+            "query": "SELECT id, product_id, quantity, status FROM inventory_reservations WHERE reference_id = 'order-679cd974-8ab6-4c44-89d9-bbcd9616d701'",
+            "result": [
+              {
+                "id": "reservation-5876175a-51ce-4e39-9c9b-6f13f1d783f9",
+                "productId": "product-cp-cam-fil-0001",
+                "locationId": "cp-dashboard-v5-location-lima",
+                "quantity": 2,
+                "status": "ACTIVE",
+                "referenceType": "order",
+                "referenceId": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+                "reason": null,
+                "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1:product-cp-cam-fil-0001",
+                "expiresAt": null,
+                "createdBy": "cp-dashboard-v5-user-staff-001",
+                "createdAt": "2026-09-24T22:44:27.348Z",
+                "releasedAt": null
+              },
+              {
+                "id": "reservation-1c0ede26-b952-4258-8e66-bd73495aec77",
+                "productId": "product-cp-cam-fil-0002",
+                "locationId": "cp-dashboard-v5-location-lima",
+                "quantity": 2,
+                "status": "ACTIVE",
+                "referenceType": "order",
+                "referenceId": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+                "reason": null,
+                "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1:product-cp-cam-fil-0002",
+                "expiresAt": null,
+                "createdBy": "cp-dashboard-v5-user-staff-001",
+                "createdAt": "2026-09-24T22:44:27.348Z",
+                "releasedAt": null
+              },
+              {
+                "id": "reservation-30e81eb7-6925-4aaa-9eed-62b02e035a36",
+                "productId": "product-cp-ref-ven-0844",
+                "locationId": "cp-dashboard-v5-location-lima",
+                "quantity": 2,
+                "status": "ACTIVE",
+                "referenceType": "order",
+                "referenceId": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+                "reason": null,
+                "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1:product-cp-ref-ven-0844",
+                "expiresAt": null,
+                "createdBy": "cp-dashboard-v5-user-staff-001",
+                "createdAt": "2026-09-24T22:44:27.348Z",
+                "releasedAt": null
+              }
+            ]
+          }
+        ],
+        "screenshot": "c1-04-pedido-convertido.png"
+      },
+      {
+        "step": "C1.5",
+        "actor": "ALMACEN",
+        "action": "Almacén intenta registrar picking antes de que el pedido esté pagado",
+        "expected": "Bloqueo por estado inválido (ORDER_NOT_PREPARING / 409): No se puede preparar sin pago confirmado",
+        "obtained": "Bloqueo exitoso: Inicia la preparación antes de registrar el picking.",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status FROM orders WHERE id = 'order-679cd974-8ab6-4c44-89d9-bbcd9616d701'",
+            "result": {
+              "status": "PAYMENT_PENDING"
+            }
+          }
+        ]
+      },
+      {
+        "step": "C1.6",
+        "actor": "CAJA",
+        "action": "Caja/Gerencia confirma el pago manual por transferencia bancaria",
+        "expected": "Pago CONFIRMED, Pedido pasa a PAID, expiración de reserva eliminada (expiresAt = null)",
+        "obtained": "Pago payment-33a394c9-7410-4c7e-b9ba-632168203413 (CONFIRMED), Pedido ORD-20260924-9097C2 (PAID), expiresAt = null",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, order_id, amount, status, method FROM payments WHERE id = 'payment-33a394c9-7410-4c7e-b9ba-632168203413'",
+            "result": {
+              "id": "payment-33a394c9-7410-4c7e-b9ba-632168203413",
+              "orderId": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+              "methodType": "MANUAL",
+              "method": "BANK_TRANSFER",
+              "provider": null,
+              "providerReference": null,
+              "idempotencyKey": "manual-order-679cd974-8ab6-4c44-89d9-bbcd9616d701-600.00",
+              "amount": "600.00",
+              "currency": "PEN",
+              "status": "CONFIRMED",
+              "metadata": {
+                "reason": "Transferencia BCP verificada en cuenta"
+              },
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "createdBy": "cp-dashboard-v5-user-gerencia",
+              "createdAt": "2026-09-24T22:44:27.408Z",
+              "updatedAt": "2026-09-24T22:44:27.408Z"
+            }
+          },
+          {
+            "query": "SELECT id, code, status, version FROM orders WHERE id = 'order-679cd974-8ab6-4c44-89d9-bbcd9616d701'",
+            "result": {
+              "id": "order-679cd974-8ab6-4c44-89d9-bbcd9616d701",
+              "code": "ORD-20260924-9097C2",
+              "saleId": "sale-009a9b0c-1523-4fd5-9f37-8f896f64a408",
+              "customerId": "customer-00ee3f6d-48d7-49de-8b18-ca770aa11575",
+              "opportunityId": "opportunity-886ac382-f5b2-464e-8282-527a8a5534fc",
+              "status": "PAID",
+              "deliveryMethod": "DELIVERY",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Av. La Marina 1500, San Miguel",
+              "customerNameSnapshot": "Taller Hermanos Castro",
+              "customerPhoneSnapshot": "987654321",
+              "customerEmailSnapshot": "taller.castro@example.pe",
+              "sellerId": "cp-dashboard-v5-user-staff-013",
+              "subtotal": "600.00",
+              "discountAmount": "0.00",
+              "total": "600.00",
+              "currency": "PEN",
+              "idempotencyKey": "quote-convert-quote-aud_1790289867163-c1",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": null,
+              "paymentDueAt": null,
+              "deliveryDetails": null,
+              "checkoutCartId": null,
+              "checkoutCartVersion": null,
+              "version": 2,
+              "createdAt": "2026-09-24T22:44:27.363Z",
+              "updatedAt": "2026-09-24T22:44:27.423Z"
+            }
+          }
+        ],
+        "screenshot": "c1-05-pago-manual-confirmado.png"
+      },
+      {
+        "step": "C1.7",
+        "actor": "ALMACEN",
+        "action": "Almacén cambia estado a PREPARING, realiza picking al 100% y marca READY",
+        "expected": "Pedido pasa a READY con todos los ítems preparados al 100%",
+        "obtained": "Pedido status = READY",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, quantity, picked_quantity FROM order_items WHERE order_id = 'order-679cd974-8ab6-4c44-89d9-bbcd9616d701'",
+            "result": [
+              {
+                "id": "order-item-c8959aaa-50fd-4e63-93bf-5f17bacd885d",
+                "q": 2,
+                "p": 2
+              },
+              {
+                "id": "order-item-69481380-e955-4829-bdf9-9c723453500b",
+                "q": 2,
+                "p": 2
+              },
+              {
+                "id": "order-item-311e26aa-1279-4e36-9885-cbed17597041",
+                "q": 2,
+                "p": 2
+              }
+            ]
+          }
+        ],
+        "screenshot": "c1-06-almacen-preparando-ready.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C2",
+    "title": "Compra online con delivery (Timeline completo + seguimiento del envío)",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C2.1",
+        "actor": "CLIENTE",
+        "action": "Cliente agrega producto al carrito y completa checkout con DELIVERY en Miraflores",
+        "expected": "Pedido creado en PAYMENT_PENDING con deliveryMethod DELIVERY y reserva activa",
+        "obtained": "Pedido ORD-20260924-49FEE2 creado, total S/ 306.00, status PAYMENT_PENDING",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, total, delivery_method FROM orders WHERE id = 'order-5630187c-e30f-4b4a-9c45-18b29ee8873c'",
+            "result": {
+              "id": "order-5630187c-e30f-4b4a-9c45-18b29ee8873c",
+              "code": "ORD-20260924-49FEE2",
+              "saleId": "sale-f22b8753-d574-4cf5-8fc7-e9a88581a89b",
+              "customerId": "customer-9f08be4e-044f-40e0-8db5-8719b8179a1e",
+              "opportunityId": "opportunity-bad04c39-4483-4466-9050-e929c29a97b7",
+              "status": "PAYMENT_PENDING",
+              "deliveryMethod": "DELIVERY",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Av. Larco 850, Dpto 402",
+              "customerNameSnapshot": "Taller Refrigeración Miraflores",
+              "customerPhoneSnapshot": "998877665",
+              "customerEmailSnapshot": "cliente.c2.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "360.00",
+              "discountAmount": "54.00",
+              "total": "306.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c2_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:34.737Z",
+              "deliveryDetails": {
+                "district": "Miraflores",
+                "province": "Lima",
+                "reference": "Frente al parque Kennedy",
+                "department": "Lima"
+              },
+              "checkoutCartId": "cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce",
+              "checkoutCartVersion": 2,
+              "version": 1,
+              "createdAt": "2026-09-24T22:44:34.770Z",
+              "updatedAt": "2026-09-24T22:44:34.770Z"
+            }
+          }
+        ],
+        "screenshot": "c2-01-checkout-delivery.png"
+      },
+      {
+        "step": "C2.2",
+        "actor": "CLIENTE",
+        "action": "Cliente efectúa pago mediante pasarela mock y webhook confirma aprobación",
+        "expected": "Pedido pasa a PAID y reserva queda permanente",
+        "obtained": "Pedido status = PAID",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status FROM orders WHERE id = 'order-5630187c-e30f-4b4a-9c45-18b29ee8873c'",
+            "result": {
+              "id": "order-5630187c-e30f-4b4a-9c45-18b29ee8873c",
+              "code": "ORD-20260924-49FEE2",
+              "saleId": "sale-f22b8753-d574-4cf5-8fc7-e9a88581a89b",
+              "customerId": "customer-9f08be4e-044f-40e0-8db5-8719b8179a1e",
+              "opportunityId": "opportunity-bad04c39-4483-4466-9050-e929c29a97b7",
+              "status": "PAID",
+              "deliveryMethod": "DELIVERY",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Av. Larco 850, Dpto 402",
+              "customerNameSnapshot": "Taller Refrigeración Miraflores",
+              "customerPhoneSnapshot": "998877665",
+              "customerEmailSnapshot": "cliente.c2.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "360.00",
+              "discountAmount": "54.00",
+              "total": "306.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c2_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:34.737Z",
+              "deliveryDetails": {
+                "district": "Miraflores",
+                "province": "Lima",
+                "reference": "Frente al parque Kennedy",
+                "department": "Lima"
+              },
+              "checkoutCartId": "cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce",
+              "checkoutCartVersion": 2,
+              "version": 2,
+              "createdAt": "2026-09-24T22:44:34.770Z",
+              "updatedAt": "2026-09-24T22:44:34.847Z"
+            }
+          }
+        ],
+        "screenshot": "c2-02-pedido-pagado-mock.png"
+      },
+      {
+        "step": "C2.3",
+        "actor": "ALMACEN",
+        "action": "Almacén despacha (IN_TRANSIT), avanza 3 eventos de transportista y entrega",
+        "expected": "Pedido DELIVERED, receptor guardado y 4 eventos de tracking (LABEL_CREATED -> DELIVERED)",
+        "obtained": "Pedido ORD-20260924-49FEE2 DELIVERED, receptor: Carlos Mendoza - Administrador Taller, eventos: LABEL_CREATED -> PICKED_UP -> OUT_FOR_DELIVERY -> DELIVERED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, received_by, delivered_at FROM orders WHERE id = 'order-5630187c-e30f-4b4a-9c45-18b29ee8873c'",
+            "result": {
+              "id": "order-5630187c-e30f-4b4a-9c45-18b29ee8873c",
+              "code": "ORD-20260924-49FEE2",
+              "saleId": "sale-f22b8753-d574-4cf5-8fc7-e9a88581a89b",
+              "customerId": "customer-9f08be4e-044f-40e0-8db5-8719b8179a1e",
+              "opportunityId": "opportunity-bad04c39-4483-4466-9050-e929c29a97b7",
+              "status": "DELIVERED",
+              "deliveryMethod": "DELIVERY",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Av. Larco 850, Dpto 402",
+              "customerNameSnapshot": "Taller Refrigeración Miraflores",
+              "customerPhoneSnapshot": "998877665",
+              "customerEmailSnapshot": "cliente.c2.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "360.00",
+              "discountAmount": "54.00",
+              "total": "306.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": "2026-09-24T22:44:34.892Z",
+              "receivedBy": "Carlos Mendoza - Administrador Taller",
+              "userId": "user_c2_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:34.737Z",
+              "deliveryDetails": {
+                "district": "Miraflores",
+                "province": "Lima",
+                "reference": "Frente al parque Kennedy",
+                "department": "Lima"
+              },
+              "checkoutCartId": "cart-eee685db-8f60-4ef8-8a31-d8c4b42c46ce",
+              "checkoutCartVersion": 2,
+              "version": 6,
+              "createdAt": "2026-09-24T22:44:34.770Z",
+              "updatedAt": "2026-09-24T22:44:34.892Z"
+            }
+          },
+          {
+            "query": "SELECT status, description, location FROM shipment_events WHERE shipment_id = 'shipment-a5bdb828-ede3-4430-b6f1-fb9ab880cda8'",
+            "result": [
+              {
+                "id": "shipment-event-7c03ac4a-b21a-41c9-864f-6eb7b3f30b77",
+                "shipmentId": "shipment-a5bdb828-ede3-4430-b6f1-fb9ab880cda8",
+                "providerEventId": "CP-TRK-28532FF0F7:LABEL_CREATED",
+                "status": "LABEL_CREATED",
+                "description": "Envío registrado y etiqueta generada",
+                "location": "Almacén ColdPower",
+                "occurredAt": "2026-09-24T22:44:34.877Z",
+                "createdAt": "2026-09-24T22:44:34.877Z"
+              },
+              {
+                "id": "shipment-event-739eb626-a508-4120-962a-4625c95efbe2",
+                "shipmentId": "shipment-a5bdb828-ede3-4430-b6f1-fb9ab880cda8",
+                "providerEventId": "CP-TRK-28532FF0F7:PICKED_UP",
+                "status": "PICKED_UP",
+                "description": "Paquete recogido por el transportista",
+                "location": "Almacén ColdPower",
+                "occurredAt": "2026-09-24T22:44:34.881Z",
+                "createdAt": "2026-09-24T22:44:34.881Z"
+              },
+              {
+                "id": "shipment-event-f06bcd60-2b43-4ce4-a7ec-12fe8762133c",
+                "shipmentId": "shipment-a5bdb828-ede3-4430-b6f1-fb9ab880cda8",
+                "providerEventId": "CP-TRK-28532FF0F7:OUT_FOR_DELIVERY",
+                "status": "OUT_FOR_DELIVERY",
+                "description": "En reparto hacia la dirección de entrega",
+                "location": "Miraflores, Lima, Lima",
+                "occurredAt": "2026-09-24T22:44:34.885Z",
+                "createdAt": "2026-09-24T22:44:34.885Z"
+              },
+              {
+                "id": "shipment-event-1a2dbbbf-dc32-46d2-965c-bd0d0f01a85f",
+                "shipmentId": "shipment-a5bdb828-ede3-4430-b6f1-fb9ab880cda8",
+                "providerEventId": "CP-TRK-28532FF0F7:DELIVERED",
+                "status": "DELIVERED",
+                "description": "Entregado",
+                "location": "Miraflores, Lima, Lima",
+                "occurredAt": "2026-09-24T22:44:34.895Z",
+                "createdAt": "2026-09-24T22:44:34.895Z"
+              }
+            ]
+          }
+        ],
+        "screenshot": "c2-04-seguimiento-timeline-entregado.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C3",
+    "title": "Pago rechazado y vencimiento → liberación de stock → aprobación tardía → reembolso",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C3.1",
+        "actor": "SISTEMA",
+        "action": "Vence el plazo de pago; cron cancelExpiredUnpaidOrders cancela pedido y libera stock",
+        "expected": "Pedido CANCELLED, pago CANCELLED y reserva de inventario RELEASED",
+        "obtained": "Pedido status = CANCELLED, Pago status = CANCELLED, Reserva status = RELEASED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, cancellation_reason FROM orders WHERE id = 'order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6'",
+            "result": {
+              "id": "order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6",
+              "code": "ORD-20260924-A48B46",
+              "saleId": "sale-ed63192b-ae2c-443c-8d87-d79d7b79b204",
+              "customerId": "customer-e4111b16-bea6-4a05-8266-04d5cd6e746b",
+              "opportunityId": "opportunity-68043575-87f6-46be-a614-0ede7ae72b35",
+              "status": "CANCELLED",
+              "deliveryMethod": "PICKUP",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": null,
+              "customerNameSnapshot": "Taller Frío Norte",
+              "customerPhoneSnapshot": "991122334",
+              "customerEmailSnapshot": "cliente.c3.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "180.00",
+              "discountAmount": "27.00",
+              "total": "153.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-9dc43b66-f487-4362-91ab-17ab75361779:v2",
+              "cancellationReason": "Pago no recibido dentro del plazo",
+              "cancelledBy": null,
+              "cancelledAt": "2026-09-24T22:44:41.474Z",
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c3_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T22:43:41.462Z",
+              "deliveryDetails": null,
+              "checkoutCartId": "cart-9dc43b66-f487-4362-91ab-17ab75361779",
+              "checkoutCartVersion": 2,
+              "version": 2,
+              "createdAt": "2026-09-24T22:44:41.409Z",
+              "updatedAt": "2026-09-24T22:44:41.474Z"
+            }
+          },
+          {
+            "query": "SELECT id, status FROM payments WHERE order_id = 'order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6'",
+            "result": {
+              "id": "payment-27106174-57fe-494f-98ea-06e9515d0cb4",
+              "orderId": "order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6",
+              "methodType": "PROVIDER",
+              "method": "mock",
+              "provider": "mock",
+              "providerReference": "mock_4fd18abc-8daa-4791-9c58-554ba3ad6259",
+              "idempotencyKey": null,
+              "amount": "153.00",
+              "currency": "PEN",
+              "status": "CANCELLED",
+              "metadata": {
+                "checkoutUrl": "/pago/prueba/mock_4fd18abc-8daa-4791-9c58-554ba3ad6259"
+              },
+              "cancellationReason": "Pago no recibido dentro del plazo",
+              "cancelledBy": null,
+              "cancelledAt": "2026-09-24T22:44:41.473Z",
+              "createdBy": "user_c3_aud_1790289867163",
+              "createdAt": "2026-09-24T22:44:41.378Z",
+              "updatedAt": "2026-09-24T22:44:41.473Z"
+            }
+          },
+          {
+            "query": "SELECT id, status FROM inventory_reservations WHERE reference_id = 'order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6'",
+            "result": {
+              "id": "reservation-9c8a36fd-35e0-410a-aac5-5158037bdd4e",
+              "productId": "product-cp-ref-ven-0844",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "quantity": 1,
+              "status": "RELEASED",
+              "referenceType": "order",
+              "referenceId": "order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6",
+              "reason": null,
+              "idempotencyKey": null,
+              "expiresAt": "2026-09-24T23:14:41.382Z",
+              "createdBy": "user_c3_aud_1790289867163",
+              "createdAt": "2026-09-24T22:44:41.378Z",
+              "releasedAt": "2026-09-24T22:44:41.471Z"
+            }
+          }
+        ],
+        "screenshot": "c3-02-pedido-vencido-cancelado.png"
+      },
+      {
+        "step": "C3.2",
+        "actor": "SISTEMA",
+        "action": "Llega webhook de aprobación tardía de la pasarela después de cancelado el pedido",
+        "expected": "Pedido permanece CANCELLED (no revive sin stock), pago marcado CONFIRMED con requiresRefund=true",
+        "obtained": "Pedido status = CANCELLED, Pago metadata.requiresRefund = true",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, order_id, status, metadata FROM payments WHERE id = 'payment-27106174-57fe-494f-98ea-06e9515d0cb4'",
+            "result": {
+              "id": "payment-27106174-57fe-494f-98ea-06e9515d0cb4",
+              "orderId": "order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6",
+              "methodType": "PROVIDER",
+              "method": "mock",
+              "provider": "mock",
+              "providerReference": "mock_4fd18abc-8daa-4791-9c58-554ba3ad6259",
+              "idempotencyKey": null,
+              "amount": "153.00",
+              "currency": "PEN",
+              "status": "CONFIRMED",
+              "metadata": {
+                "amount": "0",
+                "status": "APPROVED",
+                "currency": "PEN",
+                "simulated": true,
+                "lateApproval": true,
+                "requiresRefund": true,
+                "lateApprovalOrderCode": "ORD-20260924-A48B46"
+              },
+              "cancellationReason": "Pago no recibido dentro del plazo",
+              "cancelledBy": null,
+              "cancelledAt": "2026-09-24T22:44:41.473Z",
+              "createdBy": "user_c3_aud_1790289867163",
+              "createdAt": "2026-09-24T22:44:41.378Z",
+              "updatedAt": "2026-09-24T22:44:41.483Z"
+            }
+          }
+        ],
+        "screenshot": "c3-03-aprobacion-tardia-por-reembolsar.png"
+      },
+      {
+        "step": "C3.3",
+        "actor": "GERENCIA",
+        "action": "Gerencia detecta pago en cola 'Por reembolsar' y ejecuta el reembolso",
+        "expected": "Reembolso registrado SUCCEEDED, pago pasa a REFUNDED",
+        "obtained": "Reembolso status = SUCCEEDED, Pago status = REFUNDED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, payment_id, amount, status, reason FROM payment_refunds WHERE payment_id = 'payment-27106174-57fe-494f-98ea-06e9515d0cb4'",
+            "result": {
+              "id": "refund-615c2ea9-cca8-4937-bbc4-49962261738d",
+              "paymentId": "payment-27106174-57fe-494f-98ea-06e9515d0cb4",
+              "provider": "mock",
+              "providerReference": "mock_refund_d1084148-b4df-4507-851b-491d5db52d1b",
+              "idempotencyKey": "refund-payment-27106174-57fe-494f-98ea-06e9515d0cb4-full-a4e3a4b6-9a12-4cc0-841d-4bad20e00f32",
+              "amount": "153.00",
+              "currency": "PEN",
+              "status": "SUCCEEDED",
+              "reason": "Reembolso por pago tardío en pedido cancelado",
+              "requestedBy": "cp-dashboard-v5-user-gerencia",
+              "externalReference": "mock_refund_d1084148-b4df-4507-851b-491d5db52d1b",
+              "metadata": {
+                "amount": "153.00",
+                "simulated": true,
+                "originalReference": "mock_4fd18abc-8daa-4791-9c58-554ba3ad6259"
+              },
+              "confirmedAt": "2026-09-24T22:44:41.501Z",
+              "createdAt": "2026-09-24T22:44:41.493Z",
+              "updatedAt": "2026-09-24T22:44:41.501Z"
+            }
+          },
+          {
+            "query": "SELECT id, status FROM payments WHERE id = 'payment-27106174-57fe-494f-98ea-06e9515d0cb4'",
+            "result": {
+              "id": "payment-27106174-57fe-494f-98ea-06e9515d0cb4",
+              "orderId": "order-92607d9b-a29e-4478-a1f8-0ef4e579c2b6",
+              "methodType": "PROVIDER",
+              "method": "mock",
+              "provider": "mock",
+              "providerReference": "mock_4fd18abc-8daa-4791-9c58-554ba3ad6259",
+              "idempotencyKey": null,
+              "amount": "153.00",
+              "currency": "PEN",
+              "status": "REFUNDED",
+              "metadata": {
+                "amount": "153.00",
+                "simulated": true,
+                "originalReference": "mock_4fd18abc-8daa-4791-9c58-554ba3ad6259"
+              },
+              "cancellationReason": "Pago no recibido dentro del plazo",
+              "cancelledBy": null,
+              "cancelledAt": "2026-09-24T22:44:41.473Z",
+              "createdBy": "user_c3_aud_1790289867163",
+              "createdAt": "2026-09-24T22:44:41.378Z",
+              "updatedAt": "2026-09-24T22:44:41.503Z"
+            }
+          }
+        ],
+        "screenshot": "c3-04-reembolso-gerencia-completado.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C4",
+    "title": "Envío a provincia con agencia → incidencia de faltante → resolución",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C4.1",
+        "actor": "ALMACEN",
+        "action": "Almacén detecta faltante durante empaque y registra incidencia con blocker",
+        "expected": "Incidencia OPEN creada con blocker=true",
+        "obtained": "Incidencia order-incident-2c230d21-3fe4-4638-add1-13709a7bfd4d creada, status OPEN, blocker true",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, order_id, type, status, blocker, note FROM order_incidents WHERE id = 'order-incident-2c230d21-3fe4-4638-add1-13709a7bfd4d'",
+            "result": {
+              "id": "order-incident-2c230d21-3fe4-4638-add1-13709a7bfd4d",
+              "orderId": "order-2f3290d0-5a60-432c-95df-48af93a897f2",
+              "orderItemId": null,
+              "type": "PHYSICAL_SHORTAGE",
+              "note": "Falta 1 unidad de capacitor en estante de empaque.",
+              "status": "OPEN",
+              "blocker": true,
+              "createdBy": "cp-dashboard-v5-user-almacen",
+              "resolvedBy": null,
+              "resolvedAt": null,
+              "createdAt": "2026-09-24T22:44:47.809Z"
+            }
+          }
+        ],
+        "screenshot": "c4-02-incidencia-faltante-bloqueo.png"
+      },
+      {
+        "step": "C4.2",
+        "actor": "ALMACEN",
+        "action": "Operario intenta marcar READY con incidencia bloqueante abierta",
+        "expected": "Bloqueo por ORDER_BLOCKED_BY_INCIDENT / picking incompleto",
+        "obtained": "Bloqueo exitoso: ORDER_PICKING_INCOMPLETE",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, status FROM orders WHERE id = 'order-2f3290d0-5a60-432c-95df-48af93a897f2'",
+            "result": {
+              "status": "PREPARING"
+            }
+          }
+        ]
+      },
+      {
+        "step": "C4.3",
+        "actor": "ALMACEN",
+        "action": "Incidencia resuelta, picking completado al 100% y despacho SHIPPED por agencia Shalom",
+        "expected": "Incidencia RESOLVED, pedido SHIPPED con tracking de agencia",
+        "obtained": "Incidencia status = RESOLVED, Pedido status = SHIPPED, Tracking evento = PICKED_UP",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, status, resolved_at FROM order_incidents WHERE id = 'order-incident-2c230d21-3fe4-4638-add1-13709a7bfd4d'",
+            "result": {
+              "id": "order-incident-2c230d21-3fe4-4638-add1-13709a7bfd4d",
+              "orderId": "order-2f3290d0-5a60-432c-95df-48af93a897f2",
+              "orderItemId": null,
+              "type": "PHYSICAL_SHORTAGE",
+              "note": "Falta 1 unidad de capacitor en estante de empaque.\nResolución: Se repuso la unidad faltante desde bodega principal.",
+              "status": "RESOLVED",
+              "blocker": true,
+              "createdBy": "cp-dashboard-v5-user-almacen",
+              "resolvedBy": "cp-dashboard-v5-user-almacen",
+              "resolvedAt": "2026-09-24T22:44:47.816Z",
+              "createdAt": "2026-09-24T22:44:47.809Z"
+            }
+          },
+          {
+            "query": "SELECT id, code, status, delivery_method FROM orders WHERE id = 'order-2f3290d0-5a60-432c-95df-48af93a897f2'",
+            "result": {
+              "id": "order-2f3290d0-5a60-432c-95df-48af93a897f2",
+              "code": "ORD-20260924-C2A93B",
+              "saleId": "sale-ddf40530-f516-46cd-9434-860fd0768a2f",
+              "customerId": "customer-6ca1bd2d-628a-4952-8ac5-6657ca904bff",
+              "opportunityId": "opportunity-bd27dcbf-70e2-4c81-95d8-338231f07cbe",
+              "status": "SHIPPED",
+              "deliveryMethod": "SHIPPING",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": "Agencia Shalom Chiclayo Centro",
+              "customerNameSnapshot": "Servicios Técnicos Chiclayo SAC",
+              "customerPhoneSnapshot": "974112233",
+              "customerEmailSnapshot": "cliente.c4.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "360.00",
+              "discountAmount": "54.00",
+              "total": "306.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-452def4e-f918-456d-b803-8b5ebe1e58cb:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c4_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:47.749Z",
+              "deliveryDetails": {
+                "district": "Chiclayo",
+                "province": "Chiclayo",
+                "agencyName": "Shalom",
+                "department": "Lambayeque"
+              },
+              "checkoutCartId": "cart-452def4e-f918-456d-b803-8b5ebe1e58cb",
+              "checkoutCartVersion": 2,
+              "version": 5,
+              "createdAt": "2026-09-24T22:44:47.763Z",
+              "updatedAt": "2026-09-24T22:44:47.823Z"
+            }
+          }
+        ],
+        "screenshot": "c4-04-despacho-agencia-shalom.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C5",
+    "title": "Recojo en tienda → registro del receptor",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C5.1",
+        "actor": "ALMACEN",
+        "action": "Almacén prepara y marca pedido READY_FOR_PICKUP en local",
+        "expected": "Pedido READY_FOR_PICKUP con dirección física del local claramente asociada",
+        "obtained": "Pedido status = READY_FOR_PICKUP, Local = Almacén Lima (Av. Industrial 100, Lima)",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, location_id FROM orders WHERE id = 'order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d'",
+            "result": {
+              "id": "order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d",
+              "code": "ORD-20260924-6FEFB0",
+              "saleId": "sale-1f250f38-c031-4569-ba25-0776e588dcdc",
+              "customerId": "customer-a43d9403-804d-4785-883a-695a88c5c42e",
+              "opportunityId": "opportunity-81d401f3-fa6c-4261-8ac7-0179dbf1de5a",
+              "status": "READY_FOR_PICKUP",
+              "deliveryMethod": "PICKUP",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": null,
+              "customerNameSnapshot": "Técnico Luis Paredes",
+              "customerPhoneSnapshot": "951234567",
+              "customerEmailSnapshot": "cliente.c5.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "180.00",
+              "discountAmount": "27.00",
+              "total": "153.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-df57eb83-a591-4a3c-badb-b13fbbca7ffb:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c5_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:54.496Z",
+              "deliveryDetails": null,
+              "checkoutCartId": "cart-df57eb83-a591-4a3c-badb-b13fbbca7ffb",
+              "checkoutCartVersion": 2,
+              "version": 4,
+              "createdAt": "2026-09-24T22:44:54.538Z",
+              "updatedAt": "2026-09-24T22:44:54.628Z"
+            }
+          },
+          {
+            "query": "SELECT id, name, address FROM locations WHERE id = 'cp-dashboard-v5-location-lima'",
+            "result": {
+              "id": "cp-dashboard-v5-location-lima",
+              "code": "CP-LIM-DEV",
+              "name": "Almacén Lima",
+              "type": "WAREHOUSE",
+              "active": true,
+              "address": "Av. Industrial 100, Lima",
+              "city": null,
+              "createdAt": "2026-06-26T14:31:21.530Z",
+              "updatedAt": "2026-09-23T14:31:21.530Z"
+            }
+          }
+        ],
+        "screenshot": "c5-02-listo-para-recojo-direccion.png"
+      },
+      {
+        "step": "C5.2",
+        "actor": "ALMACEN",
+        "action": "Cliente se presenta a recoger y almacén registra explícitamente quién recibió",
+        "expected": "Pedido DELIVERED, received_by almacenado y reserva consumida",
+        "obtained": "Pedido status = DELIVERED, receivedBy = Juan Pérez Cárdenas - DNI 44332211 (Técnico autorizado), reserva status = CONSUMED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, received_by, delivered_at FROM orders WHERE id = 'order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d'",
+            "result": {
+              "id": "order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d",
+              "code": "ORD-20260924-6FEFB0",
+              "saleId": "sale-1f250f38-c031-4569-ba25-0776e588dcdc",
+              "customerId": "customer-a43d9403-804d-4785-883a-695a88c5c42e",
+              "opportunityId": "opportunity-81d401f3-fa6c-4261-8ac7-0179dbf1de5a",
+              "status": "DELIVERED",
+              "deliveryMethod": "PICKUP",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": null,
+              "customerNameSnapshot": "Técnico Luis Paredes",
+              "customerPhoneSnapshot": "951234567",
+              "customerEmailSnapshot": "cliente.c5.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "180.00",
+              "discountAmount": "27.00",
+              "total": "153.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-df57eb83-a591-4a3c-badb-b13fbbca7ffb:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": "2026-09-24T22:44:54.643Z",
+              "receivedBy": "Juan Pérez Cárdenas - DNI 44332211 (Técnico autorizado)",
+              "userId": "user_c5_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:14:54.496Z",
+              "deliveryDetails": null,
+              "checkoutCartId": "cart-df57eb83-a591-4a3c-badb-b13fbbca7ffb",
+              "checkoutCartVersion": 2,
+              "version": 5,
+              "createdAt": "2026-09-24T22:44:54.538Z",
+              "updatedAt": "2026-09-24T22:44:54.643Z"
+            }
+          },
+          {
+            "query": "SELECT id, status FROM inventory_reservations WHERE reference_id = 'order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d'",
+            "result": {
+              "id": "reservation-848f9093-3996-4ee4-a1e5-ef0f9e9e3bae",
+              "productId": "product-cp-ref-ven-0844",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "quantity": 1,
+              "status": "CONSUMED",
+              "referenceType": "order",
+              "referenceId": "order-ab135ab0-d458-4a16-8aa1-ce0a0fb36c1d",
+              "reason": null,
+              "idempotencyKey": null,
+              "expiresAt": null,
+              "createdBy": "user_c5_aud_1790289867163",
+              "createdAt": "2026-09-24T22:44:54.489Z",
+              "releasedAt": "2026-09-24T22:44:54.642Z"
+            }
+          }
+        ],
+        "screenshot": "c5-03-entrega-registro-receptor.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C6",
+    "title": "Cliente recurrente: repite pedido desde historial → Ventas ve Cliente 360",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C6.1",
+        "actor": "CLIENTE",
+        "action": "Cliente recurrente repite pedido anterior desde su cuenta y paga satisfactoriamente",
+        "expected": "Dos pedidos registrados en el historial de la cuenta en estado PAID",
+        "obtained": "Pedidos completados: ORD-20260924-1B6405 y ORD-20260924-4E97BB",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, total FROM orders WHERE user_id = 'user_c6_aud_1790289867163'",
+            "result": [
+              {
+                "order": {
+                  "id": "order-dccc79f4-4331-4cee-be60-a38aad4d4749",
+                  "code": "ORD-20260924-4E97BB",
+                  "saleId": "sale-55186c6f-d879-473d-be4f-b07ff8b50510",
+                  "customerId": "customer-7c2822f4-0f42-40c5-a0a7-20a85a593589",
+                  "opportunityId": "opportunity-b40d10a6-04a3-4364-801e-62655667c909",
+                  "status": "PAID",
+                  "deliveryMethod": "PICKUP",
+                  "locationId": "cp-dashboard-v5-location-lima",
+                  "deliveryAddress": null,
+                  "customerNameSnapshot": "Taller Electrónica Polar SAC",
+                  "customerPhoneSnapshot": "987000111",
+                  "customerEmailSnapshot": "taller.recurrente.aud_1790289867163@example.pe",
+                  "sellerId": null,
+                  "subtotal": "360.00",
+                  "discountAmount": "54.00",
+                  "total": "306.00",
+                  "currency": "PEN",
+                  "idempotencyKey": "checkout:cart-6c0a7adb-dc4c-4196-94f8-4b35aed49afc:v2",
+                  "cancellationReason": null,
+                  "cancelledBy": null,
+                  "cancelledAt": null,
+                  "deliveredAt": null,
+                  "receivedBy": null,
+                  "userId": "user_c6_aud_1790289867163",
+                  "paymentDueAt": "2026-09-24T23:15:01.385Z",
+                  "deliveryDetails": null,
+                  "checkoutCartId": "cart-6c0a7adb-dc4c-4196-94f8-4b35aed49afc",
+                  "checkoutCartVersion": 2,
+                  "version": 2,
+                  "createdAt": "2026-09-24T22:45:01.411Z",
+                  "updatedAt": "2026-09-24T22:45:01.477Z"
+                },
+                "payment": {
+                  "id": "payment-a2056b66-9517-4b6d-ba32-61ef499910e9",
+                  "orderId": "order-dccc79f4-4331-4cee-be60-a38aad4d4749",
+                  "methodType": "PROVIDER",
+                  "method": "mock",
+                  "provider": "mock",
+                  "providerReference": "mock_f427dad0-810c-4da9-b060-b1c276c0ec1c",
+                  "idempotencyKey": null,
+                  "amount": "306.00",
+                  "currency": "PEN",
+                  "status": "CONFIRMED",
+                  "metadata": {
+                    "amount": "0",
+                    "status": "APPROVED",
+                    "currency": "PEN",
+                    "simulated": true
+                  },
+                  "cancellationReason": null,
+                  "cancelledBy": null,
+                  "cancelledAt": null,
+                  "createdBy": "user_c6_aud_1790289867163",
+                  "createdAt": "2026-09-24T22:45:01.384Z",
+                  "updatedAt": "2026-09-24T22:45:01.470Z"
+                }
+              },
+              {
+                "order": {
+                  "id": "order-b71080d8-f97d-4b06-9317-7698151d167e",
+                  "code": "ORD-20260924-1B6405",
+                  "saleId": "sale-78c46ef9-a4a5-440f-9f49-696c527ac1b0",
+                  "customerId": "customer-7c2822f4-0f42-40c5-a0a7-20a85a593589",
+                  "opportunityId": "opportunity-1becf63c-5375-40fb-8758-d0285cd76e3b",
+                  "status": "PAID",
+                  "deliveryMethod": "PICKUP",
+                  "locationId": "cp-dashboard-v5-location-lima",
+                  "deliveryAddress": null,
+                  "customerNameSnapshot": "Taller Electrónica Polar SAC",
+                  "customerPhoneSnapshot": "987000111",
+                  "customerEmailSnapshot": "taller.recurrente.aud_1790289867163@example.pe",
+                  "sellerId": null,
+                  "subtotal": "360.00",
+                  "discountAmount": "54.00",
+                  "total": "306.00",
+                  "currency": "PEN",
+                  "idempotencyKey": "checkout:cart-5466bc7d-a2eb-480c-9ce8-76b8e633a73c:v2",
+                  "cancellationReason": null,
+                  "cancelledBy": null,
+                  "cancelledAt": null,
+                  "deliveredAt": null,
+                  "receivedBy": null,
+                  "userId": "user_c6_aud_1790289867163",
+                  "paymentDueAt": "2026-09-24T23:15:01.319Z",
+                  "deliveryDetails": null,
+                  "checkoutCartId": "cart-5466bc7d-a2eb-480c-9ce8-76b8e633a73c",
+                  "checkoutCartVersion": 2,
+                  "version": 2,
+                  "createdAt": "2026-09-24T22:45:01.328Z",
+                  "updatedAt": "2026-09-24T22:45:01.361Z"
+                },
+                "payment": {
+                  "id": "payment-0ef6b296-5ff9-4707-9b66-499d746edb02",
+                  "orderId": "order-b71080d8-f97d-4b06-9317-7698151d167e",
+                  "methodType": "PROVIDER",
+                  "method": "mock",
+                  "provider": "mock",
+                  "providerReference": "mock_85e55148-5f50-4c17-b782-a738ca7969f2",
+                  "idempotencyKey": null,
+                  "amount": "306.00",
+                  "currency": "PEN",
+                  "status": "CONFIRMED",
+                  "metadata": {
+                    "amount": "0",
+                    "status": "APPROVED",
+                    "currency": "PEN",
+                    "simulated": true
+                  },
+                  "cancellationReason": null,
+                  "cancelledBy": null,
+                  "cancelledAt": null,
+                  "createdBy": "user_c6_aud_1790289867163",
+                  "createdAt": "2026-09-24T22:45:01.318Z",
+                  "updatedAt": "2026-09-24T22:45:01.358Z"
+                }
+              }
+            ]
+          }
+        ],
+        "screenshot": "c6-01-cliente-historial-pedidos.png"
+      },
+      {
+        "step": "C6.2",
+        "actor": "VENTAS",
+        "action": "Asesor de Ventas abre ficha Cliente 360 para ver el historial integral",
+        "expected": "Vista 360 muestra 2 pedidos, historial de pagos y métricas financieras coherentes",
+        "obtained": "Cliente Taller Electrónica Polar SAC, Pedidos asociados: 2, Ventas: 2",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, name, document_number FROM customers WHERE id = 'customer-7c2822f4-0f42-40c5-a0a7-20a85a593589'",
+            "result": {
+              "id": "customer-7c2822f4-0f42-40c5-a0a7-20a85a593589",
+              "userId": "user_c6_aud_1790289867163",
+              "name": "Taller Electrónica Polar SAC",
+              "legalName": null,
+              "documentNumber": null,
+              "ruc": null,
+              "phone": "987000111",
+              "whatsapp": "987000111",
+              "email": "taller.recurrente.aud_1790289867163@example.pe",
+              "address": null,
+              "location": null,
+              "contactPreference": null,
+              "customerType": "CONSUMIDOR",
+              "assignedSellerId": null,
+              "notes": null,
+              "status": "ACTIVE",
+              "canonicalCustomerId": null,
+              "mergeReason": null,
+              "mergedBy": null,
+              "mergedAt": null,
+              "lastActivityAt": null,
+              "createdAt": "2026-09-24T22:45:01.318Z",
+              "updatedAt": "2026-09-24T22:45:01.410Z",
+              "assignedSeller": null
+            }
+          }
+        ],
+        "screenshot": "c6-03-ventas-cliente-360.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C7",
+    "title": "Dos clientes por la última unidad (concurrencia) → reserva → alerta → OC",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C7.1",
+        "actor": "CLIENTE",
+        "action": "Dos clientes compran la última unidad en simultáneo (carrera de concurrencia)",
+        "expected": "Exactamente 1 reserva exitosa; el otro recibe mensaje de stock insuficiente sin doble reserva",
+        "obtained": "Exitosos: 1, Rechazados: 1. Mensaje error: Stock insuficiente para CP-REF-VEN-0844 en Almacén Lima.. Saldo: onHand=1, reserved=1",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT product_id, on_hand, reserved FROM inventory_balances WHERE product_id = 'product-cp-ref-ven-0844' AND location_id = 'cp-dashboard-v5-location-lima'",
+            "result": {
+              "id": "cp-dashboard-v5-balance-product-cp-ref-ven-0844-lima",
+              "productId": "product-cp-ref-ven-0844",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "onHand": 1,
+              "reserved": 1,
+              "minimumStock": 8,
+              "updatedAt": "2026-09-24T22:45:08.490Z"
+            }
+          }
+        ],
+        "screenshot": "c7-01-concurrencia-ultima-unidad.png"
+      },
+      {
+        "step": "C7.2",
+        "actor": "COMPRAS",
+        "action": "Compras recibe alerta de agotamiento y emite Orden de Compra por 10 unidades",
+        "expected": "Orden de Compra creada como DRAFT y emitida a PENDING/ISSUED",
+        "obtained": "OC OC-20260924-4B4F67 emitida, total S/ undefined, status PENDING",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, total FROM purchases WHERE id = 'purchase-53990a36-2711-48a1-bd46-a5739a9280ea'",
+            "result": {
+              "id": "purchase-53990a36-2711-48a1-bd46-a5739a9280ea",
+              "code": "OC-20260924-4B4F67",
+              "supplierId": "cp-dashboard-v5-cp-compras-dev-supplier-lg",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "requestId": null,
+              "status": "PENDING",
+              "currency": "PEN",
+              "subtotal": "1200.00",
+              "notes": "Reposición de stock crítico tras agotamiento en tienda",
+              "issuedAt": "2026-09-24T22:45:08.540Z",
+              "expectedDeliveryAt": null,
+              "cancelledAt": null,
+              "cancelledBy": null,
+              "cancellationReason": null,
+              "createdBy": "cp-dashboard-v5-user-compras",
+              "idempotencyKey": null,
+              "createdAt": "2026-09-24T22:45:08.531Z",
+              "updatedAt": "2026-09-24T22:45:08.540Z"
+            }
+          }
+        ],
+        "screenshot": "c7-02-alerta-agotado-orden-compra.png"
+      },
+      {
+        "step": "C7.3",
+        "actor": "ALMACEN",
+        "action": "Almacén recepciona la mercadería de la OC y el stock vuelve a estar disponible",
+        "expected": "Stock físico incrementado en 10 unidades (onHand = 11, disponible = 10)",
+        "obtained": "Nuevo saldo: onHand=11, reserved=1",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT product_id, on_hand, reserved FROM inventory_balances WHERE product_id = 'product-cp-ref-ven-0844' AND location_id = 'cp-dashboard-v5-location-lima'",
+            "result": {
+              "id": "cp-dashboard-v5-balance-product-cp-ref-ven-0844-lima",
+              "productId": "product-cp-ref-ven-0844",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "onHand": 11,
+              "reserved": 1,
+              "minimumStock": 8,
+              "updatedAt": "2026-09-24T22:45:08.554Z"
+            }
+          }
+        ],
+        "screenshot": "c7-03-recepcion-oc-stock-restablecido.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C8",
+    "title": "Promoción creada y aprobada → mismo precio en ficha, carrito y pedido → rechazo de otra promoción",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C8.1",
+        "actor": "GERENCIA",
+        "action": "Gerencia aprueba Promoción A (15%) y rechaza formalmente Promoción B (50%)",
+        "expected": "Promoción A activa/APPROVED; Promoción B inactiva/REJECTED",
+        "obtained": "Configuración persistida en tabla promotions",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, approval_status, discount_value FROM promotions WHERE id IN ('promo-a-aud_1790289867163', 'promo-b-aud_1790289867163')",
+            "result": [
+              {
+                "id": "promo-a-aud_1790289867163",
+                "name": "Campaña Verano 15% Descuento aud_1790289867163",
+                "description": null,
+                "bannerAssetId": null,
+                "type": "PERCENTAGE",
+                "discountValue": "15.00",
+                "startsAt": "2026-09-23T22:45:15.567Z",
+                "endsAt": "2026-09-25T22:45:15.567Z",
+                "status": "ACTIVE",
+                "priority": 0,
+                "policy": "EXCLUSIVE",
+                "approvalStatus": "APPROVED",
+                "approvedBy": null,
+                "approvedAt": null,
+                "createdBy": null,
+                "updatedBy": null,
+                "createdAt": "2026-09-24T22:45:15.567Z",
+                "updatedAt": "2026-09-24T22:45:15.567Z"
+              },
+              {
+                "id": "promo-b-aud_1790289867163",
+                "name": "Descuento Masivo No Autorizado aud_1790289867163",
+                "description": null,
+                "bannerAssetId": null,
+                "type": "PERCENTAGE",
+                "discountValue": "50.00",
+                "startsAt": "2026-09-23T22:45:15.570Z",
+                "endsAt": "2026-09-25T22:45:15.570Z",
+                "status": "INACTIVE",
+                "priority": 0,
+                "policy": "EXCLUSIVE",
+                "approvalStatus": "REJECTED",
+                "approvedBy": null,
+                "approvedAt": null,
+                "createdBy": null,
+                "updatedBy": null,
+                "createdAt": "2026-09-24T22:45:15.570Z",
+                "updatedAt": "2026-09-24T22:45:15.570Z"
+              }
+            ]
+          }
+        ],
+        "screenshot": "c8-01-promocion-aprobada-vs-rechazada.png"
+      },
+      {
+        "step": "C8.2",
+        "actor": "CLIENTE",
+        "action": "Cliente compra producto en promoción: se verifica precio en ficha, carrito y pedido",
+        "expected": "Precio base S/ 200.00, Descuento S/ 30.00 (15%), Total S/ 170.00 idéntico en carrito y pedido; promo B excluida",
+        "obtained": "Carrito subtotal: S/ 170.00, Pedido total: S/ 170.00, Descuento pedido: S/ 30.00",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, total, discount_amount, subtotal FROM orders WHERE id = 'order-02318444-9a27-4628-b872-32a7c53b56e6'",
+            "result": {
+              "id": "order-02318444-9a27-4628-b872-32a7c53b56e6",
+              "code": "ORD-20260924-EB0408",
+              "saleId": "sale-e7334554-f969-4c8f-b0fb-6f269278db4e",
+              "customerId": "customer-c39daca4-7143-4b48-b6db-1906ec96dc3d",
+              "opportunityId": "opportunity-ed23f4de-c574-4eaf-9ddf-c1921730e901",
+              "status": "PAYMENT_PENDING",
+              "deliveryMethod": "PICKUP",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": null,
+              "customerNameSnapshot": "Cliente Promoción",
+              "customerPhoneSnapshot": "955443322",
+              "customerEmailSnapshot": "cliente.c8.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "200.00",
+              "discountAmount": "30.00",
+              "total": "170.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-c0d9dad0-9862-4c7b-b394-27a9759546b6:v2",
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c8_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:15:15.634Z",
+              "deliveryDetails": null,
+              "checkoutCartId": "cart-c0d9dad0-9862-4c7b-b394-27a9759546b6",
+              "checkoutCartVersion": 2,
+              "version": 1,
+              "createdAt": "2026-09-24T22:45:15.652Z",
+              "updatedAt": "2026-09-24T22:45:15.652Z"
+            }
+          },
+          {
+            "query": "SELECT id, promotion_id, discount_amount, final_unit_price FROM promotion_applications WHERE context_id = 'order-02318444-9a27-4628-b872-32a7c53b56e6' OR idempotency_key LIKE '%order-02318444-9a27-4628-b872-32a7c53b56e6%'",
+            "result": []
+          }
+        ],
+        "screenshot": "c8-03-precio-carrito-y-pedido.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C9",
+    "title": "Anulación tras el pago → bloqueo por dinero → devolución → cancelación final",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C9.1",
+        "actor": "VENTAS",
+        "action": "Ventas intenta anular directamente el pedido pagado sin devolver el dinero",
+        "expected": "Bloqueo estricto: ORDER_PAID_CANCELLATION_REQUIRES_REFUND (prohibido cancelar si hay dinero cobrado)",
+        "obtained": "Bloqueo exitoso: ORDER_PAID_CANCELLATION_REQUIRES_REFUND",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status FROM orders WHERE id = 'order-41312498-f59d-4068-a465-b88e37025143'",
+            "result": {
+              "status": "PAID"
+            }
+          }
+        ],
+        "screenshot": "c9-02-bloqueo-anulacion-por-dinero.png"
+      },
+      {
+        "step": "C9.2",
+        "actor": "CAJA",
+        "action": "Caja/Gerencia procesa la devolución total del dinero",
+        "expected": "Pago pasa a REFUNDED y se registra en payment_refunds",
+        "obtained": "Pago status = REFUNDED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, status, amount FROM payments WHERE id = 'payment-798cf708-e65c-4b22-b71e-a240625baa0b'",
+            "result": {
+              "id": "payment-798cf708-e65c-4b22-b71e-a240625baa0b",
+              "orderId": "order-41312498-f59d-4068-a465-b88e37025143",
+              "methodType": "PROVIDER",
+              "method": "mock",
+              "provider": "mock",
+              "providerReference": "mock_637a2aec-c718-4dc5-983e-6b651a1a7c3b",
+              "idempotencyKey": null,
+              "amount": "170.00",
+              "currency": "PEN",
+              "status": "REFUNDED",
+              "metadata": {
+                "amount": "170.00",
+                "simulated": true,
+                "originalReference": "mock_637a2aec-c718-4dc5-983e-6b651a1a7c3b"
+              },
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "createdBy": "user_c9_aud_1790289867163",
+              "createdAt": "2026-09-24T22:45:21.900Z",
+              "updatedAt": "2026-09-24T22:45:22.031Z"
+            }
+          }
+        ],
+        "screenshot": "c9-03-devolucion-registrada.png"
+      },
+      {
+        "step": "C9.3",
+        "actor": "VENTAS",
+        "action": "Una vez devuelto el dinero, Ventas cancela formalmente el pedido",
+        "expected": "Pedido CANCELLED, motivo registrado y reserva de stock liberada (RELEASED)",
+        "obtained": "Pedido status = CANCELLED, Reserva status = RELEASED",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, code, status, cancellation_reason FROM orders WHERE id = 'order-41312498-f59d-4068-a465-b88e37025143'",
+            "result": {
+              "id": "order-41312498-f59d-4068-a465-b88e37025143",
+              "code": "ORD-20260924-E445EC",
+              "saleId": "sale-03f71ca2-de6a-402a-92f6-af0b5bda809b",
+              "customerId": "customer-6d121ddd-e84b-4a57-af07-d5932cec131e",
+              "opportunityId": "opportunity-fd806592-e038-43c1-b0d4-023814e2c015",
+              "status": "CANCELLED",
+              "deliveryMethod": "PICKUP",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "deliveryAddress": null,
+              "customerNameSnapshot": "Taller San Borja Clima",
+              "customerPhoneSnapshot": "988771122",
+              "customerEmailSnapshot": "cliente.c9.aud_1790289867163@example.pe",
+              "sellerId": null,
+              "subtotal": "200.00",
+              "discountAmount": "30.00",
+              "total": "170.00",
+              "currency": "PEN",
+              "idempotencyKey": "checkout:cart-1cf843ef-7b9d-4716-a497-24e015688b0b:v2",
+              "cancellationReason": "Anulación tras devolución completada",
+              "cancelledBy": "cp-dashboard-v5-user-staff-001",
+              "cancelledAt": "2026-09-24T22:45:22.040Z",
+              "deliveredAt": null,
+              "receivedBy": null,
+              "userId": "user_c9_aud_1790289867163",
+              "paymentDueAt": "2026-09-24T23:15:21.906Z",
+              "deliveryDetails": null,
+              "checkoutCartId": "cart-1cf843ef-7b9d-4716-a497-24e015688b0b",
+              "checkoutCartVersion": 2,
+              "version": 3,
+              "createdAt": "2026-09-24T22:45:21.945Z",
+              "updatedAt": "2026-09-24T22:45:22.040Z"
+            }
+          },
+          {
+            "query": "SELECT id, status FROM inventory_reservations WHERE reference_id = 'order-41312498-f59d-4068-a465-b88e37025143'",
+            "result": {
+              "id": "reservation-740b7d75-b082-456a-8e99-1d6cde423cd5",
+              "productId": "product-cp-ref-ven-0844",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "quantity": 1,
+              "status": "RELEASED",
+              "referenceType": "order",
+              "referenceId": "order-41312498-f59d-4068-a465-b88e37025143",
+              "reason": null,
+              "idempotencyKey": null,
+              "expiresAt": null,
+              "createdBy": "user_c9_aud_1790289867163",
+              "createdAt": "2026-09-24T22:45:21.900Z",
+              "releasedAt": "2026-09-24T22:45:22.039Z"
+            }
+          }
+        ],
+        "screenshot": "c9-04-cancelacion-final-completada.png"
+      }
+    ],
+    "defects": []
+  },
+  {
+    "code": "C10",
+    "title": "Producto nuevo con foto, precio y stock → publicado → encontrado por la búsqueda de la tienda",
+    "verdict": "PASSED",
+    "steps": [
+      {
+        "step": "C10.1",
+        "actor": "CATALOGO",
+        "action": "Catálogo crea producto con foto, precio S/ 485.00 y stock 15 en estado published",
+        "expected": "Producto publicado con SKU, precio y stock confirmados en base de datos",
+        "obtained": "Producto CP-ROT-8284 creado, status published, precio S/ 485.00, stock 15",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, sku, commercial_name, publication_status FROM products WHERE id = 'prod-new-aud_1790289867163'",
+            "result": {
+              "id": "prod-new-aud_1790289867163",
+              "sku": "CP-ROT-8284",
+              "slug": "compresor-rotativo-gemini-aud_1790289867163",
+              "originalName": "Compresor Rotativo Gemini Inverter 12000 BTU R410A",
+              "normalizedName": "compresor rotativo gemini inverter 12000 btu r410a",
+              "commercialName": "Compresor Rotativo Gemini Inverter 12000 BTU R410A",
+              "featured": false,
+              "productType": "standard",
+              "categoryId": "category-campanas-extractoras",
+              "familyId": "family-campanas-extractoras-filtros",
+              "brandId": "brand-mabe",
+              "editorialCategoryId": null,
+              "editorialFamilyId": null,
+              "editorialBrandId": null,
+              "compatibilityBrands": null,
+              "modelCode": null,
+              "application": null,
+              "voltage": null,
+              "power": null,
+              "frequency": null,
+              "rpm": null,
+              "amperage": null,
+              "capacitance": null,
+              "refrigerant": null,
+              "horsepower": null,
+              "temperature": null,
+              "dimensions": null,
+              "length": null,
+              "connectionSize": null,
+              "unitOfMeasure": "UNIDAD (BIENES)",
+              "status": "Activo",
+              "publicationStatus": "published",
+              "availabilityStatus": "in_stock",
+              "editorialDescription": null,
+              "publicationChangedAt": null,
+              "publicationChangedBy": null,
+              "publicationNote": null,
+              "taxType": "Gravado - Operación Onerosa",
+              "originalReferenceCode": null,
+              "barcode": null,
+              "originalWeight": null,
+              "requiresReview": null,
+              "reviewReason": null,
+              "possibleDuplicate": null,
+              "duplicateGroup": null,
+              "duplicateDecision": "pending",
+              "canonicalProductId": null,
+              "normalizationConfidence": null,
+              "normalizationMethod": null,
+              "sourcePage": null,
+              "sourceRow": null,
+              "createdAt": "2026-09-24T22:45:28.285Z",
+              "updatedAt": "2026-09-24T22:45:28.285Z"
+            }
+          },
+          {
+            "query": "SELECT amount, currency, status FROM product_prices WHERE product_id = 'prod-new-aud_1790289867163'",
+            "result": {
+              "id": "price-new-aud_1790289867163",
+              "productId": "prod-new-aud_1790289867163",
+              "priceType": "RETAIL",
+              "amount": "485.00",
+              "wholesaleMinQty": null,
+              "minimumAllowed": null,
+              "currency": "PEN",
+              "status": "ACTIVE",
+              "validFrom": "2026-09-24T22:44:28.297Z",
+              "validUntil": null,
+              "active": true,
+              "idempotencyKey": null,
+              "createdBy": null,
+              "createdAt": "2026-09-24T22:45:28.299Z",
+              "updatedAt": "2026-09-24T22:45:28.299Z"
+            }
+          },
+          {
+            "query": "SELECT on_hand, reserved FROM inventory_balances WHERE product_id = 'prod-new-aud_1790289867163'",
+            "result": {
+              "id": "bal-new-aud_1790289867163",
+              "productId": "prod-new-aud_1790289867163",
+              "locationId": "cp-dashboard-v5-location-lima",
+              "onHand": 15,
+              "reserved": 0,
+              "minimumStock": null,
+              "updatedAt": "2026-09-24T22:45:28.300Z"
+            }
+          }
+        ],
+        "screenshot": "c10-01-producto-nuevo-creado.png"
+      },
+      {
+        "step": "C10.2",
+        "actor": "CLIENTE",
+        "action": "Cliente busca el nuevo producto por SKU en el buscador de la tienda",
+        "expected": "Producto nuevo devuelto en los resultados de búsqueda pública con foto y datos",
+        "obtained": "Encontrado: Compresor Rotativo Gemini Inverter 12000 BTU R410A",
+        "passed": true,
+        "sqlVerifications": [
+          {
+            "query": "SELECT id, sku, commercial_name FROM products WHERE publication_status = 'published' AND sku = 'CP-ROT-8284'",
+            "result": [
+              {
+                "id": "prod-new-aud_1790289867163",
+                "sku": "CP-ROT-8284",
+                "slug": "compresor-rotativo-gemini-aud_1790289867163",
+                "originalName": "Compresor Rotativo Gemini Inverter 12000 BTU R410A",
+                "normalizedName": "compresor rotativo gemini inverter 12000 btu r410a",
+                "commercialName": "Compresor Rotativo Gemini Inverter 12000 BTU R410A",
+                "featured": false,
+                "productType": "standard",
+                "categoryId": "category-campanas-extractoras",
+                "familyId": "family-campanas-extractoras-filtros",
+                "brandId": "brand-mabe",
+                "editorialCategoryId": null,
+                "editorialFamilyId": null,
+                "editorialBrandId": null,
+                "compatibilityBrands": null,
+                "modelCode": null,
+                "application": null,
+                "voltage": null,
+                "power": null,
+                "frequency": null,
+                "rpm": null,
+                "amperage": null,
+                "capacitance": null,
+                "refrigerant": null,
+                "horsepower": null,
+                "temperature": null,
+                "dimensions": null,
+                "length": null,
+                "connectionSize": null,
+                "unitOfMeasure": "UNIDAD (BIENES)",
+                "status": "Activo",
+                "publicationStatus": "published",
+                "availabilityStatus": "in_stock",
+                "editorialDescription": null,
+                "publicationChangedAt": null,
+                "publicationChangedBy": null,
+                "publicationNote": null,
+                "taxType": "Gravado - Operación Onerosa",
+                "originalReferenceCode": null,
+                "barcode": null,
+                "originalWeight": null,
+                "requiresReview": null,
+                "reviewReason": null,
+                "possibleDuplicate": null,
+                "duplicateGroup": null,
+                "duplicateDecision": "pending",
+                "canonicalProductId": null,
+                "normalizationConfidence": null,
+                "normalizationMethod": null,
+                "sourcePage": null,
+                "sourceRow": null,
+                "createdAt": "2026-09-24T22:45:28.285Z",
+                "updatedAt": "2026-09-24T22:45:28.285Z"
+              }
+            ]
+          }
+        ],
+        "screenshot": "c10-03-producto-encontrado-busqueda.png"
+      }
+    ],
+    "defects": []
+  }
+]

@@ -11,6 +11,7 @@ import { PublishedCmsBlocks } from "@/components/cms/PublishedCmsBlocks";
 import {
   getCatalogBrands,
   getCatalogCategories,
+  getBestSellerProductId,
   getCatalogProducts,
 } from "@/lib/catalog-repository";
 import { loadPublishedCms } from "@/lib/public-cms";
@@ -31,7 +32,7 @@ export default async function Home() {
     getPublicCompanySettings(),
   ]);
 
-  const orderedProducts = orderHomeProducts(catalogData.products);
+  const orderedProducts = orderHomeProducts(catalogData.products, catalogData.bestSellerProductId);
 
   return (
     <>
@@ -41,7 +42,7 @@ export default async function Home() {
         catalogUnavailable={catalogData.unavailable}
       />
       {cms ? <PublishedCmsBlocks blocks={cms.blocks} slot="after_categories" /> : null}
-      <ProductSection products={orderedProducts} catalogUnavailable={catalogData.unavailable} />
+      <ProductSection products={orderedProducts} bestSellerProductId={catalogData.bestSellerProductId} catalogUnavailable={catalogData.unavailable} />
       <TechnicalSearchGuide />
       <PromoBanner settings={settings} />
       <ApplicationSolutions />
@@ -53,22 +54,23 @@ export default async function Home() {
 
 async function loadCatalogHomeData() {
   try {
-    const [categories, catalog, brands] = await Promise.all([
+    const [categories, catalog, brands, bestSellerProductId] = await Promise.all([
       getCatalogCategories(),
       getCatalogProducts({ pageSize: 48, sort: "updated" }),
       getCatalogBrands(),
+      getBestSellerProductId(),
     ]);
-    return { categories, products: catalog.products, brands, unavailable: false };
+    return { categories, products: catalog.products, brands, bestSellerProductId, unavailable: false };
   } catch (error) {
     console.warn(
       "[ColdPower] Catálogo persistente no disponible para la portada.",
       error instanceof Error ? error.message : error,
     );
-    return { categories: [], products: [], brands: [], unavailable: true };
+    return { categories: [], products: [], brands: [], bestSellerProductId: null, unavailable: true };
   }
 }
 
-function orderHomeProducts(products: Awaited<ReturnType<typeof getCatalogProducts>>["products"]) {
+function orderHomeProducts(products: Awaited<ReturnType<typeof getCatalogProducts>>["products"], bestSellerProductId: string | null) {
   const rules = [
     /motocompresor|compresor(?!a)/i,
     /motor.*vent|ventilador/i,
@@ -85,6 +87,12 @@ function orderHomeProducts(products: Awaited<ReturnType<typeof getCatalogProduct
   ];
   const used = new Set<string>();
   const selected: typeof products = [];
+
+  const bestSeller = bestSellerProductId ? products.find((product) => product.id === bestSellerProductId) : undefined;
+  if (bestSeller) {
+    used.add(bestSeller.id);
+    selected.push(bestSeller);
+  }
 
   for (const rule of rules) {
     const match = products.find(

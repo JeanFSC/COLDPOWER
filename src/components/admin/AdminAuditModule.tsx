@@ -265,7 +265,7 @@ export function AuditModule({
             <AdminLineChart
               data={trend.map((point) => point.total)}
               previous={trendPrevious}
-              labels={trend.map((point) => dayLabelFormat.format(new Date(`${point.date}T00:00:00`)).replace(".", ""))}
+              labels={trend.map((point) => dayLabelFormat.format(new Date(`${point.date}T00:00:00-05:00`)).replace(".", ""))}
               comparison
               filled
               largeLabels

@@ -9,13 +9,14 @@ import {
 import { geoLabel, browserLabel } from "@/lib/geo";
 import { deltaPct } from "@/lib/period-metrics";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
+import { startOfLimaDay, startOfNextLimaDay } from "@/lib/lima-datetime";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
 const trendDays = 30;
 
-function dayStart(value: string) { return new Date(`${value}T00:00:00-05:00`); }
-function dayAfter(value: string) { return new Date(dayStart(value).getTime() + 86_400_000); }
+function dayStart(value: string) { return startOfLimaDay(value); }
+function dayAfter(value: string) { return startOfNextLimaDay(value); }
 function n(value: unknown) { return Number(value ?? 0); }
 
 function whereAudit(filters: AuditFilters) {

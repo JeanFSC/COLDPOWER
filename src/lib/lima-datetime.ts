@@ -1,4 +1,14 @@
 const LIMA_OFFSET = "-05:00";
+const DAY_MS = 86_400_000;
+
+export function startOfLimaDay(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date(Number.NaN);
+  return new Date(`${value}T00:00:00${LIMA_OFFSET}`);
+}
+
+export function startOfNextLimaDay(value: string) {
+  return new Date(startOfLimaDay(value).getTime() + DAY_MS);
+}
 
 export function formatLimaDateTimeLocal(value: Date | string | number) {
   const date = value instanceof Date ? value : new Date(value);

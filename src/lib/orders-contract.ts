@@ -58,9 +58,9 @@ export type OrderListItem = {
   // Set for online (storefront) purchases: the buyer's account.
   userId: string | null;
   lineCount: number; reservationCount: number; totalQuantity: number; pickedQuantity: number; openIncidentCount: number;
-  paymentStatus: string | null; expectedAmount: string; netReceivedAmount: string; paymentReconciliation: ReconciliationState;
+  paymentStatus: string | null; expectedAmount: string | null; netReceivedAmount: string | null; paymentReconciliation: ReconciliationState | null;
   attention: OrderAttention; status: string; deliveryMethod: string; locationId: string; deliveryAddress: string | null;
-  subtotal: string; discountAmount: string; total: string; currency: string; deliveredAt: Date | null; receivedBy: string | null; version: number; createdAt: Date; updatedAt: Date;
+  subtotal: string | null; discountAmount: string | null; total: string | null; currency: string; deliveredAt: Date | null; receivedBy: string | null; version: number; createdAt: Date; updatedAt: Date;
 };
 
 export type OrdersPageResponse = {

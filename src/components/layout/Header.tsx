@@ -54,7 +54,7 @@ export function Header({ authEnabled = false, categories }: { authEnabled?: bool
     <>
       <header className="home-header">
         <div className="home-wide-container home-header-inner">
-          <BrandLogo size="lg" showTagline className="home-header-logo" />
+          <BrandLogo size="lg" showTagline priority className="home-header-logo" />
           <div className="home-header-search hidden lg:block">
             <SearchBar id="desktop-search" placeholder={searchPlaceholder} compact={false} showCompactSubmit={false} iconOnlySubmit />
           </div>

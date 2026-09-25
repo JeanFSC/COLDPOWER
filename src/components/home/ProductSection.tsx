@@ -4,9 +4,11 @@ import { HomeProductTabs } from "@/components/home/HomeProductTabs";
 
 export function ProductSection({
   products,
+  bestSellerProductId = null,
   catalogUnavailable = false,
 }: {
   products: Product[];
+  bestSellerProductId?: string | null;
   catalogUnavailable?: boolean;
 }) {
   return (
@@ -24,7 +26,7 @@ export function ProductSection({
             </div>
           </>
         ) : products.length > 0 ? (
-          <HomeProductTabs products={products} />
+          <HomeProductTabs products={products} bestSellerProductId={bestSellerProductId} />
         ) : (
           <>
             <ProductSectionHeading />

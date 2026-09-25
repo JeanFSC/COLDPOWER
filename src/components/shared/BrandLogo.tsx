@@ -10,7 +10,7 @@ const sizeStyles: Record<BrandLogoSize, { image: string; gap: string }> = {
   lg: { image: "w-[220px]", gap: "gap-0" },
 };
 
-function LogoLockup({ variant, className }: { variant: "dark" | "light"; className?: string }) {
+function LogoLockup({ variant, className, priority }: { variant: "dark" | "light"; className?: string; priority?: boolean }) {
   return (
     <Image
       src={variant === "light" ? "/brand/logo-coldpower-lockup-light.webp" : "/brand/logo-coldpower-lockup.webp"}
@@ -18,7 +18,7 @@ function LogoLockup({ variant, className }: { variant: "dark" | "light"; classNa
       width={2172}
       height={724}
       className={cn(className, "block h-auto max-w-full shrink-0 object-contain")}
-      priority
+      priority={priority}
     />
   );
 }
@@ -30,6 +30,7 @@ type BrandLogoProps = {
   href?: string | null;
   className?: string;
   showTagline?: boolean;
+  priority?: boolean;
 };
 
 export function BrandLogo({
@@ -39,12 +40,13 @@ export function BrandLogo({
   href = "/",
   className,
   showTagline = false,
+  priority = false,
 }: BrandLogoProps) {
   const s = sizeStyles[size];
   const imageClass = compact ? "w-[150px]" : s.image;
   const content = (
     <>
-      <LogoLockup variant={variant} className={imageClass} />
+      <LogoLockup variant={variant} className={imageClass} priority={priority} />
       {showTagline ? <span className="brand-logo-tagline">SOLUCIONES EN REFRIGERACIÓN</span> : null}
     </>
   );

@@ -28,6 +28,7 @@ import type {
   SalesPageResponse,
 } from "@/lib/sales-contract";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
+import { startOfLimaDay, startOfNextLimaDay } from "@/lib/lima-datetime";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
@@ -40,10 +41,10 @@ function pageValues(page?: number, pageSize?: number) {
   };
 }
 function dayStart(value: string) {
-  return new Date(`${value}T00:00:00-05:00`);
+  return startOfLimaDay(value);
 }
 function dayAfter(value: string) {
-  return new Date(dayStart(value).getTime() + 86_400_000);
+  return startOfNextLimaDay(value);
 }
 function numberValue(value: unknown) {
   return Number(value ?? 0);

@@ -3,6 +3,7 @@ import { apiError } from "@/lib/api-errors";
 import { OrdersInvalidFilterError, parseOrdersFilters } from "@/lib/orders-contract";
 import { getOrdersPage } from "@/lib/orders-repository";
 import { writeAuditLog } from "@/lib/audit";
+import { can } from "@/lib/roles";
 
 function csv(value: unknown) {
   const text = value instanceof Date ? value.toISOString() : value == null ? "" : String(value);
@@ -13,13 +14,67 @@ export async function GET(request: Request) {
   try {
     const actor = await requireApiPermission("orders.view");
     const filters = parseOrdersFilters(new URL(request.url).searchParams);
-    const first = await getOrdersPage({ ...filters, page: 1, pageSize: 100 });
+    const canViewAmounts = can(actor.role, "sales.view") || can(actor.role, "payments.view");
+    const pageOptions = {
+      includeAmounts: canViewAmounts,
+      includeFinancial: can(actor.role, "payments.view"),
+    };
+    const first = await getOrdersPage({ ...filters, page: 1, pageSize: 100 }, pageOptions);
     const rows = [...first.items];
-    for (let page = 2; page <= first.totalPages; page += 1) rows.push(...(await getOrdersPage({ ...filters, page, pageSize: 100 })).items);
-    await writeAuditLog({ actorId: actor.userId, actorRole: actor.role, action: "orders.exported", entityType: "order", entityId: "orders-export", metadata: { filters, rowCount: rows.length, pii: true } });
-    const header = ["Pedido", "Cliente", "Productos", "Total", "Moneda", "Estado", "Pago", "Atención", "Entrega", "Local", "Vendedor", "Fecha", "Dirección", "Actualizado"];
-    const body = rows.map((row) => [row.code, row.customerName, `${row.pickedQuantity}/${row.totalQuantity}`, row.total, row.currency, row.status, row.paymentReconciliation, row.attention, row.deliveryMethod, row.locationName, row.sellerName ?? "Sin asignar", row.createdAt, row.deliveryAddress, row.updatedAt].map(csv).join(","));
-    return new Response(`\uFEFF${header.map(csv).join(",")}\n${body.join("\n")}\n`, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="pedidos-${new Date().toISOString().slice(0, 10)}.csv"`, "Cache-Control": "no-store" } });
+    for (let page = 2; page <= first.totalPages; page += 1) {
+      rows.push(...(await getOrdersPage({ ...filters, page, pageSize: 100 }, pageOptions)).items);
+    }
+    await writeAuditLog({
+      actorId: actor.userId,
+      actorRole: actor.role,
+      action: "orders.exported",
+      entityType: "order",
+      entityId: "orders-export",
+      metadata: { filters, rowCount: rows.length, pii: true },
+    });
+    const header = [
+      "Pedido",
+      "Cliente",
+      "Productos",
+      ...(canViewAmounts ? ["Total", "Moneda"] : []),
+      "Estado",
+      ...(pageOptions.includeFinancial ? ["Pago"] : []),
+      "Atención",
+      "Entrega",
+      "Local",
+      "Vendedor",
+      "Fecha",
+      "Dirección",
+      "Actualizado",
+    ];
+    const body = rows
+      .map((row) =>
+        [
+          row.code,
+          row.customerName,
+          `${row.pickedQuantity}/${row.totalQuantity}`,
+          ...(canViewAmounts ? [row.total, row.currency] : []),
+          row.status,
+          ...(pageOptions.includeFinancial ? [row.paymentReconciliation] : []),
+          row.attention,
+          row.deliveryMethod,
+          row.locationName,
+          row.sellerName ?? "Sin asignar",
+          row.createdAt,
+          row.deliveryAddress,
+          row.updatedAt,
+        ]
+          .map(csv)
+          .join(","),
+      )
+      .join("\n");
+    return new Response(`\uFEFF${header.map(csv).join(",")}\n${body}\n`, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="pedidos-${new Date().toISOString().slice(0, 10)}.csv"`,
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("ORDERS_EXPORT_FORBIDDEN", "No tienes permiso para exportar pedidos.", 403);
     if (error instanceof OrdersInvalidFilterError) return apiError("ORDERS_INVALID_FILTER", "Los filtros de pedidos no son válidos.", 400);

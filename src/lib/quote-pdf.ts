@@ -2,8 +2,9 @@ type PdfLine = { sku: string; name: string; quantity: number; unitPrice: string 
 
 function escapePdf(value: string) { return value.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("\r", " ").replaceAll("\n", " ").slice(0, 180); }
 
-export function createQuoteSnapshotPdf(input: { trackingCode: string; customerName: string; customerDocument?: string | null; message?: string | null; currency: string | null; subtotal: string | null; discountAmount: string | null; taxAmount: string | null; total: string | null; validUntil: Date | string | null; versionNumber: number; items: PdfLine[] }) {
+export function createQuoteSnapshotPdf(input: { trackingCode: string; customerName: string; customerDocument?: string | null; message?: string | null; currency: string | null; subtotal: string | null; discountAmount: string | null; taxAmount: string | null; taxMode?: string | null; total: string | null; validUntil: Date | string | null; versionNumber: number; items: PdfLine[] }) {
   const money = (value: string | null) => value ? `${input.currency ?? ""} ${value}` : "Por cotizar";
+  const taxConfigured = input.taxMode === "INCLUDED" || input.taxMode === "EXCLUDED";
   const rows = [
     "ColdPower · Propuesta comercial",
     `${input.trackingCode} · Versión ${input.versionNumber}`,
@@ -14,8 +15,9 @@ export function createQuoteSnapshotPdf(input: { trackingCode: string; customerNa
     "",
     `Subtotal: ${money(input.subtotal)}`,
     `Descuento: ${money(input.discountAmount)}`,
-    `Impuestos: ${money(input.taxAmount)}`,
-    `Total: ${money(input.total)}`,
+    taxConfigured ? `Op. gravada: ${money(input.subtotal)}` : "Op. gravada: Por configurar",
+    taxConfigured ? `IGV: ${money(input.taxAmount)}` : "IGV 18%: Por configurar",
+    `Total: ${taxConfigured ? money(input.total) : "Por configurar"}`,
     "",
     input.message ? `Nota: ${input.message}` : "Precios tomados del snapshot de la versión enviada.",
   ];

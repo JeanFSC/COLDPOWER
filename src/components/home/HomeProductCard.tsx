@@ -6,20 +6,20 @@ import { ProductMedia } from "@/components/catalog/ProductMedia";
 import { HomeFavoriteButton } from "@/components/home/HomeFavoriteButton";
 import { formatProductPrice } from "@/lib/formatters";
 
-type HomeProductCardProps = { product: Product; priority?: boolean; compact?: boolean };
+type HomeProductCardProps = { product: Product; priority?: boolean; compact?: boolean; isBestSeller?: boolean };
 
 function isPurchasable(product: Product) {
   return product.price !== null && product.availabilityStatus !== "out_of_stock" && product.status !== "out-of-stock";
 }
 
-export function HomeProductCard({ product, priority = false, compact = false }: HomeProductCardProps) {
+export function HomeProductCard({ product, priority = false, compact = false, isBestSeller = false }: HomeProductCardProps) {
   const productHref = `/producto/${product.slug}`;
   const purchasable = isPurchasable(product);
 
   return (
     <article className={`home-product-card group ${compact ? "home-product-card-compact" : ""}`}>
       <div className="home-product-media-wrap">
-        {product.featured ? <span className="home-product-badge">Más vendido</span> : null}
+        {isBestSeller ? <span className="home-product-badge">Más vendido</span> : null}
         <Link href={productHref} prefetch={false} aria-label={`Ver ${product.name}`} className="block">
           <ProductMedia
             product={product}
