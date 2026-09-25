@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ColdPower · Promociones · láminas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --page: #f8fafc;
+        --surface: #ffffff;
+        --navy: #102f51;
+        --navy-2: #12395c;
+        --ink: #142238;
+        --muted: #607894;
+        --muted-2: #8195aa;
+        --border: #dce6ee;
+        --border-soft: #e8eef4;
+        --blue: #2563eb;
+        --blue-soft: #eff6ff;
+        --blue-wash: #f5f8fc;
+        --emerald: #059669;
+        --emerald-soft: #ecfdf5;
+        --amber: #b45309;
+        --amber-soft: #fff7ed;
+        --orange: #c25a12;
+        --orange-soft: #fff4e8;
+        --rose: #be123c;
+        --rose-soft: #fff1f2;
+        --violet: #7c3aed;
+        --violet-soft: #f5f3ff;
+        --shadow-2xs: 0 1px 2px rgba(16, 42, 67, 0.035);
+        --shadow-drawer: -12px 0 32px rgba(16, 42, 67, 0.08);
+        --radius: 12px;
+        --radius-sm: 9px;
+        --mono: "IBM Plex Mono", Consolas, monospace;
+        --sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; min-height: 100%; margin: 0; }
+      body { overflow: hidden; background: var(--page); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+      button, input, select { font: inherit; }
+      button { border: 0; }
+      svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+      .svg-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+      .canvas { position: relative; width: 100vw; height: 100vh; min-width: 0; overflow: hidden; background: var(--page); }
+
+      /* Shared admin shell: aligned to the supplied payments reference. */
+      .sidebar { position: absolute; inset: 0 auto 0 0; z-index: 20; display: flex; width: 198px; flex-direction: column; border-right: 1px solid #e6edf3; background: #fff; }
+      .brand-lockup { display: flex; height: 76px; align-items: center; border-bottom: 1px solid #eef2f6; padding: 0 20px; }
+      .brand-lockup img { display: block; width: 126px; height: auto; object-fit: contain; }
+      .admin-caption { margin: 19px 25px 10px; color: #8a9caf; font-size: 9px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+      .nav { min-height: 0; flex: 1; overflow: hidden; padding: 0 13px; }
+      .nav-group-label { margin: 18px 12px 8px; color: #8a9caf; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+      .nav-group-label:first-of-type { margin-top: 0; }
+      .nav-item { display: flex; min-height: 39px; align-items: center; gap: 12px; border-radius: 9px; padding: 0 13px; color: #49627d; font-size: 12px; font-weight: 600; text-decoration: none; }
+      .nav-item + .nav-item { margin-top: 2px; }
+      .nav-item svg { width: 15px; height: 15px; color: #607894; stroke-width: 1.8; }
+      .nav-item.active { background: var(--navy); color: #fff; box-shadow: 0 4px 10px rgba(16, 47, 81, .16); }
+      .nav-item.active svg { color: #fff; }
+      .support { margin: 0 14px 39px; border-radius: 12px; background: var(--navy-2); color: #fff; padding: 14px; }
+      .support-head { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 700; }
+      .support-head svg { width: 15px; height: 15px; }
+      .support p { margin: 5px 0 0 24px; color: #d7e5f1; font-size: 9px; line-height: 1.4; }
+
+      .app-column { position: absolute; inset: 0 0 0 198px; min-width: 0; }
+      .topbar { display: flex; height: 76px; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-soft); background: rgba(255,255,255,.98); padding: 0 20px 0 32px; }
+      .top-search { position: relative; display: flex; width: 332px; height: 38px; align-items: center; }
+      .top-search svg { position: absolute; left: 14px; width: 16px; height: 16px; color: #7890a8; }
+      .top-search input { width: 100%; height: 100%; border: 1px solid #dce6ee; border-radius: 10px; background: #fbfdff; color: var(--ink); padding: 0 12px 0 41px; font-size: 11px; outline: none; }
+      .top-search input::placeholder { color: #91a3b3; }
+      .topbar-page { margin-left: auto; color: #516a84; font-size: 11px; font-weight: 700; }
+      .topbar-actions { display: flex; align-items: center; gap: 12px; }
+      .topbar-icon { position: relative; display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 10px; color: #173654; }
+      .topbar-icon:hover { background: var(--blue-wash); }
+      .notification-dot { position: absolute; right: 3px; top: 3px; display: flex; min-width: 16px; height: 16px; align-items: center; justify-content: center; border-radius: 999px; background: #b45309; color: #fff; font-size: 9px; font-weight: 700; }
+      .profile { display: flex; align-items: center; gap: 9px; }
+      .avatar { display: flex; width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 999px; background: #dbeafe; color: var(--blue); font-size: 12px; font-weight: 700; }
+      .profile-copy { display: grid; gap: 2px; line-height: 1; }
+      .profile-copy strong { color: #173654; font-size: 11px; }
+      .profile-copy span { color: #8195aa; font-size: 9px; }
+      .profile > svg { width: 14px; height: 14px; color: #6c8298; }
+
+      .frame { position: relative; display: grid; height: calc(100vh - 76px); min-width: 0; grid-template-columns: minmax(0, 1fr) 540px; }
+      .page { min-width: 0; height: 100%; overflow: hidden; background: var(--page); padding: 30px 16px 20px 36px; }
+      .page-header { display: flex; min-height: 67px; align-items: flex-start; justify-content: space-between; gap: 20px; }
+      .breadcrumb { margin: 0 0 5px; color: var(--blue); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+      h1 { margin: 0; color: #142238; font-size: 28px; font-weight: 700; letter-spacing: -.025em; line-height: 1.08; }
+      .page-subtitle { margin: 6px 0 0; color: #607894; font-size: 13px; line-height: 1.35; }
+      .header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; padding-top: 10px; }
+      .btn { display: inline-flex; height: 36px; align-items: center; justify-content: center; gap: 8px; border-radius: 9px; padding: 0 14px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+      .btn svg { width: 15px; height: 15px; }
+      .btn-secondary { border: 1px solid var(--border); background: #fff; color: #304b66; }
+      .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 3px 7px rgba(37, 99, 235, .16); }
+      .btn-danger { border: 1px solid #fecdd3; background: #fff7f8; color: var(--rose); }
+
+      .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .card { border: 1px solid rgba(220,230,238,.95); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2xs); }
+      .kpi { position: relative; min-width: 0; min-height: 104px; padding: 14px 15px 12px; overflow: hidden; }
+      .kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .eyebrow { color: #8195aa; font-size: 10px; font-weight: 700; letter-spacing: .08em; line-height: 1.2; text-transform: uppercase; }
+      .kpi-icon { display: flex; width: 27px; height: 27px; align-items: center; justify-content: center; border-radius: 9px; }
+      .kpi-icon svg { width: 14px; height: 14px; }
+      .kpi-icon.blue { background: #dbeafe; color: #2563eb; }
+      .kpi-icon.green { background: #d1fae5; color: #059669; }
+      .kpi-icon.orange { background: #ffedd5; color: #c2410c; }
+      .kpi-icon.violet { background: #ede9fe; color: #7c3aed; }
+      .kpi-value { margin-top: 8px; color: #142238; font-size: 23px; font-weight: 700; letter-spacing: -.035em; line-height: 1; }
+      .kpi-value.small { font-size: 21px; }
+      .kpi-meta { display: flex; align-items: center; gap: 5px; margin-top: 6px; color: #8195aa; font-size: 10px; line-height: 1.1; white-space: nowrap; }
+      .kpi-meta .amber { color: var(--amber); font-weight: 700; }
+      .delta-up { color: var(--emerald); font-weight: 700; }
+      .delta-down { color: var(--rose); font-weight: 700; }
+      .sparkline { position: absolute; right: 13px; bottom: 12px; width: 91px; height: 26px; color: var(--blue); }
+      .sparkline polyline { fill: none; stroke: currentColor; stroke-width: 2; }
+      .split-bar { display: flex; width: 100%; height: 7px; overflow: hidden; margin-top: 9px; border-radius: 999px; background: #eef2f7; }
+      .split-bar span:first-child { width: 72%; background: var(--blue); }
+      .split-bar span:last-child { width: 28%; background: #8b5cf6; }
+      .split-legend { display: flex; gap: 12px; margin-top: 6px; color: #8195aa; font-size: 9px; }
+      .dot { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 999px; vertical-align: 1px; }
+      .dot.blue { background: var(--blue); }
+      .dot.violet { background: #8b5cf6; }
+
+      .calendar-card { height: 178px; margin-top: 12px; padding: 14px 16px 12px; }
+      .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .section-title { margin: 0; color: #142238; font-size: 15px; font-weight: 700; line-height: 1.15; }
+      .section-caption { margin: 3px 0 0; color: #8195aa; font-size: 10px; }
+      .section-link { display: inline-flex; align-items: center; gap: 5px; color: var(--blue); font-size: 10px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+      .section-link svg { width: 13px; height: 13px; }
+      .conflict-chip { display: inline-flex; height: 25px; align-items: center; gap: 5px; border: 1px solid #fecdd3; border-radius: 7px; background: var(--rose-soft); color: var(--rose); padding: 0 8px; font-size: 10px; font-weight: 700; }
+      .conflict-chip svg { width: 13px; height: 13px; }
+      .timeline-grid { display: grid; grid-template-columns: 194px minmax(0, 1fr); margin-top: 11px; }
+      .week-head { display: grid; grid-template-columns: repeat(8, 1fr); border-bottom: 1px solid #e9eff4; color: #8195aa; font-size: 9px; font-weight: 700; }
+      .week-head span { padding: 0 0 5px 7px; border-left: 1px solid #eef2f6; }
+      .week-head span:first-child { border-left: 0; }
+      .gantt { position: relative; display: grid; gap: 3px; margin-top: 5px; }
+      .gantt::before { position: absolute; top: -24px; bottom: 0; left: 26.6%; width: 1px; background: #2563eb; content: ""; opacity: .72; }
+      .today-label { position: absolute; top: -28px; left: calc(26.6% - 11px); color: var(--blue); font-size: 8px; font-weight: 700; }
+      .gantt-row { display: grid; height: 18px; grid-template-columns: 194px minmax(0, 1fr); align-items: center; }
+      .gantt-name { overflow: hidden; padding-right: 12px; color: #526a84; font-size: 9px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .gantt-track { position: relative; height: 18px; border-bottom: 1px solid #f0f3f6; background-image: linear-gradient(to right, transparent calc(12.5% - 1px), #f0f3f6 12.5%, transparent calc(12.5% + 1px), transparent calc(25% - 1px), #f0f3f6 25%, transparent calc(25% + 1px), transparent calc(37.5% - 1px), #f0f3f6 37.5%, transparent calc(37.5% + 1px), transparent calc(50% - 1px), #f0f3f6 50%, transparent calc(50% + 1px), transparent calc(62.5% - 1px), #f0f3f6 62.5%, transparent calc(62.5% + 1px), transparent calc(75% - 1px), #f0f3f6 75%, transparent calc(75% + 1px), transparent calc(87.5% - 1px), #f0f3f6 87.5%, transparent calc(87.5% + 1px)); }
+      .bar { position: absolute; top: 2px; height: 13px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.26); }
+      .bar.active { background: var(--emerald); }
+      .bar.scheduled { background: var(--blue); }
+      .bar.pending { background: var(--orange); }
+      .bar.draft { background: #94a3b8; }
+      .bar.conflict { background: repeating-linear-gradient(135deg, #be123c 0 4px, #fda4af 4px 7px); }
+      .gantt-legend { display: flex; gap: 11px; margin-top: 7px; color: #8195aa; font-size: 9px; }
+      .gantt-legend span { display: inline-flex; align-items: center; gap: 4px; }
+      .legend-line { width: 12px; height: 6px; border-radius: 2px; }
+      .legend-line.green { background: var(--emerald); }
+      .legend-line.blue { background: var(--blue); }
+      .legend-line.orange { background: var(--orange); }
+      .legend-line.gray { background: #94a3b8; }
+      .legend-line.red { background: repeating-linear-gradient(135deg, #be123c 0 4px, #fda4af 4px 7px); }
+
+      .queue-card { height: calc(100% - 306px); min-height: 420px; margin-top: 12px; padding: 15px 16px 12px; }
+      .queue-tabs { display: flex; gap: 7px; margin-top: 12px; overflow: hidden; }
+      .queue-tab { display: inline-flex; height: 25px; align-items: center; gap: 5px; border: 1px solid transparent; border-radius: 7px; background: #f3f6f9; color: #607894; padding: 0 8px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .queue-tab strong { color: #526a84; font-size: 10px; }
+      .queue-tab.active { border-color: #bfdbfe; background: var(--blue-soft); color: var(--blue); }
+      .queue-tab.warning { border-color: #fed7aa; background: var(--amber-soft); color: var(--amber); }
+      .queue-tab.risk { border-color: #fecdd3; background: var(--rose-soft); color: var(--rose); }
+      .queue-toolbar { display: grid; grid-template-columns: minmax(0,1fr) 126px 126px; gap: 8px; margin-top: 11px; }
+      .field { display: flex; height: 34px; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #607894; }
+      .field svg { flex: 0 0 auto; width: 14px; height: 14px; margin-left: 11px; color: #7890a8; }
+      .field input, .field select { width: 100%; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: #526a84; padding: 0 10px; font-size: 10px; font-weight: 600; }
+      .field input::placeholder { color: #91a3b3; }
+      .table-wrap { margin-top: 11px; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+      table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+      thead { background: #f8fafc; }
+      th { height: 34px; border-bottom: 1px solid var(--border); padding: 0 9px; color: #607894; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-align: left; text-transform: uppercase; }
+      td { height: 56px; border-bottom: 1px solid #edf2f6; padding: 7px 9px; color: #526a84; font-size: 10px; vertical-align: middle; }
+      tbody tr:last-child td { border-bottom: 0; }
+      tbody tr:hover { background: #f8fbff; }
+      tbody tr.selected { background: rgba(239,246,255,.72); box-shadow: inset 3px 0 0 var(--blue); }
+      .campaign-cell { display: flex; min-width: 0; align-items: center; gap: 8px; }
+      .campaign-thumb { display: flex; width: 34px; height: 34px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: 8px; background: #eaf2fb; color: var(--blue); }
+      .campaign-thumb.orange { background: #fff1e6; color: var(--orange); }
+      .campaign-thumb.green { background: #e5f8ef; color: var(--emerald); }
+      .campaign-thumb.gray { background: #eef2f6; color: #687c92; }
+      .campaign-thumb svg { width: 17px; height: 17px; }
+      .campaign-copy { min-width: 0; overflow: hidden; }
+      .campaign-name { display: block; overflow: hidden; color: #1b2b40; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+      .campaign-desc { display: block; overflow: hidden; margin-top: 3px; color: #8195aa; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .benefit-badge { display: inline-flex; min-height: 25px; align-items: center; border-radius: 7px; background: #eff6ff; color: var(--blue); padding: 0 8px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .benefit-badge.orange { background: #fff7ed; color: var(--amber); }
+      .benefit-badge.violet { background: #f5f3ff; color: var(--violet); }
+      .scope { line-height: 1.25; }
+      .scope strong { display: block; color: #425d78; font-size: 10px; }
+      .scope small { display: block; margin-top: 3px; color: #8195aa; font-size: 9px; }
+      .scope-warning { display: inline-flex; align-items: flex-start; gap: 4px; color: var(--amber); font-size: 9px; font-weight: 700; line-height: 1.25; }
+      .scope-warning svg { width: 11px; height: 11px; flex: 0 0 auto; margin-top: 1px; }
+      .date-line { color: #526a84; font-size: 9px; white-space: nowrap; }
+      .progress { display: block; width: 100%; height: 5px; overflow: hidden; margin-top: 5px; border-radius: 999px; background: #eef2f7; }
+      .progress span { display: block; height: 100%; border-radius: inherit; background: var(--emerald); }
+      .progress.blue span { background: var(--blue); }
+      .progress.orange span { background: var(--orange); }
+      .date-note { display: block; margin-top: 3px; color: #8195aa; font-size: 9px; white-space: nowrap; }
+      .rule-line { display: flex; flex-wrap: wrap; gap: 4px; }
+      .mini-chip { display: inline-flex; min-height: 20px; align-items: center; border-radius: 5px; background: #f1f5f9; color: #607894; padding: 0 6px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+      .mini-chip.policy { background: #eef2ff; color: #4f46e5; }
+      .mini-chip.approved { background: var(--emerald-soft); color: #047857; }
+      .mini-chip.pending { background: var(--amber-soft); color: var(--amber); }
+      .mini-chip.draft { background: #f1f5f9; color: #64748b; }
+      .mini-chip.conflict { background: var(--rose-soft); color: var(--rose); }
+      .usage strong { display: block; color: #425d78; font-size: 10px; }
+      .usage small { display: block; margin-top: 3px; color: #8195aa; font-size: 9px; }
+      .action-menu { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 7px; color: #607894; }
+      .action-menu:hover { background: #eef4fa; }
+      .action-menu svg { width: 15px; height: 15px; }
+      .pagination { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; color: #8195aa; font-size: 10px; }
+      .pager { display: flex; gap: 5px; }
+      .pager button { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: #526a84; }
+      .pager svg { width: 13px; height: 13px; }
+
+      /* Desktop detail drawer */
+      .detail-drawer { position: relative; z-index: 4; min-width: 0; overflow: hidden; border-left: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-drawer); }
+      .drawer-scroll { height: 100%; overflow: hidden; padding: 31px 25px 78px 27px; }
+      .drawer-eyebrow { color: var(--blue); font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+      .drawer-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-top: 7px; padding-bottom: 11px; border-bottom: 1px solid var(--border); }
+      .drawer-title { margin: 0; color: #142238; font-size: 22px; font-weight: 700; letter-spacing: -.025em; line-height: 1.06; }
+      .drawer-close { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; margin-top: -4px; color: #49627d; }
+      .drawer-close svg { width: 17px; height: 17px; }
+      .drawer-benefit { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 15px 0 12px; }
+      .drawer-benefit strong { color: var(--blue); font-size: 30px; font-weight: 700; letter-spacing: -.045em; line-height: .95; }
+      .drawer-benefit small { display: block; margin-top: 5px; color: #8195aa; font-size: 10px; }
+      .status { display: inline-flex; min-height: 25px; align-items: center; border-radius: 7px; padding: 0 8px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .status.active { background: var(--emerald-soft); color: #047857; }
+      .status.scheduled { background: var(--blue-soft); color: #1d4ed8; }
+      .status.pending { background: var(--amber-soft); color: var(--amber); }
+      .status.conflict { background: var(--rose-soft); color: var(--rose); }
+      .drawer-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .meta-box { min-height: 51px; border-radius: 9px; background: #f1f5f9; padding: 9px 11px; }
+      .meta-box label { display: block; color: #8195aa; font-size: 8px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+      .meta-box strong { display: block; margin-top: 5px; color: #263c56; font-size: 10px; font-weight: 700; }
+      .drawer-section { margin-top: 17px; }
+      .drawer-section h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px; color: #142238; font-size: 13px; font-weight: 700; }
+      .drawer-section h3 small { color: #8195aa; font-size: 9px; font-weight: 500; }
+      .impact-table { width: 100%; margin-top: 8px; border-collapse: collapse; }
+      .impact-table th, .impact-table td { height: auto; border: 0; padding: 5px 3px; font-size: 9px; }
+      .impact-table th { color: #8195aa; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+      .impact-table td { color: #526a84; }
+      .impact-table td:first-child { color: #2f4d6b; font-family: var(--mono); font-size: 8px; }
+      .impact-table td:nth-child(2) { overflow: hidden; max-width: 120px; text-overflow: ellipsis; white-space: nowrap; }
+      .impact-table td:last-child { color: #047857; font-weight: 700; text-align: right; }
+      .strike { color: #8a9caf; text-decoration: line-through; }
+      .channel-list { display: grid; gap: 7px; margin-top: 10px; }
+      .channel-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; color: #526a84; font-size: 10px; }
+      .channel-name { display: flex; align-items: center; gap: 7px; }
+      .channel-name .dot { width: 8px; height: 8px; margin-right: 0; }
+      .channel-row strong { color: #263c56; font-size: 10px; }
+      .channel-row small { width: 36px; color: #8195aa; font-size: 9px; text-align: right; }
+      .conflict-box { margin-top: 10px; border: 1px solid #fecdd3; border-radius: 9px; background: #fff7f8; padding: 10px; }
+      .conflict-top { display: flex; align-items: flex-start; gap: 8px; color: var(--rose); }
+      .conflict-top svg { width: 15px; height: 15px; flex: 0 0 auto; }
+      .conflict-top strong { display: block; font-size: 10px; }
+      .conflict-top span { display: block; margin-top: 3px; color: #9f344e; font-size: 9px; line-height: 1.35; }
+      .conflict-winner { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; border-top: 1px solid #ffe0e4; padding-top: 8px; color: #7f1d36; font-size: 9px; }
+      .conflict-winner strong { font-weight: 700; }
+      .audit-list { position: relative; display: grid; gap: 11px; margin-top: 11px; padding-left: 18px; }
+      .audit-list::before { position: absolute; top: 5px; bottom: 5px; left: 4px; width: 1px; background: #dce6ee; content: ""; }
+      .audit-item { position: relative; }
+      .audit-item::before { position: absolute; top: 2px; left: -18px; width: 9px; height: 9px; border: 2px solid #fff; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 1px #bfdbfe; content: ""; }
+      .audit-item.green::before { background: var(--emerald); box-shadow: 0 0 0 1px #a7f3d0; }
+      .audit-item.orange::before { background: var(--orange); box-shadow: 0 0 0 1px #fed7aa; }
+      .audit-item strong { display: block; color: #304b66; font-size: 10px; }
+      .audit-item small { display: block; margin-top: 3px; color: #8195aa; font-size: 9px; }
+      .drawer-footer { position: absolute; right: 0; bottom: 0; left: 0; display: flex; gap: 8px; border-top: 1px solid var(--border); background: rgba(255,255,255,.98); padding: 13px 25px 15px 27px; }
+      .drawer-footer .btn { flex: 1; height: 36px; }
+
+      /* Form drawer state */
+      .form-layer { position: absolute; inset: 0; z-index: 10; display: none; }
+      body[data-view="form"] .form-layer { display: block; }
+      body[data-view="form"] .detail-drawer { visibility: hidden; }
+      .form-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .27); }
+      .form-drawer { position: absolute; inset: 0 0 0 auto; display: flex; width: 720px; flex-direction: column; border-left: 1px solid var(--border); background: #fff; box-shadow: -15px 0 36px rgba(15, 42, 67, .14); }
+      .form-head { display: flex; min-height: 79px; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 25px 28px 16px; }
+      .form-head .breadcrumb { margin-bottom: 4px; }
+      .form-head h2 { margin: 0; color: #142238; font-size: 22px; line-height: 1.1; }
+      .form-head p { margin: 5px 0 0; color: #8195aa; font-size: 10px; }
+      .form-body { display: grid; min-height: 0; flex: 1; grid-template-columns: minmax(0, 1fr) 235px; gap: 18px; overflow: hidden; padding: 18px 28px 16px; }
+      .form-fields { min-width: 0; overflow: hidden; }
+      .form-section { border-bottom: 1px solid #edf2f6; padding: 0 0 15px; }
+      .form-section + .form-section { padding-top: 15px; }
+      .form-section:last-child { border-bottom: 0; }
+      .form-section-title { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; color: #142238; font-size: 13px; font-weight: 700; }
+      .step { display: flex; width: 22px; height: 22px; align-items: center; justify-content: center; border-radius: 7px; background: #dbeafe; color: var(--blue); font-size: 10px; font-weight: 700; }
+      .form-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 9px; }
+      .form-label { display: grid; gap: 5px; color: #607894; font-size: 9px; font-weight: 700; }
+      .form-input { width: 100%; height: 33px; border: 1px solid var(--border); border-radius: 8px; background: #fbfdff; color: #304b66; padding: 0 10px; font-size: 10px; outline: none; }
+      .form-input.mono { font-family: var(--mono); }
+      .segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+      .segment { display: flex; height: 33px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: #607894; font-size: 9px; font-weight: 700; }
+      .segment.active { border-color: #bfdbfe; background: var(--blue-soft); color: var(--blue); }
+      .scope-picker { display: grid; gap: 8px; }
+      .search-result { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 8px; background: #fbfdff; padding: 8px 9px; }
+      .search-result svg { width: 14px; height: 14px; color: #7890a8; }
+      .search-result span { color: #8195aa; font-size: 9px; }
+      .scope-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+      .scope-chip { display: inline-flex; min-height: 23px; align-items: center; gap: 5px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; padding: 0 7px; font-size: 9px; font-weight: 700; }
+      .scope-chip svg { width: 11px; height: 11px; }
+      .scope-note { display: flex; align-items: flex-start; gap: 7px; border: 1px solid #fed7aa; border-radius: 8px; background: #fff7ed; padding: 8px 9px; color: #9a4b0a; font-size: 9px; line-height: 1.35; }
+      .scope-note svg { width: 14px; height: 14px; flex: 0 0 auto; }
+      .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; }
+      .toggle-copy { color: #526a84; font-size: 9px; line-height: 1.25; }
+      .toggle-copy strong { display: block; color: #304b66; font-size: 10px; }
+      .switch { display: inline-flex; width: 31px; height: 18px; align-items: center; border-radius: 999px; background: var(--blue); padding: 2px; }
+      .switch::after { width: 14px; height: 14px; margin-left: auto; border-radius: 50%; background: #fff; content: ""; box-shadow: 0 1px 2px rgba(15, 23, 42,.2); }
+      .form-guardrail { margin-top: 14px; border: 1px solid #dbeafe; border-radius: 9px; background: #f8fbff; padding: 10px; }
+      .form-guardrail-head { display: flex; align-items: center; gap: 6px; color: #1d4ed8; font-size: 10px; }
+      .form-guardrail-head svg { width: 13px; height: 13px; }
+      .form-guardrail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; color: #607894; font-size: 8px; }
+      .form-guardrail-grid span { border-left: 2px solid #bfdbfe; padding-left: 6px; }
+      .preview-column { min-width: 0; border-left: 1px solid #edf2f6; padding-left: 16px; }
+      .preview-kicker { color: #8195aa; font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .preview-card { margin-top: 9px; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+      .preview-banner { display: flex; height: 58px; align-items: flex-end; background: linear-gradient(105deg, #12395c 0%, #2563eb 65%, #8b5cf6 100%); padding: 9px 10px; color: #fff; }
+      .preview-banner strong { font-size: 10px; line-height: 1.05; }
+      .preview-product { padding: 11px; }
+      .preview-product-top { display: flex; align-items: center; gap: 8px; }
+      .product-mark { display: flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 8px; background: #eef5fa; color: #0b5f94; }
+      .product-mark svg { width: 22px; height: 22px; }
+      .preview-product strong { display: block; color: #304b66; font-size: 10px; line-height: 1.15; }
+      .preview-product small { display: block; margin-top: 3px; color: #8195aa; font-family: var(--mono); font-size: 8px; }
+      .preview-price { display: flex; align-items: baseline; gap: 7px; margin-top: 12px; }
+      .preview-price s { color: #91a3b3; font-size: 10px; }
+      .preview-price strong { color: #142238; font-size: 17px; }
+      .preview-badge { display: inline-flex; margin-top: 8px; border-radius: 5px; background: var(--blue-soft); color: var(--blue); padding: 4px 6px; font-size: 9px; font-weight: 700; }
+      .validation { margin-top: 16px; }
+      .validation h3 { margin: 0; color: #142238; font-size: 12px; }
+      .validation-list { display: grid; gap: 7px; margin-top: 9px; }
+      .validation-item { display: flex; align-items: flex-start; gap: 6px; color: #526a84; font-size: 9px; line-height: 1.25; }
+      .validation-item svg { width: 13px; height: 13px; flex: 0 0 auto; color: var(--emerald); }
+      .validation-item.warning { color: #9a4b0a; }
+      .validation-item.warning svg { color: var(--amber); }
+      .form-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding: 12px 28px 14px; }
+      .form-footer-note { color: #8195aa; font-size: 9px; }
+      .form-footer-actions { display: flex; gap: 8px; }
+
+      /* Mobile first viewport */
+      .mobile-page { display: none; }
+      body[data-view="mobile"] .sidebar { display: none; }
+      body[data-view="mobile"] .app-column { inset: 0; }
+      body[data-view="mobile"] .topbar { height: 64px; padding: 0 13px; }
+      body[data-view="mobile"] .mobile-menu { display: inline-flex; }
+      body[data-view="mobile"] .mobile-brand { display: block; }
+      body[data-view="mobile"] .top-search, body[data-view="mobile"] .topbar-page, body[data-view="mobile"] .profile-copy, body[data-view="mobile"] .profile > svg { display: none; }
+      body[data-view="mobile"] .topbar-actions { margin-left: auto; gap: 5px; }
+      body[data-view="mobile"] .topbar-icon { width: 34px; height: 34px; }
+      body[data-view="mobile"] .profile { gap: 0; }
+      body[data-view="mobile"] .avatar { width: 34px; height: 34px; }
+      body[data-view="mobile"] .frame { display: block; height: calc(100vh - 64px); }
+      body[data-view="mobile"] .page { display: none; }
+      body[data-view="mobile"] .detail-drawer, body[data-view="mobile"] .form-layer { display: none; }
+      body[data-view="mobile"] .mobile-page { display: block; height: 100%; overflow: hidden; padding: 17px 12px 76px; }
+      .mobile-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .mobile-header h1 { font-size: 24px; }
+      .mobile-header .page-subtitle { max-width: 285px; margin-top: 5px; font-size: 11px; }
+      .mobile-menu { display: none; width: 34px; height: 34px; align-items: center; justify-content: center; margin-right: 1px; border: 1px solid var(--border); border-radius: 9px; background: #fff; color: var(--navy); }
+      .mobile-menu svg { width: 16px; height: 16px; }
+      .mobile-brand { display: none; width: 118px; height: 30px; object-fit: contain; object-position: left center; }
+      .mobile-kpis { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 15px; }
+      .mobile-kpis .kpi { min-height: 79px; padding: 10px 10px 8px; }
+      .mobile-kpis .eyebrow { font-size: 8px; letter-spacing: .06em; }
+      .mobile-kpis .kpi-icon { width: 22px; height: 22px; border-radius: 7px; }
+      .mobile-kpis .kpi-icon svg { width: 12px; height: 12px; }
+      .mobile-kpis .kpi-value, .mobile-kpis .kpi-value.small { margin-top: 7px; font-size: 17px; }
+      .mobile-kpis .kpi-meta { margin-top: 4px; font-size: 8px; }
+      .mobile-kpis .sparkline { right: 7px; bottom: 9px; width: 54px; height: 19px; }
+      .mobile-kpis .split-bar { width: 90px; height: 5px; margin-top: 7px; }
+      .mobile-kpis .split-legend { gap: 6px; margin-top: 4px; font-size: 8px; }
+      .soon-card { margin-top: 12px; padding: 12px 12px 10px; }
+      .soon-card .section-title { font-size: 13px; }
+      .soon-card .section-caption { font-size: 9px; }
+      .soon-list { display: grid; gap: 8px; margin-top: 10px; }
+      .soon-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; }
+      .soon-row strong { display: block; overflow: hidden; color: #304b66; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+      .soon-row small { display: block; margin-top: 2px; color: #8195aa; font-size: 8px; }
+      .soon-bar { display: block; height: 5px; overflow: hidden; margin-top: 6px; border-radius: 99px; background: #edf2f7; }
+      .soon-bar span { display: block; width: 83%; height: 100%; border-radius: inherit; background: var(--amber); }
+      .soon-row:nth-child(2) .soon-bar span { width: 68%; background: var(--orange); }
+      .soon-day { color: var(--amber); font-size: 9px; font-weight: 700; text-align: right; white-space: nowrap; }
+      .mobile-queue { margin-top: 12px; }
+      .mobile-queue-head { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
+      .mobile-queue-head h2 { margin: 0; color: #142238; font-size: 14px; }
+      .mobile-queue-head span { color: #8195aa; font-size: 9px; }
+      .mobile-filter-row { display: flex; gap: 6px; margin-top: 8px; overflow: hidden; }
+      .mobile-filter { display: inline-flex; height: 26px; flex: 0 0 auto; align-items: center; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: #607894; padding: 0 8px; font-size: 9px; font-weight: 700; }
+      .mobile-filter.active { border-color: #bfdbfe; background: var(--blue-soft); color: var(--blue); }
+      .campaign-cards { display: grid; gap: 8px; margin-top: 9px; }
+      .campaign-card { height: 64px; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #fff; padding: 6px 8px; box-shadow: var(--shadow-2xs); }
+      .campaign-card.selected { border-color: #93c5fd; box-shadow: inset 3px 0 0 var(--blue), var(--shadow-2xs); }
+      .campaign-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+      .campaign-card-top strong { overflow: hidden; color: #263c56; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+      .campaign-card-top small { display: block; margin-top: 3px; color: #8195aa; font-size: 8px; }
+      .campaign-card .benefit-badge { min-height: 23px; padding: 0 7px; font-size: 9px; }
+      .campaign-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 5px; color: #607894; font-size: 9px; }
+      .campaign-card .progress { margin-top: 4px; }
+      .mobile-status { min-height: 21px; padding: 0 6px; font-size: 8px; }
+      .mobile-sticky { position: absolute; right: 12px; bottom: 12px; left: 12px; z-index: 30; display: flex; height: 50px; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; background: var(--blue); color: #fff; box-shadow: 0 9px 20px rgba(37,99,235,.24); font-size: 12px; font-weight: 700; }
+      .mobile-sticky svg { width: 16px; height: 16px; }
+
+      @media (max-width: 700px) {
+        .canvas { min-width: 390px; max-width: 390px; }
+        .soon-card { height: 132px; overflow: hidden; padding: 10px 10px 8px; }
+        .soon-card .section-caption { margin-top: 2px; font-size: 8px; }
+        .soon-list { gap: 5px; margin-top: 7px; }
+        .soon-row small { margin-top: 1px; font-size: 7px; }
+        .soon-bar { height: 4px; margin-top: 3px; }
+        .campaign-card-top small { margin-top: 1px; font-size: 7px; }
+        .campaign-card-meta { margin-top: 3px; }
+        .campaign-card .progress { height: 4px; }
+        .mobile-status { min-height: 18px; }
+        .campaign-cards .campaign-card:nth-child(n+4) { display: none; }
+      }
+    </style>
+  </head>
+  <body data-view="desktop">
+    <svg class="svg-sprite" aria-hidden="true">
+      <!-- Lucide icon paths, kept as a local sprite for deterministic screenshots. -->
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="M12 5v14"></path></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.59 13.41 13.4 20.6a2 2 0 0 1-2.82 0L3.4 13.4a2 2 0 0 1 0-2.82L10.6 3.4A2 2 0 0 1 12 3h6a3 3 0 0 1 3 3v6a2 2 0 0 1-.41 1.41Z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Z"></path><path d="m3 12 9 5 9-5"></path><path d="m3 17 9 5 9-5"></path></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="m10.3 3.5-8 14A2 2 0 0 0 4 20.5h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol>
+      <symbol id="i-package" viewBox="0 0 24 24"><path d="m16.5 9.4-9-5.19"></path><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="M3.27 6.96 12 12.01l8.73-5.05"></path><path d="M12 22.08V12"></path></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a3 3 0 1 1 5.6 1.5c-.8 1.2-2.7 1.5-2.7 3.5"></path><path d="M12 17h.01"></path></symbol>
+    </svg>
+
+    <div class="canvas">
+      <aside class="sidebar" aria-label="Navegación administrativa">
+        <div class="brand-lockup"><img src="../../../../../public/brand/logo-coldpower-lockup.webp" alt="ColdPower" /></div>
+        <p class="admin-caption">Administración</p>
+        <nav class="nav">
+          <p class="nav-group-label">General</p>
+          <a class="nav-item" href="#"><svg><use href="#i-menu"></use></svg><span>Inicio</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-layers"></use></svg><span>Dashboard</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-package"></use></svg><span>Operaciones</span></a>
+          <p class="nav-group-label">Comercial</p>
+          <a class="nav-item" href="#"><svg><use href="#i-tag"></use></svg><span>Cotizaciones</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-layers"></use></svg><span>Ventas</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-package"></use></svg><span>Pedidos</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-more"></use></svg><span>Pagos</span></a>
+          <a class="nav-item active" href="#"><svg><use href="#i-tag"></use></svg><span>Promociones</span></a>
+          <p class="nav-group-label">Gestión</p>
+          <a class="nav-item" href="#"><svg><use href="#i-menu"></use></svg><span>Clientes</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-package"></use></svg><span>Inventario</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-layers"></use></svg><span>Precios</span></a>
+        </nav>
+        <div class="support">
+          <div class="support-head"><svg><use href="#i-help"></use></svg><span>¿Necesitas ayuda?</span></div>
+          <p>Soporte del panel<br />Abrir centro de soporte</p>
+        </div>
+      </aside>
+
+      <div class="app-column">
+        <header class="topbar">
+          <button class="mobile-menu" type="button" aria-label="Abrir menú"><svg><use href="#i-menu"></use></svg></button>
+          <img class="mobile-brand" src="../../../../../public/brand/logo-coldpower-lockup.webp" alt="ColdPower" />
+          <label class="top-search"><svg><use href="#i-search"></use></svg><input aria-label="Buscar en administración" placeholder="Buscar en administración..." /></label>
+          <span class="topbar-page">Promociones</span>
+          <div class="topbar-actions">
+            <button class="topbar-icon" type="button" aria-label="Notificaciones"><svg><use href="#i-bell"></use></svg><span class="notification-dot">3</span></button>
+            <div class="profile"><span class="avatar">G</span><div class="profile-copy"><strong>Gerencia</strong><span>Administrador</span></div><svg><use href="#i-chevron"></use></svg></div>
+          </div>
+        </header>
+
+        <div class="frame">
+          <main class="page desktop-page" aria-label="Gestión de promociones">
+            <div class="page-header">
+              <div>
+                <p class="breadcrumb">Comercial / Operaciones</p>
+                <h1>Promociones</h1>
+                <p class="page-subtitle">Campañas sobre el precio base, con vigencia, alcance y trazabilidad.</p>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-secondary" type="button"><svg><use href="#i-download"></use></svg>Exportar CSV</button>
+                <button class="btn btn-primary" type="button" data-open-form><svg><use href="#i-plus"></use></svg>Nueva promoción</button>
+              </div>
+            </div>
+
+            <section class="kpi-grid" aria-label="Resumen de promociones">
+              <article class="card kpi">
+                <div class="kpi-head"><span class="eyebrow">Activas ahora</span><span class="kpi-icon blue"><svg><use href="#i-tag"></use></svg></span></div>
+                <div class="kpi-value">3</div><div class="kpi-meta"><span class="amber">3 vencen en ≤ 7 días</span></div>
+              </article>
+              <article class="card kpi">
+                <div class="kpi-head"><span class="eyebrow">Descuento entregado · 30 d</span><span class="kpi-icon green"><svg><use href="#i-layers"></use></svg></span></div>
+                <div class="kpi-value small">S/ 4,820.50</div><div class="kpi-meta"><span class="delta-up">▲ 12.8%</span><span>vs. periodo anterior</span></div>
+                <svg class="sparkline" viewBox="0 0 91 26" aria-hidden="true"><polyline points="1,21 8,19 14,20 21,15 28,17 35,12 42,15 49,8 56,11 63,7 70,9 77,4 90,2"></polyline></svg>
+              </article>
+              <article class="card kpi">
+                <div class="kpi-head"><span class="eyebrow">Aplicaciones · 30 d</span><span class="kpi-icon violet"><svg><use href="#i-layers"></use></svg></span></div>
+                <div class="kpi-value">412</div>
+                <div class="split-bar" aria-label="72 por ciento checkout, 28 por ciento cotización"><span></span><span></span></div>
+                <div class="split-legend"><span><i class="dot blue"></i>Checkout 72%</span><span><i class="dot violet"></i>Cotización 28%</span></div>
+              </article>
+              <article class="card kpi">
+                <div class="kpi-head"><span class="eyebrow">Por aprobar</span><span class="kpi-icon orange"><svg><use href="#i-clock"></use></svg></span></div>
+                <div class="kpi-value">2</div><div class="kpi-meta"><span class="amber">más antigua: hace 2 d</span></div>
+              </article>
+            </section>
+
+            <section class="card calendar-card" aria-label="Calendario de campañas">
+              <div class="section-head"><div><h2 class="section-title">Calendario de campañas</h2><p class="section-caption">Vigencia visible a 8 semanas · hoy, 24 sep</p></div><div style="display:flex;align-items:center;gap:10px"><span class="conflict-chip"><svg><use href="#i-alert"></use></svg>2 conflictos</span><a class="section-link" href="#">Ver todas <svg><use href="#i-right"></use></svg></a></div></div>
+              <div class="timeline-grid">
+                <div></div>
+                <div class="week-head"><span>01 oct</span><span>08 oct</span><span>15 oct</span><span>22 oct</span><span>29 oct</span><span>05 nov</span><span>12 nov</span><span>19 nov</span></div>
+              </div>
+              <div class="gantt">
+                <span class="today-label">Hoy</span>
+                <div class="gantt-row"><span class="gantt-name">Liquidación compresores R134a</span><span class="gantt-track"><i class="bar active" style="left:2%;width:44%"></i></span></div>
+                <div class="gantt-row"><span class="gantt-name">Capacitores 35 µF · lote otoño</span><span class="gantt-track"><i class="bar active" style="left:10%;width:31%"></i><i class="bar conflict" style="left:33%;width:14%"></i></span></div>
+                <div class="gantt-row"><span class="gantt-name">Precio especial motores ventilador</span><span class="gantt-track"><i class="bar pending" style="left:36%;width:29%"></i></span></div>
+                <div class="gantt-row"><span class="gantt-name">Liquidación verano</span><span class="gantt-track"><i class="bar conflict" style="left:1%;width:28%"></i></span></div>
+                <div class="gantt-row"><span class="gantt-name">Filtros deshidratadores</span><span class="gantt-track"><i class="bar draft" style="left:52%;width:35%"></i></span></div>
+              </div>
+              <div class="gantt-legend"><span><i class="legend-line green"></i>Activa</span><span><i class="legend-line blue"></i>Programada</span><span><i class="legend-line orange"></i>Por aprobar</span><span><i class="legend-line gray"></i>Borrador</span><span><i class="legend-line red"></i>Conflicto</span></div>
+            </section>
+
+            <section class="card queue-card" aria-label="Cola de campañas">
+              <div class="section-head"><div><h2 class="section-title">Cola de campañas</h2><p class="section-caption">Prioriza vencimientos, alcance y aprobaciones antes de activar.</p></div><a class="section-link" href="#">Ver reglas <svg><use href="#i-right"></use></svg></a></div>
+              <div class="queue-tabs"><button class="queue-tab active">Todas <strong>48</strong></button><button class="queue-tab">Activas <strong>3</strong></button><button class="queue-tab">Programadas <strong>4</strong></button><button class="queue-tab warning">Por aprobar <strong>2</strong></button><button class="queue-tab">Borradores <strong>6</strong></button><button class="queue-tab">Vencidas <strong>12</strong></button><button class="queue-tab risk">Con conflicto <strong>2</strong></button></div>
+              <div class="queue-toolbar"><label class="field"><svg><use href="#i-search"></use></svg><input aria-label="Buscar campañas" placeholder="Buscar por nombre o descripción" /></label><label class="field"><select aria-label="Filtrar por tipo"><option>Tipo</option></select><svg><use href="#i-chevron"></use></svg></label><label class="field"><select aria-label="Filtrar por alcance"><option>Alcance</option></select><svg><use href="#i-chevron"></use></svg></label></div>
+              <div class="table-wrap">
+                <table>
+                  <colgroup><col style="width:23%" /><col style="width:10%" /><col style="width:14%" /><col style="width:14%" /><col style="width:13%" /><col style="width:10%" /><col style="width:11%" /><col style="width:5%" /></colgroup>
+                  <thead><tr><th>Campaña</th><th>Beneficio</th><th>Alcance</th><th>Vigencia</th><th>Reglas</th><th>Aprobación</th><th>Uso 30 d</th><th></th></tr></thead>
+                  <tbody>
+                    <tr class="selected">
+                      <td><div class="campaign-cell"><span class="campaign-thumb green"><svg><use href="#i-package"></use></svg></span><span class="campaign-copy"><strong class="campaign-name">Liquidación compresores R134a</strong><span class="campaign-desc">15% en compresores herméticos seleccionados</span></span></div></td>
+                      <td><span class="benefit-badge">−15 %</span></td>
+                      <td><span class="scope"><strong>12 productos</strong><small>2 categorías</small></span></td>
+                      <td><span class="date-line">01 sep → 31 oct</span><span class="progress"><span style="width:74%"></span></span><small class="date-note">vence en 7 d</small></td>
+                      <td><span class="rule-line"><span class="mini-chip">P1</span><span class="mini-chip policy">Exclusiva</span></span></td>
+                      <td><span class="mini-chip approved">Aprobada</span></td>
+                      <td><span class="usage"><strong>86 aplicaciones</strong><small>S/ 1,240.00</small></span></td>
+                      <td><button class="action-menu" aria-label="Acciones de Liquidación compresores R134a"><svg><use href="#i-more"></use></svg></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="campaign-cell"><span class="campaign-thumb orange"><svg><use href="#i-tag"></use></svg></span><span class="campaign-copy"><strong class="campaign-name">Capacitores 35 µF · lote otoño</strong><span class="campaign-desc">Ahorro por volumen en repuestos de arranque</span></span></div></td>
+                      <td><span class="benefit-badge orange">− S/ 20.00</span></td>
+                      <td><span class="scope"><strong>8 productos</strong><small>1 categoría</small></span></td>
+                      <td><span class="date-line">24 sep → 15 oct</span><span class="progress orange"><span style="width:12%"></span></span><small class="date-note">vence en 21 d</small></td>
+                      <td><span class="rule-line"><span class="mini-chip">P2</span><span class="mini-chip policy">Mejor valor</span></span></td>
+                      <td><span class="mini-chip pending">Por aprobar</span></td>
+                      <td><span class="usage"><strong>41 aplicaciones</strong><small>S/ 480.00</small></span></td>
+                      <td><button class="action-menu" aria-label="Acciones de Capacitores 35 µF"><svg><use href="#i-more"></use></svg></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="campaign-cell"><span class="campaign-thumb"><svg><use href="#i-calendar"></use></svg></span><span class="campaign-copy"><strong class="campaign-name">Precio especial motores ventilador</strong><span class="campaign-desc">Precio final controlado por SKU</span></span></div></td>
+                      <td><span class="benefit-badge violet">S/ 99.00</span></td>
+                      <td><span class="scope"><strong>4 productos</strong><small>0 categorías</small></span></td>
+                      <td><span class="date-line">30 sep → 12 oct</span><span class="progress blue"><span style="width:0%"></span></span><small class="date-note">inicia en 5 d</small></td>
+                      <td><span class="rule-line"><span class="mini-chip">P1</span><span class="mini-chip policy">Exclusiva</span></span></td>
+                      <td><span class="mini-chip pending">Por aprobar</span></td>
+                      <td><span class="usage"><strong>0 aplicaciones</strong><small>S/ 0.00</small></span></td>
+                      <td><button class="action-menu" aria-label="Acciones de Precio especial motores ventilador"><svg><use href="#i-more"></use></svg></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="campaign-cell"><span class="campaign-thumb orange"><svg><use href="#i-alert"></use></svg></span><span class="campaign-copy"><strong class="campaign-name">Liquidación verano</strong><span class="campaign-desc">Categorías de alta rotación · revisar choque</span></span></div></td>
+                      <td><span class="benefit-badge">−20 %</span></td>
+                      <td><span class="scope"><strong>18 productos</strong><small>3 categorías</small></span></td>
+                      <td><span class="date-line">01 sep → 30 sep</span><span class="progress orange"><span style="width:95%"></span></span><small class="date-note">vence en 6 d</small></td>
+                      <td><span class="rule-line"><span class="mini-chip">P3</span><span class="mini-chip conflict">Exclusiva</span></span></td>
+                      <td><span class="mini-chip approved">Aprobada</span></td>
+                      <td><span class="usage"><strong>118 aplicaciones</strong><small>S/ 1,780.00</small></span></td>
+                      <td><button class="action-menu" aria-label="Acciones de Liquidación verano"><svg><use href="#i-more"></use></svg></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="campaign-cell"><span class="campaign-thumb gray"><svg><use href="#i-layers"></use></svg></span><span class="campaign-copy"><strong class="campaign-name">Filtros deshidratadores</strong><span class="campaign-desc">Borrador sin asociaciones explícitas</span></span></div></td>
+                      <td><span class="benefit-badge">−10 %</span></td>
+                      <td><span class="scope-warning"><svg><use href="#i-alert"></use></svg>Sin alcance:<br />aplica a todo</span></td>
+                      <td><span class="date-line">15 oct → 15 nov</span><span class="progress"><span style="width:0%"></span></span><small class="date-note">borrador</small></td>
+                      <td><span class="rule-line"><span class="mini-chip">P4</span><span class="mini-chip draft">Combinable</span></span></td>
+                      <td><span class="mini-chip draft">No requerida</span></td>
+                      <td><span class="usage"><strong>—</strong><small>Sin uso</small></span></td>
+                      <td><button class="action-menu" aria-label="Acciones de Filtros deshidratadores"><svg><use href="#i-more"></use></svg></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination"><span>25 de 48 campañas · filtros guardados en la URL</span><div class="pager"><button aria-label="Página anterior"><svg><use href="#i-left"></use></svg></button><button aria-label="Página siguiente"><svg><use href="#i-right"></use></svg></button></div></div>
+            </section>
+          </main>
+
+          <aside class="detail-drawer" aria-label="Detalle de campaña seleccionada">
+            <div class="drawer-scroll">
+              <span class="drawer-eyebrow">Campaña seleccionada</span>
+              <div class="drawer-title-row"><div><h2 class="drawer-title">Liquidación<br />compresores R134a</h2><div style="margin-top:8px"><span class="status active">Activa · aprobada</span></div></div><button class="drawer-close" aria-label="Cerrar detalle"><svg><use href="#i-x"></use></svg></button></div>
+              <div class="drawer-benefit"><div><strong>−15 %</strong><small>PERCENTAGE · discountValue 15.00</small></div><span class="status active">Vence en 7 d</span></div>
+              <div class="drawer-meta"><div class="meta-box"><label>Vigencia · Lima</label><strong>01 sep → 31 oct 2026</strong></div><div class="meta-box"><label>Alcance explícito</label><strong>12 productos · 2 categorías</strong></div><div class="meta-box"><label>Prioridad / política</label><strong>P1 · Exclusiva</strong></div><div class="meta-box"><label>Creada por</label><strong>Mariana Salazar</strong></div></div>
+
+              <section class="drawer-section"><h3>Impacto en precio <small>5 productos</small></h3>
+                <table class="impact-table"><thead><tr><th>SKU</th><th>Producto</th><th>Base</th><th>Final</th><th>Ahorro</th></tr></thead><tbody>
+                  <tr><td>CP-R134-014</td><td>Compresor hermético 1/4 HP</td><td class="strike">S/ 620</td><td>S/ 527</td><td>15%</td></tr>
+                  <tr><td>CP-R134-018</td><td>Compresor hermético 1/3 HP</td><td class="strike">S/ 780</td><td>S/ 663</td><td>15%</td></tr>
+                  <tr><td>CP-R134-022</td><td>Compresor R134a 1/2 HP</td><td class="strike">S/ 1,040</td><td>S/ 884</td><td>15%</td></tr>
+                  <tr><td>CP-R134-031</td><td>Compresor R134a 3/4 HP</td><td class="strike">S/ 1,360</td><td>S/ 1,156</td><td>15%</td></tr>
+                  <tr><td>CP-R134-044</td><td>Compresor rotativo 1 HP</td><td class="strike">S/ 1,820</td><td>S/ 1,547</td><td>15%</td></tr>
+                </tbody></table>
+              </section>
+
+              <section class="drawer-section"><h3>Uso por canal <small>últimos 30 días</small></h3><div class="channel-list"><div class="channel-row"><span class="channel-name"><i class="dot blue"></i>Checkout</span><strong>56 aplicaciones · S/ 820.00</strong><small>65%</small></div><div class="channel-row"><span class="channel-name"><i class="dot violet"></i>Cotización</span><strong>30 aplicaciones · S/ 420.00</strong><small>35%</small></div></div></section>
+
+              <section class="drawer-section"><h3>Conflictos <small>2 productos afectados</small></h3><div class="conflict-box"><div class="conflict-top"><svg><use href="#i-alert"></use></svg><div><strong>Choque con “Liquidación verano”</strong><span>Ambas son EXCLUSIVE y cubren CP-R134-014 y CP-R134-018 durante 24–30 sep.</span></div></div><div class="conflict-winner"><span>Gana esta campaña</span><strong>P1 · mayor prioridad</strong></div></div></section>
+
+              <section class="drawer-section"><h3>Historial <small>hora de Lima</small></h3><div class="audit-list"><div class="audit-item"><strong>Campaña creada</strong><small>Mariana Salazar · 02 sep, 09:14</small></div><div class="audit-item green"><strong>Aprobación registrada</strong><small>Gerencia · 02 sep, 09:20</small></div><div class="audit-item orange"><strong>Activación automática</strong><small>Sistema · 02 sep, 09:20</small></div></div></section>
+            </div>
+            <div class="drawer-footer"><button class="btn btn-secondary" type="button">Pausar</button><button class="btn btn-primary" type="button">Editar</button></div>
+          </aside>
+
+          <section class="form-layer" aria-label="Nueva promoción">
+            <div class="form-backdrop"></div>
+            <div class="form-drawer">
+              <div class="form-head"><div><p class="breadcrumb">Comercial / Promociones</p><h2>Nueva promoción</h2><p>Define el beneficio, su alcance y las reglas antes de publicar.</p></div><button class="drawer-close" aria-label="Cerrar formulario"><svg><use href="#i-x"></use></svg></button></div>
+              <div class="form-body">
+                <div class="form-fields">
+                  <section class="form-section"><h3 class="form-section-title"><span class="step">1</span>Beneficio</h3><div class="form-grid"><label class="form-label">Nombre de campaña<input class="form-input" value="Precio especial capacitores 35 µF" /></label><label class="form-label">Valor<input class="form-input" value="99.00" /></label></div><div style="margin-top:9px"><span class="form-label">Tipo de beneficio</span><div class="segmented" style="margin-top:5px"><span class="segment">Porcentaje</span><span class="segment">Monto fijo</span><span class="segment active">Precio especial</span></div></div></section>
+                  <section class="form-section"><h3 class="form-section-title"><span class="step">2</span>Alcance <span style="margin-left:auto;color:#8195aa;font-size:9px;font-weight:500">12 productos · 2 categorías</span></h3><div class="scope-picker"><div class="search-result"><svg><use href="#i-search"></use></svg><span>Buscar producto por SKU o nombre…</span></div><div class="scope-chips"><span class="scope-chip">CP-CAP-035 · Capacitor 35 µF <svg><use href="#i-x"></use></svg></span><span class="scope-chip">Capacitores de arranque <svg><use href="#i-x"></use></svg></span><span class="scope-chip">CP-CAP-045 · Capacitor 45 µF <svg><use href="#i-x"></use></svg></span></div><div class="scope-note"><svg><use href="#i-check"></use></svg><span>Alcance definido. La promoción no se aplicará fuera de los productos y categorías seleccionados.</span></div></div></section>
+                  <section class="form-section"><h3 class="form-section-title"><span class="step">3</span>Vigencia y reglas</h3><div class="form-grid"><label class="form-label">Inicio · hora de Lima<input class="form-input" value="24 sep 2026 · 00:00" /></label><label class="form-label">Fin · hora de Lima<input class="form-input" value="15 oct 2026 · 23:59" /></label><label class="form-label">Prioridad<input class="form-input mono" value="P2 · 20" /></label><label class="form-label">Política<select class="form-input"><option>Mejor valor</option></select></label><label class="form-label" style="grid-column:1 / -1">Banner opcional<input class="form-input" value="Sin banner · usar imagen de media" /></label></div><div class="toggle-row" style="margin-top:9px"><span class="toggle-copy"><strong>Requiere aprobación</strong>Se activará después de la aprobación autorizada.</span><span class="switch" aria-hidden="true"></span></div></section>
+                  <div class="form-guardrail"><div class="form-guardrail-head"><svg><use href="#i-check"></use></svg><strong>Antes de crear</strong></div><div class="form-guardrail-grid"><span>Precio base intacto</span><span>Hora de Lima</span><span>Auditoría incluida</span></div></div>
+                </div>
+                <aside class="preview-column"><p class="preview-kicker">Vista previa en vivo</p><div class="preview-card"><div class="preview-banner"><strong>Así se verá<br />en la tienda</strong></div><div class="preview-product"><div class="preview-product-top"><span class="product-mark"><svg><use href="#i-package"></use></svg></span><div><strong>Capacitor de arranque<br />35 µF · 450 VAC</strong><small>CP-CAP-035</small></div></div><div class="preview-price"><s>S/ 126.00</s><strong>S/ 99.00</strong></div><span class="preview-badge">Precio especial −21%</span></div></div><div class="validation"><h3>Validaciones</h3><div class="validation-list"><div class="validation-item"><svg><use href="#i-check"></use></svg><span>Fechas coherentes · 21 días</span></div><div class="validation-item"><svg><use href="#i-check"></use></svg><span>Alcance definido</span></div><div class="validation-item warning"><svg><use href="#i-alert"></use></svg><span>1 conflicto con “Liquidación verano” en 3 productos</span></div></div></div></aside>
+              </div>
+              <div class="form-footer"><span class="form-footer-note">Los cambios quedan auditados y el precio base no se modifica.</span><div class="form-footer-actions"><button class="btn btn-secondary" type="button">Guardar borrador</button><button class="btn btn-primary" type="button">Crear promoción</button></div></div>
+            </div>
+          </section>
+
+          <main class="mobile-page" aria-label="Promociones en móvil">
+            <div class="mobile-header"><div><p class="breadcrumb">Comercial</p><h1>Promociones</h1><p class="page-subtitle">Controla vigencia, alcance y aprobación sin perder el precio base.</p></div><button class="mobile-menu" type="button" aria-label="Más opciones"><svg><use href="#i-more"></use></svg></button></div>
+            <section class="mobile-kpis" aria-label="Indicadores de promociones">
+              <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Activas ahora</span><span class="kpi-icon blue"><svg><use href="#i-tag"></use></svg></span></div><div class="kpi-value">3</div><div class="kpi-meta"><span class="amber">3 vencen pronto</span></div></article>
+              <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Descuento · 30 d</span><span class="kpi-icon green"><svg><use href="#i-layers"></use></svg></span></div><div class="kpi-value small">S/ 4,820</div><div class="kpi-meta"><span class="delta-up">▲ 12.8%</span></div><svg class="sparkline" viewBox="0 0 91 26" aria-hidden="true"><polyline points="1,21 8,19 14,20 21,15 28,17 35,12 42,15 49,8 56,11 63,7 70,9 77,4 90,2"></polyline></svg></article>
+              <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Aplicaciones · 30 d</span><span class="kpi-icon violet"><svg><use href="#i-layers"></use></svg></span></div><div class="kpi-value">412</div><div class="split-bar"><span></span><span></span></div><div class="split-legend"><span><i class="dot blue"></i>72%</span><span><i class="dot violet"></i>28%</span></div></article>
+              <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Por aprobar</span><span class="kpi-icon orange"><svg><use href="#i-clock"></use></svg></span></div><div class="kpi-value">2</div><div class="kpi-meta"><span class="amber">hace 2 d</span></div></article>
+            </section>
+            <section class="card soon-card"><div class="section-head"><div><h2 class="section-title">Vencen pronto</h2><p class="section-caption">Revisa primero las campañas con menos de 7 días.</p></div><span class="status pending">3 campañas</span></div><div class="soon-list"><div class="soon-row"><div><strong>Liquidación compresores R134a</strong><small>12 productos · 01 sep → 31 oct</small><div class="soon-bar"><span></span></div></div><span class="soon-day">7 d</span></div><div class="soon-row"><div><strong>Liquidación verano</strong><small>18 productos · conflicto detectado</small><div class="soon-bar"><span></span></div></div><span class="soon-day">6 d</span></div></div></section>
+            <section class="mobile-queue"><div class="mobile-queue-head"><h2>Cola de campañas</h2><span>48 campañas</span></div><div class="mobile-filter-row"><button class="mobile-filter active">Todas 48</button><button class="mobile-filter">Activas 3</button><button class="mobile-filter">Por aprobar 2</button><button class="mobile-filter">Conflicto 2</button></div><div class="campaign-cards"><article class="campaign-card selected"><div class="campaign-card-top"><div><strong>Liquidación compresores R134a</strong><small>12 productos · 2 categorías</small></div><span class="benefit-badge">−15 %</span></div><div class="campaign-card-meta"><span>01 sep → 31 oct</span><span class="status active mobile-status">Activa</span></div><div class="progress"><span style="width:74%"></span></div></article><article class="campaign-card"><div class="campaign-card-top"><div><strong>Capacitores 35 µF · lote otoño</strong><small>8 productos · 1 categoría</small></div><span class="benefit-badge orange">− S/ 20</span></div><div class="campaign-card-meta"><span>vence en 21 d</span><span class="status pending mobile-status">Por aprobar</span></div><div class="progress orange"><span style="width:12%"></span></div></article><article class="campaign-card"><div class="campaign-card-top"><div><strong>Precio especial motores ventilador</strong><small>4 productos · P1 Exclusiva</small></div><span class="benefit-badge violet">S/ 99</span></div><div class="campaign-card-meta"><span>inicia en 5 d</span><span class="status scheduled mobile-status">Programada</span></div><div class="progress blue"><span style="width:0%"></span></div></article></div></section>
+            <button class="mobile-sticky" type="button" data-open-form><svg><use href="#i-plus"></use></svg>Nueva promoción</button>
+          </main>
+        </div>
+      </div>
+    </div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      document.body.dataset.view = params.get("view") || "desktop";
+      document.querySelectorAll("[data-open-form]").forEach((button) => {
+        button.addEventListener("click", () => { document.body.dataset.view = "form"; });
+      });
+      document.querySelectorAll(".form-backdrop, .form-drawer .drawer-close").forEach((button) => {
+        button.addEventListener("click", () => { document.body.dataset.view = "desktop"; });
+      });
+    </script>
+  </body>
+</html>
