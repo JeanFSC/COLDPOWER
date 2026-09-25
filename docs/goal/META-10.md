@@ -76,5 +76,57 @@ Extraído de los módulos de referencia (Pagos, Inicio, Reportes, Usuarios).
 5. **Claude** compara la captura real contra la imagen aprobada, vuelve a puntuar y actualiza esta tabla.
 6. **Gemini** audita de forma independiente las superficies cerradas (solo lectura). Sus hallazgos se verifican antes de actuar.
 
+## 4b. Auditoría visual v1 (2026-09-25, capturas a 1920 y 390 de la rama `6d8fce6`; Claude)
+
+### Admin
+| Módulo | Nota | Defectos principales | Tratamiento |
+|---|---|---|---|
+| taxonomia | 2 | Lista plana de más de 100 filas (14.000 px), sin jerarquía ni conteos, tokens de tienda, mensaje "categories actualizado." | 🎨 lote 2 |
+| catalogo/[id] | 3 | Formularios sueltos, filtro de fechas sin propósito, tarjeta beige, botones negros, "Choose File" en inglés, sin checklist ni vista de tienda | 🎨 lote 2 |
+| compras/proveedores/[id] | 4 | Contenedor angosto (media pantalla vacía), todo "N/D", sin OC, recepciones ni productos | 🎨 lote 2 |
+| configuracion | 6 | KPIs sin sentido ("Locales 0.0% vs período anterior"), asterisco en línea aparte, primario "Probar integración", estilo de tienda | 🎨 lote 2 |
+| promociones | 8,5 (v2) | Gantt mal escalado, icono de búsqueda desalineado, botón negro, plurales, fechas crudas, sparkline, CSS global | 🛠 M10-01b |
+| inicio | 7 | KPIs con media tarjeta vacía, actividad genérica ("actualización registrada"), "Resumen operativo" con hueco, "Abrir módulo" repetido | 🛠 M10-02 |
+| cotizaciones | 7 | Contenedor más angosto que el resto, códigos partidos en 2 líneas, filas altas, fecha partida, "Por cotizar / Moneda pendiente" | 🛠 M10-02 |
+| ventas | 7 | "Ticket promedio" con tarjeta enorme para 1 dato, panel de métodos cortado, anillo de foco naranja | 🛠 M10-02 |
+| pagos | 7,5 | "Transferencia" duplicada, método "mock" crudo, tarjeta del donut con hueco | 🛠 M10-02 |
+| notificaciones | 7 | Textos con valores internos ("proveedor mock", "CONFIRMED"), códigos de regla visibles, panel central vacío | 🛠 M10-02 |
+| clientes | 7 | KPIs duplicados en el panel "Resumen de clientes", CTA naranja | 🛠 M10-02 |
+| precios | 7,5 | Etiquetas repetidas dentro de celdas, columna "Actualizado" cortada, KPIs altos | 🛠 M10-02 |
+| auditoria | 8 | Eventos con fecha futura (datos de prueba), panel de detalle con hueco, "+13950%" | 🛠 M10-02 |
+| usuarios | 8 | KPI duplicado (activos = registrados), "Nunca registrado" en todos, Exportar duplicado | 🛠 M10-02 |
+| compras | 8,5 | Texto encimado "PENS/ 970" en "Rendimiento por proveedor" | 🛠 M10-02 |
+| inventario | 8 | CTA naranja, panel derecho con texto cortado | 🛠 M10-02 |
+| catalogo | 8 | CTAs naranjas, checklist recargado | 🛠 M10-02 |
+| dashboard, operaciones, pedidos, crm, reportes | 8–8,5 | Porcentajes absurdos vs. el periodo anterior con base pequeña | 🛠 M10-02 (global) |
+
+**Globales del admin (M10-02):**
+- el bloque "¿Necesitas ayuda?" tapa ítems del menú;
+- CTA primario siempre `blue-600` (hoy mezcla con naranja);
+- anillo de foco del admin `blue`, no naranja;
+- ancho de contenido uniforme;
+- deltas "vs. período anterior": si la base es menor a 5 o igual a 0, mostrar "Nuevo" o "Sin base comparable" y **no** porcentajes de 4 cifras;
+- ningún enum ni código interno como texto principal.
+
+### Tienda y cuenta
+| Superficie | Nota | Defectos | Tratamiento |
+|---|---|---|---|
+| producto/[slug] | 7,5 | Chip interno "ESTADO FUENTE: ACTIVO" visible al cliente, "Bajo consulta" duplicado, descripción de relleno automática, CTA de compra o cotización bajo el pliegue a 1920, "UNIDAD (BIENES)" crudo | 🛠 M10-03 |
+| cotizacion | 7 | Sin tildes ni "¿": "cotizacion", "Que repuesto", "Telefono", "digitos", "encontre"… | 🛠 M10-03 |
+| cuenta (hub) | 5 | Hero de marketing gigante; pedidos y cotizaciones bajo el pliegue | 🎨 lote 3 |
+| cuenta/* | 6 | Sin navegación de cuenta entre subpáginas; vacíos genéricos | 🎨 lote 3 |
+| 404 | 8,5 | Chip "Imagen referencial" sobre la ilustración | 🛠 M10-03 |
+| carrito, catalogo, categoria, contacto, faq, nosotros, reclamaciones | 8–8,5 | Pendiente de revisión fina de copy | 🛠 M10-03 |
+| home | espejo | Solo retoques técnicos (rendimiento R4) | R4 |
+
+### Olas
+1. **M10-01b:** Promociones a ≥ 9,5 (en curso).
+2. **Diseño lote 2:** Taxonomía, Producto (admin), Proveedor y Configuración (en curso) → aprobación → implementación M10-04.
+3. **M10-02:** globales del admin y correcciones puntuales (lista de arriba).
+4. **M10-03:** tienda (producto, tildes, 404, copy).
+5. **Diseño lote 3:** hub de Mi cuenta y navegación de cuenta → implementación.
+6. **R4:** rendimiento (brief `17-R4-rendimiento.md`).
+7. **Re-auditoría v2** completa, más la auditoría independiente de Gemini (solo lectura) → nada bajo 9,5.
+
 ## 5. Bitácora
 - 2026-09-25 00:5x: meta asignada. Inventario creado. Auditoría visual en espera de RAM (Codex R3b compilando).
