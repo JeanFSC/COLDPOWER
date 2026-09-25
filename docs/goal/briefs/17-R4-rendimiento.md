@@ -34,3 +34,7 @@ Protocolo: `docs/goal/ORQUESTACION.md`. Carpeta principal y rama `codex/goal-imp
   - home, catálogo y ficha sin errores de consola, a 1920 y a 390.
 - `tsc`, lint 0/0, `test-all` (solo el Excel externo) y build.
 - Informe con números. Sin commit.
+
+## Añadido por Claude (2026-09-25)
+- **Lighthouse CLI:** también con Chromium en GPU. Pasa `--chrome-flags="--headless=new --enable-gpu --use-angle=d3d11 --ignore-gpu-blocklist"` y documéntalo. Lighthouse `simulate` modela la red y la CPU de forma estándar, así que la GPU local no altera la comparación con PageSpeed.
+- **Base actual:** ya incluye M10 (Promociones, lote 2, Mi cuenta y pulido). Mide las 3 URLs públicas: home, catálogo y ficha.
