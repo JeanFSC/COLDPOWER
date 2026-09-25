@@ -1,0 +1,8 @@
+Recorrido funcional autenticado en navegador personal, 2026-09-25.
+
+1. En `Precios` se abrió `Nuevo precio`, se conservó el importe real `1250.00`, se indicó vigencia futura `01 oct. 2027` y motivo `Validación de flujo M10-04`.
+2. La UI confirmó `Nuevo precio programado y versionado.` y mostró el nuevo intervalo en la tabla de precios.
+3. En `Imágenes` se subió mediante el selector el asset existente `public/images/products/placeholder-compresores.webp`.
+4. Tras recargar, la UI mostró `Imagen principal`, checklist `5 de 6` y mantuvo `Publicar` deshabilitado por la descripción editorial faltante.
+
+Las capturas finales son `producto-final-1920x1080.png` y `producto-final-390x844.png`; la evidencia SQL post-flujo está en `sql-journey.txt`.

@@ -1,0 +1,8 @@
+Recorrido funcional autenticado en navegador personal, 2026-09-25.
+
+1. En `/admin/compras/proveedores/cp-dashboard-v5-cp-compras-dev-supplier-lg` se verificaron los datos persistidos de LG Electronics.
+2. Se abrió `OC-DEV-008`; la navegación llevó a `/admin/compras?orderSupplierId=cp-dashboard-v5-cp-compras-dev-supplier-lg&purchaseId=cp-dashboard-v5-cp-compras-dev-purchase-8` y mostró la orden del proveedor.
+3. Se regresó al detalle y se pulsó `Crear OC`; la navegación llevó a `/admin/compras?orderSupplierId=cp-dashboard-v5-cp-compras-dev-supplier-lg`.
+4. El espacio de creación mostró el proveedor preseleccionado `LG Electronics · PEN`, sin crear ni guardar una nueva orden.
+
+La evidencia SQL asociada está en `sql-journey.txt`.

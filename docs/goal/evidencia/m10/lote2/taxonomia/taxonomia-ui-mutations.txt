@@ -1,0 +1,7 @@
+Recorrido funcional autenticado en navegador personal, 2026-09-25.
+
+1. Se abrió el drawer `Renombrar` de la familia real `Acoples` y se guardó `Acoples QA`; la UI confirmó `Familia actualizada.`.
+2. Se intentó restaurar `Acoples`; el servidor rechazó el nombre porque ya existe en otras categorías. Se restauró el nombre original mediante la consulta local controlada, quedando `family-refrigeracion-acoples` como `Acoples`.
+3. La consulta de control no encontró una categoría o familia vacía para desactivar. Se abrió el diálogo real de `Aspiradoras`, que tenía `0 productos publicados`; al confirmar, el servidor rechazó correctamente el cambio porque conserva familias activas hijas.
+
+No se dejó una entidad de negocio desactivada ni se inventó una categoría vacía. El rechazo y el impacto mostrado son parte de la evidencia de la regla de integridad.

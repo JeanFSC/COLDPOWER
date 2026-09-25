@@ -11,6 +11,17 @@
 
 final result: passed
 
+## M10-04 lote 2 · Taxonomía, Proveedor, Producto y Configuración · 2026-09-25
+
+- source visual truth: `docs/goal/designs/m10-lote2/` and `docs/goal/designs/m10-lote2/spec.md`; implementation followed the brief in `docs/goal/briefs/M10-04-lote2.md` in the requested order.
+- data state: all four routes use PostgreSQL through the existing repositories/services. The visual reference values were not copied when the local database contained different or empty records.
+- responsive evidence: each route was inspected in the authenticated personal Brave session and captured at CSS viewports 1920 × 1080 and 390 × 844. Cards keep content-driven height, text stays at the brief minimums, and mobile navigation/content remain within the viewport.
+- interaction evidence: Taxonomía brand drawer and real published-count deactivation dialog; Proveedor edit drawer with cancel; Producto Ficha/Precios/Imágenes tabs, editorial drawer, checklist-disabled publish; Configuración Empresa/Precios e IGV/Integraciones/Historial tabs, RUC validation and discard.
+- accessibility evidence: axe results are stored per route under `docs/goal/evidencia/m10/lote2/`; final `violations` and `incomplete` arrays are empty for all four routes. Console evidence records zero errors per route.
+- evidence folders: `docs/goal/evidencia/m10/lote2/taxonomia/`, `proveedor/`, `producto/`, and `configuracion/` each include desktop/mobile captures, comparison report, axe, console, snapshots, and SQL journey.
+
+final result: passed
+
 # ColdPower visual QA
 
 - source visual truth path: `C:\Users\JEAN\.codex\attachments\31ec516c-03fb-4ae4-af3a-050d0e2a8425\image-1.png`

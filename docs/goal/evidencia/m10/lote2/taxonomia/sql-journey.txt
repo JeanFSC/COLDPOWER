@@ -1,0 +1,3 @@
+category|category-refrigeracion|Refrigeración|active=true
+brand|brand-lg|LG|active=true
+counts|categories=27|families=171|brands=60|products=1348

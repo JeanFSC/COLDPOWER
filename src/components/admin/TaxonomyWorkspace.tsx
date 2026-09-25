@@ -192,7 +192,8 @@ export function TaxonomyWorkspace({ categories, families, brands, canManageCateg
   const detailTitle = selectedItem?.name ?? "Selecciona un nodo";
   const selectedCategory = selection.entity === "families" ? categories.items.find((category) => category.id === selectedItem?.categoryId) : null;
   return (
-    <div className="space-y-4 pt-5">
+    <div className="space-y-4 pt-5" data-a11y-surface="taxonomy">
+      <style>{`[data-a11y-surface="taxonomy"] [class*="text-[#607894]"],[data-a11y-surface="taxonomy"] [class*="text-[#70869a]"],[data-a11y-surface="taxonomy"] [class*="text-[#71869c]"],[data-a11y-surface="taxonomy"] [class*="text-[#7890a8]"],[data-a11y-surface="taxonomy"] [class*="text-[#7b91a5]"],[data-a11y-surface="taxonomy"] [class*="text-[#8296a9]"],[data-a11y-surface="taxonomy"] [class*="text-[#8799a8]"],[data-a11y-surface="taxonomy"] [class*="text-[#9aabba]"],[data-a11y-surface="taxonomy"] [class*="text-[#6f879d]"]{color:#526b84;}`}</style>
       <header className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
         <div>
           <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#2563eb]">Catálogo / Estructura</p>
