@@ -63,7 +63,7 @@ const fieldIds: Record<QuoteField, string> = {
 export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
   const defaultMessage = initialProduct
     ? `Hola ColdPower, deseo cotizar ${initialProduct.name} (${initialProduct.sku}).`
-    : "Hola ColdPower, deseo cotizar un equipo o repuesto de refrigeracion.";
+    : "Hola ColdPower, deseo cotizar un equipo o repuesto de refrigeración.";
   const [form, setForm] = useState<QuoteFormState>({
     name: "",
     customerType: "natural",
@@ -126,7 +126,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
           if (!cancelled) {
             setSuggestions([]);
             setNotFound(false);
-            setSearchError("No pudimos consultar el catalogo. Reintenta la busqueda.");
+            setSearchError("No pudimos consultar el catálogo. Reintenta la búsqueda.");
           }
         })
         .finally(() => {
@@ -228,13 +228,13 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
     setQuery("");
     setForm((current) => ({
       ...current,
-      message: "No encontre mi producto. Necesito ayuda para identificarlo y confirmar compatibilidad.",
+      message: "No encontré mi producto. Necesito ayuda para identificarlo y confirmar compatibilidad.",
     }));
     trackCatalogEvent("product_not_found_sent", { context: "quote_form" });
   }
 
   const documentLabel = form.customerType === "company" ? "RUC" : "DNI";
-  const documentPlaceholder = form.customerType === "company" ? "11 digitos" : "8 digitos";
+  const documentPlaceholder = form.customerType === "company" ? "11 dígitos" : "8 dígitos";
 
   return (
     <form
@@ -243,7 +243,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
       noValidate
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <FieldErrorLabel label="Nombre o razon social" field="name" errors={errors}>
+        <FieldErrorLabel label="Nombre o razón social" field="name" errors={errors}>
           <input
             id={fieldIds.name}
             required
@@ -289,7 +289,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
             aria-describedby={errors.documentNumber ? `${fieldIds.documentNumber}-error` : undefined}
           />
         </FieldErrorLabel>
-        <FieldErrorLabel label="Telefono" field="phone" errors={errors}>
+        <FieldErrorLabel label="Teléfono" field="phone" errors={errors}>
           <input
             id={fieldIds.phone}
             value={form.phone}
@@ -333,14 +333,14 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
       <FieldErrorLabel label="Medio de contacto preferido" field="preferredContact" errors={errors} className="mt-4">
         <select id={fieldIds.preferredContact} value={form.preferredContact} onChange={(event) => updateField("preferredContact", event.target.value as QuoteFormState["preferredContact"])} className={inputClass(errors.preferredContact, "h-11")} aria-invalid={Boolean(errors.preferredContact)} aria-describedby={errors.preferredContact ? `${fieldIds.preferredContact}-error` : undefined}>
           {companySettings?.whatsapp ? <option value="whatsapp">WhatsApp</option> : null}
-          <option value="phone">Llamada telefonica</option>
-          <option value="email">Correo electronico</option>
+          <option value="phone">Llamada telefónica</option>
+          <option value="email">Correo electrónico</option>
         </select>
       </FieldErrorLabel>
 
       <div className="relative mt-4">
         <label className="grid gap-2 text-sm font-extrabold text-dark" htmlFor="quote-product-search">
-          Producto de interes
+          Producto de interés
           <div className="flex h-11 items-center gap-2 rounded-md border border-border bg-background px-3 outline-primary focus-within:border-primary">
             <Search className="h-4 w-4 shrink-0 text-gray-text" aria-hidden="true" />
             <input id="quote-product-search" value={query} onChange={(event) => updateProductQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none" placeholder="Busca SKU, MPN, marca, modelo o nombre" autoComplete="off" role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length > 0} aria-controls="quote-product-suggestions" />
@@ -366,8 +366,8 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
           </div>
         ) : null}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-gray-text">
-          <span>{isSearching ? "Buscando referencias..." : selectedProduct ? `Seleccionado: ${selectedProduct.sku}` : notFound ? "Se enviara como consulta general" : "Escribe al menos 2 caracteres"}</span>
-          <button type="button" className="font-extrabold text-primary hover:underline" onClick={chooseNotFound}>No encontre mi producto</button>
+          <span>{isSearching ? "Buscando referencias..." : selectedProduct ? `Seleccionado: ${selectedProduct.sku}` : notFound ? "Se enviará como consulta general" : "Escribe al menos 2 caracteres"}</span>
+          <button type="button" className="font-extrabold text-primary hover:underline" onClick={chooseNotFound}>No encontré mi producto</button>
         </div>
         {errors.items ? <p id={`${fieldIds.items}-error`} className="mt-2 text-xs font-bold text-danger" role="alert">{errors.items}</p> : null}
       </div>
@@ -380,7 +380,7 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
       <div className="mt-4 rounded-md border border-border bg-background p-3">
         <label htmlFor={fieldIds.consent} className="flex items-start gap-3 text-sm font-semibold text-dark">
           <input id={fieldIds.consent} type="checkbox" checked={form.consent} onChange={(event) => updateField("consent", event.target.checked)} className="mt-1 h-4 w-4 accent-primary" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? `${fieldIds.consent}-error` : undefined} />
-          <span>Acepto que ColdPower use estos datos para responder mi solicitud de cotizacion (opcional).</span>
+          <span>Acepto que ColdPower use estos datos para responder mi solicitud de cotización (opcional).</span>
         </label>
         {errors.consent ? <p id={`${fieldIds.consent}-error`} className="mt-2 text-xs font-bold text-danger" role="alert">{errors.consent}</p> : null}
       </div>
@@ -388,11 +388,11 @@ export function QuoteForm({ initialProduct, companySettings }: QuoteFormProps) {
       {formMessage ? <p className="mt-4 rounded-md border border-danger/25 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger" role="alert" aria-live="assertive">{formMessage}</p> : null}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}><Send className="h-5 w-5" aria-hidden="true" />{isSubmitting ? "Enviando solicitud..." : "Solicitar cotización"}</Button>
-        <WhatsAppLeadButton title="Consulta desde formulario de cotizacion" initialName={form.name} initialPhone={form.phone} initialEmail={form.email} productIds={selectedProduct ? [selectedProduct.id] : []} items={selectedProduct ? [{ name: selectedProduct.name, sku: selectedProduct.sku, quantity: 1, url: `/producto/${selectedProduct.slug}` }] : []} className="w-full sm:w-auto" disabled={isSubmitting}><MessageCircle className="h-5 w-5" aria-hidden="true" />Continuar por WhatsApp</WhatsAppLeadButton>
+        <WhatsAppLeadButton title="Consulta desde formulario de cotización" initialName={form.name} initialPhone={form.phone} initialEmail={form.email} productIds={selectedProduct ? [selectedProduct.id] : []} items={selectedProduct ? [{ name: selectedProduct.name, sku: selectedProduct.sku, quantity: 1, url: `/producto/${selectedProduct.slug}` }] : []} className="w-full sm:w-auto" disabled={isSubmitting}><MessageCircle className="h-5 w-5" aria-hidden="true" />Continuar por WhatsApp</WhatsAppLeadButton>
       </div>
       <div className="mt-5 rounded-md border border-teal/25 bg-teal/10 p-4 text-sm leading-6 text-dark">
         <p className="font-extrabold">Seguimiento de tu solicitud</p>
-        <p className="mt-1 text-gray-text">Tu solicitud quedara registrada para que nuestro equipo pueda darle seguimiento y confirmar disponibilidad y precio final.</p>
+        <p className="mt-1 text-gray-text">Tu solicitud quedará registrada para que nuestro equipo pueda darle seguimiento y confirmar disponibilidad y precio final.</p>
       </div>
     </form>
   );

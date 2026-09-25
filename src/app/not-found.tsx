@@ -21,7 +21,6 @@ export default async function NotFound() {
           <div className="flex justify-center"><BrandLogo /></div>
           <figure className="relative mx-auto mt-7 aspect-[4/3] w-full max-w-sm overflow-hidden rounded-lg border border-border bg-surface-page">
             <Image src="/images/404/repuesto-perdido.webp" alt="Ilustración de un repuesto HVAC que no se encuentra." fill sizes="(min-width: 768px) 28vw, 100vw" className="object-cover" />
-            <figcaption className="absolute bottom-3 left-3 rounded-pill bg-brand-primary-900/85 px-3 py-1.5 text-[11px] font-bold text-white">Imagen referencial</figcaption>
           </figure>
           <p className="mt-7 font-mono text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary-600">Error 404</p>
           <h1 className="mt-4 font-display text-4xl font-black tracking-tight text-dark">No encontramos esta página</h1>

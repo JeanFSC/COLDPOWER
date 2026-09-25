@@ -1,0 +1,92 @@
+{
+  "events": [
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "product-check",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "product-check",
+      "type": "pageerror",
+      "text": "Manifest file is empty"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    }
+  ],
+  "routeResults": [
+    {
+      "name": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "status": 200,
+      "title": "Buscar productos | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-behavior\\after-buscar-capacitor-1920x1080.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower-check",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 500,
+      "title": "",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-behavior\\after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png"
+    },
+    {
+      "name": "product-behavior-check",
+      "checks": {
+        "hasSourceStatusChip": false,
+        "hasFallbackFamilyDescription": false,
+        "sourceStatusCount": 0,
+        "quoteStateCount": 0,
+        "transactionAboveFold": false,
+        "transactionBox": null,
+        "mobileBar": null
+      }
+    }
+  ],
+  "journeyResults": [],
+  "axeResults": [],
+  "networkResults": [
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    }
+  ]
+}

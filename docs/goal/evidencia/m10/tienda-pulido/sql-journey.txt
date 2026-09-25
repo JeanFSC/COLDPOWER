@@ -1,0 +1,24 @@
+# Verificación SQL del journey M10-03
+
+Runtime: base local `.env.localdb`, PostgreSQL local; no Neon.
+La consulta fue de solo lectura y se ejecutó después del journey de navegador en `http://localhost:3006`.
+
+```sql
+SELECT q.id, q.status, q.origin, q.name, q.phone,
+       qi.sku_snapshot, qi.product_name_snapshot, qi.quantity,
+       qsh.to_status
+FROM quotes q
+LEFT JOIN quote_items qi ON qi.quote_id = q.id
+LEFT JOIN quote_status_history qsh ON qsh.quote_id = q.id
+WHERE q.id IN ('CP-20260925-LD24', 'CP-20260925-LIGR')
+ORDER BY q.id, qsh.created_at;
+```
+
+Resultado:
+
+```text
+CP-20260925-LD24|borrador|WEB|Jean QA M10-03|999999999|CP-REF-CAP-0412|CAPACITOR 25 µF 450 V COLDPOWER|1|borrador
+CP-20260925-LIGR|borrador|WEB|Jean QA M10-03|999999999|CP-REF-CAP-0412|CAPACITOR 25 µF 450 V COLDPOWER|1|borrador
+```
+
+La respuesta de creación observada durante el journey fue `POST /api/cotizacion` con `201`. La persistencia incluye la cotización, el snapshot de línea, cantidad y primera transición de estado.

@@ -1,0 +1,228 @@
+{
+  "phase": "after",
+  "baseUrl": "http://localhost:3006",
+  "productHref": "/producto/capacitor-25-µf-450-v-coldpower",
+  "routeResults": [
+    {
+      "name": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "status": 200,
+      "title": "Buscar productos | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-buscar-capacitor-1920x1080.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower-check",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 500,
+      "title": "",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png"
+    },
+    {
+      "name": "product-behavior-check",
+      "checks": {
+        "hasSourceStatusChip": false,
+        "hasFallbackFamilyDescription": false,
+        "sourceStatusCount": 0,
+        "quoteStateCount": 0,
+        "transactionAboveFold": false,
+        "transactionBox": null,
+        "mobileBar": null
+      }
+    },
+    {
+      "name": "journey-search-page",
+      "route": "/buscar",
+      "status": 200,
+      "title": "Buscar productos | ColdPower"
+    }
+  ],
+  "journeyResults": [
+    {
+      "step": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "resultCount": 2,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-journey-search-1920x1080.png"
+    },
+    {
+      "step": "abrir-ficha",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "matchesResolvedProduct": true,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-journey-product-1920x1080.png"
+    },
+    {
+      "step": "agregar-a-cotizacion",
+      "buttonFeedback": 1,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-journey-quote-added-1920x1080.png"
+    },
+    {
+      "step": "abrir-cotizacion",
+      "route": "/cotizacion",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-journey-cotizar-1920x1080.png"
+    },
+    {
+      "step": "enviar-cotizacion-minima",
+      "route": "/cotizacion",
+      "quoteId": "CP-20260925-LIGR",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-journey\\after-journey-confirmation-1920x1080.png"
+    }
+  ],
+  "axeResults": [
+    {
+      "name": "journey-confirmation",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <RouterTelemetry>\n    <ClerkScripts>\n    <CartProvider>\n      <ShoppingCartProvider>\n        <CompareProvider>\n          <AppChrome publicBefore={[...]} publicAfter={[...]}>\n            <a>\n            <div>\n            <div>\n            <Header authEnabled={true} categories={[...]}>\n              <header className=\"home-header\">\n                <div className=\"home-wide-...\">\n                  <BrandLogo>\n                  <div className=\"home-heade...\">\n                    <SearchBar id=\"desktop-se...\" placeholder=\"Busca por ...\" compact={false} showCompactSubmit={false} ...>\n                      <form action=\"/buscar\" className={\"flex min...\"}>\n                        <label>\n                        <div className=\"flex min-w...\">\n                          <Search>\n                          <input\n                            id=\"desktop-search\"\n                            name=\"q\"\n                            type=\"search\"\n                            placeholder=\"Busca por código, modelo, marca o producto...\"\n                            className=\"min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outlin...\"\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                        ...\n                  ...\n                <div className=\"home-mobil...\">\n                  <SearchBar id=\"mobile-search\" placeholder=\"Busca por ...\">\n                    <form action=\"/buscar\" className={\"flex min...\"}>\n                      <label>\n                      <div className=\"flex min-w...\">\n                        <Search>\n                        <input\n                          id=\"mobile-search\"\n                          name=\"q\"\n                          type=\"search\"\n                          placeholder=\"Busca por código, modelo, marca o producto...\"\n                          className=\"min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outline-...\"\n-                         style={{caret-color:\"transparent\"}}\n                        >\n                      ...\n              ...\n            ...\n            <main>\n            <Footer>\n              <footer className=\"home-footer\">\n                <div className=\"home-wide-...\">\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div className=\"home-foote...\">\n                    <NewsletterForm>\n                      <form onSubmit={function submit} className=\"home-newsl...\">\n                        <label>\n                        <div className=\"home-newsl...\">\n                          <input\n                            id=\"newsletter-email\"\n                            name=\"email\"\n                            type=\"email\"\n                            value=\"\"\n                            onChange={function onChange}\n                            placeholder=\"Tu correo electrónico\"\n                            required={true}\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                          ...\n                        ...\n                ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>\n      <LoadingBoundary name=\"buscar/\" loading={null}>\n        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>\n          <RedirectBoundary>\n            <RedirectErrorBoundary router={{...}}>\n              <InnerLayoutRouter url=\"/buscar?q=...\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n                <SegmentViewNode type=\"page\" pagePath=\"buscar/pag...\">\n                  <SegmentTrieNode>\n                  <SearchPage>\n                    <section className=\"bg-surface...\">\n                      <div className=\"cp-contain...\">\n                        <div>\n                          <p>\n                          <h1>\n                          <p>\n                          <SearchBar>\n                            <form action=\"/buscar\" className=\"flex min-w...\">\n                              <label>\n                              <div className=\"flex min-w...\">\n                                <svg>\n                                <input\n                                  id=\"search-page-query\"\n                                  name=\"q\"\n                                  type=\"search\"\n                                  placeholder=\"Ej. Carrier, R410A, CP-COM\"\n                                  className=\"min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 ...\"\n-                                 style={{caret-color:\"transparent\"}}\n                                >\n                              ...\n                        ...\n                    ...\n                      <ProductGrid>\n                        <div className=\"grid grid-...\">\n                          ...\n                            <div className=\"absolute b...\">\n                              <CompareToggle productId=\"product-cp...\">\n                                <label className=\"inline-fle...\">\n                                  <input\n                                    type=\"checkbox\"\n                                    checked={false}\n                                    disabled={false}\n                                    onChange={function onChange}\n                                    className=\"sr-only\"\n-                                   style={{caret-color:\"transparent\"}}\n                                  >\n                                  ...\n                ...\n              ...\n"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/images/home/placa-equipo.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "product-check",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "product-check",
+      "type": "pageerror",
+      "text": "Unexpected end of JSON input"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "journey",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790346485427 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "journey",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "journey",
+      "type": "console:warning",
+      "text": "Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior"
+    },
+    {
+      "label": "journey",
+      "type": "console:warning",
+      "text": "The resource http://localhost:3006/_next/static/css/app/layout.css?v=1790346498576 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource http://localhost:3006/_next/static/css/app/layout.css?v=1790346506189 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource http://localhost:3006/_next/static/css/app/layout.css?v=1790346497845 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    }
+  ],
+  "networkResults": [
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "journey",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "journey",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "journey",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "journey",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "journey",
+      "method": "POST",
+      "route": "/api/cotizacion",
+      "status": 201
+    },
+    {
+      "label": "journey",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    }
+  ],
+  "generatedAt": "2026-09-25T14:28:31.926Z"
+}

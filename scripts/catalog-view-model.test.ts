@@ -27,7 +27,7 @@ test("maps a persistent inventory row without inventing commercial data", () => 
       dimensions: null,
       length: null,
       connectionSize: null,
-      unitOfMeasure: "Unidad",
+      unitOfMeasure: "UNIDAD (BIENES)",
       status: "Activo",
     },
     category: { name: "Refrigeración", slug: "refrigeracion" },
@@ -40,6 +40,8 @@ test("maps a persistent inventory row without inventing commercial data", () => 
   assert.equal(product.brand, "");
   assert.equal(product.price, null);
   assert.equal(product.stock, null);
+  assert.equal(product.shortDescription, "Repuesto para Refrigeradora. Verifica el código M123 antes de comprar.");
+  assert.equal(product.longDescription, "");
   assert.equal(product.status, "on-request");
   assert.deepEqual(product.compatibility, []);
   assert.deepEqual(product.compatibilityBrands, ["Mabe", "Samsung"]);
@@ -76,7 +78,7 @@ test("maps inactive source status to a visible non-available state", () => {
       dimensions: null,
       length: null,
       connectionSize: null,
-      unitOfMeasure: "Unidad",
+      unitOfMeasure: "NIU",
       status: "Inactivo",
     },
     category: { name: "Refrigeración", slug: "refrigeracion" },
@@ -87,6 +89,43 @@ test("maps inactive source status to a visible non-available state", () => {
   assert.equal(product.status, "out-of-stock");
   assert.equal(product.stock, null);
   assert.equal(product.price, null);
+});
+
+test("does not expose the legacy generated family sentence as editorial copy", () => {
+  const product = mapCatalogProductRow({
+    product: {
+      id: "product-cp-003",
+      sku: "CP-003",
+      slug: "capacitor-cp-003",
+      originalName: "Capacitor",
+      normalizedName: "Capacitor",
+      productType: "Capacitor",
+      compatibilityBrands: null,
+      modelCode: null,
+      application: "Refrigeradoras",
+      voltage: null,
+      power: null,
+      frequency: null,
+      rpm: null,
+      amperage: null,
+      capacitance: "25 µF",
+      refrigerant: null,
+      horsepower: null,
+      temperature: null,
+      dimensions: null,
+      length: null,
+      connectionSize: null,
+      unitOfMeasure: "NIU",
+      status: "Activo",
+      editorialDescription: "Capacitor. Referencia de catálogo de la familia Capacitores para Refrigeración.",
+    },
+    category: { name: "Refrigeración", slug: "refrigeracion" },
+    family: { name: "Capacitores", slug: "refrigeracion-capacitores" },
+    brand: null,
+  });
+
+  assert.equal(product.shortDescription, "Repuesto para Refrigeradoras.");
+  assert.equal(product.longDescription, "");
 });
 
 test("preserves promotion pricing markers supplied by the persistent catalog repository", () => {

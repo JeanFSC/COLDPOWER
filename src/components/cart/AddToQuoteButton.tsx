@@ -9,13 +9,14 @@ import { trackCatalogEvent } from "@/lib/analytics";
 type AddToQuoteButtonProps = {
   productId: string;
   label?: string;
+  quantity?: number;
   size?: "sm" | "md" | "lg";
   variant?: "primary" | "outline";
   className?: string;
 };
 
 // Adds the product to the quote list (Lista de cotización), never to the purchase cart.
-export function AddToQuoteButton({ productId, label = "Cotizar", size = "sm", variant = "outline", className }: AddToQuoteButtonProps) {
+export function AddToQuoteButton({ productId, label = "Cotizar", quantity = 1, size = "sm", variant = "outline", className }: AddToQuoteButtonProps) {
   const { addItem } = useQuoteList();
   const [wasAdded, setWasAdded] = useState(false);
 
@@ -33,7 +34,7 @@ export function AddToQuoteButton({ productId, label = "Cotizar", size = "sm", va
       className={className}
       aria-live="polite"
       onClick={() => {
-        addItem(productId);
+        addItem(productId, quantity);
         setWasAdded(true);
         trackCatalogEvent("quote_item_added", { productId });
       }}

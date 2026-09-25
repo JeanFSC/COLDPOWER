@@ -1,0 +1,1210 @@
+{
+  "events": [
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/catalogo :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/buscar?q=capacitor :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/buscar?q=capacitor&_rsc=xTNissEMDNz_Zvl- :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790347081304 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <RouterTelemetry>\n    <ClerkScripts>\n    <CartProvider>\n      <ShoppingCartProvider>\n        <CompareProvider>\n          <AppChrome publicBefore={[...]} publicAfter={[...]}>\n            <a>\n            <div>\n            <div>\n            <Header>\n            <nav>\n            <main>\n            <Footer>\n              <footer className=\"home-footer\">\n                <div className=\"home-wide-...\">\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div className=\"home-foote...\">\n                    <NewsletterForm>\n                      <form onSubmit={function submit} className=\"home-newsl...\">\n                        <label>\n                        <div className=\"home-newsl...\">\n                          <input\n                            id=\"newsletter-email\"\n                            name=\"email\"\n                            type=\"email\"\n                            value=\"\"\n                            onChange={function onChange}\n                            placeholder=\"Tu correo electrónico\"\n                            required={true}\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                          ...\n                        ...\n                ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/carrito?_rsc=gilKIuFM-p5tIMtK :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/css/app/layout.css?v=1790347101950 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "POST http://localhost:3006/api/cotizacion/cart :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource http://localhost:3006/_next/static/css/app/layout.css?v=1790347112260 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource http://localhost:3006/_next/static/css/app/layout.css?v=1790347113106 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/app/layout.js :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/image?url=%2Fbrand%2Flogo-coldpower-lockup-light.webp&w=3840&q=75 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790347124316 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/app/not-found.js :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "pageerror",
+      "text": "Invalid or unexpected token"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790347127576 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/api/whatsapp/config :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/api/carrito :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "label": "mobile",
+      "type": "pageerror",
+      "text": "Unexpected end of JSON input"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "[Fast Refresh] performing full reload because your application had an unrecoverable error"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "[Fast Refresh] performing full reload because your application had an unrecoverable error"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/faq :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/api/cotizacion/cart :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/api/whatsapp/config :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/api/carrito :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/nosotros :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "pageerror",
+      "text": "Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <CartProvider>\n      <ShoppingCartProvider>\n        <CompareProvider>\n          <AppChrome publicBefore={[...]} publicAfter={[...]}>\n            <a>\n            <div>\n            <div>\n            <Header authEnabled={true} categories={[...]}>\n              <header className=\"home-header\">\n                <div className=\"home-wide-...\">\n                  <BrandLogo>\n                  <div>\n                  <div className=\"home-heade...\">\n                    <QuoteListButton>\n                    <AuthAccountAction>\n                    <CartButton showLabel={true} className=\"home-cart-...\">\n                      <LinkComponent href=\"/carrito\" prefetch={false} aria-label=\"Ver carrit...\" title=\"Carrito de...\" ...>\n                        <a\n+                         aria-label=\"Ver carrito de compra\"\n-                         aria-label={null}\n+                         title=\"Carrito de compra\"\n-                         title={null}\n+                         className=\"home-cart-link home-cart-button\"\n-                         className=\"home-account-action\"\n                          ref={function}\n                          onClick={function onClick}\n                          onMouseEnter={function onMouseEnter}\n                          onTouchStart={function onTouchStart}\n+                         href=\"/carrito\"\n-                         href=\"/sign-in\"\n                        >\n                          <ShoppingCart className=\"h-5 w-5\" aria-hidden=\"true\">\n                            <svg\n                              ref={null}\n                              xmlns=\"http://www.w3.org/2000/svg\"\n                              width={24}\n                              height={24}\n                              viewBox=\"0 0 24 24\"\n                              fill=\"none\"\n                              stroke=\"currentColor\"\n                              strokeWidth={2}\n                              strokeLinecap=\"round\"\n                              strokeLinejoin=\"round\"\n+                             className=\"lucide lucide-shopping-cart h-5 w-5\"\n-                             className=\"lucide lucide-user-round\"\n                              aria-hidden=\"true\"\n                            >\n                              <circle\n+                               cx=\"8\"\n-                               cx=\"12\"\n+                               cy=\"21\"\n-                               cy=\"8\"\n+                               r=\"1\"\n-                               r=\"5\"\n                              >\n+                             <circle cx=\"19\" cy=\"21\" r=\"1\">\n-                             <path d=\"M20 21a8 8 0 0 0-16 0\">\n                              ...\n                          ...\n                  ...\n                ...\n              ...\n            ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "POST http://localhost:3006/api/cotizacion/cart :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/libro-de-reclamaciones :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/main-app.js?v=1790347203174 :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/_next/static/chunks/app/layout.js :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/m10-03-ruta-inexistente?_rsc=6uq-UT5AIQMW8khm :: net::ERR_ABORTED"
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "The resource https://lasting-lamb-37.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "label": "desktop",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "desktop",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/m10-03-ruta-inexistente?_rsc=6uq-UT5AIQMW8khm :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/m10-03-ruta-inexistente?_rsc=6uq-UT5AIQMW8khm :: net::ERR_ABORTED"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "mobile",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <RouterTelemetry>\n    <ClerkScripts>\n    <CartProvider>\n      <ShoppingCartProvider>\n        <CompareProvider>\n          <AppChrome publicBefore={[...]} publicAfter={[...]}>\n            <a>\n            <div>\n            <div>\n            <Header authEnabled={true} categories={[...]}>\n              <header className=\"home-header\">\n                <div className=\"home-wide-...\">\n                  <BrandLogo>\n                  <div className=\"home-heade...\">\n                    <SearchBar id=\"desktop-se...\" placeholder=\"Busca por ...\" compact={false} showCompactSubmit={false} ...>\n                      <form action=\"/buscar\" className={\"flex min...\"}>\n                        <label>\n                        <div className=\"flex min-w...\">\n                          <Search>\n                          <input\n                            id=\"desktop-search\"\n                            name=\"q\"\n                            type=\"search\"\n                            placeholder=\"Busca por código, modelo, marca o producto...\"\n                            className=\"min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outlin...\"\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                        ...\n                  ...\n                <div className=\"home-mobil...\">\n                  <SearchBar id=\"mobile-search\" placeholder=\"Busca por ...\">\n                    <form action=\"/buscar\" className={\"flex min...\"}>\n                      <label>\n                      <div className=\"flex min-w...\">\n                        <Search>\n                        <input\n                          id=\"mobile-search\"\n                          name=\"q\"\n                          type=\"search\"\n                          placeholder=\"Busca por código, modelo, marca o producto...\"\n                          className=\"min-w-0 flex-1 bg-transparent text-sm font-medium text-brand-primary-900 outline-...\"\n-                         style={{caret-color:\"transparent\"}}\n                        >\n                      ...\n              ...\n            ...\n            <main>\n            <Footer>\n              <footer className=\"home-footer\">\n                <div className=\"home-wide-...\">\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div className=\"home-foote...\">\n                    <NewsletterForm>\n                      <form onSubmit={function submit} className=\"home-newsl...\">\n                        <label>\n                        <div className=\"home-newsl...\">\n                          <input\n                            id=\"newsletter-email\"\n                            name=\"email\"\n                            type=\"email\"\n                            value=\"\"\n                            onChange={function onChange}\n                            placeholder=\"Tu correo electrónico\"\n                            required={true}\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                          ...\n                        ...\n                ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "product-check",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <RouterTelemetry>\n    <ClerkScripts>\n    <CartProvider>\n      <ShoppingCartProvider>\n        <CompareProvider>\n          <AppChrome publicBefore={[...]} publicAfter={[...]}>\n            <a>\n            <div>\n            <div>\n            <Header>\n            <nav>\n            <main>\n            <Footer>\n              <footer className=\"home-footer\">\n                <div className=\"home-wide-...\">\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div>\n                  <div className=\"home-foote...\">\n                    <NewsletterForm>\n                      <form onSubmit={function submit} className=\"home-newsl...\">\n                        <label>\n                        <div className=\"home-newsl...\">\n                          <input\n                            id=\"newsletter-email\"\n                            name=\"email\"\n                            type=\"email\"\n                            value=\"\"\n                            onChange={function onChange}\n                            placeholder=\"Tu correo electrónico\"\n                            required={true}\n-                           style={{caret-color:\"transparent\"}}\n                          >\n                          ...\n                        ...\n                ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "product-check",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "product-check",
+      "type": "console:error",
+      "text": "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>\n      <RedirectBoundary>\n        <RedirectErrorBoundary router={{...}}>\n          <InnerLayoutRouter url=\"/producto/...\" tree={[...]} params={{slug:\"capa...\"}} cacheNode={{rsc:{...}, ...}} ...>\n            <SegmentViewNode type=\"page\" pagePath=\"producto/[...\">\n              <SegmentTrieNode>\n              <ProductPage>\n                <script>\n                <script>\n                <ProductDetail>\n                  <div className=\"bg-backgro...\">\n                    <div className=\"cp-contain...\">\n                      <nav>\n                      <nav>\n                      <section className=\"mt-7 grid ...\">\n                        <ProductGallery>\n                        <div className=\"min-w-0 sp...\">\n                          <div>\n                          <div className=\"lg:sticky ...\">\n                            <TransactionBox product={{id:\"produc...\", ...}} promotionalPrice={null}>\n                              <aside className=\"rounded-lg...\" aria-label=\"Producto s...\">\n                                <p>\n                                <p>\n                                <p>\n                                <div>\n                                <div className=\"mt-5 flex ...\">\n                                  <label>\n                                  <input\n                                    id=\"product-quantity\"\n                                    type=\"number\"\n                                    min={1}\n                                    max={99}\n                                    step={1}\n                                    value={1}\n                                    onChange={function onChange}\n                                    className=\"h-11 w-24 rounded-md border border-border bg-background px-3 text-cente...\"\n                                    inputMode=\"numeric\"\n-                                   style={{caret-color:\"transparent\"}}\n                                  >\n                                ...\n                          <dl>\n                          <section>\n                          <CompatibilityPanel product={{id:\"produc...\", ...}}>\n                            <section id=\"compatibil...\" className=\"rounded-lg...\">\n                              <div>\n                              <form className=\"mt-5 flex ...\" onSubmit={function onSubmit}>\n                                <label>\n                                <input\n                                  id=\"equipment-model\"\n                                  value=\"\"\n                                  onChange={function onChange}\n                                  placeholder=\"Ej. ZR72KC, Mabe 220 V\"\n                                  className=\"h-12 min-w-0 flex-1 rounded-pill border border-border bg-background px-4 ...\"\n-                                 style={{caret-color:\"transparent\"}}\n                                >\n                                ...\n                              ...\n                      ...\n                    ...\n            ...\n          ...\n"
+    },
+    {
+      "label": "mobile",
+      "type": "requestfailed",
+      "text": "GET http://localhost:3006/producto/capacitor-25-%C2%B5f-450-v-coldpower :: net::ERR_ABORTED"
+    }
+  ],
+  "routeResults": [
+    {
+      "name": "buscar-capacitor",
+      "route": "/buscar?q=capacitor",
+      "status": 200,
+      "title": "Buscar productos | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-buscar-capacitor-1920x1080.png"
+    },
+    {
+      "name": "catalogo",
+      "route": "/catalogo",
+      "status": 200,
+      "title": "Catálogo técnico | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-catalogo-1920x1080.png"
+    },
+    {
+      "name": "catalogo",
+      "route": "/catalogo",
+      "status": 200,
+      "title": "Catálogo técnico | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-catalogo-390x844.png"
+    },
+    {
+      "name": "carrito",
+      "route": "/carrito",
+      "status": 200,
+      "title": "Carrito de compra | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-carrito-1920x1080.png"
+    },
+    {
+      "name": "carrito",
+      "route": "/carrito",
+      "status": 200,
+      "title": "Carrito de compra | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-carrito-390x844.png"
+    },
+    {
+      "name": "cotizacion",
+      "route": "/cotizacion",
+      "status": 200,
+      "title": "Solicitar cotización | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-cotizacion-1920x1080.png"
+    },
+    {
+      "name": "cotizacion",
+      "route": "/cotizacion",
+      "status": 200,
+      "title": "Solicitar cotización | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-cotizacion-390x844.png"
+    },
+    {
+      "name": "contacto",
+      "route": "/contacto",
+      "status": null,
+      "title": "Contacto | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-contacto-1920x1080.png"
+    },
+    {
+      "name": "contacto",
+      "route": "/contacto",
+      "status": 200,
+      "title": "Contacto | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-contacto-390x844.png"
+    },
+    {
+      "name": "faq",
+      "route": "/faq",
+      "status": 200,
+      "title": "Preguntas frecuentes | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-faq-1920x1080.png"
+    },
+    {
+      "name": "faq",
+      "route": "/faq",
+      "status": 500,
+      "title": "",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-faq-390x844.png"
+    },
+    {
+      "name": "nosotros",
+      "route": "/nosotros",
+      "status": 200,
+      "title": "Nosotros | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-nosotros-1920x1080.png"
+    },
+    {
+      "name": "nosotros",
+      "route": "/nosotros",
+      "status": 200,
+      "title": "Nosotros | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-nosotros-390x844.png"
+    },
+    {
+      "name": "libro-reclamaciones",
+      "route": "/libro-de-reclamaciones",
+      "status": 200,
+      "title": "Libro de reclamaciones | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-libro-reclamaciones-1920x1080.png"
+    },
+    {
+      "name": "libro-reclamaciones",
+      "route": "/libro-de-reclamaciones",
+      "status": 200,
+      "title": "Libro de reclamaciones | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-libro-reclamaciones-390x844.png"
+    },
+    {
+      "name": "not-found",
+      "route": "/m10-03-ruta-inexistente",
+      "status": 404,
+      "title": "ColdPower | Catálogo técnico de refrigeración y climatización",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-not-found-1920x1080.png"
+    },
+    {
+      "name": "not-found",
+      "route": "/m10-03-ruta-inexistente",
+      "status": 404,
+      "title": "ColdPower | Catálogo técnico de refrigeración y climatización",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-not-found-390x844.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": null,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-producto-capacitor-25-µf-450-v-coldpower-1920x1080.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 200,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-producto-capacitor-25-µf-450-v-coldpower-390x844.png"
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower-check",
+      "route": "/producto/capacitor-25-%C2%B5f-450-v-coldpower",
+      "status": 200,
+      "title": "CAPACITOR 25 µF 450 V COLDPOWER | ColdPower",
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-03\\docs\\goal\\evidencia\\m10\\tienda-pulido\\final-routes\\after-producto-capacitor-25-µf-450-v-coldpower-check-1920x1080.png"
+    },
+    {
+      "name": "product-behavior-check",
+      "checks": {
+        "hasSourceStatusChip": false,
+        "hasFallbackFamilyDescription": false,
+        "sourceStatusCount": 0,
+        "quoteStateCount": 1,
+        "transactionAboveFold": true,
+        "transactionBox": {
+          "top": 562,
+          "bottom": 1042
+        },
+        "mobileBar": {
+          "top": 0,
+          "bottom": 0
+        }
+      }
+    }
+  ],
+  "journeyResults": [],
+  "axeResults": [
+    {
+      "name": "catalogo",
+      "violations": []
+    },
+    {
+      "name": "catalogo",
+      "violations": []
+    },
+    {
+      "name": "carrito",
+      "violations": []
+    },
+    {
+      "name": "carrito",
+      "violations": []
+    },
+    {
+      "name": "cotizacion",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "cotizacion",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "contacto",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 9
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "contacto",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 9
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "faq",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "faq",
+      "violations": [
+        {
+          "id": "document-title",
+          "impact": "serious",
+          "nodes": 1
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "nodes": 1
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "nodes": 1
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "nosotros",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "nosotros",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 2
+        }
+      ]
+    },
+    {
+      "name": "libro-reclamaciones",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "libro-reclamaciones",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "not-found",
+      "violations": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "not-found",
+      "violations": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "name": "producto-capacitor-25-µf-450-v-coldpower",
+      "violations": [
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    }
+  ],
+  "networkResults": [
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 500
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 500
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 500
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "desktop",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "GET",
+      "route": "/api/carrito",
+      "status": 200
+    },
+    {
+      "label": "mobile",
+      "method": "POST",
+      "route": "/api/cotizacion/cart",
+      "status": 200
+    }
+  ]
+}
