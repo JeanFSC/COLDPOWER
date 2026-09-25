@@ -33,3 +33,4 @@ Protocolo: `docs/goal/ORQUESTACION.md`. Meta: `docs/goal/META-10.md` (§4b Tiend
 - Recorrido por UI: buscar "capacitor" → ficha → cotizar → enviar cotización mínima (nombre + teléfono) → confirmación.
 - `tsc`, lint 0/0, `test-all` (solo el Excel externo) y build.
 - Informe por punto. Sin commit.
+- **Imágenes referenciales por familia:** "CARBON AMOLADORA BOSCH" (CP-AMO-CAR-1027) muestra la imagen de conexiones de cobre y tornillos (otra familia). Revisar el mapeo del placeholder por familia (carbones y escobillas).

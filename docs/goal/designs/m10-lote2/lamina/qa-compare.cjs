@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* Internal visual comparison sheet for the design QA record. */
 const fs = require("node:fs");
 const path = require("node:path");

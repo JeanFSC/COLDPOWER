@@ -1,0 +1,11 @@
+Consulta de control post-flujo ejecutada contra PostgreSQL local en 2026-09-25.
+
+product|product-cp-ref-mcp-0103|CP-REF-MCP-0103|motocompresor-tecumseh-thg1346ygs-r134-220-v-1-6|published|in_stock|Refrigeración|Motocompresores|Tecumseh
+price|RETAIL|1250.00|PEN|t|2026-09-24 09:32:35.699-05|2027-10-01 09:00:00-05
+price|RETAIL|1250.00|PEN|t|2027-10-01 09:00:00-05|
+price_history|RETAIL|1250.00|1250.00|PEN|Validación de flujo M10-04 · cierre por reemplazo|2026-09-25 14:17:59.613001-05
+price_history|RETAIL|1250.00|1250.00|PEN|Validación de flujo M10-04|2026-09-25 14:17:59.613001-05
+inventory|Almacén Lima|1063|3|1060|8
+media|1
+asset|placeholder-compresores.webp|image/webp|16602|
+promotions|1
