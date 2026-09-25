@@ -21,3 +21,11 @@ Durante la validación se detectó y corrigió un update tardío del proveedor d
 - Playwright con `GPU_ARGS=[--enable-gpu,--use-angle=d3d11,--ignore-gpu-blocklist]` en `http://localhost:3006/cuenta`.
 - Desktop 1920 × 1080 y mobile 390 × 844: HTTP 200, axe `0` violaciones y 0 errores de consola.
 - Evidencia automatizada: [revalidation.json](revalidation.json).
+
+## Revisión de bloqueo
+
+- `responsive-overflow-data.json`: 15/15 comprobaciones PASS (5 rutas x 360/390/430px).
+- `responsive-overflow-empty.json`: 15/15 comprobaciones PASS (5 rutas x 360/390/430px).
+- En ambos estados, `document.documentElement.scrollWidth <= clientWidth` y `body.scrollWidth <= body.clientWidth`; no se detectó overflow del documento.
+- Las dos corridas usaron `GPU_ARGS=[--enable-gpu,--use-angle=d3d11,--ignore-gpu-blocklist]` y exclusivamente `http://localhost:3006`.
+- La prueba unitaria `scripts/m10-05-account-errors.test.ts` fuerza el fallo del hub y el fallo aislado de historial: el primero devuelve error (nunca `EmptyAccount`) y el segundo conserva el hub con degradación local.

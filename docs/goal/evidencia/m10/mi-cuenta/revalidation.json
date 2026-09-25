@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T21:02:23.119Z",
+  "generatedAt": "2026-09-25T21:42:21.414Z",
   "baseUrl": "http://localhost:3006/",
   "gpuArgs": [
     "--enable-gpu",
@@ -41,7 +41,7 @@
         "adminHeaderCount": 0,
         "adminMenuCount": 1,
         "hasLegacyQuoteInAttention": false,
-        "scrollWidth": 484,
+        "scrollWidth": 390,
         "clientWidth": 390
       },
       "axeViolations": 0,

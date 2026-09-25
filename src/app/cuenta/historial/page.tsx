@@ -12,10 +12,7 @@ export const metadata: Metadata = { title: "Volver a comprar | ColdPower", descr
 
 export default async function CuentaHistorialPage() {
   const { userId } = await requireUser();
-  let products: Awaited<ReturnType<typeof listPurchasedProductsForUser>> = [];
-  let failed = false;
-  try { products = await listPurchasedProductsForUser(userId); }
-  catch (error) { failed = true; console.error("ColdPower: no se pudo cargar el historial", error); }
+  const products = await listPurchasedProductsForUser(userId);
 
   return (
     <div className="account-subpage">
@@ -28,8 +25,7 @@ export default async function CuentaHistorialPage() {
         <span className="account-status-pill"><History aria-hidden="true" /> {products.length} productos</span>
       </header>
 
-      {failed ? <div className="account-subpage-card mt-3 p-4 text-sm font-semibold text-danger" role="alert">No pudimos cargar tu historial. Inténtalo nuevamente en unos minutos.</div> : null}
-      {!failed && products.length ? (
+      {products.length ? (
         <div className="account-subpage-card mt-3">
           {products.map((product) => (
             <article className="account-subpage-row" key={product.productId}>
@@ -49,13 +45,13 @@ export default async function CuentaHistorialPage() {
             </article>
           ))}
         </div>
-      ) : !failed ? (
+      ) : (
         <div className="account-empty-panel mt-3">
           <p className="font-bold text-dark">Todavía no tienes productos comprados.</p>
           <p className="mt-2 text-sm leading-6 text-gray-text">Cuando un pedido alcance un estado confirmado, aparecerá aquí con su historial.</p>
           <Button href="/catalogo" variant="primary" size="sm" className="mt-4">Explorar catálogo</Button>
         </div>
-      ) : null}
+      )}
       <a href="/cuenta" className="account-section-link mt-3"><ArrowLeft aria-hidden="true" /> Volver al resumen</a>
     </div>
   );

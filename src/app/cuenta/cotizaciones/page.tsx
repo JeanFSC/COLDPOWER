@@ -32,21 +32,14 @@ const statusBadge: Record<string, { label: string; variant: "new" | "warning" | 
 
 export default async function MisCotizacionesPage() {
   const { userId } = await requireUser();
-  let myQuotes: Array<{ quote: typeof quotes.$inferSelect }> = [];
-  let failed = false;
-  try {
-    const ownership = or(eq(quotes.userId, userId), eq(customers.userId, userId));
-    myQuotes = await getDb()
-      .select({ quote: quotes })
-      .from(quotes)
-      .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
-      .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
-      .where(ownership)
-      .orderBy(desc(quotes.createdAt));
-  } catch (error) {
-    failed = true;
-    console.error("ColdPower: no se pudieron cargar las cotizaciones", error);
-  }
+  const ownership = or(eq(quotes.userId, userId), eq(customers.userId, userId));
+  const myQuotes = await getDb()
+    .select({ quote: quotes })
+    .from(quotes)
+    .leftJoin(customerQuoteLinks, eq(customerQuoteLinks.quoteId, quotes.id))
+    .leftJoin(customers, eq(customerQuoteLinks.customerId, customers.id))
+    .where(ownership)
+    .orderBy(desc(quotes.createdAt));
 
   return (
     <div className="account-subpage">
@@ -59,9 +52,7 @@ export default async function MisCotizacionesPage() {
         <span className="account-status-pill"><FileText aria-hidden="true" /> {myQuotes.length} {myQuotes.length === 1 ? "solicitud" : "solicitudes"}</span>
       </header>
 
-      {failed ? (
-        <div className="account-subpage-card mt-3 p-4 text-sm font-semibold text-danger" role="alert">No pudimos cargar tus cotizaciones. Inténtalo nuevamente en unos minutos.</div>
-      ) : myQuotes.length === 0 ? (
+      {myQuotes.length === 0 ? (
         <div className="account-empty-panel mt-3">
           <p className="font-bold text-dark">Todavía no tienes solicitudes de cotización registradas.</p>
           <p className="mt-2 text-sm leading-6 text-gray-text">Envíanos una referencia, modelo o foto del equipo para iniciar una solicitud.</p>

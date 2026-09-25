@@ -39,3 +39,11 @@ Las diferencias de contenido frente a la lámina son deliberadas: la especificac
 - El cliente A conserva COT-2026-019 y COT-2026-040 solo en actividad reciente; ninguna aparece en `Lo que requiere tu atención`.
 - La región focal confirma 0 acciones administrativas en el header y 1 enlace personal en el menú.
 - Mobile mantiene las pestañas de cuenta como scroll interno sin cortar controles persistentes.
+
+## Revisión de bloqueo - errores honestos y overflow móvil
+
+- Fuente visual: las láminas de hub desktop/mobile de `docs/goal/designs/m10-lote3/`; implementación actual: `hub-revision-1920x1080.png` y `hub-revision-390x844.png`.
+- La composición TIENDA y la jerarquía del hub se mantienen. La ausencia de tarjetas de atención en la captura actual es intencional: las cotizaciones aprobada/convertida y vencida no esperan decisión del cliente.
+- La causa del `scrollWidth` de 483-484px estaba en el ancho mínimo de contenido del grid `Volver a comprar`. La cadena de grid/contenedores ahora admite contracción y la navegación de cuenta conserva su scroll horizontal interno.
+- Validación completa: hub, pedidos, cotizaciones, pagos e historial en 360/390/430px, tanto con datos como vacío: 30/30 casos con documento contenido, HTTP 200 y consola sin errores.
+- Los estados de error no se comparan como un vacío: fallo del hub/subruta muestra `No pudimos cargar tu cuenta` + `Reintentar`; fallo aislado del historial muestra su propio mensaje y conserva el resto del hub.

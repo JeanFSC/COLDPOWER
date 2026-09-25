@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Phone, ReceiptText } from "lucide-react";
 import { AccountProfileEditor } from "@/components/account/AccountProfileEditor";
-import { emptyAccountOverview, getAccountOverview } from "@/lib/account-overview";
+import { getAccountOverview } from "@/lib/account-overview";
 import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +13,7 @@ function valueOrFallback(value: string | null | undefined) {
 
 export default async function CuentaDatosPage() {
   const { userId, role } = await requireUser();
-  let overview = emptyAccountOverview(role);
-  try { overview = await getAccountOverview(userId, role); }
-  catch (error) { console.error("ColdPower: no se pudieron cargar los datos de cuenta", error); }
+  const overview = await getAccountOverview(userId, role);
 
   const { profile } = overview;
   return (

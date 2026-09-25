@@ -31,11 +31,11 @@ La comparación contra las láminas está en [comparacion.md](./comparacion.md).
 |---|---|
 | `corepack pnpm exec tsc --noEmit` | PASS |
 | `corepack pnpm lint` | PASS — 0 errores, 0 warnings |
-| Pruebas focalizadas de cuenta/portal | PASS — 7/7 |
-| `corepack pnpm test:all` | 78/81 — 3 contratos históricos fallan fuera del diff |
+| Pruebas focalizadas de cuenta/portal | PASS — 6/6 |
+| `corepack pnpm test:all` | 1 fallo externo: falta el workbook de inventario requerido fuera del diff |
 | `corepack pnpm build` | PASS |
 
-Los tres fallos de `test:all` son contratos antiguos que buscan `ProductCommercialEditor`, `Cantidad cotizada` y `Conversión` dentro de `src/app/admin/catalogo/productos/[id]/page.tsx`; la página vigente usa `ProductDetailWorkspace`. No se añadieron strings decorativos ni se alteró esa página para satisfacer contratos obsoletos.
+El único fallo de `test:all` en esta corrida es `scripts/inventory-import.test.mjs`, porque no existe `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx` en el entorno compartido. No se fabricó ni se copió un workbook para maquillar el resultado. El grupo con las pruebas M10-05 terminó 66/66 y la prueba focal de cuenta terminó 6/6.
 
 El servidor de desarrollo de este worktree fue apagado y el puerto 3006 quedó sin listener.
 
@@ -45,3 +45,10 @@ El servidor de desarrollo de este worktree fue apagado y el puerto 3006 quedó s
 - La regla compartida acepta únicamente `SENT`/`FOLLOW_UP` vigentes en fecha Lima; pagos y pedidos excluyen vencidos, cancelados y entregados.
 - El plural del menú ahora es `1 respondida` / `2 respondidas`; el enlace administrativo solo vive en el menú personal.
 - Revalidación GPU Playwright: [desktop](./hub-revision-1920x1080.png), [mobile](./hub-revision-390x844.png), [revalidation.json](./revalidation.json).
+
+## Revisión bloqueada resuelta - estados de error y overflow
+
+- `getAccountHubData` ya no cae en `EmptyAccount` cuando falla: el hub muestra `No pudimos cargar tu cuenta` y `Reintentar`, con logging limitado a scope y nombre del error.
+- Pedidos, cotizaciones, pagos, historial y datos dejan propagar el fallo al error boundary de cuenta; solo la consulta de `Volver a comprar` en el hub degrada su propia sección y deja visible el resto.
+- Playwright con GPU validó hub con datos y hub vacío en `/cuenta`, `/cuenta/pedidos`, `/cuenta/cotizaciones`, `/cuenta/pagos` y `/cuenta/historial`, a 360/390/430px: 30/30 checks PASS y ningún documento supera el viewport. Ver [datos](./responsive-overflow-data.json) y [vacío](./responsive-overflow-empty.json).
+- El problema original `scrollWidth=484` a 390px quedó corregido con contención del grid y scroll interno de pestañas; no se eliminó la navegación horizontal requerida.

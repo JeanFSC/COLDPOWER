@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowRight, CreditCard } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { listOrdersForUser } from "@/lib/sales-service";
-import { orders, payments } from "@/db/sales-schema";
 import { Badge } from "@/components/shared/Badge";
 import { formatDateTime, formatMoney, paymentStatusLabels } from "@/lib/order-display";
 
@@ -18,14 +17,7 @@ function badgeVariant(status: string | undefined) {
 
 export default async function CuentaPagosPage() {
   const { userId } = await requireUser();
-  let rows: Array<{ order: typeof orders.$inferSelect; payment: typeof payments.$inferSelect | null }> = [];
-  let failed = false;
-  try {
-    rows = await listOrdersForUser(userId);
-  } catch (error) {
-    failed = true;
-    console.error("ColdPower: no se pudieron cargar los pagos del cliente", error);
-  }
+  const rows = await listOrdersForUser(userId);
 
   return (
     <div className="account-subpage">
@@ -38,9 +30,7 @@ export default async function CuentaPagosPage() {
         <span className="account-status-pill"><CreditCard aria-hidden="true" /> {rows.length} registros</span>
       </header>
 
-      {failed ? (
-        <div className="account-subpage-card mt-3 p-4 text-sm font-semibold text-danger" role="alert">No pudimos cargar tus pagos. Inténtalo nuevamente en unos minutos.</div>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="account-empty-panel mt-3">
           <p className="font-bold text-dark">Todavía no tienes pagos registrados.</p>
           <p className="mt-2 text-sm leading-6 text-gray-text">Cuando exista un pedido, su pago aparecerá aquí.</p>

@@ -726,3 +726,16 @@ final result: passed
 - accessibility/runtime: axe 0 violaciones, consola 0 errores, HTTP 200; evidencia adicional en `docs/goal/evidencia/m10/mi-cuenta/revalidation.json`.
 
 final result: passed
+
+## M10-05 review unblock - honest errors and mobile overflow - 2026-09-25
+
+- source visual truth: `docs/goal/designs/m10-lote3/cuenta-hub-desktop-1920x1080.png` and `cuenta-hub-mobile-390x844.png`.
+- current implementation captures: `docs/goal/evidencia/m10/mi-cuenta/hub-revision-1920x1080.png` and `hub-revision-390x844.png`.
+- comparison viewports: desktop 1920 x 1080 and mobile 390 x 844 at 100% zoom; both inspected against the source shell, account sidebar, hub hierarchy, cards, typography, spacing, colors and responsive density.
+- functional state: real authenticated customer data; converted/expired and approved quotes are retained only in recent activity and do not render as attention cards or quote badges.
+- error-state contract: account hub failures render `No pudimos cargar tu cuenta` with `Reintentar`; orders, quotes, payments, history and data queries bubble to the account error boundary; a history-only failure keeps the hub and renders a local retry message for `Volver a comprar`. Logs keep only a safe scope and error name.
+- overflow investigation: the original 483-484px document width came from the repeat-purchase grid's min-content sizing. `min-width: 0` on the account grid/content/card chain and contained horizontal scrolling on `.account-nav` keep the document inside the viewport.
+- responsive automation: 15 route/viewport checks for data and 15 for empty state at 360, 390 and 430px; all returned HTTP 200, `document.documentElement.scrollWidth === clientWidth`, and zero console issues. Internal account tabs remain horizontally scrollable within their container.
+- accessibility/runtime: the 1920/390 hub revalidation reports axe 0, console 0, and exactly one personal admin link in the account menu.
+
+final result: passed

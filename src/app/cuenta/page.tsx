@@ -15,11 +15,12 @@ import {
   UserRound,
 } from "lucide-react";
 import { AccountProfileEditor } from "@/components/account/AccountProfileEditor";
+import { AccountLoadError } from "@/components/account/AccountLoadError";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { AddToQuoteButton } from "@/components/cart/AddToQuoteButton";
 import { requireUser } from "@/lib/auth";
-import { emptyAccountOverview } from "@/lib/account-overview";
 import { getAccountHubData, type AccountAttention, type AccountHubData } from "@/lib/account-hub";
+import { loadAccountPageData } from "@/lib/account-page-data";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 import { listPurchasedProductsForUser } from "@/lib/customer-history";
 import { formatMoney } from "@/lib/order-display";
@@ -171,7 +172,21 @@ function RecentOrders({ data }: { data: AccountHubData }) {
   );
 }
 
-function RepeatPurchase({ products }: { products: Awaited<ReturnType<typeof listPurchasedProductsForUser>> }) {
+function RepeatPurchase({ products, failed }: { products: Awaited<ReturnType<typeof listPurchasedProductsForUser>>; failed: boolean }) {
+  if (failed) {
+    return (
+      <section className="account-repeat-section" aria-labelledby="account-repeat-title">
+        <div className="account-section-head">
+          <div>
+            <p className="account-eyebrow">Historial de compras</p>
+            <h2 id="account-repeat-title" className="account-section-title">Volver a comprar</h2>
+          </div>
+          <Link href="/cuenta/historial" className="account-section-link">Ver historial <ArrowRight aria-hidden="true" /></Link>
+        </div>
+        <div className="account-section-error" role="alert"><p>No pudimos cargar tu historial de compras.</p><a href="/cuenta">Reintentar</a></div>
+      </section>
+    );
+  }
   if (!products.length) return null;
   return (
     <section className="account-repeat-section" aria-labelledby="account-repeat-title">
@@ -203,7 +218,7 @@ function RepeatPurchase({ products }: { products: Awaited<ReturnType<typeof list
   );
 }
 
-function EmptyAccount({ firstName, profile, whatsapp }: { firstName: string | null; profile: AccountHubData["overview"]["profile"]; whatsapp: string | null }) {
+function EmptyAccount({ firstName, profile, whatsapp, repeatPurchaseFailed }: { firstName: string | null; profile: AccountHubData["overview"]["profile"]; whatsapp: string | null; repeatPurchaseFailed: boolean }) {
   const whatsappDigits = whatsapp?.replace(/\D/g, "") || "";
   const whatsappHref = whatsappDigits ? `https://wa.me/${whatsappDigits}` : null;
   return (
@@ -256,6 +271,10 @@ function EmptyAccount({ firstName, profile, whatsapp }: { firstName: string | nu
         </section>
       ) : null}
 
+      {repeatPurchaseFailed ? (
+        <section className="account-section-error mt-3" role="alert"><p>No pudimos cargar tu historial de compras.</p><a href="/cuenta">Reintentar</a></section>
+      ) : null}
+
       <p className="account-privacy-note"><LockKeyhole aria-hidden="true" /><span><strong>Tus datos quedan asociados a tu cuenta.</strong> El cliente comercial se determina en servidor y solo tú podrás ver tus pedidos, cotizaciones y pagos.</span></p>
       <span className="sr-only">{profile.email || ""}</span>
     </>
@@ -265,29 +284,22 @@ function EmptyAccount({ firstName, profile, whatsapp }: { firstName: string | nu
 export default async function CuentaPage() {
   const { userId, role } = await requireUser();
   const companySettings = await getPublicCompanySettings();
-  let data: AccountHubData = {
-    overview: emptyAccountOverview(role),
-    attention: [],
-    currentOrder: null,
-    recentQuotes: [],
-    recentOrders: [],
-  };
-  let products: Awaited<ReturnType<typeof listPurchasedProductsForUser>> = [];
-
-  try {
-    data = await getAccountHubData(userId, role);
-    products = await listPurchasedProductsForUser(userId);
-  } catch (error) {
-    console.error("ColdPower: no se pudo cargar el hub de cuenta", error);
+  const loaded = await loadAccountPageData(userId, role, {
+    getAccountHubData,
+    listPurchasedProductsForUser,
+  });
+  if (loaded.kind === "error") {
+    return <AccountLoadError />;
   }
 
+  const { data, products, repeatPurchaseFailed } = loaded;
   const { overview } = data;
   const { profile } = overview;
   const firstName = profile.firstName || profile.name?.trim()?.split(/\s+/)[0] || null;
   const hasActivity = overview.counts.quotes > 0 || overview.counts.orders > 0 || overview.counts.payments > 0 || overview.counts.quoteCartItems > 0;
 
   if (!hasActivity) {
-    return <EmptyAccount firstName={firstName} profile={profile} whatsapp={companySettings.whatsapp ?? null} />;
+    return <EmptyAccount firstName={firstName} profile={profile} whatsapp={companySettings.whatsapp ?? null} repeatPurchaseFailed={repeatPurchaseFailed} />;
   }
 
   return (
@@ -332,7 +344,7 @@ export default async function CuentaPage() {
         <RecentOrders data={data} />
       </section>
 
-      <RepeatPurchase products={products} />
+      <RepeatPurchase products={products} failed={repeatPurchaseFailed} />
       <Link href="/cuenta/pagos" className="sr-only">Ver pagos</Link>
     </div>
   );

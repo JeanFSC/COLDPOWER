@@ -9,6 +9,7 @@ import { orders, payments } from "@/db/sales-schema";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
 import { requireUser } from "@/lib/auth";
+import { logAccountLoadError } from "@/lib/account-errors";
 import { cancelExpiredUnpaidOrders } from "@/lib/sales-service";
 import { deliveryMethodLabels, formatDateTime, formatMoney, orderStatusLabels, paymentStatusLabels } from "@/lib/order-display";
 
@@ -25,24 +26,17 @@ export default async function CuentaPedidosPage() {
   const { userId } = await requireUser();
   after(async () => {
     try { await cancelExpiredUnpaidOrders(); }
-    catch (error) { console.error("ColdPower: barrido de pedidos vencidos falló", error); }
+    catch (error) { logAccountLoadError("barrido de pedidos vencidos falló", error); }
   });
 
-  let rows: Array<{ order: typeof orders.$inferSelect; payment: typeof payments.$inferSelect | null }> = [];
-  let failed = false;
-  try {
-    rows = await getDb()
-      .select({ order: orders, payment: payments })
-      .from(orders)
-      .innerJoin(customers, eq(orders.customerId, customers.id))
-      .leftJoin(payments, eq(payments.orderId, orders.id))
-      .where(or(eq(orders.userId, userId), eq(customers.userId, userId)))
-      .orderBy(desc(orders.createdAt))
-      .limit(100);
-  } catch (error) {
-    failed = true;
-    console.error("ColdPower: no se pudieron cargar los pedidos del cliente", error);
-  }
+  const rows = await getDb()
+    .select({ order: orders, payment: payments })
+    .from(orders)
+    .innerJoin(customers, eq(orders.customerId, customers.id))
+    .leftJoin(payments, eq(payments.orderId, orders.id))
+    .where(or(eq(orders.userId, userId), eq(customers.userId, userId)))
+    .orderBy(desc(orders.createdAt))
+    .limit(100);
 
   return (
     <div className="account-subpage">
@@ -55,9 +49,7 @@ export default async function CuentaPedidosPage() {
         <span className="account-status-pill"><Package aria-hidden="true" /> {rows.length} {rows.length === 1 ? "pedido" : "pedidos"}</span>
       </header>
 
-      {failed ? (
-        <div className="account-subpage-card mt-3 p-4 text-sm font-semibold text-danger" role="alert">No pudimos cargar tus pedidos. Inténtalo nuevamente en unos minutos.</div>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="account-empty-panel mt-3">
           <p className="font-bold text-dark">Todavía no tienes pedidos.</p>
           <p className="mt-2 text-sm leading-6 text-gray-text">Los productos con precio publicado se compran desde el carrito; los demás, por cotización.</p>

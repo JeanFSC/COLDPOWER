@@ -1,9 +1,11 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+import { AccountLoadError } from "@/components/account/AccountLoadError";
 import { AccountWorkspace } from "@/components/account/AccountWorkspace";
-import { emptyAccountOverview, getAccountOverview } from "@/lib/account-overview";
+import { getAccountOverview } from "@/lib/account-overview";
 import { requireUser } from "@/lib/auth";
+import { logAccountLoadError } from "@/lib/account-errors";
 import { getDevAuthUserId } from "@/lib/dev-auth-bypass";
 import { isAuthConfigured } from "@/lib/env";
 
@@ -12,11 +14,16 @@ export const dynamic = "force-dynamic";
 export default async function CuentaLayout({ children }: Readonly<{ children: ReactNode }>) {
   const { userId, role } = await requireUser();
   const devAuthUserId = getDevAuthUserId((await headers()).get("host"));
-  let overview = emptyAccountOverview(role);
+  let overview;
   try {
     overview = await getAccountOverview(userId, role);
   } catch (error) {
-    console.error("ColdPower: no se pudo cargar la navegación de cuenta", error);
+    logAccountLoadError("no se pudo cargar la navegación de cuenta", error);
+    return (
+      <main className="account-page">
+        <div className="account-wide"><AccountLoadError /></div>
+      </main>
+    );
   }
 
   let emailVerified = false;
@@ -25,7 +32,7 @@ export default async function CuentaLayout({ children }: Readonly<{ children: Re
       const clerkUser = await currentUser();
       emailVerified = clerkUser?.id === userId && clerkUser.primaryEmailAddress?.verification?.status === "verified";
     } catch (error) {
-      console.warn("ColdPower: no se pudo verificar el correo de Clerk para la cuenta", error);
+      logAccountLoadError("no se pudo verificar el correo de Clerk para la cuenta", error);
     }
   }
 
