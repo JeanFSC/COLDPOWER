@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ColdPower · Diseño M10 lote 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --page: #f8fafc;
+        --surface: #ffffff;
+        --navy: #102f51;
+        --navy-2: #12395c;
+        --ink: #142238;
+        --slate-700: #425d78;
+        --slate-600: #526a84;
+        --slate-500: #607894;
+        --slate-400: #8195aa;
+        --slate-300: #aab8c6;
+        --border: #dce6ee;
+        --border-soft: #e8eef4;
+        --blue: #2563eb;
+        --blue-soft: #eff6ff;
+        --blue-wash: #f5f8fc;
+        --emerald: #059669;
+        --emerald-soft: #ecfdf5;
+        --amber: #b45309;
+        --amber-soft: #fff7ed;
+        --orange: #c25a12;
+        --orange-soft: #fff4e8;
+        --rose: #be123c;
+        --rose-soft: #fff1f2;
+        --violet: #7c3aed;
+        --violet-soft: #f5f3ff;
+        --shadow-2xs: 0 1px 2px rgba(16, 42, 67, 0.035);
+        --shadow-float: 0 12px 28px rgba(16, 42, 67, 0.09);
+        --radius: 12px;
+        --radius-sm: 9px;
+        --mono: "IBM Plex Mono", Consolas, monospace;
+        --sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; min-height: 100%; margin: 0; }
+      body { overflow: hidden; background: var(--page); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+      button, input, select { font: inherit; }
+      button { border: 0; cursor: default; }
+      img { max-width: 100%; }
+      svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+      .svg-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+      .canvas { position: relative; width: 100vw; height: 100vh; min-width: 0; overflow: hidden; background: var(--page); }
+      .mono { font-family: var(--mono); }
+      .muted { color: var(--slate-400); }
+      .nowrap { white-space: nowrap; }
+      .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      /* Shared ColdPower admin shell. */
+      .sidebar { position: absolute; inset: 0 auto 0 0; z-index: 20; display: flex; width: 198px; flex-direction: column; border-right: 1px solid #e6edf3; background: #fff; }
+      .brand-lockup { display: flex; height: 76px; flex: 0 0 76px; align-items: center; border-bottom: 1px solid #eef2f6; padding: 0 20px; }
+      .brand-lockup img { display: block; width: 126px; height: auto; object-fit: contain; }
+      .admin-caption { margin: 16px 25px 5px; color: #8a9caf; font-size: 9px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+      .nav { min-height: 0; flex: 1; overflow: hidden; padding: 0 13px; }
+      .nav-group-label { margin: 12px 12px 4px; color: #8a9caf; font-size: 9px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+      .nav-group-label:first-of-type { margin-top: 0; }
+      .nav-item { display: flex; min-height: 31px; align-items: center; gap: 11px; border-radius: 9px; padding: 0 13px; color: #49627d; font-size: 11px; font-weight: 600; text-decoration: none; }
+      .nav-item + .nav-item { margin-top: 1px; }
+      .nav-item svg { width: 15px; height: 15px; color: #607894; stroke-width: 1.8; }
+      .nav-item.active { background: var(--navy); color: #fff; box-shadow: 0 4px 10px rgba(16, 47, 81, .16); }
+      .nav-item.active svg { color: #fff; }
+      .support { margin: 0 14px 16px; border-radius: 12px; background: var(--navy-2); color: #fff; padding: 12px 13px; }
+      .support-head { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; }
+      .support-head svg { width: 14px; height: 14px; }
+      .support p { margin: 5px 0 0 22px; color: #d7e5f1; font-size: 8px; line-height: 1.4; }
+
+      .app-column { position: absolute; inset: 0 0 0 198px; min-width: 0; }
+      .topbar { display: flex; height: 76px; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-soft); background: rgba(255,255,255,.98); padding: 0 20px 0 32px; }
+      .top-search { position: relative; display: flex; width: 332px; height: 38px; align-items: center; }
+      .top-search svg { position: absolute; left: 14px; width: 16px; height: 16px; color: #7890a8; }
+      .top-search input { width: 100%; height: 100%; border: 1px solid #dce6ee; border-radius: 10px; background: #fbfdff; color: var(--ink); padding: 0 12px 0 41px; font-size: 11px; outline: none; }
+      .top-search input::placeholder { color: #91a3b3; }
+      .topbar-page { margin-left: auto; color: #516a84; font-size: 11px; font-weight: 700; }
+      .topbar-actions { display: flex; align-items: center; gap: 12px; }
+      .topbar-icon { position: relative; display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 10px; color: #173654; }
+      .notification-dot { position: absolute; right: 3px; top: 3px; display: flex; min-width: 16px; height: 16px; align-items: center; justify-content: center; border-radius: 999px; background: #b45309; color: #fff; font-size: 9px; font-weight: 700; }
+      .profile { display: flex; align-items: center; gap: 9px; }
+      .avatar { display: flex; width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 999px; background: #dbeafe; color: var(--blue); font-size: 12px; font-weight: 700; }
+      .profile-copy { display: grid; gap: 2px; line-height: 1; }
+      .profile-copy strong { color: #173654; font-size: 11px; }
+      .profile-copy span { color: #8195aa; font-size: 9px; }
+      .profile > svg { width: 14px; height: 14px; color: #6c8298; }
+      .mobile-only { display: none; }
+
+      .workspace { position: relative; height: calc(100vh - 76px); min-width: 0; overflow: hidden; background: var(--page); }
+      .page { position: relative; width: 100%; height: 100%; min-width: 0; overflow: hidden; padding: 27px 20px 18px 36px; }
+      .screen { display: none; height: 100%; min-height: 0; }
+      body[data-screen="taxonomia"] .screen-taxonomia,
+      body[data-screen="producto"] .screen-producto,
+      body[data-screen="proveedor"] .screen-proveedor,
+      body[data-screen="configuracion"] .screen-configuracion { display: block; }
+      .page-heading { display: flex; min-height: 62px; align-items: flex-start; justify-content: space-between; gap: 18px; }
+      .breadcrumb { margin: 0 0 5px; color: var(--blue); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+      h1 { margin: 0; color: #142238; font-size: 28px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+      .page-subtitle { margin: 5px 0 0; color: var(--slate-500); font-size: 12px; line-height: 1.35; }
+      .heading-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; padding-top: 9px; }
+      .btn { display: inline-flex; height: 36px; align-items: center; justify-content: center; gap: 8px; border-radius: 9px; padding: 0 13px; color: var(--slate-700); font-size: 11px; font-weight: 700; white-space: nowrap; }
+      .btn svg { width: 15px; height: 15px; }
+      .btn-secondary { border: 1px solid var(--border); background: #fff; }
+      .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 3px 7px rgba(37, 99, 235, .16); }
+      .btn-tertiary { border: 1px solid transparent; background: transparent; color: var(--blue); }
+      .btn-disabled { border: 1px solid var(--border); background: #f1f5f9; color: #a7b5c3; }
+      .btn-danger { border: 1px solid #fecdd3; background: #fff7f8; color: var(--rose); }
+      .icon-btn { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--slate-600); }
+      .card { border: 1px solid rgba(220,230,238,.95); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2xs); }
+      .eyebrow { color: #8195aa; font-size: 9px; font-weight: 700; letter-spacing: .08em; line-height: 1.2; text-transform: uppercase; }
+      .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .section-title { margin: 0; color: #142238; font-size: 14px; font-weight: 700; line-height: 1.15; }
+      .section-caption { margin: 4px 0 0; color: var(--slate-400); font-size: 10px; line-height: 1.25; }
+      .section-link { display: inline-flex; align-items: center; gap: 4px; color: var(--blue); font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .section-link svg { width: 13px; height: 13px; }
+      .status { display: inline-flex; min-height: 22px; align-items: center; gap: 5px; border-radius: 6px; padding: 0 7px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+      .status.green { background: var(--emerald-soft); color: #047857; }
+      .status.blue { background: var(--blue-soft); color: var(--blue); }
+      .status.amber { background: var(--amber-soft); color: var(--amber); }
+      .status.rose { background: var(--rose-soft); color: var(--rose); }
+      .status.gray { background: #f1f5f9; color: #64748b; }
+      .status.violet { background: var(--violet-soft); color: #6d28d9; }
+      .input { display: flex; min-width: 0; height: 34px; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--slate-500); padding: 0 10px; }
+      .input svg { flex: 0 0 auto; width: 14px; height: 14px; color: #7890a8; }
+      .input input, .input select { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--slate-600); font-size: 10px; }
+      .input input::placeholder { color: #91a3b3; }
+      .chip { display: inline-flex; min-height: 22px; align-items: center; border: 1px solid transparent; border-radius: 6px; padding: 0 7px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+      .chip.blue { border-color: #bfdbfe; background: var(--blue-soft); color: var(--blue); }
+      .chip.gray { background: #f1f5f9; color: #64748b; }
+      .chip.green { background: var(--emerald-soft); color: #047857; }
+      .chip.amber { border-color: #fed7aa; background: var(--amber-soft); color: var(--amber); }
+      .chip.rose { border-color: #fecdd3; background: var(--rose-soft); color: var(--rose); }
+      .chip.violet { background: var(--violet-soft); color: #6d28d9; }
+      .sparkline { width: 72px; height: 23px; color: var(--blue); }
+      .sparkline polyline { fill: none; stroke: currentColor; stroke-width: 2; }
+
+      /* KPI strip shared by catalogue surfaces. */
+      .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .kpi { position: relative; min-width: 0; min-height: 94px; overflow: hidden; padding: 13px 15px 11px; }
+      .kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .kpi-icon { display: flex; width: 27px; height: 27px; align-items: center; justify-content: center; border-radius: 9px; }
+      .kpi-icon svg { width: 14px; height: 14px; }
+      .kpi-icon.blue { background: #dbeafe; color: var(--blue); }
+      .kpi-icon.green { background: #d1fae5; color: var(--emerald); }
+      .kpi-icon.amber { background: #ffedd5; color: var(--amber); }
+      .kpi-icon.violet { background: #ede9fe; color: var(--violet); }
+      .kpi-value { margin-top: 7px; color: #142238; font-size: 22px; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+      .kpi-meta { display: flex; align-items: center; gap: 5px; margin-top: 6px; color: var(--slate-400); font-size: 9px; line-height: 1.1; white-space: nowrap; }
+      .kpi-meta .up { color: var(--emerald); font-weight: 700; }
+      .kpi-meta .warn { color: var(--amber); font-weight: 700; }
+      .kpi .sparkline { position: absolute; right: 13px; bottom: 10px; }
+
+      /* Taxonomy */
+      .taxonomy-kpis { margin-top: 7px; }
+      .taxonomy-layout { display: grid; height: calc(100% - 184px); min-height: 0; grid-template-columns: 296px minmax(0, 1fr) 354px; gap: 12px; margin-top: 12px; }
+      .tree-card, .node-card, .brand-card { min-width: 0; min-height: 0; overflow: hidden; padding: 15px; }
+      .tree-card { display: flex; flex-direction: column; }
+      .tree-search { margin-top: 12px; }
+      .tree-list { min-height: 0; margin-top: 9px; overflow: hidden; }
+      .tree-row { display: flex; min-height: 30px; align-items: center; gap: 6px; border-radius: 7px; color: var(--slate-600); padding: 0 7px; font-size: 10px; font-weight: 600; }
+      .tree-row + .tree-row { margin-top: 2px; }
+      .tree-row.selected { background: var(--blue-soft); color: var(--blue); }
+      .tree-row.family { min-height: 26px; margin-left: 20px; padding-left: 7px; color: var(--slate-500); font-size: 9px; font-weight: 500; }
+      .tree-row.family.selected { color: var(--blue); font-weight: 700; }
+      .tree-row svg { flex: 0 0 auto; width: 13px; height: 13px; }
+      .tree-count { margin-left: auto; color: var(--slate-400); font-family: var(--mono); font-size: 9px; }
+      .tree-row.selected .tree-count { color: var(--blue); }
+      .tree-badge { margin-left: 4px; border-radius: 4px; background: var(--amber-soft); color: var(--amber); padding: 3px 5px; font-size: 8px; font-weight: 700; }
+      .tree-warning { display: flex; align-items: flex-start; gap: 8px; margin-top: auto; border: 1px solid #fed7aa; border-radius: 8px; background: #fffaf3; color: var(--amber); padding: 9px; font-size: 9px; line-height: 1.3; }
+      .tree-warning svg { flex: 0 0 auto; width: 14px; height: 14px; }
+      .node-card { display: flex; flex-direction: column; }
+      .node-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .node-title { display: flex; align-items: center; gap: 8px; }
+      .node-title h2 { margin: 0; color: #142238; font-size: 20px; letter-spacing: -.03em; }
+      .node-slug { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; color: var(--slate-500); font-family: var(--mono); font-size: 9px; }
+      .node-slug svg { width: 11px; height: 11px; color: var(--slate-400); }
+      .node-actions { display: flex; gap: 5px; }
+      .node-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
+      .metric-box { border: 1px solid #e7edf3; border-radius: 8px; background: #fbfdff; padding: 9px 10px; }
+      .metric-box strong { display: block; margin-top: 4px; color: var(--ink); font-size: 18px; letter-spacing: -.03em; }
+      .metric-box span { color: var(--slate-400); font-size: 9px; }
+      .subsection { margin-top: 15px; }
+      .subsection-head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #edf2f6; padding-bottom: 7px; }
+      .subsection-head strong { color: var(--slate-700); font-size: 11px; }
+      .subsection-head span { color: var(--slate-400); font-size: 9px; }
+      .family-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 14px; margin-top: 8px; }
+      .family-line { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 0; color: var(--slate-600); font-size: 9px; }
+      .family-line span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .family-line strong { color: var(--slate-700); font-family: var(--mono); font-size: 9px; }
+      .brand-rank { display: grid; gap: 7px; margin-top: 8px; }
+      .brand-rank-row { display: grid; grid-template-columns: 18px minmax(0,1fr) 45px; align-items: center; gap: 7px; color: var(--slate-600); font-size: 9px; }
+      .brand-rank-row > span:first-child { display: flex; width: 18px; height: 18px; align-items: center; justify-content: center; border-radius: 5px; background: #f1f5f9; color: var(--slate-500); font-family: var(--mono); font-size: 8px; }
+      .rank-bar { height: 5px; overflow: hidden; border-radius: 99px; background: #eef2f7; }
+      .rank-bar i { display: block; height: 100%; border-radius: inherit; background: var(--blue); }
+      .brand-rank-row strong { color: var(--slate-700); font-family: var(--mono); font-size: 9px; text-align: right; }
+      .node-actions-panel { margin-top: 13px; border-top: 1px solid #edf2f6; padding-top: 10px; }
+      .node-action-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 8px; }
+      .node-action { display: flex; min-width: 0; align-items: center; gap: 6px; border: 1px solid #e7edf3; border-radius: 7px; background: #fbfdff; padding: 7px; color: var(--slate-600); font-size: 8px; }
+      .node-action svg { flex: 0 0 auto; width: 13px; height: 13px; color: var(--blue); }
+      .node-action span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .node-review { margin-top: 12px; border-top: 1px solid #edf2f6; padding-top: 10px; }
+      .review-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 8px; }
+      .review-item { border-radius: 7px; background: #fbfdff; padding: 8px; }
+      .review-item strong { display: block; color: var(--slate-700); font-size: 9px; }
+      .review-item span { display: block; margin-top: 3px; color: var(--slate-400); font-size: 8px; }
+      .impact-warning { display: flex; align-items: flex-start; gap: 8px; margin-top: auto; border: 1px solid #fecdd3; border-radius: 8px; background: var(--rose-soft); color: var(--rose); padding: 10px; font-size: 9px; line-height: 1.35; }
+      .impact-warning svg { flex: 0 0 auto; width: 14px; height: 14px; }
+      .impact-warning strong { display: block; margin-bottom: 3px; font-size: 10px; }
+      .brand-card { display: flex; flex-direction: column; }
+      .brand-toolbar { margin-top: 11px; }
+      .brand-list { margin-top: 9px; border-top: 1px solid #edf2f6; }
+      .brand-row { display: grid; grid-template-columns: minmax(0,1fr) 54px 20px; align-items: center; gap: 8px; min-height: 39px; border-bottom: 1px solid #edf2f6; color: var(--slate-600); font-size: 10px; }
+      .brand-row strong { color: var(--slate-700); font-size: 10px; }
+      .brand-row small { display: block; margin-top: 2px; color: var(--slate-400); font-size: 8px; }
+      .brand-row > span { color: var(--slate-600); font-family: var(--mono); font-size: 9px; text-align: right; }
+      .brand-row > svg { color: var(--slate-400); }
+      .brand-health { margin-top: 12px; border: 1px solid #e7edf3; border-radius: 8px; background: #fbfdff; padding: 9px; }
+      .brand-health-head { display: flex; align-items: center; justify-content: space-between; color: var(--slate-600); font-size: 9px; }
+      .brand-health-head strong { color: var(--slate-700); font-size: 10px; }
+      .brand-health-track { height: 5px; overflow: hidden; margin-top: 8px; border-radius: 99px; background: #eef2f7; }
+      .brand-health-track i { display: block; width: 88%; height: 100%; border-radius: inherit; background: var(--emerald); }
+      .brand-health small { display: block; margin-top: 6px; color: var(--slate-400); font-size: 8px; }
+      .brand-attention { display: grid; gap: 6px; margin-top: 10px; }
+      .brand-attention-row { display: flex; align-items: center; justify-content: space-between; border-radius: 7px; background: #fbfdff; padding: 7px 8px; color: var(--slate-600); font-size: 8px; }
+      .brand-attention-row strong { color: var(--slate-700); font-family: var(--mono); font-size: 9px; }
+      .brand-drawer { margin-top: auto; border-top: 1px solid #e8eef4; padding-top: 11px; }
+      .brand-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .brand-detail-head strong { color: var(--ink); font-size: 12px; }
+      .brand-detail { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-top: 8px; }
+      .brand-detail div { border-radius: 7px; background: #f8fafc; padding: 7px 8px; }
+      .brand-detail span { display: block; color: var(--slate-400); font-size: 8px; }
+      .brand-detail strong { display: block; margin-top: 3px; color: var(--slate-700); font-size: 10px; }
+
+      /* Product detail */
+      .product-heading { min-height: 91px; align-items: center; }
+      .product-identity { display: flex; min-width: 0; align-items: center; gap: 12px; }
+      .product-thumb { display: flex; width: 62px; height: 62px; flex: 0 0 auto; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #f6f8fb; }
+      .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .product-heading-copy { min-width: 0; }
+      .product-heading-copy h1 { overflow: hidden; max-width: 720px; text-overflow: ellipsis; white-space: nowrap; }
+      .product-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--slate-500); font-size: 10px; }
+      .product-meta .mono { color: var(--slate-700); font-size: 10px; }
+      .product-statuses { display: flex; gap: 5px; margin-top: 7px; }
+      .product-actions { padding-top: 0; }
+      .product-tabs { display: flex; height: 38px; align-items: flex-end; gap: 18px; border-bottom: 1px solid var(--border); }
+      .product-tab { position: relative; display: inline-flex; height: 38px; align-items: center; color: var(--slate-500); font-size: 11px; font-weight: 700; }
+      .product-tab.active { color: var(--blue); }
+      .product-tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--blue); content: ""; }
+      .product-grid { display: grid; height: calc(100% - 132px); min-height: 0; grid-template-columns: minmax(0, 1fr) 332px; gap: 12px; margin-top: 12px; }
+      .product-main { display: grid; min-height: 0; grid-template-rows: 166px 226px minmax(0,1fr); gap: 12px; }
+      .product-card { min-width: 0; min-height: 0; overflow: hidden; padding: 14px 15px; }
+      .product-card .section-head { margin-bottom: 11px; }
+      .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 15px; }
+      .data-field { display: flex; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid #f0f3f6; padding-bottom: 7px; }
+      .data-field label { color: var(--slate-400); font-size: 9px; }
+      .data-field strong { min-width: 0; overflow: hidden; color: var(--slate-700); font-size: 10px; font-weight: 600; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+      .data-field strong.mono { font-size: 9px; }
+      .data-field em { display: block; margin-top: 2px; color: var(--slate-400); font-size: 8px; font-style: normal; text-align: right; }
+      .technical-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px 15px; }
+      .tech-field { min-width: 0; border-bottom: 1px solid #f0f3f6; padding-bottom: 7px; }
+      .tech-field label { display: block; color: var(--slate-400); font-size: 8px; }
+      .tech-field strong { display: block; overflow: hidden; margin-top: 3px; color: var(--slate-700); font-size: 10px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .source-note { display: inline-flex; align-items: center; gap: 4px; color: var(--slate-400); font-size: 8px; }
+      .source-note::before { width: 5px; height: 5px; border-radius: 999px; background: var(--blue); content: ""; }
+      .source-note.editorial::before { background: var(--violet); }
+      .inventory-summary { display: grid; grid-template-columns: minmax(0,1fr) 115px; gap: 15px; }
+      .stock-table { width: 100%; border-collapse: collapse; }
+      .stock-table th { height: 24px; border-bottom: 1px solid var(--border); color: var(--slate-400); font-size: 8px; font-weight: 700; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
+      .stock-table td { height: 30px; border-bottom: 1px solid #edf2f6; color: var(--slate-600); font-size: 9px; }
+      .stock-table td strong { color: var(--slate-700); font-family: var(--mono); font-size: 9px; }
+      .stock-total { display: flex; min-height: 86px; flex-direction: column; justify-content: center; border-radius: 8px; background: var(--blue-soft); padding: 10px; }
+      .stock-total span { color: #5b7fbd; font-size: 9px; }
+      .stock-total strong { margin-top: 4px; color: var(--blue); font-size: 25px; letter-spacing: -.04em; }
+      .stock-total small { margin-top: 2px; color: #5b7fbd; font-size: 8px; }
+      .inventory-footer { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; margin-top: 14px; border-top: 1px solid #edf2f6; padding-top: 11px; }
+      .inventory-footer div { min-width: 0; border-radius: 7px; background: #fbfdff; padding: 8px; }
+      .inventory-footer span { display: block; overflow: hidden; color: var(--slate-400); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+      .inventory-footer strong { display: block; overflow: hidden; margin-top: 4px; color: var(--slate-700); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .product-side { display: grid; min-height: 0; grid-template-rows: 256px 224px minmax(0,1fr); gap: 12px; }
+      .readiness-card, .store-card, .promo-card { min-height: 0; overflow: hidden; padding: 14px 15px; }
+      .readiness-score { display: flex; align-items: center; gap: 11px; margin-top: 12px; border-bottom: 1px solid #edf2f6; padding-bottom: 10px; }
+      .score-ring { display: flex; width: 48px; height: 48px; align-items: center; justify-content: center; border: 5px solid #bfdbfe; border-right-color: var(--blue); border-radius: 999px; color: var(--blue); font-size: 12px; font-weight: 700; }
+      .readiness-score strong { display: block; color: var(--slate-700); font-size: 11px; }
+      .readiness-score span { display: block; margin-top: 3px; color: var(--slate-400); font-size: 9px; }
+      .checklist { display: grid; gap: 8px; margin-top: 10px; }
+      .check-row { display: flex; align-items: center; gap: 7px; color: var(--slate-600); font-size: 9px; }
+      .check-row svg { width: 14px; height: 14px; }
+      .check-row.ok svg { color: var(--emerald); }
+      .check-row.warn svg { color: var(--amber); }
+      .check-row a { margin-left: auto; color: var(--blue); font-size: 8px; font-weight: 700; }
+      .store-preview { display: grid; grid-template-columns: 88px minmax(0,1fr); gap: 12px; margin-top: 12px; }
+      .store-image { display: flex; height: 92px; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #e8eef4; border-radius: 8px; background: #f7f9fb; }
+      .store-image img { width: 100%; height: 100%; object-fit: cover; }
+      .store-copy strong { display: block; color: var(--slate-700); font-size: 10px; line-height: 1.25; }
+      .store-copy .stars { margin-top: 5px; color: #f59e0b; font-size: 10px; letter-spacing: 1px; }
+      .store-copy small { display: block; margin-top: 6px; color: var(--slate-400); font-size: 8px; }
+      .store-price { margin-top: 9px; color: var(--ink); font-size: 18px; font-weight: 700; }
+      .promo-item { display: flex; align-items: center; gap: 8px; margin-top: 11px; border: 1px solid #d1fae5; border-radius: 8px; background: #f4fdf8; padding: 8px; }
+      .promo-item svg { flex: 0 0 auto; color: var(--emerald); }
+      .promo-item strong { display: block; color: var(--slate-700); font-size: 10px; }
+      .promo-item span { display: block; margin-top: 2px; color: var(--slate-400); font-size: 8px; }
+
+      /* Supplier detail */
+      .supplier-heading { min-height: 69px; }
+      .supplier-title-line { display: flex; align-items: center; gap: 9px; }
+      .supplier-title-line h1 { font-size: 27px; }
+      .supplier-meta { display: flex; align-items: center; gap: 12px; margin-top: 7px; color: var(--slate-500); font-size: 10px; }
+      .supplier-meta .mono { color: var(--slate-700); font-size: 10px; }
+      .supplier-actions { padding-top: 7px; }
+      .supplier-kpis { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-top: 4px; }
+      .supplier-kpi { min-width: 0; min-height: 88px; padding: 12px 13px; }
+      .supplier-kpi .kpi-value { font-size: 20px; }
+      .supplier-kpi .kpi-meta { overflow: hidden; text-overflow: ellipsis; }
+      .supplier-layout { display: grid; height: calc(100% - 192px); min-height: 0; grid-template-columns: minmax(0,1.28fr) minmax(335px,.72fr); gap: 12px; margin-top: 12px; }
+      .supplier-left, .supplier-right { display: grid; min-height: 0; gap: 12px; }
+      .supplier-left { grid-template-rows: 245px minmax(0,1fr); }
+      .supplier-right { grid-template-rows: 224px minmax(0,1fr); }
+      .supplier-card { min-width: 0; min-height: 0; overflow: hidden; padding: 14px 15px; }
+      .orders-table { width: 100%; margin-top: 11px; border-collapse: collapse; table-layout: fixed; }
+      .orders-table th { height: 25px; border-bottom: 1px solid var(--border); color: var(--slate-400); font-size: 8px; font-weight: 700; letter-spacing: .05em; text-align: left; text-transform: uppercase; }
+      .orders-table td { height: 43px; border-bottom: 1px solid #edf2f6; color: var(--slate-600); font-size: 9px; vertical-align: middle; }
+      .orders-table td strong { display: block; color: var(--slate-700); font-family: var(--mono); font-size: 9px; }
+      .orders-table td small { display: block; margin-top: 3px; color: var(--slate-400); font-size: 8px; }
+      .late { color: var(--rose); font-weight: 700; }
+      .product-supplier-list { margin-top: 10px; border-top: 1px solid #edf2f6; }
+      .supplier-product-row { display: grid; grid-template-columns: minmax(0,1fr) 75px 75px; align-items: center; gap: 10px; min-height: 46px; border-bottom: 1px solid #edf2f6; }
+      .supplier-product-row strong { display: block; color: var(--slate-700); font-size: 9px; }
+      .supplier-product-row small { display: block; margin-top: 3px; color: var(--slate-400); font-family: var(--mono); font-size: 8px; }
+      .supplier-product-row > span { color: var(--slate-600); font-family: var(--mono); font-size: 9px; text-align: right; }
+      .variation-up { color: var(--rose) !important; }
+      .supplier-insight { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; border-top: 1px solid #edf2f6; padding-top: 12px; }
+      .supplier-insight div { border-radius: 8px; background: #fbfdff; padding: 9px; }
+      .supplier-insight span { display: block; color: var(--slate-400); font-size: 8px; }
+      .supplier-insight strong { display: block; margin-top: 4px; color: var(--slate-700); font-size: 11px; }
+      .receipts { margin-top: 12px; }
+      .receipt-line { position: relative; display: grid; grid-template-columns: 12px minmax(0,1fr); gap: 9px; min-height: 49px; }
+      .receipt-line::before { position: absolute; top: 12px; bottom: -8px; left: 5px; width: 1px; background: #dbe5ee; content: ""; }
+      .receipt-line:last-child::before { display: none; }
+      .receipt-dot { position: relative; z-index: 1; display: block; width: 11px; height: 11px; margin-top: 3px; border: 2px solid #fff; border-radius: 999px; background: var(--emerald); box-shadow: 0 0 0 1px #a7e4c8; }
+      .receipt-dot.blue { background: var(--blue); box-shadow: 0 0 0 1px #a9c7ff; }
+      .receipt-copy strong { display: block; color: var(--slate-700); font-size: 9px; }
+      .receipt-copy span { display: block; margin-top: 3px; color: var(--slate-400); font-size: 8px; }
+      .contact-card { position: relative; }
+      .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+      .contact-item { display: flex; min-width: 0; align-items: flex-start; gap: 7px; }
+      .contact-item svg { flex: 0 0 auto; width: 14px; height: 14px; color: var(--blue); }
+      .contact-item span { display: block; color: var(--slate-400); font-size: 8px; }
+      .contact-item strong { display: block; overflow: hidden; margin-top: 3px; color: var(--slate-700); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .contact-actions { display: flex; gap: 7px; margin-top: 15px; }
+      .contact-actions .btn { flex: 1; height: 32px; padding: 0 8px; font-size: 9px; }
+      .supplier-note { margin-top: 12px; border: 1px solid #e7edf3; border-radius: 8px; background: #fbfdff; color: var(--slate-500); padding: 8px; font-size: 9px; line-height: 1.35; }
+      .supplier-conditions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; border-top: 1px solid #edf2f6; padding-top: 12px; }
+      .supplier-conditions div { border-radius: 8px; background: #fbfdff; padding: 8px; }
+      .supplier-conditions span { display: block; color: var(--slate-400); font-size: 8px; }
+      .supplier-conditions strong { display: block; margin-top: 4px; color: var(--slate-700); font-size: 9px; }
+
+      /* Settings */
+      .settings-heading { min-height: 55px; }
+      .settings-actions { padding-top: 0; }
+      .completion-bar { display: grid; grid-template-columns: 1.1fr repeat(5, 1fr); gap: 8px; min-height: 69px; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; padding: 10px 12px; }
+      .completion-lead { display: flex; min-width: 0; flex-direction: column; justify-content: center; border-right: 1px solid #edf2f6; padding-right: 12px; }
+      .completion-lead strong { color: var(--ink); font-size: 12px; }
+      .completion-lead span { margin-top: 4px; color: var(--slate-400); font-size: 9px; }
+      .completion-item { display: flex; min-width: 0; flex-direction: column; justify-content: center; gap: 5px; border-right: 1px solid #edf2f6; padding: 0 9px; }
+      .completion-item:last-child { border-right: 0; }
+      .completion-item span { overflow: hidden; color: var(--slate-500); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .completion-item strong { color: var(--slate-700); font-size: 11px; }
+      .completion-item strong.warn { color: var(--amber); }
+      .completion-track { height: 4px; overflow: hidden; border-radius: 99px; background: #edf2f6; }
+      .completion-track i { display: block; height: 100%; border-radius: inherit; background: var(--blue); }
+      .completion-track i.amber { background: #f59e0b; }
+      .settings-tabs { display: flex; height: 43px; align-items: flex-end; gap: 19px; overflow: hidden; border-bottom: 1px solid var(--border); margin-top: 10px; }
+      .settings-tab { position: relative; display: inline-flex; height: 43px; align-items: center; color: var(--slate-500); font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .settings-tab.active { color: var(--blue); }
+      .settings-tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--blue); content: ""; }
+      .settings-body { display: grid; height: calc(100% - 188px); min-height: 0; grid-template-columns: minmax(0,1.36fr) minmax(330px,.64fr); gap: 12px; margin-top: 12px; padding-bottom: 55px; }
+      .settings-form-card, .settings-preview-card, .settings-history-card { min-height: 0; overflow: hidden; padding: 14px 15px; }
+      .settings-form-card { overflow: hidden; }
+      .settings-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px 16px; margin-top: 14px; }
+      .form-field { min-width: 0; }
+      .form-label { display: flex; align-items: baseline; gap: 3px; color: var(--slate-700); font-size: 10px; font-weight: 700; }
+      .form-label .required { color: var(--rose); }
+      .form-help { margin: 4px 0 6px; color: var(--slate-400); font-size: 8px; line-height: 1.25; }
+      .form-control { display: flex; min-width: 0; height: 34px; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--slate-700); padding: 0 10px; font-size: 10px; }
+      .form-control.valid { border-color: #86efac; background: #f5fff8; }
+      .form-control.valid::after { width: 14px; height: 14px; margin-left: auto; border-radius: 999px; background: var(--emerald); content: "✓"; color: #fff; font-size: 9px; line-height: 14px; text-align: center; }
+      .form-control input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: inherit; font-size: inherit; }
+      .form-control .mono { font-size: 9px; }
+      .form-control.multiline { height: 50px; align-items: flex-start; padding-top: 9px; line-height: 1.25; }
+      .validation-message { display: flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--emerald); font-size: 8px; font-weight: 600; }
+      .validation-message svg { width: 11px; height: 11px; }
+      .settings-health { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; border-top: 1px solid #edf2f6; padding-top: 12px; }
+      .settings-health div { border-radius: 8px; background: #fbfdff; padding: 9px; }
+      .settings-health span { display: block; color: var(--slate-400); font-size: 8px; }
+      .settings-health strong { display: block; margin-top: 4px; color: var(--slate-700); font-size: 10px; }
+      .settings-right { display: grid; min-height: 0; grid-template-rows: 284px minmax(0,1fr); gap: 12px; }
+      .document-preview { margin-top: 12px; border: 1px solid #e7edf3; border-radius: 9px; background: #fbfdff; padding: 13px; }
+      .document-brand { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8eef4; padding-bottom: 10px; }
+      .document-brand img { width: 106px; }
+      .document-brand span { color: var(--slate-400); font-size: 8px; }
+      .document-preview h3 { margin: 12px 0 0; color: var(--slate-700); font-size: 12px; }
+      .document-preview p { margin: 5px 0 0; color: var(--slate-500); font-size: 9px; line-height: 1.35; }
+      .document-line { display: flex; justify-content: space-between; border-bottom: 1px solid #edf2f6; padding: 8px 0; color: var(--slate-500); font-size: 9px; }
+      .document-line strong { color: var(--slate-700); }
+      .history-item { display: grid; grid-template-columns: 12px minmax(0,1fr); gap: 9px; margin-top: 12px; }
+      .history-dot { width: 10px; height: 10px; margin-top: 3px; border: 2px solid #fff; border-radius: 999px; background: var(--blue); box-shadow: 0 0 0 1px #a9c7ff; }
+      .history-item strong { display: block; color: var(--slate-700); font-size: 9px; }
+      .history-item span { display: block; margin-top: 3px; color: var(--slate-400); font-size: 8px; line-height: 1.3; }
+      .savebar { position: absolute; right: 20px; bottom: 0; left: 36px; display: flex; height: 54px; align-items: center; justify-content: flex-end; gap: 9px; border-top: 1px solid var(--border); background: rgba(248,250,252,.97); }
+      .savebar-copy { margin-right: auto; color: var(--slate-500); font-size: 10px; }
+      .savebar-copy strong { color: var(--amber); }
+
+      /* Mobile composition */
+      @media (max-width: 700px) {
+        body { overflow: hidden; }
+        .canvas { min-height: 844px; }
+        .sidebar { display: none; }
+        .app-column { inset: 0; }
+        .topbar { height: 60px; padding: 0 14px; gap: 9px; }
+        .top-search, .topbar-page, .profile-copy, .profile > svg { display: none; }
+        .mobile-only { display: flex; }
+        .mobile-menu { width: 32px; height: 32px; align-items: center; justify-content: center; color: var(--navy); }
+        .mobile-brand { width: 108px; height: auto; }
+        .topbar-actions { margin-left: auto; gap: 5px; }
+        .topbar-icon { width: 32px; height: 32px; }
+        .avatar { width: 32px; height: 32px; font-size: 10px; }
+        .notification-dot { right: 0; top: 0; min-width: 14px; height: 14px; font-size: 8px; }
+        .workspace { height: calc(100vh - 60px); }
+        .page { overflow: hidden; padding: 15px 14px 62px; }
+        .page-heading { min-height: 48px; gap: 8px; }
+        .breadcrumb { margin-bottom: 4px; font-size: 8px; }
+        h1 { font-size: 23px; }
+        .page-subtitle { margin-top: 4px; font-size: 10px; }
+        .heading-actions { gap: 5px; padding-top: 0; }
+        .heading-actions .btn { width: 32px; height: 32px; padding: 0; font-size: 0; }
+        .heading-actions .btn svg { width: 15px; height: 15px; }
+        .heading-actions .btn-primary { width: 32px; }
+        .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+        .kpi { min-height: 70px; padding: 9px 10px; }
+        .kpi-icon { width: 22px; height: 22px; border-radius: 7px; }
+        .kpi-icon svg { width: 12px; height: 12px; }
+        .eyebrow { font-size: 8px; }
+        .kpi-value { margin-top: 5px; font-size: 17px; }
+        .kpi-meta { margin-top: 4px; font-size: 8px; }
+        .kpi .sparkline { display: none; }
+        .card { border-radius: 10px; }
+        .section-title { font-size: 12px; }
+        .section-caption { font-size: 9px; }
+        .input { height: 31px; }
+        .input input { font-size: 9px; }
+
+        /* taxonomy mobile */
+        .taxonomy-kpis { margin-top: 5px; }
+        .taxonomy-mobile-tabs { display: flex; height: 33px; align-items: flex-end; gap: 15px; border-bottom: 1px solid var(--border); margin-top: 9px; }
+        .taxonomy-mobile-tabs span { position: relative; display: flex; height: 33px; align-items: center; color: var(--slate-500); font-size: 9px; font-weight: 700; }
+        .taxonomy-mobile-tabs span.active { color: var(--blue); }
+        .taxonomy-mobile-tabs span.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--blue); content: ""; }
+        .taxonomy-layout { display: block; height: calc(100% - 206px); min-height: 0; margin-top: 8px; }
+        .tree-card { height: 206px; padding: 11px; }
+        .tree-card .section-caption { display: none; }
+        .tree-search { margin-top: 8px; }
+        .tree-list { margin-top: 6px; }
+        .tree-row { min-height: 23px; font-size: 9px; }
+        .tree-row.family { min-height: 20px; font-size: 8px; }
+        .tree-warning { margin-top: 6px; padding: 6px; font-size: 8px; }
+        .tree-warning svg { width: 12px; height: 12px; }
+        .node-card { height: 206px; margin-top: 8px; padding: 11px; }
+        .node-title h2 { font-size: 16px; }
+        .node-slug { margin-top: 3px; font-size: 8px; }
+        .node-actions .btn { height: 28px; padding: 0 7px; font-size: 8px; }
+        .node-metrics { gap: 5px; margin-top: 9px; }
+        .metric-box { padding: 6px 7px; }
+        .metric-box strong { margin-top: 2px; font-size: 15px; }
+        .metric-box span { font-size: 8px; }
+        .subsection { margin-top: 8px; }
+        .subsection-head { padding-bottom: 5px; }
+        .family-list { gap: 2px 10px; margin-top: 4px; }
+        .family-line { padding: 2px 0; font-size: 8px; }
+        .family-line strong { font-size: 8px; }
+        .impact-warning { margin-top: 7px; padding: 6px; font-size: 8px; }
+        .impact-warning strong { margin-bottom: 1px; font-size: 8px; }
+        .node-actions-panel { display: none; }
+        .node-review { display: none; }
+        .brand-card { display: none; }
+
+        /* product mobile */
+        .product-heading { min-height: 79px; align-items: flex-start; }
+        .product-thumb { width: 50px; height: 50px; border-radius: 8px; }
+        .product-identity { gap: 9px; }
+        .product-heading-copy h1 { max-width: 235px; font-size: 18px; line-height: 1.08; white-space: normal; }
+        .product-meta { gap: 6px; margin-top: 4px; font-size: 8px; }
+        .product-meta .mono { font-size: 8px; }
+        .product-statuses { gap: 4px; margin-top: 4px; }
+        .product-statuses .status { min-height: 18px; padding: 0 5px; font-size: 8px; }
+        .product-actions .btn { width: 29px; height: 29px; }
+        .product-tabs { height: 33px; gap: 14px; overflow: hidden; }
+        .product-tab { height: 33px; font-size: 9px; }
+        .product-grid { display: block; height: calc(100% - 116px); margin-top: 8px; }
+        .product-main { display: block; }
+        .product-card { padding: 10px 11px; }
+        .product-main .product-card + .product-card { margin-top: 8px; }
+        .product-main .product-card:nth-child(1) { height: 150px; }
+        .product-main .product-card:nth-child(2) { height: 150px; }
+        .product-main .product-card:nth-child(3) { height: 126px; }
+        .product-card .section-head { margin-bottom: 7px; }
+        .field-grid { gap: 6px 10px; }
+        .data-field { gap: 5px; padding-bottom: 5px; }
+        .data-field label { font-size: 8px; }
+        .data-field strong { font-size: 8px; }
+        .data-field strong.mono { font-size: 8px; }
+        .data-field em { font-size: 7px; }
+        .technical-grid { gap: 5px 10px; }
+        .tech-field { padding-bottom: 5px; }
+        .tech-field label { font-size: 7px; }
+        .tech-field strong { margin-top: 2px; font-size: 8px; }
+        .technical-grid .tech-field:nth-child(7), .technical-grid .tech-field:nth-child(8), .technical-grid .tech-field:nth-child(9) { display: none; }
+        .inventory-summary { grid-template-columns: minmax(0,1fr) 86px; gap: 8px; }
+        .stock-table th { font-size: 7px; }
+        .stock-table td { height: 23px; font-size: 8px; }
+        .stock-table td strong { font-size: 8px; }
+        .stock-table tbody tr:nth-child(2) { display: none; }
+        .stock-total { min-height: 68px; padding: 7px; }
+        .stock-total span, .stock-total small { font-size: 7px; }
+        .stock-total strong { font-size: 20px; }
+        .inventory-footer { display: none; }
+        .product-side { display: block; margin-top: 8px; }
+        .readiness-card { height: 170px; padding: 10px 11px; }
+        .readiness-score { margin-top: 8px; padding-bottom: 7px; }
+        .score-ring { width: 39px; height: 39px; border-width: 4px; font-size: 10px; }
+        .readiness-score strong { font-size: 9px; }
+        .readiness-score span { font-size: 8px; }
+        .checklist { grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 7px; }
+        .check-row { gap: 4px; font-size: 8px; }
+        .check-row svg { width: 12px; height: 12px; }
+        .check-row a { display: none; }
+        .store-card, .promo-card { display: none; }
+
+        /* supplier mobile */
+        .supplier-heading { min-height: 72px; }
+        .supplier-title-line { gap: 6px; }
+        .supplier-title-line h1 { max-width: 240px; font-size: 20px; }
+        .supplier-meta { gap: 7px; margin-top: 5px; font-size: 8px; }
+        .supplier-meta .mono { font-size: 8px; }
+        .supplier-actions { padding-top: 0; }
+        .supplier-actions .btn { width: 29px; height: 29px; }
+        .supplier-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; margin-top: 2px; }
+        .supplier-kpi { min-height: 62px; padding: 8px 9px; }
+        .supplier-kpi:nth-child(5) { grid-column: span 2; min-height: 48px; }
+        .supplier-kpi .kpi-value { margin-top: 4px; font-size: 16px; }
+        .supplier-kpi .kpi-meta { margin-top: 3px; font-size: 8px; }
+        .supplier-layout { display: block; height: calc(100% - 220px); margin-top: 8px; }
+        .supplier-left, .supplier-right { display: block; }
+        .supplier-card { padding: 10px 11px; }
+        .supplier-left .orders-card { height: 185px; }
+        .orders-table { margin-top: 7px; }
+        .orders-table th { height: 20px; font-size: 7px; }
+        .orders-table td { height: 35px; font-size: 8px; }
+        .orders-table td strong { font-size: 8px; }
+        .orders-table td small { margin-top: 1px; font-size: 7px; }
+        .supplier-left .products-card { display: none; }
+        .supplier-insight, .supplier-conditions { display: none; }
+        .supplier-right { margin-top: 8px; }
+        .supplier-right .receipts-card { height: 120px; }
+        .receipts { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 7px; }
+        .receipt-line { min-height: 42px; grid-template-columns: 10px minmax(0,1fr); gap: 6px; }
+        .receipt-line::before { top: 10px; bottom: -7px; left: 4px; }
+        .receipt-dot { width: 9px; height: 9px; }
+        .receipt-copy strong { font-size: 8px; }
+        .receipt-copy span { margin-top: 2px; font-size: 7px; }
+        .supplier-right .contact-card { height: 137px; margin-top: 8px; }
+        .contact-grid { gap: 6px; margin-top: 7px; }
+        .contact-item { gap: 5px; }
+        .contact-item svg { width: 12px; height: 12px; }
+        .contact-item span { font-size: 7px; }
+        .contact-item strong { margin-top: 2px; font-size: 8px; }
+        .contact-actions { gap: 5px; margin-top: 8px; }
+        .contact-actions .btn { height: 27px; font-size: 8px; }
+        .supplier-note { display: none; }
+
+        /* settings mobile */
+        .settings-heading { min-height: 43px; }
+        .settings-actions { padding-top: 0; }
+        .completion-bar { grid-template-columns: 1fr 1fr; gap: 5px; min-height: 82px; margin-top: 3px; padding: 7px 8px; }
+        .completion-lead { grid-column: span 2; min-height: 25px; flex-direction: row; align-items: center; justify-content: space-between; border-right: 0; border-bottom: 1px solid #edf2f6; padding: 0 0 5px; }
+        .completion-lead strong { font-size: 10px; }
+        .completion-lead span { margin-top: 0; font-size: 8px; }
+        .completion-item { min-height: 22px; border-right: 0; padding: 0 5px; }
+        .completion-item:nth-child(4), .completion-item:nth-child(5) { display: none; }
+        .completion-item span { font-size: 8px; }
+        .completion-item strong { font-size: 9px; }
+        .completion-track { height: 3px; }
+        .settings-tabs { height: 37px; gap: 15px; overflow: hidden; margin-top: 7px; }
+        .settings-tab { height: 37px; font-size: 8px; }
+        .settings-body { display: block; height: calc(100% - 174px); margin-top: 8px; padding-bottom: 48px; }
+        .settings-form-card { height: 360px; padding: 10px 11px; }
+        .settings-form-grid { gap: 8px 10px; margin-top: 9px; }
+        .form-label { font-size: 8px; }
+        .form-help { display: none; }
+        .form-control { height: 29px; padding: 0 8px; font-size: 8px; }
+        .form-control.multiline { height: 40px; padding-top: 7px; }
+        .validation-message { margin-top: 3px; font-size: 7px; }
+        .validation-message svg { width: 10px; height: 10px; }
+        .settings-right { display: block; margin-top: 8px; }
+        .settings-preview-card { height: 126px; padding: 10px 11px; }
+        .document-preview { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; margin-top: 8px; padding: 8px; }
+        .document-brand { display: block; border-bottom: 0; padding-bottom: 0; }
+        .document-brand img { width: 82px; }
+        .document-brand span { display: block; margin-top: 6px; font-size: 7px; }
+        .document-preview h3 { margin: 0; font-size: 9px; }
+        .document-preview p { margin-top: 3px; font-size: 7px; }
+        .document-line { padding: 4px 0; font-size: 7px; }
+        .settings-history-card { display: none; }
+        .settings-health { display: none; }
+        .savebar { right: 14px; bottom: 0; left: 14px; height: 48px; gap: 6px; }
+        .savebar-copy { font-size: 8px; }
+        .savebar .btn { height: 32px; padding: 0 11px; font-size: 9px; }
+      }
+    </style>
+  </head>
+  <body data-screen="taxonomia">
+    <svg class="svg-sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5M5 21h14"></path></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path><path d="M9 21v-7h6v7"></path></symbol>
+      <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"></path><path d="m4 7.5 8 4.5 8-4.5M12 12v9"></path></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3.4 13.4a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h7a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1"></circle></symbol>
+      <symbol id="i-shopping-bag" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></symbol>
+      <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2z"></path><path d="M8 7h8M8 11h8M8 15h5"></path></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.4v-.2a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.4h.2A1.7 1.7 0 0 0 7.76 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 1.7-1.7.06.06A1.7 1.7 0 0 0 11 6.4a1.7 1.7 0 0 0 1.03-1.56V4h2.4v.2A1.7 1.7 0 0 0 15.46 5.76a1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 18.7 9a1.7 1.7 0 0 0 1.56 1.03h.2v2.4h-.2A1.7 1.7 0 0 0 19.4 15z"></path></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"></path><path d="m3 12 9 5 9-5M3 16l9 5 9-5"></path></symbol>
+      <symbol id="i-package" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"></path><path d="M4 7.5 12 12l8-4.5M12 12v9M8 5l8 4.5"></path></symbol>
+      <symbol id="i-warehouse" viewBox="0 0 24 24"><path d="m3 10 9-6 9 6v10H3z"></path><path d="M7 20v-6h10v6M7 10h10M9 10v2M12 10v2M15 10v2"></path></symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="18" cy="18" r="2"></circle></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v5l3 2"></path></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="m10.3 3.7-8 14A2 2 0 0 0 4 20.7h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24"><path d="m4 16 9-9 4 4-9 9-5 1zM14 6l2-2 4 4-2 2"></path></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path><circle cx="12" cy="12" r="2.5"></circle></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.5"></circle><path d="m21 15-4-4L6 20"></path></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6A2 2 0 0 1 22 16.9z"></path></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.2 9.2 0 0 1-3.8-.8L3 21l1.8-4A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"></path></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.7 9a2.5 2.5 0 1 1 4.2 1.8c-1.1.9-1.9 1.3-1.9 2.7M12 17h.01"></path></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"></path><path d="m8 12 2.5 2.5L16 9"></path></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10v10h16V10M3 10l2-6h14l2 6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-5h6v5"></path></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0-14-4L3 10M3 4v6h6M4 13a8.1 8.1 0 0 0 14 4l3-3M21 20v-6h-6"></path></symbol>
+    </svg>
+
+    <div class="canvas">
+      <aside class="sidebar" aria-label="Navegación administrativa">
+        <div class="brand-lockup"><img src="../../../../../public/brand/logo-coldpower-lockup.webp" alt="ColdPower" /></div>
+        <div class="admin-caption">Administración</div>
+        <nav class="nav">
+          <div class="nav-group-label">General</div>
+          <a class="nav-item" href="#"><svg><use href="#i-home"></use></svg><span>Inicio</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-layout"></use></svg><span>Dashboard</span></a>
+          <div class="nav-group-label">Comercial</div>
+          <a class="nav-item" href="#"><svg><use href="#i-receipt"></use></svg><span>Cotizaciones</span></a>
+          <a class="nav-item" href="#"><svg><use href="#i-shopping-bag"></use></svg><span>Ventas</span></a>
+          <div class="nav-group-label">Operación</div>
+          <a class="nav-item" href="#"><svg><use href="#i-box"></use></svg><span>Operaciones</span></a>
+          <a class="nav-item" data-nav="proveedor" href="#"><svg><use href="#i-truck"></use></svg><span>Compras</span></a>
+          <div class="nav-group-label">Catálogo</div>
+          <a class="nav-item" data-nav="producto" href="#"><svg><use href="#i-package"></use></svg><span>Productos</span></a>
+          <a class="nav-item" data-nav="taxonomia" href="#"><svg><use href="#i-layers"></use></svg><span>Taxonomía</span></a>
+          <div class="nav-group-label">Gestión</div>
+          <a class="nav-item" href="#"><svg><use href="#i-users"></use></svg><span>Clientes</span></a>
+          <a class="nav-item" data-nav="configuracion" href="#"><svg><use href="#i-settings"></use></svg><span>Configuración</span></a>
+        </nav>
+        <div class="support">
+          <div class="support-head"><svg><use href="#i-help"></use></svg><span>¿Necesitas ayuda?</span></div>
+          <p>Soporte del panel<br />Abrir centro de soporte</p>
+        </div>
+      </aside>
+
+      <div class="app-column">
+        <header class="topbar">
+          <button class="mobile-only mobile-menu" aria-label="Abrir menú"><svg><use href="#i-menu"></use></svg></button>
+          <img class="mobile-only mobile-brand" src="../../../../../public/brand/logo-coldpower-lockup.webp" alt="ColdPower" />
+          <label class="top-search"><svg><use href="#i-search"></use></svg><input placeholder="Buscar en administración..." aria-label="Buscar en administración" /></label>
+          <div class="topbar-page">Catálogo y operaciones</div>
+          <div class="topbar-actions">
+            <button class="topbar-icon" aria-label="Notificaciones"><svg><use href="#i-bell"></use></svg><span class="notification-dot">3</span></button>
+            <div class="profile"><div class="avatar">G</div><div class="profile-copy"><strong>Gerencia</strong><span>Administrador</span></div><svg><use href="#i-chevron-down"></use></svg></div>
+          </div>
+        </header>
+
+        <main class="workspace">
+          <div class="page">
+            <!-- 1. Taxonomía -->
+            <section class="screen screen-taxonomia" aria-labelledby="taxonomy-title">
+              <div class="page-heading">
+                <div><p class="breadcrumb">CATÁLOGO / ESTRUCTURA</p><h1 id="taxonomy-title">Taxonomía</h1><p class="page-subtitle">Organiza categorías, familias y marcas sin perder el control editorial.</p></div>
+                <div class="heading-actions"><button class="btn btn-secondary"><svg><use href="#i-download"></use></svg>Exportar</button><button class="btn btn-primary"><svg><use href="#i-plus"></use></svg>Nueva categoría</button></div>
+              </div>
+              <div class="kpi-grid taxonomy-kpis">
+                <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Categorías activas</span><span class="kpi-icon blue"><svg><use href="#i-layers"></use></svg></span></div><div class="kpi-value">18</div><div class="kpi-meta"><span class="up">+2</span><span>vs. mes anterior · 2 inactivas</span></div><svg class="sparkline" viewBox="0 0 72 23" aria-hidden="true"><polyline points="1,18 10,16 18,17 28,10 36,13 46,8 55,10 64,4 71,6"></polyline></svg></article>
+                <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Familias</span><span class="kpi-icon green"><svg><use href="#i-box"></use></svg></span></div><div class="kpi-value">46</div><div class="kpi-meta"><span class="up">+5</span><span>3 sin categoría hija</span></div><svg class="sparkline" viewBox="0 0 72 23" aria-hidden="true"><polyline points="1,17 10,18 19,14 28,15 36,9 46,11 55,7 64,8 71,3"></polyline></svg></article>
+                <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Marcas activas</span><span class="kpi-icon violet"><svg><use href="#i-tag"></use></svg></span></div><div class="kpi-value">32</div><div class="kpi-meta"><span class="up">+3</span><span>28 con productos publicados</span></div><svg class="sparkline" viewBox="0 0 72 23" aria-hidden="true"><polyline points="1,18 10,13 18,16 28,11 36,12 46,6 55,9 64,5 71,5"></polyline></svg></article>
+                <article class="card kpi"><div class="kpi-head"><span class="eyebrow">Productos sin marca</span><span class="kpi-icon amber"><svg><use href="#i-alert"></use></svg></span></div><div class="kpi-value">14</div><div class="kpi-meta"><span class="warn">Revisar</span><span>1.0% del catálogo</span></div><svg class="sparkline" viewBox="0 0 72 23" aria-hidden="true"><polyline points="1,6 10,8 18,7 28,12 36,10 46,15 55,13 64,18 71,17"></polyline></svg></article>
+              </div>
+              <div class="taxonomy-mobile-tabs mobile-only"><span class="active">Árbol</span><span>Detalle</span><span>Marcas</span></div>
+              <div class="taxonomy-layout">
+                <article class="card tree-card">
+                  <div class="section-head"><div><h2 class="section-title">Árbol de catálogo</h2><p class="section-caption">Categoría → familia · 20 categorías</p></div><span class="chip gray">18 activas</span></div>
+                  <div class="input tree-search"><svg><use href="#i-search"></use></svg><input placeholder="Buscar categoría o familia" aria-label="Buscar en el árbol" /></div>
+                  <div class="tree-list">
+                    <div class="tree-row selected"><svg><use href="#i-chevron-down"></use></svg><svg><use href="#i-layers"></use></svg><span>Refrigeración</span><span class="tree-count">128</span></div>
+                    <div class="tree-row family selected"><svg><use href="#i-chevron-right"></use></svg><span>Compresores</span><span class="tree-count">34</span></div>
+                    <div class="tree-row family"><svg><use href="#i-chevron-right"></use></svg><span>Capacitores</span><span class="tree-count">28</span></div>
+                    <div class="tree-row family"><svg><use href="#i-chevron-right"></use></svg><span>Filtros y válvulas</span><span class="tree-count">22</span></div>
+                    <div class="tree-row"><svg><use href="#i-chevron-right"></use></svg><svg><use href="#i-layers"></use></svg><span>Aire acondicionado</span><span class="tree-badge">2 nombres</span><span class="tree-count">62</span></div>
+                    <div class="tree-row"><svg><use href="#i-chevron-right"></use></svg><svg><use href="#i-layers"></use></svg><span>Línea blanca</span><span class="tree-count">251</span></div>
+                    <div class="tree-row"><svg><use href="#i-chevron-right"></use></svg><svg><use href="#i-layers"></use></svg><span>Herramientas</span><span class="tree-badge">Vacía</span><span class="tree-count">0</span></div>
+                    <div class="tree-row"><svg><use href="#i-chevron-right"></use></svg><svg><use href="#i-layers"></use></svg><span>Repuestos generales</span><span class="tree-count">188</span></div>
+                  </div>
+                  <div class="tree-warning"><svg><use href="#i-alert"></use></svg><span><strong>Revisión editorial</strong><br />“Aire acondicionado” y “Aire Acondicionado” podrían duplicar la navegación.</span></div>
+                </article>
+
+                <article class="card node-card">
+                  <div class="node-head"><div><div class="node-title"><h2>Refrigeración</h2><span class="status green">Activa</span></div><div class="node-slug"><svg><use href="#i-pencil"></use></svg> /refrigeracion <span class="source-note">origen</span></div></div><div class="node-actions"><button class="btn btn-secondary">Renombrar</button><button class="icon-btn" aria-label="Más acciones"><svg><use href="#i-more"></use></svg></button></div></div>
+                  <div class="node-metrics"><div class="metric-box"><span>Productos</span><strong>128</strong></div><div class="metric-box"><span>Publicados</span><strong>119</strong></div><div class="metric-box"><span>En revisión</span><strong>9</strong></div></div>
+                  <div class="subsection"><div class="subsection-head"><strong>Familias hijas</strong><span>4 familias · 128 productos</span></div><div class="family-list"><div class="family-line"><span>Compresores</span><strong>34</strong></div><div class="family-line"><span>Capacitores</span><strong>28</strong></div><div class="family-line"><span>Filtros y válvulas</span><strong>22</strong></div><div class="family-line"><span>Motores y ventiladores</span><strong>21</strong></div><div class="family-line"><span>Controles</span><strong>15</strong></div><div class="family-line"><span>Sin familia</span><strong class="warn">8</strong></div></div></div>
+                  <div class="subsection"><div class="subsection-head"><strong>Marcas principales</strong><span>por productos publicados</span></div><div class="brand-rank"><div class="brand-rank-row"><span>01</span><span>Embraco <i class="rank-bar"><i style="width:100%"></i></i></span><strong>36</strong></div><div class="brand-rank-row"><span>02</span><span>Ranco <i class="rank-bar"><i style="width:68%"></i></i></span><strong>24</strong></div><div class="brand-rank-row"><span>03</span><span>Supco <i class="rank-bar"><i style="width:51%"></i></i></span><strong>18</strong></div></div></div>
+                  <div class="node-actions-panel"><div class="subsection-head"><strong>Acciones del nodo</strong><span>requieren permiso de catálogo</span></div><div class="node-action-list"><div class="node-action"><svg><use href="#i-pencil"></use></svg><span>Editar nombre y slug</span></div><div class="node-action"><svg><use href="#i-box"></use></svg><span>Mover familia</span></div><div class="node-action"><svg><use href="#i-alert"></use></svg><span>Desactivar</span></div></div></div>
+                  <div class="node-review"><div class="subsection-head"><strong>Revisión abierta</strong><span>9 productos pendientes</span></div><div class="review-items"><div class="review-item"><strong>5 sin descripción</strong><span>Completar ficha editorial</span></div><div class="review-item"><strong>3 sin imagen</strong><span>Revisar media principal</span></div><div class="review-item"><strong>1 posible duplicado</strong><span>Resolver antes de publicar</span></div></div></div>
+                  <div class="impact-warning"><svg><use href="#i-alert"></use></svg><div><strong>Antes de desactivar</strong>12 productos publicados dejarán de mostrarse en <span class="mono">/categoria/refrigeracion</span>. Mueve la editorial o confirma el impacto.</div></div>
+                </article>
+
+                <article class="card brand-card">
+                  <div class="section-head"><div><h2 class="section-title">Marcas</h2><p class="section-caption">Visibilidad y cobertura del catálogo</p></div><button class="icon-btn" aria-label="Nueva marca"><svg><use href="#i-plus"></use></svg></button></div>
+                  <div class="input brand-toolbar"><svg><use href="#i-search"></use></svg><input placeholder="Buscar marca" aria-label="Buscar marca" /></div>
+                  <div class="brand-list"><div class="brand-row"><div><strong>Embraco</strong><small>Activa · editorial completa</small></div><span>36</span><svg><use href="#i-chevron-right"></use></svg></div><div class="brand-row"><div><strong>Ranco</strong><small>Activa · 2 en revisión</small></div><span>24</span><svg><use href="#i-chevron-right"></use></svg></div><div class="brand-row"><div><strong>Supco</strong><small>Activa · 18 publicados</small></div><span>18</span><svg><use href="#i-chevron-right"></use></svg></div><div class="brand-row"><div><strong>Emerson</strong><small>Activa · 14 publicados</small></div><span>15</span><svg><use href="#i-chevron-right"></use></svg></div><div class="brand-row"><div><strong>Secop</strong><small>Inactiva · sin publicaciones</small></div><span>9</span><svg><use href="#i-chevron-right"></use></svg></div></div>
+                  <div class="brand-health"><div class="brand-health-head"><strong>Cobertura editorial</strong><span>28 de 32 activas</span></div><div class="brand-health-track"><i></i></div><small>4 marcas tienen productos sin publicar o sin descripción editorial.</small></div>
+                  <div class="brand-attention"><div class="brand-attention-row"><span>Productos sin marca</span><strong>14</strong></div><div class="brand-attention-row"><span>Nombres similares</span><strong>2</strong></div><div class="brand-attention-row"><span>Marcas inactivas</span><strong>4</strong></div></div>
+                  <div class="brand-drawer"><div class="brand-detail-head"><strong>Embraco</strong><span class="status green">Activa</span></div><div class="brand-detail"><div><span>Productos</span><strong>36</strong></div><div><span>Publicados</span><strong>34</strong></div><div><span>Slug</span><strong class="mono">embraco</strong></div><div><span>Actualizada</span><strong>25 set 2026</strong></div></div></div>
+                </article>
+              </div>
+            </section>
+
+            <!-- 2. Product detail -->
+            <section class="screen screen-producto" aria-labelledby="product-title">
+              <div class="page-heading product-heading">
+                <div class="product-identity"><div class="product-thumb"><img src="../../../../../public/images/products/placeholder-compresores.webp" alt="Compresor hermético" /></div><div class="product-heading-copy"><p class="breadcrumb">CATÁLOGO / PRODUCTOS / DETALLE</p><h1 id="product-title">Compresor hermético Embraco NJX</h1><div class="product-meta"><span class="mono">CP-R134-014</span><span>·</span><span>Modelo <strong class="mono">NJX9238Z</strong></span></div><div class="product-statuses"><span class="status amber">En revisión</span><span class="status green">Disponible</span><span class="status gray">Requiere imagen editorial</span></div></div></div>
+                <div class="heading-actions product-actions"><button class="btn btn-secondary"><svg><use href="#i-external"></use></svg>Ver en tienda</button><button class="btn btn-disabled" title="Completa el checklist para publicar"><svg><use href="#i-eye"></use></svg>Publicar</button><button class="icon-btn" aria-label="Más acciones"><svg><use href="#i-more"></use></svg></button></div>
+              </div>
+              <div class="product-tabs"><span class="product-tab active">Ficha</span><span class="product-tab">Precios</span><span class="product-tab">Inventario</span><span class="product-tab">Imágenes</span><span class="product-tab">Historial</span></div>
+              <div class="product-grid">
+                <div class="product-main">
+                  <article class="card product-card"><div class="section-head"><div><h2 class="section-title">Ficha comercial</h2><p class="section-caption">Datos de origen y edición para publicar el producto.</p></div><span class="source-note editorial">editorial</span></div><div class="field-grid"><div class="data-field"><label>Nombre comercial</label><strong>Compresor hermético Embraco NJX</strong></div><div class="data-field"><label>Marca</label><strong>Embraco</strong><em>Editorial · origen: EMBRACO</em></div><div class="data-field"><label>Categoría</label><strong>Refrigeración</strong><em>Editorial · origen: Refrigeración</em></div><div class="data-field"><label>Familia</label><strong>Compresores</strong><em>Editorial · origen: Compresores</em></div><div class="data-field"><label>Aplicación</label><strong>Refrigeradoras domésticas</strong></div><div class="data-field"><label>Descripción editorial</label><strong>Compresor hermético para R134a</strong></div></div></article>
+                  <article class="card product-card"><div class="section-head"><div><h2 class="section-title">Atributos técnicos</h2><p class="section-caption">Valores listos para búsqueda y ficha de tienda.</p></div><button class="btn btn-tertiary"><svg><use href="#i-pencil"></use></svg>Editar ficha</button></div><div class="technical-grid"><div class="tech-field"><label>Refrigerante</label><strong>R134a</strong></div><div class="tech-field"><label>Voltaje</label><strong>220–240 V</strong></div><div class="tech-field"><label>Frecuencia</label><strong>60 Hz</strong></div><div class="tech-field"><label>Potencia</label><strong>1/4 HP</strong></div><div class="tech-field"><label>Capacitancia</label><strong>12 μF</strong></div><div class="tech-field"><label>Amperaje</label><strong>1.8 A</strong></div><div class="tech-field"><label>Temperatura</label><strong>−23 °C</strong></div><div class="tech-field"><label>Dimensiones</label><strong>220 × 220 × 180 mm</strong></div><div class="tech-field"><label>Unidad de medida</label><strong>Unidad</strong></div><div class="tech-field"><label>Marcas compatibles</label><strong>Electrolux · Mabe</strong></div><div class="tech-field"><label>Código de modelo</label><strong class="mono">NJX9238Z</strong></div><div class="tech-field"><label>SKU inmutable</label><strong class="mono">CP-R134-014</strong></div></div></article>
+                  <article class="card product-card"><div class="section-head"><div><h2 class="section-title">Precio e inventario</h2><p class="section-caption">Vigente desde 01 set 2026 · PEN</p></div><button class="btn btn-secondary"><svg><use href="#i-pencil"></use></svg>Ajustar</button></div><div class="inventory-summary"><table class="stock-table"><thead><tr><th>Local</th><th>Físico</th><th>Reservado</th><th>Disponible</th><th>Estado</th></tr></thead><tbody><tr><td>Almacén Lima</td><td><strong>42</strong></td><td>8</td><td><strong>34</strong></td><td><span class="status green">Sobre mínimo</span></td></tr><tr><td>Mostrador Lima</td><td><strong>9</strong></td><td>2</td><td><strong>7</strong></td><td><span class="status amber">Revisar</span></td></tr></tbody></table><div class="stock-total"><span>Precio minorista</span><strong>S/ 620.00</strong><small>mínimo S/ 540.00</small></div></div><div class="inventory-footer"><div><span>Último ajuste</span><strong>−3 unidades · 24 set</strong></div><div><span>Precio anterior</span><strong>S/ 598.00</strong></div><div><span>Relaciones validadas</span><strong>2 relacionadas</strong></div></div></article>
+                </div>
+                <aside class="product-side">
+                  <article class="card readiness-card"><div class="section-head"><div><h2 class="section-title">Preparación para publicar</h2><p class="section-caption">Completa lo necesario antes de mostrarlo.</p></div><span class="status amber">4 de 5</span></div><div class="readiness-score"><div class="score-ring">80%</div><div><strong>Ficha casi lista</strong><span>Falta una imagen editorial y alt text.</span></div></div><div class="checklist"><div class="check-row ok"><svg><use href="#i-check"></use></svg><span>Nombre y SKU</span></div><div class="check-row ok"><svg><use href="#i-check"></use></svg><span>Categoría y familia</span></div><div class="check-row ok"><svg><use href="#i-check"></use></svg><span>Precio vigente</span></div><div class="check-row ok"><svg><use href="#i-check"></use></svg><span>Stock por local</span></div><div class="check-row warn"><svg><use href="#i-alert"></use></svg><span>Imagen principal</span><a href="#">Completar</a></div></div></article>
+                  <article class="card store-card"><div class="section-head"><div><h2 class="section-title">Vista en tienda</h2><p class="section-caption">Así lo verá el cliente.</p></div><svg class="muted"><use href="#i-external"></use></svg></div><div class="store-preview"><div class="store-image"><img src="../../../../../public/images/products/placeholder-compresores.webp" alt="Vista del compresor" /></div><div class="store-copy"><strong>Compresor hermético Embraco NJX</strong><div class="stars">★★★★★</div><small>SKU CP-R134-014 · Disponible</small><div class="store-price">S/ 620.00</div></div></div></article>
+                  <article class="card promo-card"><div class="section-head"><div><h2 class="section-title">Promociones activas</h2><p class="section-caption">Aplicables a este producto</p></div><span class="chip green">1 activa</span></div><div class="promo-item"><svg><use href="#i-tag"></use></svg><div><strong>Liquidación compresores R134a</strong><span>−15% · vence en 7 días · prioridad P1</span></div></div></article>
+                </aside>
+              </div>
+            </section>
+
+            <!-- 3. Supplier detail -->
+            <section class="screen screen-proveedor" aria-labelledby="supplier-title">
+              <div class="page-heading supplier-heading"><div><p class="breadcrumb">COMPRAS / PROVEEDORES / DETALLE</p><div class="supplier-title-line"><h1 id="supplier-title">Tecno Frío S.A.C.</h1><span class="status green">Activo</span></div><div class="supplier-meta"><span class="mono">RUC 20512345678</span><span>·</span><span>Perú</span><span>·</span><span>Moneda PEN</span></div></div><div class="heading-actions supplier-actions"><button class="btn btn-primary"><svg><use href="#i-plus"></use></svg>Crear OC</button><button class="btn btn-secondary"><svg><use href="#i-message"></use></svg>WhatsApp</button><button class="btn btn-secondary"><svg><use href="#i-pencil"></use></svg>Editar</button></div></div>
+              <div class="supplier-kpis"><article class="card supplier-kpi"><div class="eyebrow">OC abiertas</div><div class="kpi-value">S/ 18,640.00</div><div class="kpi-meta"><span class="warn">3 órdenes</span><span>1 retrasada</span></div></article><article class="card supplier-kpi"><div class="eyebrow">On-time</div><div class="kpi-value">86%</div><div class="kpi-meta"><span class="up">+4.2 pp</span><span>de 14 entregas</span></div></article><article class="card supplier-kpi"><div class="eyebrow">Fill rate</div><div class="kpi-value">94%</div><div class="kpi-meta"><span class="up">+2.0 pp</span><span>últimos 90 días</span></div></article><article class="card supplier-kpi"><div class="eyebrow">Lead time medio</div><div class="kpi-value">9.4 d</div><div class="kpi-meta"><span class="up">−1.1 d</span><span>vs. trimestre anterior</span></div></article><article class="card supplier-kpi"><div class="eyebrow">Incidencias · 90 d</div><div class="kpi-value">2</div><div class="kpi-meta"><span class="warn">1 abierta</span><span>última hace 6 d</span></div></article></div>
+              <div class="supplier-layout"><div class="supplier-left"><article class="card supplier-card orders-card"><div class="section-head"><div><h2 class="section-title">Órdenes abiertas</h2><p class="section-caption">Qué le debemos y cuándo debe llegar.</p></div><a class="section-link">Ver todas <svg><use href="#i-chevron-right"></use></svg></a></div><table class="orders-table"><thead><tr><th style="width:25%">Orden</th><th style="width:28%">Estado</th><th style="width:25%">Entrega esperada</th><th style="width:22%;text-align:right">Importe</th></tr></thead><tbody><tr><td><strong>OC-2026-0184</strong><small>Almacén Lima · 8 ítems</small></td><td><span class="status blue">En tránsito</span></td><td>28 set 2026</td><td style="text-align:right"><strong>S/ 8,420.00</strong></td></tr><tr><td><strong>OC-2026-0171</strong><small>Almacén Lima · 5 ítems</small></td><td><span class="status amber">Parcial</span></td><td><span class="late">Venció 23 set</span></td><td style="text-align:right"><strong>S/ 6,780.00</strong></td></tr><tr><td><strong>OC-2026-0192</strong><small>Mostrador Lima · 3 ítems</small></td><td><span class="status gray">Pendiente</span></td><td>04 oct 2026</td><td style="text-align:right"><strong>S/ 3,440.00</strong></td></tr></tbody></table></article><article class="card supplier-card products-card"><div class="section-head"><div><h2 class="section-title">Productos que suministra</h2><p class="section-caption">Último costo y variación frente a la compra anterior.</p></div><a class="section-link">Ver catálogo <svg><use href="#i-chevron-right"></use></svg></a></div><div class="product-supplier-list"><div class="supplier-product-row"><div><strong>Compresor hermético NJX</strong><small>CP-R134-014</small></div><span>S/ 410.00</span><span class="variation-up">+3.2%</span></div><div class="supplier-product-row"><div><strong>Capacitor de arranque 35 μF</strong><small>CP-CAP-035</small></div><span>S/ 18.50</span><span>−1.4%</span></div><div class="supplier-product-row"><div><strong>Motor ventilador universal</strong><small>CP-MOT-220</small></div><span>S/ 86.00</span><span>0.0%</span></div><div class="supplier-product-row"><div><strong>Filtro deshidratador 1/4</strong><small>CP-FIL-014</small></div><span>S/ 12.80</span><span class="variation-up">+0.8%</span></div></div><div class="supplier-insight"><div><span>Productos activos</span><strong>18</strong></div><div><span>Última compra</span><strong>22 set 2026</strong></div><div><span>Cobertura de catálogo</span><strong>4 familias</strong></div></div></article></div><div class="supplier-right"><article class="card supplier-card receipts-card"><div class="section-head"><div><h2 class="section-title">Recepciones recientes</h2><p class="section-caption">Últimos movimientos confirmados.</p></div><span class="chip gray">90 días</span></div><div class="receipts"><div class="receipt-line"><span class="receipt-dot"></span><div class="receipt-copy"><strong>RC-2026-0098 · 100% recibido</strong><span>22 set 2026 · Almacén Lima</span></div></div><div class="receipt-line"><span class="receipt-dot blue"></span><div class="receipt-copy"><strong>RC-2026-0087 · 18 de 20 ítems</strong><span>08 set 2026 · Mostrador Lima</span></div></div><div class="receipt-line"><span class="receipt-dot"></span><div class="receipt-copy"><strong>RC-2026-0074 · 100% recibido</strong><span>29 ago 2026 · Almacén Lima</span></div></div></div></article><article class="card supplier-card contact-card"><div class="section-head"><div><h2 class="section-title">Contacto</h2><p class="section-caption">Acciones de un toque para compras.</p></div><button class="icon-btn" aria-label="Editar contacto"><svg><use href="#i-pencil"></use></svg></button></div><div class="contact-grid"><div class="contact-item"><svg><use href="#i-users"></use></svg><div><span>Contacto principal</span><strong>Mariana Salazar</strong></div></div><div class="contact-item"><svg><use href="#i-phone"></use></svg><div><span>Teléfono</span><strong>+51 987 654 321</strong></div></div><div class="contact-item"><svg><use href="#i-mail"></use></svg><div><span>Correo</span><strong>compras@tecnofrio.pe</strong></div></div><div class="contact-item"><svg><use href="#i-warehouse"></use></svg><div><span>Dirección</span><strong>Av. Argentina 1840, Lima</strong></div></div></div><div class="contact-actions"><button class="btn btn-secondary"><svg><use href="#i-phone"></use></svg>Llamar</button><button class="btn btn-secondary"><svg><use href="#i-message"></use></svg>WhatsApp</button><button class="btn btn-secondary"><svg><use href="#i-mail"></use></svg>Correo</button></div><div class="supplier-note"><strong>Nota de compras:</strong> confirmar disponibilidad de compresores antes de emitir la siguiente orden.</div><div class="supplier-conditions"><div><span>Moneda</span><strong>PEN</strong></div><div><span>País</span><strong>Perú</strong></div><div><span>Estado</span><strong>Activo</strong></div></div></article></div></div>
+            </section>
+
+            <!-- 4. Configuration -->
+            <section class="screen screen-configuracion" aria-labelledby="settings-title">
+              <div class="page-heading settings-heading"><div><p class="breadcrumb">GESTIÓN / ADMINISTRACIÓN</p><h1 id="settings-title">Configuración</h1><p class="page-subtitle">Prepara la operación y factura con cambios versionados.</p></div><div class="heading-actions settings-actions"><button class="btn btn-secondary"><svg><use href="#i-history"></use></svg>Historial</button></div></div>
+              <div class="completion-bar"><div class="completion-lead"><strong>Completitud de configuración</strong><span>Lo que falta para operar sin bloqueos</span></div><div class="completion-item"><span>Empresa</span><strong>6/9 campos</strong><div class="completion-track"><i style="width:67%"></i></div></div><div class="completion-item"><span>Locales</span><strong>6 activos</strong><div class="completion-track"><i style="width:100%"></i></div></div><div class="completion-item"><span>Series</span><strong class="warn">0 <span class="nowrap">⚠</span></strong><div class="completion-track"><i class="amber" style="width:8%"></i></div></div><div class="completion-item"><span>IGV</span><strong class="warn">Sin configurar ⚠</strong><div class="completion-track"><i class="amber" style="width:14%"></i></div></div><div class="completion-item"><span>Integraciones</span><strong>0/5 conectadas</strong><div class="completion-track"><i class="amber" style="width:0%"></i></div></div></div>
+              <div class="settings-tabs"><span class="settings-tab active">Empresa</span><span class="settings-tab">Locales</span><span class="settings-tab">Series y documentos</span><span class="settings-tab">Precios e IGV</span><span class="settings-tab">Integraciones</span><span class="settings-tab">Branding</span><span class="settings-tab">Legal</span><span class="settings-tab">Historial</span></div>
+              <div class="settings-body"><article class="card settings-form-card"><div class="section-head"><div><h2 class="section-title">Datos de la empresa</h2><p class="section-caption">Estos datos aparecen en documentos, comprobantes y el pie de tienda.</p></div><span class="status blue">Empresa</span></div><div class="settings-form-grid"><div class="form-field"><div class="form-label">Razón social <span class="required">*</span></div><div class="form-help">Nombre legal registrado ante SUNAT.</div><div class="form-control">ColdPower Perú S.A.C.</div></div><div class="form-field"><div class="form-label">Nombre comercial</div><div class="form-help">Cómo te reconocerán tus clientes.</div><div class="form-control">ColdPower</div></div><div class="form-field"><div class="form-label">RUC <span class="required">*</span></div><div class="form-help">Se valida con el módulo 11 antes de guardar.</div><div class="form-control valid"><span class="mono">20601234567</span></div><div class="validation-message"><svg><use href="#i-check"></use></svg>RUC válido · persona jurídica</div></div><div class="form-field"><div class="form-label">Correo de ventas <span class="required">*</span></div><div class="form-help">Recibe avisos de cotizaciones y pedidos.</div><div class="form-control">ventas@coldpower.pe</div></div><div class="form-field"><div class="form-label">Teléfono</div><div class="form-help">Número visible en documentos.</div><div class="form-control">+51 1 640 2210</div></div><div class="form-field"><div class="form-label">WhatsApp</div><div class="form-help">Canal rápido para clientes y proveedores.</div><div class="form-control">+51 987 654 321</div></div><div class="form-field"><div class="form-label">Dirección fiscal <span class="required">*</span></div><div class="form-help">Dirección de facturación registrada.</div><div class="form-control multiline">Av. Argentina 1840, Cercado de Lima</div></div><div class="form-field"><div class="form-label">Ubicación fiscal <span class="required">*</span></div><div class="form-help">País · departamento · provincia · distrito.</div><div class="form-control">Perú · Lima · Lima · Lima</div></div><div class="form-field"><div class="form-label">Sitio web</div><div class="form-help">Enlace visible en el pie de tienda.</div><div class="form-control">www.coldpower.pe</div></div><div class="form-field"><div class="form-label">Horario de atención</div><div class="form-help">Se muestra en contacto y documentos.</div><div class="form-control">Lun–Sáb · 08:30–18:00</div></div></div><div class="settings-health"><div><span>Validación</span><strong>Válida · sin bloqueos</strong></div><div><span>Versión actual</span><strong class="mono">12</strong></div><div><span>Último editor</span><strong>Gerencia · 25 set</strong></div></div></article><aside class="settings-right"><article class="card settings-preview-card"><div class="section-head"><div><h2 class="section-title">Vista previa</h2><p class="section-caption">Así aparece en documentos y en el pie de la tienda.</p></div><span class="chip gray">Actual</span></div><div class="document-preview"><div class="document-brand"><img src="../../../../../public/brand/logo-coldpower-lockup.webp" alt="ColdPower" /><span>Documento comercial</span></div><div><h3>ColdPower Perú S.A.C.</h3><p>RUC 20601234567<br />Av. Argentina 1840 · Lima</p><div class="document-line"><span>ventas@coldpower.pe</span><strong>+51 1 640 2210</strong></div><div class="document-line"><span>coldpower.pe</span><strong>25 set 2026</strong></div></div></div></article><article class="card settings-history-card"><div class="section-head"><div><h2 class="section-title">Último cambio</h2><p class="section-caption">Trazabilidad de la configuración</p></div><span class="status green">Guardado</span></div><div class="history-item"><span class="history-dot"></span><div><strong>Datos de empresa actualizados</strong><span>Gerencia · versión 12<br />25 set 2026 · 09:14 hora de Lima</span></div></div><div class="history-item"><span class="history-dot" style="background:var(--slate-300);box-shadow:0 0 0 1px #d6e0e8"></span><div><strong>Logo comercial actualizado</strong><span>Marketing · versión 11<br />18 set 2026 · 16:40 hora de Lima</span></div></div></article></aside></div>
+              <div class="savebar"><div class="savebar-copy"><strong>3 cambios sin guardar</strong> · se creará una nueva versión</div><button class="btn btn-secondary">Descartar</button><button class="btn btn-primary">Guardar cambios</button></div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const screen = params.get("screen");
+      const allowed = new Set(["taxonomia", "producto", "proveedor", "configuracion"]);
+      document.body.dataset.screen = allowed.has(screen) ? screen : "taxonomia";
+      document.querySelectorAll("[data-nav]").forEach((item) => {
+        if (item.dataset.nav === document.body.dataset.screen) item.classList.add("active");
+      });
+      document.body.dataset.ready = "true";
+    </script>
+  </body>
+</html>

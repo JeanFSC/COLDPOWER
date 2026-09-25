@@ -1,0 +1,11 @@
+{
+  "name": "coldpower-m10-lote2-lamina",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "render": "node render.cjs"
+  },
+  "devDependencies": {
+    "playwright": "latest"
+  }
+}
