@@ -18,6 +18,8 @@ export function notificationEventLabel(value: string) {
 }
 
 const bodyReplacements: Array<[RegExp, string]> = [
+  [/\bBRIEF17R3-[A-Z0-9]+-[A-F0-9]+\b/gi, "notificación de prueba automatizada"],
+  [/\bBRIEF17R3-[A-Z0-9]+\b/gi, "notificación de prueba automatizada"],
   [/\bEl proveedor mock\b/gi, "La pasarela de prueba"],
   [/\bdel proveedor mock\b/gi, "de la pasarela de prueba"],
   [/\bproveedor mock\b/gi, "la pasarela de prueba"],

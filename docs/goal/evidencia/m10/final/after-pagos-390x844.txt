@@ -1,0 +1,457 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+¿Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+Gestión de pagos
+
+Administra, revisa y concilia los pagos recibidos.
+
+Exportar reporte
+Monto confirmado
+S/ 89,791.00
+
+Alcance actual · tendencia de los últimos 14 días
+
+Órdenes conciliadas
+69
+
+Conciliación por orden
+
+Pendientes
+47
+
+Pendiente o en revisión
+
+Observados
+15
+
+Diferencia, rechazo o error
+
+Tasa de conciliación
+52.67%
+
+69 de 131 órdenes conciliables
+
+Estado de pago
+143
+PAGOS TOTALES
+Aprobados
+69 (48.3%)
+Pendientes
+47 (32.9%)
+Rechazados
+15 (10.5%)
+Reembolsados / otros
+12 (8.4%)
+Métodos de pago
+Transferencia
+S/ 47,390.00
+52.8%
+Tarjeta
+S/ 8,410.00
+9.4%
+Pasarela de prueba
+S/ 1,485.00
+1.7%
+Tarjeta de débito
+S/ 7,257.00
+8.1%
+Tarjeta de crédito
+S/ 6,435.00
+7.2%
+Yape
+S/ 8,219.00
+9.2%
+Plin
+S/ 4,885.00
+5.4%
+Efectivo
+S/ 5,710.00
+6.4%
+Por configurar
+N/D
+N/D
+Estado
+Pendiente
+En revisión
+Confirmado
+Aprobado
+Rechazado
+Cancelado
+Reembolsado
+Conciliación
+Pendiente
+Conciliado
+Faltante
+Sobrepago
+Método
+Tarjeta
+Efectivo
+Tarjeta de crédito
+Tarjeta de débito
+Pasarela de prueba
+Plin
+Transferencia
+Transferencia
+Por configurar
+Yape
+Pasarela de prueba
+Moneda
+Pen
+Más filtros
+Aplicar
+Pagos
+143
+
+PAGO-A03F7B05
+
+Jean · ORD-20260926-AA44D7
+
+S/ 1,125.00
+Confirmado
+Conciliado
+
+PAGO-1D93F375
+
+Cliente corporativo 026 · PED-2026-036
+
+S/ 2,375.00
+Aprobado
+Conciliado
+
+PAGO-1C93F1E2
+
+Cliente corporativo 025 · PED-2026-037
+
+S/ 2,512.00
+Confirmado
+Conciliado
+
+PAGO-1F93F69B
+
+Cliente corporativo 024 · PED-2026-038
+
+S/ 2,649.00
+Confirmado
+Conciliado
+
+PAGO-1E93F508
+
+Cliente corporativo 023 · PED-2026-039
+
+S/ 186.00
+Confirmado
+Conciliado
+
+PAGO-1D96320C
+
+Cliente corporativo 022 · PED-2026-040
+
+S/ 323.00
+Confirmado
+Conciliado
+
+PAGO-1E96339F
+
+Cliente corporativo 021 · PED-2026-041
+
+S/ 460.00
+En revisión
+Pendiente
+
+PAGO-1F963532
+
+Cliente corporativo 020 · PED-2026-042
+
+S/ 597.00
+En revisión
+Pendiente
+
+PAGO-209636C5
+
+Cliente corporativo 019 · PED-2026-043
+
+S/ 734.00
+En revisión
+Pendiente
+
+PAGO-19962BC0
+
+Cliente corporativo 018 · PED-2026-044
+
+S/ 871.00
+En revisión
+Pendiente
+
+PAGO-1A962D53
+
+Cliente corporativo 016 · PED-2026-045
+
+S/ 1,008.00
+Confirmado
+Conciliado
+
+PAGO-1B962EE6
+
+Cliente corporativo 015 · PED-2026-046
+
+S/ 1,145.00
+Confirmado
+Conciliado
+
+PAGO-1C963079
+
+Cliente corporativo 014 · PED-2026-047
+
+S/ 1,282.00
+Confirmado
+Conciliado
+
+PAGO-25963EA4
+
+Jean · PED-2026-048
+
+S/ 1,419.00
+Confirmado
+Conciliado
+
+PAGO-C0506C7A
+
+QA B1.1 1790316452351 · ORD-20260925-470141
+
+S/ 1,250.00
+Pendiente
+Pendiente
+
+PAGO-5AD92680
+
+Colaborador 01 · CP16-PED-001
+
+S/ 90.00
+Reembolsado
+Faltante
+
+PAGO-B552D123
+
+QA B2.3 1790316095016 · ORD-20260925-16CB52
+
+S/ 90.00
+Reembolsado
+Faltante
+
+PAGO-34171728
+
+QA B2.3 1790316095016 · ORD-20260925-16CB52
+
+S/ 90.00
+Rechazado
+Faltante
+
+PAGO-3836510F
+
+QA B2.3 1790316095016 · ORD-20260925-16CBAC
+
+S/ 90.00
+Reembolsado
+Faltante
+
+PAGO-096F18ED
+
+QA B2.3 1790316095016 · ORD-20260925-16CBAC
+
+S/ 90.00
+Rechazado
+Faltante
+
+PAGO-0AB72261
+
+QA B2.3 1790316095016 · ORD-20260925-621EDD
+
+S/ 90.00
+Reembolsado
+Faltante
+
+PAGO-1DC39BEB
+
+QA B2.3 1790316095016 · ORD-20260925-621EDD
+
+S/ 90.00
+Rechazado
+Faltante
+
+PAGO-301DFA95
+
+QA B2.3 1790316095016 · ORD-20260925-E451A0
+
+S/ 90.00
+Reembolsado
+Faltante
+
+PAGO-44D17B07
+
+QA B2.3 1790316095016 · ORD-20260925-E451A0
+
+S/ 90.00
+Rechazado
+Faltante
+
+PAGO-DF90DFA6
+
+QA B2.3 1790316095016 · ORD-20260925-D56657
+
+S/ 90.00
+Reembolsado
+Faltante
+Página 1 de 6
+1
+2
+3
+4
+5
+Gestión y conciliación
+
+Revisa y resuelve las diferencias para mantener la contabilidad al día.
+
+Todos 143
+Pendientes 47
+Con diferencia 0
+Errores de proveedor 15
+Por reembolsar 0
+PENDIENTE
+PAGO-1E96339F
+
+Cliente corporativo 021
+
+Monto
+S/ 460.00
+Referencia
+PAY-2026-041
+Motivo
+Pendiente de confirmación
+Revisar pago
+PENDIENTE
+PAGO-1F963532
+
+Cliente corporativo 020
+
+Monto
+S/ 597.00
+Referencia
+PAY-2026-042
+Motivo
+Pendiente de confirmación
+Revisar pago
+PENDIENTE
+PAGO-209636C5
+
+Cliente corporativo 019
+
+Monto
+S/ 734.00
+Referencia
+PAY-2026-043
+Motivo
+Pendiente de confirmación
+Revisar pago
+PENDIENTE
+PAGO-19962BC0
+
+Cliente corporativo 018
+
+Monto
+S/ 871.00
+Referencia
+PAY-2026-044
+Motivo
+Pendiente de confirmación
+Revisar pago
+PENDIENTE
+PAGO-C0506C7A
+
+QA B1.1 1790316452351
+
+Monto
+S/ 1,250.00
+Referencia
+N/D
+Motivo
+Pendiente de confirmación
+Revisar pago
+OBSERVADO
+PAGO-34171728
+
+QA B2.3 1790316095016
+
+Monto
+S/ 90.00
+Referencia
+Referencia de pasarela de prueba
+Diferencia
+-S/ 90.00
+Motivo
+Rechazado por el proveedor
+Resolver conciliación
+OBSERVADO
+PAGO-096F18ED
+
+QA B2.3 1790316095016
+
+Monto
+S/ 90.00
+Referencia
+Referencia de pasarela de prueba
+Diferencia
+-S/ 90.00
+Motivo
+Rechazado por el proveedor
+Resolver conciliación
+OBSERVADO
+PAGO-1DC39BEB
+
+QA B2.3 1790316095016
+
+Monto
+S/ 90.00
+Referencia
+Referencia de pasarela de prueba
+Diferencia
+-S/ 90.00
+Motivo
+Rechazado por el proveedor
+Resolver conciliación

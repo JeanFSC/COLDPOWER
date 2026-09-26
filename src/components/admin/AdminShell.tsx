@@ -257,7 +257,7 @@ export function AdminShell({
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-white/70">
               <span className="flex items-center gap-2">
                 <CircleHelp className="h-4 w-4" aria-hidden="true" />
-                Necesitas ayuda?
+                ¿Necesitas ayuda?
               </span>
               <ChevronDown
                 className="h-4 w-4 transition group-open:rotate-180"

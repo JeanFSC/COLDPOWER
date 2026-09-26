@@ -23,6 +23,7 @@ import {
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 import type { SalesListItem, SalesPageResponse } from "@/lib/sales-contract";
+import { paymentMethodLabel } from "@/lib/payment-display";
 
 type CustomerOption = { id: string; name: string; phone: string | null };
 type LocationOption = { id: string; code: string; name: string };
@@ -146,6 +147,22 @@ function tone(value: string) {
 }
 function labelOrderState(value: string) {
   return value === "PAID" ? "Pagado" : labelState(value);
+}
+function salesChannelLabel(value: string | null | undefined) {
+  const normalized = value?.trim().toUpperCase();
+  if (!normalized) return "Sin canal registrado";
+  const labels: Record<string, string> = {
+    WEB: "Tienda online",
+    ONLINE: "Tienda online",
+    CHECKOUT: "Tienda online",
+    WHATSAPP: "WhatsApp",
+    PHONE: "Teléfono",
+    STORE: "Tienda",
+    IN_STORE: "Tienda",
+    DIRECT: "Venta directa",
+    MANUAL: "Venta directa",
+  };
+  return labels[normalized] ?? value?.trim() ?? "Sin canal registrado";
 }
 function tabClass(active: boolean) {
   if (active) return "whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold border-blue-600 text-blue-600";
@@ -338,9 +355,12 @@ export function SalesControlCenter({
           {page.metrics.moneyByCurrency.length ? (
             <div className="space-y-2 pt-3">
               {page.metrics.moneyByCurrency.map((row) => (
-                <div key={row.currency} className="flex items-center justify-between text-[11px]">
-                  <span className="font-medium text-slate-500">{row.currency}</span>
-                  <strong className="text-sm text-slate-900">{row.averageTicket ? money(row.currency, row.averageTicket) : "N/D"}</strong>
+                <div key={row.currency} className="rounded-lg bg-purple-50/70 px-3 py-2.5 text-[11px]">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium text-slate-500">{row.currency}</span>
+                    <strong className="text-sm text-slate-900">{row.averageTicket ? money(row.currency, row.averageTicket) : "N/D"}</strong>
+                  </div>
+                  <p className="mt-1 text-[10px] font-medium text-slate-400">Calculado sobre {row.saleCount.toLocaleString("es-PE")} ventas confirmadas</p>
                 </div>
               ))}
             </div>
@@ -355,7 +375,7 @@ export function SalesControlCenter({
             <div className="space-y-2.5 pt-3">
               {page.metrics.paymentBreakdown.map((row, index) => (
                 <div key={row.method} className="flex items-center text-xs">
-                  <span className="w-20 truncate font-medium text-slate-700">{labelState(row.method)}</span>
+                  <span className="w-36 shrink-0 whitespace-nowrap font-medium text-slate-700">{paymentMethodLabel(row.method)}</span>
                   <div className="flex flex-1 items-center gap-2">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                       <div className={`h-2 rounded-full ${barColors[index % barColors.length]}`} style={{ width: `${Math.max(2, (row.count / paymentTotal) * 100)}%` }} />
@@ -376,7 +396,7 @@ export function SalesControlCenter({
             <div className="space-y-2.5 pt-3">
               {page.metrics.channelBreakdown.map((row, index) => (
                 <div key={row.channel} className="flex items-center text-xs">
-                  <span className="w-20 truncate font-medium text-slate-700">{row.channel}</span>
+                  <span className="w-36 shrink-0 whitespace-nowrap font-medium text-slate-700">{salesChannelLabel(row.channel)}</span>
                   <div className="flex flex-1 items-center gap-2">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                       <div className={`h-2 rounded-full ${barColors[index % barColors.length]}`} style={{ width: `${Math.max(2, (row.count / channelTotal) * 100)}%` }} />
@@ -474,7 +494,7 @@ export function SalesControlCenter({
                   <td className="px-3 py-3">
                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-medium ${tone(row.status)}`}>{labelState(row.status)}</span>
                   </td>
-                  <td className="px-3 py-3 text-slate-500">{row.channel ?? "N/D"}</td>
+                  <td className="px-3 py-3 text-slate-500">{salesChannelLabel(row.channel)}</td>
                   <td className="px-3 py-3 text-slate-500">{row.sellerName ?? "Sin asignar"}</td>
                   <td className="px-3 py-3 text-slate-500">{limaDateTime(row.createdAt).split(",")[0]}</td>
                   <td className="px-3 py-3 text-center">
@@ -499,7 +519,7 @@ export function SalesControlCenter({
               </div>
               <div className="mt-3 flex justify-between">
                 <span className={`inline-flex items-center rounded-md border px-1.5 py-1 text-[10px] font-medium ${tone(row.payment.state)}`}>{labelState(row.payment.state)}</span>
-                <span className="text-[10.5px] text-slate-400">{row.channel ?? "N/D"}</span>
+                <span className="text-[10.5px] text-slate-400">{salesChannelLabel(row.channel)}</span>
               </div>
             </button>
           ))}
@@ -579,8 +599,8 @@ function FilterText({ name, label, placeholder, query }: { name: string; label: 
 function FilterDate({ name, label, query }: { name: string; label: string; query: string }) {
   return (
     <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-      {label}
-      <input type="date" name={name} defaultValue={new URLSearchParams(query).get(name) ?? ""} className={`${inputClass} normal-case`} />
+      {label} <span className="text-[9px] font-semibold normal-case tracking-normal text-slate-500">(DD/MM/AAAA)</span>
+      <input type="date" name={name} defaultValue={new URLSearchParams(query).get(name) ?? ""} aria-label={`${label}, formato DD/MM/AAAA`} title="Formato: DD/MM/AAAA" className={`${inputClass} normal-case`} />
     </label>
   );
 }
@@ -1074,7 +1094,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
               {payments.length ? (
                 payments.map((payment, index) => (
                   <div key={String(payment.id ?? index)} className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3 text-[11px]">
-                    <Link href={`/admin/pagos?paymentId=${encodeURIComponent(String(payment.id))}`} className="font-semibold text-blue-600 hover:underline">{value(payment.method)} · {value(payment.orderCode)}</Link>
+                    <Link href={`/admin/pagos?paymentId=${encodeURIComponent(String(payment.id))}`} className="font-semibold text-blue-600 hover:underline">{paymentMethodLabel(value(payment.method))} · {value(payment.orderCode)}</Link>
                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium ${tone(value(payment.status))}`}>{labelState(value(payment.status))}</span>
                     <strong className="text-slate-900">
                       {money(

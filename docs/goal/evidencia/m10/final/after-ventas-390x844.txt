@@ -1,0 +1,421 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+¿Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+99+
+Gestión de ventas
+
+Administra y da seguimiento a todas tus ventas y operaciones.
+
+Exportar
+Registrar venta
+Ventas confirmadas
+186
+
+Compromisos comerciales
+
+Monto vendido
+S/ 375,617.00
+
+Sin consolidar
+
+Cobrado
+S/ 89,791.00
+
+Neto de pagos confirmados
+
+Ticket promedio
+S/ 2,019.45
+
+Por moneda
+
+Alertas
+42
+
+Requieren revisión
+
+Ventas cobradas vs pendientes
+24%
+Cobrado
+Cobrado
+S/ 89,791.00
+Pendiente
+S/ 285,826.00
+Ticket promedio
+PEN
+S/ 2,019.45
+
+Calculado sobre 186 ventas confirmadas
+
+Ventas por método de pago
+Transferencia
+42%
+Tarjeta
+13%
+Tarjeta de crédito
+8%
+Yape
+8%
+Tarjeta de débito
+8%
+Efectivo
+7%
+Plin
+7%
+Pasarela de prueba
+8%
+Ventas por canal
+Venta directa
+44%
+Tienda online
+39%
+TELEFONO
+8%
+WhatsApp
+8%
+Estado
+Moneda
+Canal
+Más filtros
+Aplicar
+
+VTA-B8FEB64C-D
+
+Jean
+
+S/ 1,125.00
+Cobrada
+Tienda online
+
+VTA-2026-036
+
+Cliente corporativo 026
+
+S/ 2,375.00
+Cobrada
+TELEFONO
+
+VTA-2026-037
+
+Cliente corporativo 025
+
+S/ 2,512.00
+Cobrada
+WhatsApp
+
+VTA-2026-038
+
+Cliente corporativo 024
+
+S/ 2,649.00
+Cobrada
+Tienda online
+
+VTA-2026-039
+
+Cliente corporativo 023
+
+S/ 186.00
+Cobrada
+TELEFONO
+
+VTA-2026-040
+
+Cliente corporativo 022
+
+S/ 323.00
+Cobrada
+WhatsApp
+
+VTA-2026-041
+
+Cliente corporativo 021
+
+S/ 460.00
+Observado
+Tienda online
+
+VTA-2026-042
+
+Cliente corporativo 020
+
+S/ 597.00
+Observado
+TELEFONO
+
+VTA-2026-043
+
+Cliente corporativo 019
+
+S/ 734.00
+Observado
+WhatsApp
+
+VTA-2026-044
+
+Cliente corporativo 018
+
+S/ 871.00
+Observado
+Tienda online
+
+VTA-2026-045
+
+Cliente corporativo 016
+
+S/ 1,008.00
+Cobrada
+TELEFONO
+
+VTA-2026-046
+
+Cliente corporativo 015
+
+S/ 1,145.00
+Cobrada
+WhatsApp
+
+VTA-2026-047
+
+Cliente corporativo 014
+
+S/ 1,282.00
+Cobrada
+Tienda online
+
+VTA-2026-048
+
+Jean
+
+S/ 1,419.00
+Cobrada
+TELEFONO
+
+VTA-F948D4C1-D
+
+QA B1.1 1790316452351
+
+S/ 1,250.00
+Pendiente
+Sin canal registrado
+
+VTA-FED41A62-4
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-7A0C42BC-B
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-148D29C0-B
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-03946617-D
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-61938BB3-2
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-F3E015BE-5
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-EB2132C6-E
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Observado
+Tienda online
+
+VTA-5EDA8DCA-C
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Cobrada
+Tienda online
+
+VTA-99A99BAF-3
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Cobrada
+Tienda online
+
+VTA-80E549CE-D
+
+QA B2.3 1790316095016
+
+S/ 90.00
+Cobrada
+Tienda online
+Mostrando 1 a 25 de 191 ventas
+1
+2
+3
+4
+5
+Centro de operaciones
+
+Acciones y tareas clave para completar el ciclo de ventas.
+
+Cobros pendientes
+
+VTA-2026-041
+
+Cliente corporativo 021
+
+Observado
+
+VTA-2026-042
+
+Cliente corporativo 020
+
+Observado
+
+VTA-2026-043
+
+Cliente corporativo 019
+
+Observado
+
+VTA-2026-044
+
+Cliente corporativo 018
+
+Observado
+
+VTA-F948D4C1-D
+
+QA B1.1 1790316452351
+
+Pendiente
+Gestionar pagos →
+Facturación
+
+VTA-B8FEB64C-D
+
+Jean
+
+Cobrada
+
+VTA-2026-037
+
+Cliente corporativo 025
+
+Cobrada
+
+VTA-2026-038
+
+Cliente corporativo 024
+
+Cobrada
+
+VTA-2026-039
+
+Cliente corporativo 023
+
+Cobrada
+
+VTA-2026-040
+
+Cliente corporativo 022
+
+Cobrada
+Ver por facturar →
+Validación
+
+VTA-2026-041
+
+Cliente corporativo 021
+
+Observado
+
+VTA-2026-042
+
+Cliente corporativo 020
+
+Observado
+
+VTA-2026-043
+
+Cliente corporativo 019
+
+Observado
+
+VTA-2026-044
+
+Cliente corporativo 018
+
+Observado
+
+VTA-FED41A62-4
+
+QA B2.3 1790316095016
+
+Observado
+Ver alertas →

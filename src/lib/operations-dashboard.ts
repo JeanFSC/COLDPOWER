@@ -15,6 +15,7 @@ import { deltaPct, formatPeriodDelta } from "@/lib/period-metrics";
 import { isActiveOrderStatus, getPipelineMacroStage, PIPELINE_MACRO_STAGE_ORDER, PIPELINE_MACRO_STAGE_LABELS, buildKpiView, resolveGranularity } from "@/lib/dashboard-definitions";
 import { actionLabel as auditActionLabel, entityLabel as auditEntityLabel } from "@/lib/audit-contract";
 import { getOpenQuoteCount } from "@/lib/quote-repository";
+import { groupPaymentMethodAmounts } from "@/lib/payment-display";
 
 type Window = { from: Date; to: Date };
 export type DashboardActor = { userId?: string; role: AppRole };
@@ -360,7 +361,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     db.select({ status: orders.status, count: count() }).from(orders).where(and(...orderConditions(db, filters, previous, filters.currency))).groupBy(orders.status),
     db.select({ count: count() }).from(inventoryBalances).where(and(...stockScope, gte(inventoryBalances.updatedAt, previous.from), lt(inventoryBalances.updatedAt, previous.to), sql.raw("inventory_balances.minimum_stock is not null and (inventory_balances.on_hand - inventory_balances.reserved) <= inventory_balances.minimum_stock"))),
     db.select({ count: count() }).from(customers).where(and(eq(customers.status, "ACTIVE"), filters.sellerId ? eq(customers.assignedSellerId, filters.sellerId) : undefined)),
-    db.select({ method: payments.method, amount: sql<string>`coalesce(sum(${payments.amount}), 0)`, count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(sales, eq(orders.saleId, sales.id)).where(and(inArray(payments.status, ["CONFIRMED", "APPROVED"]), gte(payments.createdAt, range.from), lt(payments.createdAt, range.to), resolvedCurrency ? eq(payments.currency, resolvedCurrency) : undefined, eq(sales.status, "CONFIRMED"), ...salesConditions(db, filters, range, resolvedCurrency), ...orderConditions(db, filters, undefined, resolvedCurrency))).groupBy(payments.method).orderBy(desc(sql`sum(${payments.amount})`)).limit(6),
+    db.select({ method: payments.method, amount: sql<string>`coalesce(sum(${payments.amount}), 0)`, count: count() }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(sales, eq(orders.saleId, sales.id)).where(and(inArray(payments.status, ["CONFIRMED", "APPROVED"]), gte(payments.createdAt, range.from), lt(payments.createdAt, range.to), resolvedCurrency ? eq(payments.currency, resolvedCurrency) : undefined, eq(sales.status, "CONFIRMED"), ...salesConditions(db, filters, range, resolvedCurrency), ...orderConditions(db, filters, undefined, resolvedCurrency))).groupBy(payments.method).orderBy(desc(sql`sum(${payments.amount})`)),
   ]);
   const topProductTrendPromise: Promise<ProductTrendRow[]> = topProducts.length
     ? db.select({ productId: saleItems.productId, date: sql<string>`to_char(${sales.createdAt} at time zone 'America/Lima', 'YYYY-MM-DD')`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` })
@@ -588,7 +589,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     criticalStock: Number(criticalStock[0]?.count ?? 0), noStock: Number(noStock[0]?.count ?? 0), unknownStock: Number(unknownStock[0]?.count ?? 0), noMovement: Number(noMovement[0]?.count ?? 0), reservedUnits: Number(reservedUnits[0]?.units ?? 0), activeLocations: Number(locationsCount[0]?.count ?? 0),
     pendingPaymentsCount: Number(pendingPayments[0]?.count ?? 0), criticalStockCount: Number(criticalStock[0]?.count ?? 0), overdueFollowUpsCount: Number(overdueFollowUpsSnapshot[0]?.count ?? 0), pendingQuotesCount: Number(openQuotes[0]?.count ?? 0), pendingApprovalsCount: Number(pendingApprovalsRows[0]?.count ?? 0),
     activeCustomersCount: Number(activeCustomers[0]?.count ?? 0),
-    paymentMethods: paymentMethodRows.map((row) => ({ method: row.method, amount: Number(row.amount ?? 0), count: Number(row.count ?? 0) })),
+    paymentMethods: groupPaymentMethodAmounts(paymentMethodRows.map((row) => ({ method: row.method, amount: Number(row.amount ?? 0), count: Number(row.count ?? 0) }))),
     conversion: { totalQuotes, convertedQuotes, percentage: totalQuotes ? (convertedQuotes / totalQuotes) * 100 : null },
     previousConversion,
     collected,

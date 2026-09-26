@@ -5,6 +5,7 @@ import { customers } from "@/db/crm-schema";
 import { orderStatusHistory, orders, paymentAttempts, paymentEvents, paymentRefunds, payments, paymentStatusHistory, sales } from "@/db/sales-schema";
 import type { PaymentListItem, PaymentsFilters, PaymentsPageResponse } from "@/lib/payments-contract";
 import { reconciliationState, summarizePaymentLedger } from "@/lib/payments-contract";
+import { groupPaymentMethodBreakdown } from "@/lib/payment-display";
 
 const defaultPageSize = 25;
 const maxPageSize = 100;
@@ -75,7 +76,7 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
     db.selectDistinct({ value: payments.provider }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).orderBy(payments.provider),
     db.selectDistinct({ value: payments.method }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).orderBy(payments.method),
     db.selectDistinct({ value: payments.currency }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).orderBy(payments.currency),
-    db.select({ method: payments.method, total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).groupBy(payments.method).orderBy(desc(count(payments.id))).limit(8),
+    db.select({ method: payments.method, total: count(payments.id) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where).groupBy(payments.method).orderBy(desc(count(payments.id))),
     db.select({ method: payments.method, currency: payments.currency, total: sum(payments.amount) }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, inArray(payments.status, [...confirmedStatuses]))).groupBy(payments.method, payments.currency),
     db.select({ method: payments.method, currency: paymentRefunds.currency, total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(and(where, eq(paymentRefunds.status, "SUCCEEDED"))).groupBy(payments.method, paymentRefunds.currency),
     db.selectDistinct({ orderId: payments.orderId }).from(payments).innerJoin(orders, eq(payments.orderId, orders.id)).innerJoin(customers, eq(orders.customerId, customers.id)).leftJoin(sales, eq(orders.saleId, sales.id)).where(where),
@@ -116,7 +117,7 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
   const overpaidOrders = financialStates.filter((state) => state === "OVERPAID").length;
   const observed = underpaidOrders + overpaidOrders + (statusMap.get("REJECTED") ?? 0) + (statusMap.get("ERROR") ?? 0);
   const methodRefundMap = new Map(methodRefundAmountRows.map((row) => [`${row.method}:${row.currency}`, numberValue(row.total)]));
-  const methodBreakdown = methodRows.map((row) => {
+  const methodBreakdown = groupPaymentMethodBreakdown(methodRows.map((row) => {
     const amountsByCurrency = methodConfirmedAmountRows
       .filter((amountRow) => amountRow.method === row.method)
       .map((amountRow) => {
@@ -125,7 +126,7 @@ export async function getPaymentsPage(filters: PaymentsFilters = {}): Promise<Pa
         return { currency: amountRow.currency, gross, refunded, net: gross - refunded };
       });
     return { method: row.method, count: numberValue(row.total), confirmedAmountsByCurrency: amountsByCurrency };
-  });
+  }));
   const reconciliationDenominator = financialStates.length;
   const refundRequiredCount = numberValue(refundQueueCountRows[0]?.total);
   return { items, queues: { pending: pendingQueueRows.map(toItem), difference: differenceQueueRows.map(toItem), providerErrors: providerErrorQueueRows.map(toItem), refunds: refundQueueRows.map(toItem) }, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, pending: (statusMap.get("PENDING") ?? 0) + (statusMap.get("UNDER_REVIEW") ?? 0), approved: (statusMap.get("CONFIRMED") ?? 0) + (statusMap.get("APPROVED") ?? 0), rejected: (statusMap.get("REJECTED") ?? 0) + (statusMap.get("ERROR") ?? 0), refunded: refundRequiredCount, observed, reconciledOrders, ordersWithConfirmedPayments: reconciliationDenominator, reconciliationNumerator: reconciledOrders, reconciliationDenominator, underpaidOrders, overpaidOrders, reconciliationRate: reconciliationDenominator ? Number(((reconciledOrders / reconciliationDenominator) * 100).toFixed(2)) : null, totalAmount: amountsByCurrency.length === 1 ? amountsByCurrency[0].net : 0, amountsByCurrency, statusBreakdown: statusRows.map((row) => ({ status: row.status, count: numberValue(row.total) })), methodBreakdown }, facets: { statuses: statusFacets.map((row) => row.value), providers: providerFacets.flatMap((row) => row.value ? [row.value] : []), methods: methodFacets.map((row) => row.value), currencies: currencyFacets.map((row) => row.value) } };

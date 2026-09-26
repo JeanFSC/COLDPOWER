@@ -11,6 +11,22 @@
 
 final result: passed
 
+## M10-06 final corrections from re-audit v2 - 2026-09-25
+
+- source visual truth: `docs/goal/usabilidad/gemini/v2/informe.md` and the corresponding Gemini v2 captures; the implementation scope was the 13 defects listed in `docs/goal/briefs/M10-06-final.md`.
+- implementation routes: `/admin/dashboard`, `/admin/pagos`, `/admin/ventas`, `/admin/precios`, `/admin/auditoria`, `/admin/notificaciones`, `/admin/reportes`, `/admin/catalogo/product-cp-ref-ven-0844`, `/cuenta/pagos`, and the shared public shell/footer.
+- runtime: local authenticated dev bypass on `http://localhost:3006`, local database environment, Playwright Chromium launched headless with `GPU_ARGS`; validation used 1920 x 1080 and 390 x 844 at 100% zoom.
+- evidence: `docs/goal/evidencia/m10/final/` contains before/after captures and DOM text for every touched surface, plus `m10-06-final-qa.json` and `m10-06-final-console.json`.
+- payment and sales semantics: method values are centralized and grouped; raw provider codes, duplicate payment-method rows, `PAGO-PENDING`, and invented channels are absent. Payment codes are stable and deterministic.
+- product and pricing semantics: missing validity is rendered as the standalone `Sin fecha de vigencia registrada`, price text wraps inside the reference card, and the pricing timestamp remains readable at the narrow layout.
+- audit and notifications: operational audit codes use Spanish labels; the notifications detail defaults to the requested notification, otherwise the first unread/available real row, and test references are sanitized in the visible detail.
+- media: missing physical media keeps a 200 response with a family/category/neutral referential fallback and an explicit response header; it does not silently return a broken image or invent a product asset.
+- interactions: the notification detail, product `Precios` to `Ficha` return path, keyboard focus traversal, responsive overflow, and date-input help text were exercised without creating mutations.
+- accessibility/runtime: 20 route/viewport checks returned HTTP 200, no horizontal overflow was detected, axe reported 0 violations in every check, and there were 0 console errors/page errors. Known development warnings from Clerk/Next are recorded in `m10-06-final-console.json`.
+- automated verification: focused M10-06 tests 6/6 PASS; `corepack pnpm exec tsc --noEmit` PASS; `corepack pnpm lint` PASS; `corepack pnpm build` PASS; `corepack pnpm test:all` runs all relevant groups but is 19/20 in the inventory group because the external workbook is absent at `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx`.
+
+final result: passed with the external inventory-workbook prerequisite documented
+
 ## M10-04 lote 2 · Taxonomía, Proveedor, Producto y Configuración · 2026-09-25
 
 - source visual truth: `docs/goal/designs/m10-lote2/` and `docs/goal/designs/m10-lote2/spec.md`; implementation followed the brief in `docs/goal/briefs/M10-04-lote2.md` in the requested order.

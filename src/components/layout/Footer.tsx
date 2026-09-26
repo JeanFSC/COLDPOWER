@@ -6,19 +6,10 @@ import type { CompanySettings } from "@/lib/company-settings";
 import { createWhatsAppLink } from "@/lib/whatsapp";
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
 import { SocialIcon } from "@/components/layout/SocialIcon";
-
-const paymentMethodLabels: Record<string, string> = {
-  BANK_TRANSFER: "Transferencia bancaria",
-  CASH: "Efectivo",
-  CREDIT_CARD: "Tarjetas",
-  DEBIT_CARD: "Tarjetas",
-  PLIN: "Plin",
-  TRANSFER: "Transferencia bancaria",
-  YAPE: "Yape",
-};
+import { paymentMethodLabel } from "@/lib/payment-display";
 
 function getPaymentMethodLabels(methods?: string[] | null) {
-  return Array.from(new Set((methods ?? []).map((method) => paymentMethodLabels[method] ?? method.replaceAll("_", " ")).filter(Boolean))).join(" · ");
+  return Array.from(new Set((methods ?? []).map((method) => paymentMethodLabel(method)).filter(Boolean))).join(" · ");
 }
 
 const socialMeta = {

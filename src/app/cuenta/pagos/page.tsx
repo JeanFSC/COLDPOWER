@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { listOrdersForUser } from "@/lib/sales-service";
 import { Badge } from "@/components/shared/Badge";
 import { formatDateTime, formatMoney, paymentStatusLabels } from "@/lib/order-display";
+import { paymentMethodLabel } from "@/lib/payment-display";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Mis pagos | ColdPower", description: "Consulta los pagos asociados a tus pedidos." };
@@ -46,7 +47,7 @@ export default async function CuentaPagosPage() {
                   <h2 className="mt-1">Pago del pedido</h2>
                   <dl className="account-subpage-dl">
                     <div><dt>Monto</dt><dd>{formatMoney(payment?.amount ?? order.total, payment?.currency ?? order.currency)}</dd></div>
-                    <div><dt>Método</dt><dd>{payment?.method || "Pendiente"}</dd></div>
+                    <div><dt>Método</dt><dd>{paymentMethodLabel(payment?.method)}</dd></div>
                     <div><dt>Referencia</dt><dd className="break-all">{payment?.providerReference || "—"}</dd></div>
                   </dl>
                 </div>

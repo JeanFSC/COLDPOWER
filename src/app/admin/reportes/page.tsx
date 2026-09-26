@@ -153,20 +153,24 @@ export default async function AdminReportesPage({
         ]}
       />
       <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">
-        Desde
+        Desde <span className="text-[9px] font-semibold text-[#7890a8]">(DD/MM/AAAA)</span>
         <input
           type="date"
           name="from"
           defaultValue={filters.from}
+          aria-label="Desde, formato DD/MM/AAAA"
+          title="Formato: DD/MM/AAAA"
           className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
         />
       </label>
       <label className="grid gap-1 text-[10px] font-bold text-[#526b84]">
-        Hasta
+        Hasta <span className="text-[9px] font-semibold text-[#7890a8]">(DD/MM/AAAA)</span>
         <input
           type="date"
           name="to"
           defaultValue={filters.to}
+          aria-label="Hasta, formato DD/MM/AAAA"
+          title="Formato: DD/MM/AAAA"
           className="h-9 rounded-lg border border-[#dce6ee] px-2 text-[10px]"
         />
       </label>

@@ -28,6 +28,7 @@ import type {
   SalesPageResponse,
 } from "@/lib/sales-contract";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
+import { groupPaymentMethodCounts } from "@/lib/payment-display";
 import { startOfLimaDay, startOfNextLimaDay } from "@/lib/lima-datetime";
 
 const defaultPageSize = 25;
@@ -327,8 +328,7 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
         ),
       )
       .groupBy(payments.method)
-      .orderBy(desc(count(payments.id)))
-      .limit(8),
+      .orderBy(desc(count(payments.id))),
     db
       .select({ channel: sales.channel, total: count(sales.id) })
       .from(sales)
@@ -503,10 +503,10 @@ export async function getSalesPage(filters: SalesFilters = {}): Promise<SalesPag
         ? numberValue(singleCurrency.averageTicket)
         : null,
       conversionRate: null,
-      paymentBreakdown: paymentMethodRows.map((row) => ({
+      paymentBreakdown: groupPaymentMethodCounts(paymentMethodRows.map((row) => ({
         method: row.method,
         count: numberValue(row.total),
-      })),
+      }))),
       channelBreakdown: channelBreakdownRows.flatMap((row) =>
         row.channel ? [{ channel: row.channel, count: numberValue(row.total) }] : [],
       ),

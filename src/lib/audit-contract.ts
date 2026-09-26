@@ -65,6 +65,7 @@ const ENTITY_LABELS: Record<string, string> = {
   work_item: "Tarea", integration: "Integración", price: "Precio", discount_rule: "Regla de descuento",
   media_asset: "Recurso", clerk_webhook: "Webhook de Clerk", report_schedule: "Reporte programado",
   promotion: "Promoción", location: "Almacén", transfer: "Transferencia", reservation: "Reserva",
+  inventory_reservation: "Reserva de inventario", inventory_movement: "Movimiento de almacén",
   product_price: "Precio", quote_discount_approval: "Descuento de cotización", purchase_request: "Solicitud de compra",
   purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
 };
@@ -76,6 +77,7 @@ export function entityLabel(entityType: string): string {
 // humanized read of the action's last segment for anything not explicitly mapped
 // (new actions still render as readable text, never a blank cell).
 const ACTION_LABELS: Record<string, string> = {
+  APPROVED: "Aprobó la operación", REJECTED: "Rechazó la operación", approved: "Aprobó la operación", rejected: "Rechazó la operación",
   PRODUCT_CREATED: "Creó el producto", PRODUCT_DUPLICATE_REVIEWED: "Revisó un posible duplicado",
   PRODUCT_EDITORIAL_UPDATED: "Actualizó contenido editorial", PRODUCT_IMPORTED: "Importó el producto",
   PRODUCT_MEDIA_ASSOCIATED: "Asoció un archivo multimedia", PRODUCT_MEDIA_REMOVED: "Quitó un archivo multimedia",

@@ -75,6 +75,7 @@ import { getHomeActivitySummary, getOperationsDashboard } from "@/lib/operations
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import type { OperationsFilters } from "@/lib/operations-contract";
 import { formatPeriodDelta } from "@/lib/period-metrics";
+import { paymentMethodLabel } from "@/lib/payment-display";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
 type HomeActivitySummary = Awaited<ReturnType<typeof getHomeActivitySummary>>;
@@ -413,23 +414,6 @@ function Pill({ children }: { children: ReactNode }) {
 function currencyNote(data: DashboardData) {
   if (!data.availableCurrencies.length) return "Moneda: N/D";
   return `Moneda: ${data.currency ?? "N/D"}${data.currencyAmbiguous ? ` · disponibles: ${data.availableCurrencies.join(" / ")}` : ""}`;
-}
-
-function paymentMethodLabel(value: string | null | undefined) {
-  const normalized = value?.trim().toUpperCase();
-  const labels: Record<string, string> = {
-    TRANSFER: "Transferencia",
-    BANK_TRANSFER: "Transferencia bancaria",
-    CARD: "Tarjeta",
-    CREDIT_CARD: "Tarjeta de crédito",
-    DEBIT_CARD: "Tarjeta de débito",
-    CASH: "Efectivo",
-    YAPE: "Yape",
-    PLIN: "Plin",
-    PROVIDER: "Proveedor de pagos",
-    MANUAL: "Registro manual",
-  };
-  return labels[normalized ?? ""] ?? value?.trim() ?? "Sin método";
 }
 
 function dashboardFilters(

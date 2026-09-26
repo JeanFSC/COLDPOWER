@@ -244,12 +244,12 @@ export function AuditModule({
               options={[{ value: "", label: "Todas" }, ...facets.severities.map((value) => ({ value, label: severityMeta[value]?.label ?? value }))]}
             />
             <label className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
-              <span className="text-[11px] text-slate-400">Desde</span>
-              <input type="date" name="dateFrom" defaultValue={filters.dateFrom ?? ""} className="border-0 bg-transparent p-0 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0" />
+              <span className="text-[11px] text-slate-400">Desde <small>(DD/MM/AAAA)</small></span>
+              <input type="date" name="dateFrom" aria-label="Desde, formato DD/MM/AAAA" title="Formato: DD/MM/AAAA" defaultValue={filters.dateFrom ?? ""} className="border-0 bg-transparent p-0 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0" />
             </label>
             <label className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
-              <span className="text-[11px] text-slate-400">Hasta</span>
-              <input type="date" name="dateTo" defaultValue={filters.dateTo ?? ""} className="border-0 bg-transparent p-0 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0" />
+              <span className="text-[11px] text-slate-400">Hasta <small>(DD/MM/AAAA)</small></span>
+              <input type="date" name="dateTo" aria-label="Hasta, formato DD/MM/AAAA" title="Formato: DD/MM/AAAA" defaultValue={filters.dateTo ?? ""} className="border-0 bg-transparent p-0 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0" />
             </label>
             <button type="submit" className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700">Aplicar</button>
             <SavedFiltersMenu savedFilters={savedFilters} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50" />
