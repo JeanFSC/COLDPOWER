@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, ArrowLeft, Check, CheckCircle2, MapPin, PackageCheck, Truck, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, CheckCircle2, Clock, Info, MapPin, PackageCheck, Truck, XCircle, type LucideIcon } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getOrderForUser } from "@/lib/sales-service";
-import { buildOrderTimeline, deliveryMethodLabels, formatDateTime, formatMoney, orderStatusLabels, paymentStatusLabels } from "@/lib/order-display";
+import { buildOrderGuide, buildOrderTimeline, deliveryMethodLabels, type OrderGuideTone, formatDateTime, formatMoney, orderStatusLabels, paymentStatusLabels } from "@/lib/order-display";
 import { Badge } from "@/components/shared/Badge";
 import { PayOrderButton } from "@/components/account/PayOrderButton";
 import { taxBreakdownFromSnapshot } from "@/lib/tax";
@@ -14,6 +14,9 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle del pedido | ColdPower", robots: { index: false, follow: false } };
 
 type Props = { params: Promise<{ code: string }>; searchParams: Promise<{ pago?: string }> };
+
+const guideIcons: Record<OrderGuideTone, LucideIcon> = { info: Info, success: CheckCircle2, warning: Clock, danger: AlertTriangle };
+const guideIconColors: Record<OrderGuideTone, string> = { info: "text-primary", success: "text-teal", warning: "text-warning", danger: "text-danger" };
 
 export default async function OrderDetailPage({ params, searchParams }: Props) {
   const { userId } = await requireUser();
@@ -35,80 +38,18 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
     : order.deliveryMethod === "DELIVERY"
       ? [order.deliveryAddress, details?.district, details?.reference && `Ref.: ${details.reference}`].filter(Boolean).join(" · ")
       : [details?.agencyName && `Agencia ${details.agencyName}`, [details?.province, details?.department].filter(Boolean).join(", "), details?.recipientName && `Recoge: ${details.recipientName}`].filter(Boolean).join(" · ");
-  const isPickup = order.deliveryMethod === "PICKUP";
-  const nextLabel = nextStep ? `Siguiente: ${nextStep.label.toLowerCase()}.` : "";
-  const guide: { eyebrow: string; title: string; body: string; facts: Array<[string, string]> } = (() => {
-    switch (order.status) {
-      case "NEW":
-      case "RECEIVED":
-      case "PAYMENT_PENDING":
-        return {
-          eyebrow: "Qué sigue",
-          title: expired ? "El plazo de pago venció" : "Falta confirmar tu pago",
-          body: expired
-            ? "Puedes volver a comprar desde el carrito; el stock reservado se libera automáticamente."
-            : `Tus productos están reservados mientras completas el pago. ${nextLabel}`,
-          facts: order.paymentDueAt && !expired ? [["Pagar antes de", formatDateTime(order.paymentDueAt)]] : [],
-        };
-      case "PAID":
-        return {
-          eyebrow: "Qué sigue",
-          title: "Pago confirmado",
-          body: `Nuestro almacén separará y revisará tus productos. ${nextLabel} Te avisaremos cuando cambie el estado.`,
-          facts: destination ? [[isPickup ? "Recojo en" : "Entrega en", destination]] : [],
-        };
-      case "PREPARING":
-        return {
-          eyebrow: "Qué sigue",
-          title: "Estamos preparando tu pedido",
-          body: `Verificamos cada producto antes de ${isPickup ? "dejarlo listo para recoger" : "despacharlo"}. ${nextLabel}`,
-          facts: destination ? [[isPickup ? "Recojo en" : "Entrega en", destination]] : [],
-        };
-      case "READY":
-      case "READY_FOR_PICKUP":
-        return isPickup
-          ? {
-              eyebrow: "Listo",
-              title: "Tu pedido te espera",
-              body: "Acércate con tu DNI o con el código del pedido. Si recoge otra persona, que muestre el código.",
-              facts: [["Local", location?.name ?? "Por confirmar"], ...(location?.address ? [["Dirección", location.address] as [string, string]] : [])],
-            }
-          : {
-              eyebrow: "Qué sigue",
-              title: "Listo para despacho",
-              body: `Tu pedido está empacado y saldrá pronto. ${nextLabel}`,
-              facts: destination ? [["Entrega en", destination]] : [],
-            };
-      case "IN_TRANSIT":
-      case "SHIPPED":
-        return {
-          eyebrow: "En camino",
-          title: "Tu pedido va en camino",
-          body: "Puedes seguir cada movimiento del envío más abajo.",
-          facts: [
-            ...(shipment?.carrier ? [["Transportista", shipment.carrier] as [string, string]] : []),
-            ...(shipment?.trackingNumber ? [["Guía", shipment.trackingNumber] as [string, string]] : []),
-            ...(shipment?.estimatedDeliveryAt ? [["Llegada estimada", formatDateTime(shipment.estimatedDeliveryAt)] as [string, string]] : []),
-          ],
-        };
-      case "DELIVERED":
-        return {
-          eyebrow: "Completado",
-          title: "Pedido entregado",
-          body: "Gracias por tu compra. Puedes repetir este pedido desde tu historial cuando lo necesites.",
-          facts: deliveredAt ? [["Entregado", formatDateTime(deliveredAt)]] : [],
-        };
-      case "CANCELLED":
-        return {
-          eyebrow: "Cancelado",
-          title: "Este pedido fue cancelado",
-          body: "El stock reservado se liberó. Si ya habías pagado, gestionamos la devolución y te contactaremos.",
-          facts: [],
-        };
-      default:
-        return { eyebrow: "Qué sigue", title: orderStatusLabels[order.status] ?? "En proceso", body: nextLabel, facts: [] };
-    }
-  })();
+  const guide = buildOrderGuide({
+    status: order.status,
+    deliveryMethod: order.deliveryMethod,
+    paymentExpired: expired,
+    paymentDueAt: order.paymentDueAt,
+    destination,
+    location: location ? { name: location.name ?? null, address: location.address ?? null } : null,
+    shipment: shipment ? { carrier: shipment.carrier ?? null, trackingNumber: shipment.trackingNumber ?? null, estimatedDeliveryAt: shipment.estimatedDeliveryAt ?? null } : null,
+    nextStepLabel: nextStep?.label ?? null,
+    deliveredAt,
+  });
+  const GuideIcon = guideIcons[guide.tone];
 
   return (
     <div className="account-subpage pt-1">
@@ -175,12 +116,11 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                   );
                 })}
               </ol>
-              <aside className="self-start rounded-md border border-border bg-surface-page p-4" aria-label="Qué sigue con tu pedido">
-                <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-primary">{guide.eyebrow}</p>
-                <p className="mt-1 font-extrabold text-dark">{guide.title}</p>
+              <aside className="self-start border-t border-border pt-5 md:border-l md:border-t-0 md:pl-6 md:pt-0" aria-label="Qué sigue con tu pedido">
+                <h3 className="flex items-center gap-2 font-extrabold text-dark"><GuideIcon className={`h-4 w-4 shrink-0 ${guideIconColors[guide.tone]}`} aria-hidden="true" />{guide.title}</h3>
                 <p className="mt-1.5 text-sm leading-6 text-gray-text">{guide.body}</p>
                 {guide.facts.length ? (
-                  <dl className="mt-3 grid gap-2 border-t border-border pt-3 text-sm">
+                  <dl className="mt-4 grid gap-2 text-sm">
                     {guide.facts.map(([label, value]) => (
                       <div key={label} className="flex justify-between gap-3">
                         <dt className="shrink-0 whitespace-nowrap text-gray-text">{label}</dt>
@@ -189,7 +129,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                     ))}
                   </dl>
                 ) : null}
-                <p className="mt-3 border-t border-border pt-3 text-xs text-gray-text">¿Algo no está bien con tu pedido? <Link href="/contacto" className="font-extrabold text-primary hover:underline">Escríbenos</Link> y menciona el código {order.code}.</p>
+                <p className="mt-4 border-t border-border pt-3 text-xs text-gray-text">¿Algo no está bien con tu pedido? <Link href="/contacto" className="font-extrabold text-primary hover:underline">Escríbenos</Link> y menciona el código {order.code}.</p>
               </aside>
               </div>
             </section>
