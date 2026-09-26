@@ -1,0 +1,1804 @@
+{
+  "generatedAt": "2026-09-26T01:55:14.002Z",
+  "baseUrl": "http://localhost:3006/",
+  "gpuArgs": [
+    "--enable-gpu",
+    "--use-angle=d3d11",
+    "--ignore-gpu-blocklist"
+  ],
+  "browser": {
+    "executablePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "headless": true
+  },
+  "productRoute": "/admin/catalogo/product-cp-ref-ven-0844",
+  "viewports": [
+    {
+      "key": "desktop",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "key": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routeResults": [
+    {
+      "name": "home",
+      "route": "/",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-home-1920x1080.png",
+      "checks": {
+        "name": "home",
+        "route": "/",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "ColdPower | Catálogo técnico HVAC",
+        "bodyTextLength": 4778,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Tarjeta"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": false
+      },
+      "axe": {
+        "label": "home-desktop",
+        "violations": [],
+        "incomplete": 3,
+        "passes": 47
+      }
+    },
+    {
+      "name": "home",
+      "route": "/",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-home-390x844.png",
+      "checks": {
+        "name": "home",
+        "route": "/",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "ColdPower | Catálogo técnico HVAC",
+        "bodyTextLength": 4548,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Tarjeta"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": false
+      },
+      "axe": {
+        "label": "home-mobile",
+        "violations": [],
+        "incomplete": 3,
+        "passes": 48
+      }
+    },
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-dashboard-1920x1080.png",
+      "checks": {
+        "name": "dashboard",
+        "route": "/admin/dashboard",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Dashboard ejecutivo | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 5355,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 18,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "27 ago",
+          "28 ago",
+          "29 ago",
+          "30 ago",
+          "31 ago",
+          "1 set",
+          "2 set",
+          "3 set",
+          "4 set",
+          "5 set",
+          "6 set",
+          "7 set",
+          "8 set",
+          "9 set",
+          "10 set",
+          "11 set",
+          "12 set",
+          "13 set",
+          "14 set",
+          "15 set",
+          "16 set",
+          "17 set",
+          "18 set",
+          "19 set",
+          "20 set",
+          "21 set",
+          "22 set",
+          "23 set",
+          "24 set",
+          "25 set"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Otro"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "dashboard-desktop",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 47
+      }
+    },
+    {
+      "name": "dashboard",
+      "route": "/admin/dashboard",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-dashboard-390x844.png",
+      "checks": {
+        "name": "dashboard",
+        "route": "/admin/dashboard",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Dashboard ejecutivo | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 5286,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 18,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "27 ago",
+          "28 ago",
+          "29 ago",
+          "30 ago",
+          "31 ago",
+          "1 set",
+          "2 set",
+          "3 set",
+          "4 set",
+          "5 set",
+          "6 set",
+          "7 set",
+          "8 set",
+          "9 set",
+          "10 set",
+          "11 set",
+          "12 set",
+          "13 set",
+          "14 set",
+          "15 set",
+          "16 set",
+          "17 set",
+          "18 set",
+          "19 set",
+          "20 set",
+          "21 set",
+          "22 set",
+          "23 set",
+          "24 set",
+          "25 set"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Otro"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "dashboard-mobile",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 47
+      }
+    },
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-pagos-1920x1080.png",
+      "checks": {
+        "name": "pagos",
+        "route": "/admin/pagos",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Pagos | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6157,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [
+          "PAGO-A03F7B05",
+          "PAGO-1D93F375",
+          "PAGO-1C93F1E2",
+          "PAGO-1F93F69B",
+          "PAGO-1E93F508",
+          "PAGO-1D96320C",
+          "PAGO-1E96339F",
+          "PAGO-1F963532",
+          "PAGO-209636C5",
+          "PAGO-19962BC0"
+        ],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 12,
+        "pricingTimestampHeaders": [
+          "Pago",
+          "Cliente",
+          "Pedido",
+          "Monto",
+          "Método",
+          "Estado",
+          "Conciliación",
+          "Referencia",
+          "Fecha",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Pasarela de prueba",
+          "Por configurar"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "pagos-desktop",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 46
+      }
+    },
+    {
+      "name": "pagos",
+      "route": "/admin/pagos",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-pagos-390x844.png",
+      "checks": {
+        "name": "pagos",
+        "route": "/admin/pagos",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Pagos | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 5060,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [
+          "PAGO-A03F7B05",
+          "PAGO-1D93F375",
+          "PAGO-1C93F1E2",
+          "PAGO-1F93F69B",
+          "PAGO-1E93F508",
+          "PAGO-1D96320C",
+          "PAGO-1E96339F",
+          "PAGO-1F963532",
+          "PAGO-209636C5",
+          "PAGO-19962BC0"
+        ],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 12,
+        "pricingTimestampHeaders": [
+          "Pago",
+          "Cliente",
+          "Pedido",
+          "Monto",
+          "Método",
+          "Estado",
+          "Conciliación",
+          "Referencia",
+          "Fecha",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Pasarela de prueba",
+          "Por configurar"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "pagos-mobile",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 42
+      }
+    },
+    {
+      "name": "ventas",
+      "route": "/admin/ventas",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-ventas-1920x1080.png",
+      "checks": {
+        "name": "ventas",
+        "route": "/admin/ventas",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Ventas | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6225,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "Venta",
+          "Cliente",
+          "Monto",
+          "Documentos",
+          "Cobro",
+          "Estado",
+          "Canal",
+          "Vendedor",
+          "Fecha",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": true,
+        "hasSalesChannelSummary": true,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "ventas-desktop",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 45
+      }
+    },
+    {
+      "name": "ventas",
+      "route": "/admin/ventas",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-ventas-390x844.png",
+      "checks": {
+        "name": "ventas",
+        "route": "/admin/ventas",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Ventas | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 3792,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "Venta",
+          "Cliente",
+          "Monto",
+          "Documentos",
+          "Cobro",
+          "Estado",
+          "Canal",
+          "Vendedor",
+          "Fecha",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Tarjeta",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": true,
+        "hasSalesChannelSummary": true,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "ventas-mobile",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 41
+      }
+    },
+    {
+      "name": "precios",
+      "route": "/admin/precios",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-precios-1920x1080.png",
+      "checks": {
+        "name": "precios",
+        "route": "/admin/precios",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Precios | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 4381,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "SKU / Producto",
+          "Minorista",
+          "Mayorista",
+          "Mínimo",
+          "Promoción",
+          "Estado",
+          "Actualizado",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "precios-desktop",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 46
+      }
+    },
+    {
+      "name": "precios",
+      "route": "/admin/precios",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-precios-390x844.png",
+      "checks": {
+        "name": "precios",
+        "route": "/admin/precios",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Precios | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 4350,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "SKU / Producto",
+          "Minorista",
+          "Mayorista",
+          "Mínimo",
+          "Promoción",
+          "Estado",
+          "Actualizado",
+          "Acciones"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "precios-mobile",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 46
+      }
+    },
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-auditoria-1920x1080.png",
+      "checks": {
+        "name": "auditoria",
+        "route": "/admin/auditoria",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Auditoría | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6416,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": true,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 1,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "26-ago",
+          "27-ago",
+          "28-ago",
+          "29-ago",
+          "30-ago",
+          "31-ago",
+          "01-set",
+          "02-set",
+          "03-set",
+          "04-set",
+          "05-set",
+          "06-set",
+          "07-set",
+          "08-set",
+          "09-set",
+          "10-set",
+          "11-set",
+          "12-set",
+          "13-set",
+          "14-set",
+          "15-set",
+          "16-set",
+          "17-set",
+          "18-set",
+          "19-set",
+          "20-set",
+          "21-set",
+          "22-set",
+          "23-set",
+          "24-set",
+          "Fecha y hora",
+          "Actor",
+          "Módulo",
+          "Acción",
+          "Objeto",
+          "Severidad",
+          "Resultado",
+          "Detalle"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "auditoria-desktop",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 46
+      }
+    },
+    {
+      "name": "auditoria",
+      "route": "/admin/auditoria",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-auditoria-390x844.png",
+      "checks": {
+        "name": "auditoria",
+        "route": "/admin/auditoria",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Auditoría | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6384,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": true,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 1,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "26-ago",
+          "27-ago",
+          "28-ago",
+          "29-ago",
+          "30-ago",
+          "31-ago",
+          "01-set",
+          "02-set",
+          "03-set",
+          "04-set",
+          "05-set",
+          "06-set",
+          "07-set",
+          "08-set",
+          "09-set",
+          "10-set",
+          "11-set",
+          "12-set",
+          "13-set",
+          "14-set",
+          "15-set",
+          "16-set",
+          "17-set",
+          "18-set",
+          "19-set",
+          "20-set",
+          "21-set",
+          "22-set",
+          "23-set",
+          "24-set",
+          "Fecha y hora",
+          "Actor",
+          "Módulo",
+          "Acción",
+          "Objeto",
+          "Severidad",
+          "Resultado",
+          "Detalle"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "auditoria-mobile",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 46
+      }
+    },
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-notificaciones-1920x1080.png",
+      "checks": {
+        "name": "notificaciones",
+        "route": "/admin/notificaciones",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "default-notification-selection",
+          "success": true
+        },
+        "title": "Notificaciones | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6729,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": true,
+        "hasDateHelp": true,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 1,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": true,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "notificaciones-desktop",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 42
+      }
+    },
+    {
+      "name": "notificaciones",
+      "route": "/admin/notificaciones",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-notificaciones-390x844.png",
+      "checks": {
+        "name": "notificaciones",
+        "route": "/admin/notificaciones",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "default-notification-selection",
+          "success": true
+        },
+        "title": "Notificaciones | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 6815,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": true,
+        "hasDateHelp": true,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 1,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Transferencia",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": true,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "notificaciones-mobile",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 42
+      }
+    },
+    {
+      "name": "reportes",
+      "route": "/admin/reportes",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-reportes-1920x1080.png",
+      "checks": {
+        "name": "reportes",
+        "route": "/admin/reportes",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Reportes | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 3752,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 3,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "27-ago.",
+          "28-ago.",
+          "29-ago.",
+          "30-ago.",
+          "31-ago.",
+          "01-set.",
+          "02-set.",
+          "03-set.",
+          "04-set.",
+          "05-set.",
+          "06-set.",
+          "07-set.",
+          "08-set.",
+          "09-set.",
+          "10-set.",
+          "11-set.",
+          "12-set.",
+          "13-set.",
+          "14-set.",
+          "15-set.",
+          "16-set.",
+          "17-set.",
+          "18-set.",
+          "19-set.",
+          "20-set.",
+          "21-set.",
+          "22-set.",
+          "23-set.",
+          "24-set.",
+          "25-set.",
+          "Periodo",
+          "Ventas netas",
+          "Margen bruto",
+          "Pedidos",
+          "Variación"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "reportes-desktop",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 47
+      }
+    },
+    {
+      "name": "reportes",
+      "route": "/admin/reportes",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-reportes-390x844.png",
+      "checks": {
+        "name": "reportes",
+        "route": "/admin/reportes",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Reportes | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 3720,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": true,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 2,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 3,
+        "pricingTimestampHeaders": [
+          "Período",
+          "Actual",
+          "Anterior",
+          "27-ago.",
+          "28-ago.",
+          "29-ago.",
+          "30-ago.",
+          "31-ago.",
+          "01-set.",
+          "02-set.",
+          "03-set.",
+          "04-set.",
+          "05-set.",
+          "06-set.",
+          "07-set.",
+          "08-set.",
+          "09-set.",
+          "10-set.",
+          "11-set.",
+          "12-set.",
+          "13-set.",
+          "14-set.",
+          "15-set.",
+          "16-set.",
+          "17-set.",
+          "18-set.",
+          "19-set.",
+          "20-set.",
+          "21-set.",
+          "22-set.",
+          "23-set.",
+          "24-set.",
+          "25-set.",
+          "Periodo",
+          "Ventas netas",
+          "Margen bruto",
+          "Pedidos",
+          "Variación"
+        ],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "reportes-mobile",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 47
+      }
+    },
+    {
+      "name": "producto-detalle",
+      "route": "/admin/catalogo/product-cp-ref-ven-0844",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-producto-detalle-1920x1080.png",
+      "checks": {
+        "name": "producto-detalle",
+        "route": "/admin/catalogo/product-cp-ref-ven-0844",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "open-pricing-tab-and-return",
+          "success": true
+        },
+        "title": "Detalle de producto | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 2245,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": true,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "Local",
+          "Físico",
+          "Reservado",
+          "Disponible",
+          "Mínimo",
+          "Estado"
+        ],
+        "priceNodes": [
+          {
+            "text": "Precio minorista",
+            "whiteSpace": "normal",
+            "overflowWrap": "normal"
+          },
+          {
+            "text": "Precio por confirmar",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere"
+          },
+          {
+            "text": "Sin fecha de vigencia registrada",
+            "whiteSpace": "normal",
+            "overflowWrap": "normal"
+          }
+        ],
+        "productGridColumns": "1064px 220px",
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "producto-detalle-desktop",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 49
+      }
+    },
+    {
+      "name": "producto-detalle",
+      "route": "/admin/catalogo/product-cp-ref-ven-0844",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-producto-detalle-390x844.png",
+      "checks": {
+        "name": "producto-detalle",
+        "route": "/admin/catalogo/product-cp-ref-ven-0844",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "open-pricing-tab-and-return",
+          "success": true
+        },
+        "title": "Detalle de producto | Panel admin ColdPower | ColdPower",
+        "bodyTextLength": 2214,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": true,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [
+          "Local",
+          "Físico",
+          "Reservado",
+          "Disponible",
+          "Mínimo",
+          "Estado"
+        ],
+        "priceNodes": [
+          {
+            "text": "Precio minorista",
+            "whiteSpace": "normal",
+            "overflowWrap": "normal"
+          },
+          {
+            "text": "Precio por confirmar",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere"
+          },
+          {
+            "text": "Sin fecha de vigencia registrada",
+            "whiteSpace": "normal",
+            "overflowWrap": "normal"
+          }
+        ],
+        "productGridColumns": "92px 220px",
+        "hasPaymentMethodWords": [],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": true
+      },
+      "axe": {
+        "label": "producto-detalle-mobile",
+        "violations": [],
+        "incomplete": 1,
+        "passes": 49
+      }
+    },
+    {
+      "name": "cuenta-pagos",
+      "route": "/cuenta/pagos",
+      "viewport": {
+        "key": "desktop",
+        "width": 1920,
+        "height": 1080
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-cuenta-pagos-1920x1080.png",
+      "checks": {
+        "name": "cuenta-pagos",
+        "route": "/cuenta/pagos",
+        "status": 200,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Mis pagos | ColdPower | ColdPower",
+        "bodyTextLength": 1914,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 1920,
+          "height": 1080
+        },
+        "documentScrollWidth": 1920,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Tarjeta",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": false
+      },
+      "axe": {
+        "label": "cuenta-pagos-desktop",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 45
+      }
+    },
+    {
+      "name": "cuenta-pagos",
+      "route": "/cuenta/pagos",
+      "viewport": {
+        "key": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "C:\\Users\\jean_\\Desktop\\COLDPOWER-m10-06\\docs\\goal\\evidencia\\m10\\final\\after-cuenta-pagos-390x844.png",
+      "checks": {
+        "name": "cuenta-pagos",
+        "route": "/cuenta/pagos",
+        "status": 200,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "interaction": {
+          "type": "keyboard-tab",
+          "success": true
+        },
+        "title": "Mis pagos | ColdPower | ColdPower",
+        "bodyTextLength": 1730,
+        "horizontalOverflow": false,
+        "documentViewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentScrollWidth": 390,
+        "paymentCodeSample": [],
+        "hasPendingPaymentCode": false,
+        "englishAuditLabels": [],
+        "hasUnregisteredChannel": false,
+        "hasNotificationDetail": false,
+        "hasDateHelp": false,
+        "dateInputCount": 0,
+        "dateInputsHaveHelp": true,
+        "hasStandaloneMissingValidity": false,
+        "hasConcatenatedMissingValidity": false,
+        "longTitles": 0,
+        "pricingTimestampHeaders": [],
+        "priceNodes": [],
+        "productGridColumns": null,
+        "hasPaymentMethodWords": [
+          "Tarjeta",
+          "Pasarela de prueba"
+        ],
+        "hasSalesMethodSummary": false,
+        "hasSalesChannelSummary": false,
+        "hasFooterHelp": false
+      },
+      "axe": {
+        "label": "cuenta-pagos-mobile",
+        "violations": [],
+        "incomplete": 2,
+        "passes": 46
+      }
+    }
+  ],
+  "axeResults": [
+    {
+      "label": "home-desktop",
+      "violations": [],
+      "incomplete": 3,
+      "passes": 47
+    },
+    {
+      "label": "home-mobile",
+      "violations": [],
+      "incomplete": 3,
+      "passes": 48
+    },
+    {
+      "label": "dashboard-desktop",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 47
+    },
+    {
+      "label": "dashboard-mobile",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 47
+    },
+    {
+      "label": "pagos-desktop",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 46
+    },
+    {
+      "label": "pagos-mobile",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 42
+    },
+    {
+      "label": "ventas-desktop",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 45
+    },
+    {
+      "label": "ventas-mobile",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 41
+    },
+    {
+      "label": "precios-desktop",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 46
+    },
+    {
+      "label": "precios-mobile",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 46
+    },
+    {
+      "label": "auditoria-desktop",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 46
+    },
+    {
+      "label": "auditoria-mobile",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 46
+    },
+    {
+      "label": "notificaciones-desktop",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 42
+    },
+    {
+      "label": "notificaciones-mobile",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 42
+    },
+    {
+      "label": "reportes-desktop",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 47
+    },
+    {
+      "label": "reportes-mobile",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 47
+    },
+    {
+      "label": "producto-detalle-desktop",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 49
+    },
+    {
+      "label": "producto-detalle-mobile",
+      "violations": [],
+      "incomplete": 1,
+      "passes": 49
+    },
+    {
+      "label": "cuenta-pagos-desktop",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 45
+    },
+    {
+      "label": "cuenta-pagos-mobile",
+      "violations": [],
+      "incomplete": 2,
+      "passes": 46
+    }
+  ],
+  "events": [
+    {
+      "label": "home-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "home-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "dashboard-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "dashboard-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "dashboard-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "pagos-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "pagos-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "pagos-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "ventas-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "ventas-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "ventas-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "precios-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "precios-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "precios-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "auditoria-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "auditoria-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "auditoria-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "notificaciones-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "notificaciones-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "reportes-desktop",
+      "type": "console:warning",
+      "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    },
+    {
+      "label": "reportes-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "reportes-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "producto-detalle-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "producto-detalle-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "cuenta-pagos-desktop",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    },
+    {
+      "label": "cuenta-pagos-mobile",
+      "type": "console:warning",
+      "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+    }
+  ]
+}

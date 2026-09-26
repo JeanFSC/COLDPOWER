@@ -24,7 +24,14 @@ import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 import { ManualPaymentControl } from "@/components/admin/ManualPaymentControl";
 import type { PaymentListItem, PaymentsPageResponse } from "@/lib/payments-contract";
 import type { getPaymentsKpiSeries } from "@/lib/payments-repository";
-import { paymentProviderLabel, paymentReferenceLabel } from "@/lib/payment-display";
+import {
+  groupPaymentMethodBreakdown,
+  paymentCode,
+  paymentMethodKey,
+  paymentMethodLabel,
+  paymentProviderLabel,
+  paymentReferenceLabel,
+} from "@/lib/payment-display";
 
 type Detail = {
   payment: Record<string, unknown>;
@@ -71,7 +78,7 @@ const labels: Record<string, string> = {
   "development-gateway": "Pasarela de prueba",
 };
 function label(value: string | null | undefined) {
-  return value ? (labels[value] ?? value) : "N/D";
+  return value ? (labels[value] ?? paymentMethodLabel(value)) : "N/D";
 }
 function money(currency: string, value: string | number) {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(Number(value));
@@ -84,24 +91,7 @@ function amountsByCurrencyText(rows: Array<{ currency: string; net: string | num
 }
 type MethodBreakdownRow = PaymentsPageResponse["metrics"]["methodBreakdown"][number];
 function groupedMethodBreakdown(rows: MethodBreakdownRow[]) {
-  const groups = new Map<string, { method: string; displayLabel: string; count: number; confirmedAmountsByCurrency: Array<{ currency: string; gross: number; refunded: number; net: number }> }>();
-  for (const row of rows) {
-    const displayLabel = label(row.method);
-    const group = groups.get(displayLabel) ?? { method: row.method, displayLabel, count: 0, confirmedAmountsByCurrency: [] };
-    group.count += row.count;
-    for (const amount of row.confirmedAmountsByCurrency) {
-      const existing = group.confirmedAmountsByCurrency.find((item) => item.currency === amount.currency);
-      if (existing) {
-        existing.gross += amount.gross;
-        existing.refunded += amount.refunded;
-        existing.net += amount.net;
-      } else {
-        group.confirmedAmountsByCurrency.push({ ...amount });
-      }
-    }
-    groups.set(displayLabel, group);
-  }
-  return [...groups.values()];
+  return groupPaymentMethodBreakdown(rows);
 }
 function limaDateTime(value: unknown) {
   if (!value) return "N/D";
@@ -121,9 +111,6 @@ function paymentHistoryLabel(row: Record<string, unknown>) {
   }
   return label(String(row.status ?? row.eventType ?? row.result ?? "Registro"));
 }
-function paymentCode(id: string) {
-  return "PAGO-" + (id.split("-").at(-1) ?? id.slice(-8)).toUpperCase();
-}
 function badgeStyle(value: string) {
   if (value === "MATCH" || value === "CONFIRMED" || value === "APPROVED") return "bg-emerald-50 text-emerald-700 border-emerald-100";
   if (value === "UNDERPAID" || value === "OVERPAID" || value === "REJECTED" || value === "ERROR") return "bg-red-50 text-red-700 border-red-100";
@@ -131,10 +118,11 @@ function badgeStyle(value: string) {
   return "bg-amber-50 text-amber-700 border-amber-100";
 }
 function methodStyle(value: string) {
-  if (value === "TRANSFER" || value === "TRANSFERENCIA") return "bg-blue-50 text-blue-700 border-blue-100";
-  if (value === "CARD" || value === "CREDIT_CARD" || value === "DEBIT_CARD") return "bg-purple-50 text-purple-700 border-purple-100";
-  if (value === "YAPE" || value === "PLIN") return "bg-teal-50 text-teal-700 border-teal-100";
-  if (value === "CASH" || value === "DEPOSIT") return "bg-amber-50 text-amber-700 border-amber-100";
+  const method = paymentMethodKey(value);
+  if (method === "TRANSFER") return "bg-blue-50 text-blue-700 border-blue-100";
+  if (method === "CARD" || method === "CREDIT_CARD" || method === "DEBIT_CARD") return "bg-purple-50 text-purple-700 border-purple-100";
+  if (method === "YAPE" || method === "PLIN") return "bg-teal-50 text-teal-700 border-teal-100";
+  if (method === "CASH" || method === "DEPOSIT") return "bg-amber-50 text-amber-700 border-amber-100";
   return "bg-slate-100 text-slate-600 border-slate-200";
 }
 function methodIcon(value: string) {
@@ -347,7 +335,7 @@ export function PaymentsControlCenter({
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${methodIconBg(row.method)}`}>
                         <MethodIcon className="h-5 w-5" />
                       </div>
-                       <span className="truncate text-sm font-medium text-slate-700">{row.displayLabel}</span>
+                       <span className="whitespace-nowrap text-sm font-medium text-slate-700">{paymentMethodLabel(row.method)}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-8">
                       <span className="text-sm font-bold text-slate-800">{total}</span>
@@ -573,11 +561,13 @@ function FilterText({
 function FilterDate({ name, label, query }: { name: string; label: string; query: string }) {
   return (
     <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-      {label}
+      {label} <span className="text-[9px] font-semibold normal-case tracking-normal text-slate-500">(DD/MM/AAAA)</span>
       <input
         type="date"
         name={name}
         defaultValue={new URLSearchParams(query).get(name) ?? ""}
+        aria-label={`${label}, formato DD/MM/AAAA`}
+        title="Formato: DD/MM/AAAA"
         className="h-10 rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-700"
       />
     </label>
@@ -632,7 +622,7 @@ function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (
   const observed = item.status === "REJECTED" || item.status === "ERROR" || item.reconciliation === "UNDERPAID" || item.reconciliation === "OVERPAID";
   const accent = refundRequired ? "border-orange-200" : observed ? "border-red-200" : "border-amber-200";
   const badge = refundRequired ? "bg-orange-50 text-orange-700 border-orange-200" : observed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-600 border-amber-200";
-  const buttonColor = refundRequired ? "bg-orange-700 hover:bg-orange-800" : observed ? "bg-red-700 hover:bg-red-800" : "bg-orange-700 hover:bg-orange-800";
+  const buttonColor = "bg-blue-600 hover:bg-blue-700";
   return (
     <div className={`flex flex-col justify-between rounded-xl border ${accent} bg-white p-4 shadow-2xs`}>
       <div>
@@ -653,7 +643,7 @@ function ReconciliationCard({ item, onOpen }: { item: PaymentListItem; onOpen: (
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Referencia</span>
-            <span className="truncate font-medium text-slate-700">{paymentReferenceLabel(item.providerReference)}</span>
+            <span className="max-w-48 truncate font-medium text-slate-700" title={item.providerReference ?? undefined}>{paymentReferenceLabel(item.providerReference)}</span>
           </div>
           {observed && Number(item.difference) !== 0 ? (
             <div className="flex justify-between font-medium text-red-600">
@@ -701,7 +691,7 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
       <td className="px-3 py-3 font-bold text-slate-900">{money(item.currency, item.amount)}</td>
       <td className="px-3 py-3">
         <span className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium ${methodStyle(item.method)} border`}>
-          {label(item.method)}
+          {paymentMethodLabel(item.method)}
         </span>
       </td>
       <td className="px-3 py-3">
@@ -710,7 +700,7 @@ function PaymentRow({ item, onOpen }: { item: PaymentListItem; onOpen: (id: stri
       <td className="px-3 py-3">
         <Badge value={item.refundRequired ? "REFUND_REQUIRED" : item.reconciliation} />
       </td>
-      <td className="max-w-32 truncate px-3 py-3">{paymentReferenceLabel(item.providerReference)}</td>
+      <td className="max-w-32 truncate px-3 py-3" title={item.providerReference ?? undefined}>{paymentReferenceLabel(item.providerReference)}</td>
       <td className="px-3 py-3 text-slate-500">{limaDateTime(item.createdAt).split(",")[0]}</td>
       <td className="px-3 py-3">
         <button
@@ -949,7 +939,7 @@ function PaymentDrawer({
           ) : tab === "Resumen" ? (
             <div className="space-y-3">
               <div className="rounded-lg bg-slate-50 p-3 text-[11px] text-slate-600">
-                {label(String(payment?.method))} ·{" "}
+                {paymentMethodLabel(String(payment?.method ?? ""))} ·{" "}
                 {payment?.provider ? paymentProviderLabel(String(payment.provider)) : "Manual"} · Referencia{" "}
                 {paymentReferenceLabel(String(payment?.providerReference ?? ""))}
               </div>

@@ -749,7 +749,7 @@ body:has(.account-page) { overflow-x: clip; }
 .account-subpage-row h2 { margin: 0; color: #0b2239; font-size: .9rem; font-weight: 800; }
 .account-subpage-row p { margin: .24rem 0 0; color: #526b84; font-size: 14px; line-height: 1.4; }
 .account-subpage-dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; margin-top: .65rem; border-top: 1px solid #e8eef2; padding: .65rem .9rem .8rem; }
-.account-subpage-dl dt { color: #7e94a7; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.account-subpage-dl dt { color: #526b84; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .account-subpage-dl dd { margin: .18rem 0 0; color: #0b2239; font-size: 14px; font-weight: 700; }
 
 @media (max-width: 1023px) {

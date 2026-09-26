@@ -225,9 +225,9 @@ export function NotificationsList({
           </select>
           <button className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11.5px] font-medium text-slate-600 hover:bg-slate-50">Filtrar</button>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-          <label className="flex items-center gap-1">Desde<input name="dateFrom" type="date" defaultValue={filters.get("dateFrom") ?? ""} className="ml-1 rounded border border-slate-200 px-1.5 py-1 text-[11px]" /></label>
-          <label className="flex items-center gap-1">Hasta<input name="dateTo" type="date" defaultValue={filters.get("dateTo") ?? ""} className="ml-1 rounded border border-slate-200 px-1.5 py-1 text-[11px]" /></label>
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+          <label className="flex items-center gap-1">Desde <span>(DD/MM/AAAA)</span><input name="dateFrom" type="date" aria-label="Desde, formato DD/MM/AAAA" title="Formato: DD/MM/AAAA" defaultValue={filters.get("dateFrom") ?? ""} className="ml-1 rounded border border-slate-200 px-1.5 py-1 text-[11px]" /></label>
+          <label className="flex items-center gap-1">Hasta <span>(DD/MM/AAAA)</span><input name="dateTo" type="date" aria-label="Hasta, formato DD/MM/AAAA" title="Formato: DD/MM/AAAA" defaultValue={filters.get("dateTo") ?? ""} className="ml-1 rounded border border-slate-200 px-1.5 py-1 text-[11px]" /></label>
           <a href="/admin/notificaciones" className="ml-auto font-medium text-blue-600 hover:text-blue-700">Limpiar</a>
         </div>
       </form>

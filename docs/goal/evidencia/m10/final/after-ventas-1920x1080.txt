@@ -1,0 +1,455 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+¿Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99+
+
+Superadmin
+
+Superadmin
+
+Gestión de ventas
+
+Administra y da seguimiento a todas tus ventas y operaciones.
+
+Exportar
+Registrar venta
+Ventas confirmadas
+186
+
+Compromisos comerciales
+
+Monto vendido
+S/ 375,617.00
+
+Sin consolidar
+
+Cobrado
+S/ 89,791.00
+
+Neto de pagos confirmados
+
+Ticket promedio
+S/ 2,019.45
+
+Por moneda
+
+Alertas
+42
+
+Requieren revisión
+
+Ventas cobradas vs pendientes
+24%
+Cobrado
+Cobrado
+S/ 89,791.00
+Pendiente
+S/ 285,826.00
+Ticket promedio
+PEN
+S/ 2,019.45
+
+Calculado sobre 186 ventas confirmadas
+
+Ventas por método de pago
+Transferencia
+42%
+Tarjeta
+13%
+Tarjeta de crédito
+8%
+Yape
+8%
+Tarjeta de débito
+8%
+Efectivo
+7%
+Plin
+7%
+Pasarela de prueba
+8%
+Ventas por canal
+Venta directa
+44%
+Tienda online
+39%
+TELEFONO
+8%
+WhatsApp
+8%
+Estado
+Moneda
+Canal
+Más filtros
+Aplicar
+VENTA	CLIENTE	MONTO	DOCUMENTOS	COBRO	ESTADO	CANAL	VENDEDOR	FECHA	ACCIONES
+VTA-B8FEB64C-D
+Venta directa
+	Jean	S/ 1,125.00
+ORD-20260926-AA44D7
+	Cobrada
+S/ 1,125.00
+	Confirmada	Tienda online	Jean	25/09/26
+
+VTA-2026-036
+CP-COT-2026-036
+	Cliente corporativo 026	S/ 2,375.00
+CP-COT-2026-036
+PED-2026-036
+BOL-2026-036
+	Cobrada
+S/ 2,375.00
+	Confirmada	TELEFONO	Diego Salazar	25/09/26
+
+VTA-2026-037
+CP-COT-2026-037
+	Cliente corporativo 025	S/ 2,512.00
+CP-COT-2026-037
+PED-2026-037
+BOL-2026-037
+	Cobrada
+S/ 2,512.00
+	Confirmada	WhatsApp	Colaborador 05	25/09/26
+
+VTA-2026-038
+CP-COT-2026-038
+	Cliente corporativo 024	S/ 2,649.00
+CP-COT-2026-038
+PED-2026-038
+BOL-2026-038
+	Cobrada
+S/ 2,649.00
+	Confirmada	Tienda online	Colaborador 04	25/09/26
+
+VTA-2026-039
+CP-COT-2026-039
+	Cliente corporativo 023	S/ 186.00
+CP-COT-2026-039
+PED-2026-039
+BOL-2026-039
+	Cobrada
+S/ 186.00
+	Confirmada	TELEFONO	Colaborador 03	25/09/26
+
+VTA-2026-040
+CP-COT-2026-040
+	Cliente corporativo 022	S/ 323.00
+CP-COT-2026-040
+PED-2026-040
+BOL-2026-040
+	Cobrada
+S/ 323.00
+	Confirmada	WhatsApp	Jean	25/09/26
+
+VTA-2026-041
+CP-COT-2026-041
+	Cliente corporativo 021	S/ 460.00
+CP-COT-2026-041
+PED-2026-041
+BOL-2026-041
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	Colaborador 02	25/09/26
+
+VTA-2026-042
+CP-COT-2026-042
+	Cliente corporativo 020	S/ 597.00
+CP-COT-2026-042
+PED-2026-042
+BOL-2026-042
+	Observado
+S/ 0.00
+	Confirmada	TELEFONO	Colaborador 01	25/09/26
+
+VTA-2026-043
+CP-COT-2026-043
+	Cliente corporativo 019	S/ 734.00
+CP-COT-2026-043
+PED-2026-043
+BOL-2026-043
+	Observado
+S/ 0.00
+	Confirmada	WhatsApp	Colaborador 16	25/09/26
+
+VTA-2026-044
+CP-COT-2026-044
+	Cliente corporativo 018	S/ 871.00
+CP-COT-2026-044
+PED-2026-044
+BOL-2026-044
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	Colaborador 15	25/09/26
+
+VTA-2026-045
+CP-COT-2026-045
+	Cliente corporativo 016	S/ 1,008.00
+CP-COT-2026-045
+PED-2026-045
+BOL-2026-045
+	Cobrada
+S/ 1,008.00
+	Confirmada	TELEFONO	Colaborador 14	25/09/26
+
+VTA-2026-046
+CP-COT-2026-046
+	Cliente corporativo 015	S/ 1,145.00
+CP-COT-2026-046
+PED-2026-046
+BOL-2026-046
+	Cobrada
+S/ 1,145.00
+	Confirmada	WhatsApp	Colaborador 13	25/09/26
+
+VTA-2026-047
+CP-COT-2026-047
+	Cliente corporativo 014	S/ 1,282.00
+CP-COT-2026-047
+PED-2026-047
+BOL-2026-047
+	Cobrada
+S/ 1,282.00
+	Confirmada	Tienda online	Colaborador 12	25/09/26
+
+VTA-2026-048
+CP-COT-2026-048
+	Jean	S/ 1,419.00
+CP-COT-2026-048
+PED-2026-048
+BOL-2026-048
+	Cobrada
+S/ 1,419.00
+	Confirmada	TELEFONO	María Torres	25/09/26
+
+VTA-F948D4C1-D
+CP-20260925-M4DP
+	QA B1.1 1790316452351	S/ 1,250.00
+CP-20260925-M4DP
+ORD-20260925-470141
+	Pendiente
+S/ 0.00
+	Confirmada	Sin canal registrado	Colaborador 13	25/09/26
+
+VTA-FED41A62-4
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-16CB52
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-7A0C42BC-B
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-16CBAC
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-148D29C0-B
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-621EDD
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-03946617-D
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-E451A0
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-61938BB3-2
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-D56657
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-F3E015BE-5
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-D664B7
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-EB2132C6-E
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-D05446
+	Observado
+S/ 0.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-5EDA8DCA-C
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-8A607C
+	Cobrada
+S/ 90.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-99A99BAF-3
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-85D917
+	Cobrada
+S/ 90.00
+	Confirmada	Tienda online	María Torres	25/09/26
+
+VTA-80E549CE-D
+Venta directa
+	QA B2.3 1790316095016	S/ 90.00
+ORD-20260925-A55B27
+	Cobrada
+S/ 90.00
+	Confirmada	Tienda online	María Torres	25/09/26
+Mostrando 1 a 25 de 191 ventas
+1
+2
+3
+4
+5
+Centro de operaciones
+
+Acciones y tareas clave para completar el ciclo de ventas.
+
+Cobros pendientes
+
+VTA-2026-041
+
+Cliente corporativo 021
+
+Observado
+
+VTA-2026-042
+
+Cliente corporativo 020
+
+Observado
+
+VTA-2026-043
+
+Cliente corporativo 019
+
+Observado
+
+VTA-2026-044
+
+Cliente corporativo 018
+
+Observado
+
+VTA-F948D4C1-D
+
+QA B1.1 1790316452351
+
+Pendiente
+Gestionar pagos →
+Facturación
+
+VTA-B8FEB64C-D
+
+Jean
+
+Cobrada
+
+VTA-2026-037
+
+Cliente corporativo 025
+
+Cobrada
+
+VTA-2026-038
+
+Cliente corporativo 024
+
+Cobrada
+
+VTA-2026-039
+
+Cliente corporativo 023
+
+Cobrada
+
+VTA-2026-040
+
+Cliente corporativo 022
+
+Cobrada
+Ver por facturar →
+Validación
+
+VTA-2026-041
+
+Cliente corporativo 021
+
+Observado
+
+VTA-2026-042
+
+Cliente corporativo 020
+
+Observado
+
+VTA-2026-043
+
+Cliente corporativo 019
+
+Observado
+
+VTA-2026-044
+
+Cliente corporativo 018
+
+Observado
+
+VTA-FED41A62-4
+
+QA B2.3 1790316095016
+
+Observado
+Ver alertas →

@@ -1,0 +1,164 @@
+Saltar al contenido
+
+GENERAL
+
+Inicio
+Dashboard
+
+COMERCIAL
+
+Clientes
+Pipeline
+Cotizaciones
+Ventas
+Pedidos
+Pagos
+
+OPERACIÓN
+
+Operaciones
+Inventario
+Compras
+
+CATÁLOGO
+
+Productos
+Taxonomía
+Precios
+Promociones
+
+GESTIÓN
+
+Reportes
+Notificaciones
+Auditoría
+Usuarios
+Configuración
+¿Necesitas ayuda?
+ColdPower Commerce 2.0
+C&J COLD IMPORT PERÚ E.I.R.L.
+Ctrl
+K
+99
+
+Superadmin
+
+Superadmin
+
+CATÁLOGO / PRODUCTOS / DETALLE
+
+VENTILADOR DE 12 V RFD 3410A101A EAU65058501 LG
+
+CP-REF-VEN-0844
+·
+Modelo 3410A101A; EAU65058501
+
+Publicado
+Disponible
+Requiere imagen editorial
+Ver en tienda
+Despublicar
+Editar ficha
+Ficha
+Precios
+Inventario
+Imágenes
+Historial
+Ficha comercial
+
+Datos de origen y edición para publicar el producto.
+
+● editorial
+Nombre comercial
+VENTILADOR DE 12 V RFD 3410A101A EAU65058501 LG
+Marca
+LG
+Categoría
+Refrigeración
+Familia
+Ventiladores
+Aplicación
+Refrigeradoras / sistemas de refrigeración
+Descripción editorial
+VENTILADOR DE 12 V RFD 3410A101A EAU65058501 LG. Referencia de catálogo de la familia Ventiladores para Refrigeración.
+Atributos técnicos
+
+Valores persistidos para búsqueda y ficha de tienda.
+
+Editar ficha
+Refrigerante
+No registrado
+Voltaje
+12 V
+Frecuencia
+No registrado
+Potencia
+No registrado
+Capacitancia
+No registrado
+Amperaje
+No registrado
+Temperatura
+No registrado
+Dimensiones
+No registrado
+Unidad de medida
+Unidad
+Marcas compatibles
+LG
+Código de modelo
+3410A101A; EAU65058501
+SKU inmutable
+CP-REF-VEN-0844
+Precio e inventario
+
+Datos vigentes por local y precio minorista actual.
+
+Ajustar stock
+Ajustar precio
+LOCAL	FÍSICO	RESERVADO	DISPONIBLE	MÍNIMO	ESTADO
+Almacén Lima	1325	0	1325	8	Sobre mínimo
+
+Precio minorista
+
+Precio por confirmar
+
+Sin fecha de vigencia registrada
+
+Preparación para publicar
+
+Completa lo necesario antes de mostrarlo.
+
+4 de 6
+67%
+
+Ficha incompleta
+
+Falta completar campos editoriales.
+
+Nombre y SKU
+Categoría y familia
+Precio vigente
+Stock por local
+Imagen principal
+Completar
+Descripción editorial
+Vista en tienda
+
+Así lo verá el cliente.
+
+VENTILADOR DE 12 V RFD 3410A101A EAU65058501 LG
+
+SKU CP-REF-VEN-0844 · Disponible
+
+Precio por confirmar
+
+Imagen referencial: aún no hay media propia asociada.
+
+Promociones activas
+
+Aplicables a este producto.
+
+0 activas
+
+No hay promociones activas aplicables.

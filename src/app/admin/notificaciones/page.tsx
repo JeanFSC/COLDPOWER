@@ -39,7 +39,7 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
   const canManage = can(actor.role, "notifications.manage");
   const canPreferences = can(actor.role, "notifications.preferences");
   const query = toQuery((await searchParams) ?? {});
-  const notificationId = query.get("notificationId") ?? undefined;
+  const requestedNotificationId = query.get("notificationId") ?? undefined;
   const inboxQuery = new URLSearchParams(query);
   inboxQuery.delete("notificationId");
 
@@ -72,8 +72,9 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
     loadError = true;
   }
 
-  const detail = notificationId
-    ? await getNotificationDetail(notificationId, canManage ? undefined : actor.userId!).catch(() => null)
+  const selectedNotificationId = requestedNotificationId ?? page.items.find((item) => item.state === "UNREAD")?.id ?? page.items[0]?.id;
+  const detail = selectedNotificationId
+    ? await getNotificationDetail(selectedNotificationId, canManage ? undefined : actor.userId!).catch(() => null)
     : null;
 
   return (
@@ -98,7 +99,7 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
           pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }}
           queryString={inboxQuery.toString()}
           types={types}
-          selectedId={notificationId}
+          selectedId={selectedNotificationId}
           loadError={loadError ? "No pudimos cargar las notificaciones." : null}
         />
       }

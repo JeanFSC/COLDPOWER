@@ -1,0 +1,132 @@
+[
+  {
+    "label": "home-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "home-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "dashboard-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "dashboard-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "dashboard-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "pagos-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "pagos-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "pagos-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "ventas-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "ventas-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "ventas-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "precios-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "precios-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "precios-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "auditoria-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "auditoria-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "auditoria-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "notificaciones-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "notificaciones-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "reportes-desktop",
+    "type": "console:warning",
+    "text": "Image with src \"/brand/logo-coldpower-lockup.webp\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+  },
+  {
+    "label": "reportes-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "reportes-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "producto-detalle-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "producto-detalle-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "cuenta-pagos-desktop",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  },
+  {
+    "label": "cuenta-pagos-mobile",
+    "type": "console:warning",
+    "text": "Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview"
+  }
+]
