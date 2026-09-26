@@ -23,6 +23,8 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   if (!detail) notFound();
   const { order, items, payment, history, shipment, shipmentEvents, location } = detail;
   const timeline = buildOrderTimeline(order.deliveryMethod, order.status, history);
+  const nextStep = timeline.find((step) => step.state === "upcoming");
+  const deliveredAt = timeline.find((step) => step.status === "DELIVERED")?.at ?? null;
   const awaitingPayment = order.status === "PAYMENT_PENDING";
   const expired = awaitingPayment && order.paymentDueAt !== null && order.paymentDueAt.getTime() <= new Date().getTime();
   const rejected = payment?.status === "REJECTED";
@@ -33,6 +35,80 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
     : order.deliveryMethod === "DELIVERY"
       ? [order.deliveryAddress, details?.district, details?.reference && `Ref.: ${details.reference}`].filter(Boolean).join(" · ")
       : [details?.agencyName && `Agencia ${details.agencyName}`, [details?.province, details?.department].filter(Boolean).join(", "), details?.recipientName && `Recoge: ${details.recipientName}`].filter(Boolean).join(" · ");
+  const isPickup = order.deliveryMethod === "PICKUP";
+  const nextLabel = nextStep ? `Siguiente: ${nextStep.label.toLowerCase()}.` : "";
+  const guide: { eyebrow: string; title: string; body: string; facts: Array<[string, string]> } = (() => {
+    switch (order.status) {
+      case "NEW":
+      case "RECEIVED":
+      case "PAYMENT_PENDING":
+        return {
+          eyebrow: "Qué sigue",
+          title: expired ? "El plazo de pago venció" : "Falta confirmar tu pago",
+          body: expired
+            ? "Puedes volver a comprar desde el carrito; el stock reservado se libera automáticamente."
+            : `Tus productos están reservados mientras completas el pago. ${nextLabel}`,
+          facts: order.paymentDueAt && !expired ? [["Pagar antes de", formatDateTime(order.paymentDueAt)]] : [],
+        };
+      case "PAID":
+        return {
+          eyebrow: "Qué sigue",
+          title: "Pago confirmado",
+          body: `Nuestro almacén separará y revisará tus productos. ${nextLabel} Te avisaremos cuando cambie el estado.`,
+          facts: destination ? [[isPickup ? "Recojo en" : "Entrega en", destination]] : [],
+        };
+      case "PREPARING":
+        return {
+          eyebrow: "Qué sigue",
+          title: "Estamos preparando tu pedido",
+          body: `Verificamos cada producto antes de ${isPickup ? "dejarlo listo para recoger" : "despacharlo"}. ${nextLabel}`,
+          facts: destination ? [[isPickup ? "Recojo en" : "Entrega en", destination]] : [],
+        };
+      case "READY":
+      case "READY_FOR_PICKUP":
+        return isPickup
+          ? {
+              eyebrow: "Listo",
+              title: "Tu pedido te espera",
+              body: "Acércate con tu DNI o con el código del pedido. Si recoge otra persona, que muestre el código.",
+              facts: [["Local", location?.name ?? "Por confirmar"], ...(location?.address ? [["Dirección", location.address] as [string, string]] : [])],
+            }
+          : {
+              eyebrow: "Qué sigue",
+              title: "Listo para despacho",
+              body: `Tu pedido está empacado y saldrá pronto. ${nextLabel}`,
+              facts: destination ? [["Entrega en", destination]] : [],
+            };
+      case "IN_TRANSIT":
+      case "SHIPPED":
+        return {
+          eyebrow: "En camino",
+          title: "Tu pedido va en camino",
+          body: "Puedes seguir cada movimiento del envío más abajo.",
+          facts: [
+            ...(shipment?.carrier ? [["Transportista", shipment.carrier] as [string, string]] : []),
+            ...(shipment?.trackingNumber ? [["Guía", shipment.trackingNumber] as [string, string]] : []),
+            ...(shipment?.estimatedDeliveryAt ? [["Llegada estimada", formatDateTime(shipment.estimatedDeliveryAt)] as [string, string]] : []),
+          ],
+        };
+      case "DELIVERED":
+        return {
+          eyebrow: "Completado",
+          title: "Pedido entregado",
+          body: "Gracias por tu compra. Puedes repetir este pedido desde tu historial cuando lo necesites.",
+          facts: deliveredAt ? [["Entregado", formatDateTime(deliveredAt)]] : [],
+        };
+      case "CANCELLED":
+        return {
+          eyebrow: "Cancelado",
+          title: "Este pedido fue cancelado",
+          body: "El stock reservado se liberó. Si ya habías pagado, gestionamos la devolución y te contactaremos.",
+          facts: [],
+        };
+      default:
+        return { eyebrow: "Qué sigue", title: orderStatusLabels[order.status] ?? "En proceso", body: nextLabel, facts: [] };
+    }
+  })();
 
   return (
     <div className="account-subpage pt-1">
@@ -69,7 +145,8 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
           <div className="grid min-w-0 gap-6">
             <section className="rounded-lg border border-border bg-white p-5 shadow-card sm:p-6" aria-label="Estado del pedido">
               <h2 className="font-display text-xl font-black text-dark">Progreso</h2>
-              <ol className="mt-5">
+              <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+              <ol>
                 {timeline.map((step, index) => {
                   const next = timeline[index + 1];
                   // The segment is "reached" when it leads from a completed step to a completed or current one.
@@ -98,6 +175,23 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                   );
                 })}
               </ol>
+              <aside className="self-start rounded-md border border-border bg-surface-page p-4" aria-label="Qué sigue con tu pedido">
+                <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-primary">{guide.eyebrow}</p>
+                <p className="mt-1 font-extrabold text-dark">{guide.title}</p>
+                <p className="mt-1.5 text-sm leading-6 text-gray-text">{guide.body}</p>
+                {guide.facts.length ? (
+                  <dl className="mt-3 grid gap-2 border-t border-border pt-3 text-sm">
+                    {guide.facts.map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-3">
+                        <dt className="shrink-0 whitespace-nowrap text-gray-text">{label}</dt>
+                        <dd className="text-right font-bold text-dark">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+                <p className="mt-3 border-t border-border pt-3 text-xs text-gray-text">¿Algo no está bien con tu pedido? <Link href="/contacto" className="font-extrabold text-primary hover:underline">Escríbenos</Link> y menciona el código {order.code}.</p>
+              </aside>
+              </div>
             </section>
 
             {order.deliveryMethod !== "PICKUP" ? (
