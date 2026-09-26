@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Circle, CircleDot, MapPin, PackageCheck, Truck, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, CheckCircle2, MapPin, PackageCheck, Truck, XCircle } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getOrderForUser } from "@/lib/sales-service";
 import { buildOrderTimeline, deliveryMethodLabels, formatDateTime, formatMoney, orderStatusLabels, paymentStatusLabels } from "@/lib/order-display";
@@ -69,17 +69,34 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
           <div className="grid min-w-0 gap-6">
             <section className="rounded-lg border border-border bg-white p-5 shadow-card sm:p-6" aria-label="Estado del pedido">
               <h2 className="font-display text-xl font-black text-dark">Progreso</h2>
-              <ol className="mt-5 grid gap-0">
-                {timeline.map((step, index) => (
-                  <li key={step.status} className="relative flex gap-3 pb-5 last:pb-0">
-                    {index < timeline.length - 1 ? <span className={step.state === "done" ? "absolute left-[11px] top-6 h-full w-0.5 bg-teal" : "absolute left-[11px] top-6 h-full w-0.5 bg-border"} aria-hidden="true" /> : null}
-                    {step.state === "done" ? <CheckCircle2 className="relative h-6 w-6 shrink-0 text-teal" aria-hidden="true" /> : step.state === "current" ? <CircleDot className="relative h-6 w-6 shrink-0 text-primary" aria-hidden="true" /> : <Circle className="relative h-6 w-6 shrink-0 text-border" aria-hidden="true" />}
-                    <div>
-                      <p className={step.state === "upcoming" ? "font-bold text-gray-text" : "font-extrabold text-dark"}>{step.label}{step.state === "current" ? <span className="sr-only"> (estado actual)</span> : null}</p>
-                      {step.at ? <p className="text-xs text-gray-text">{formatDateTime(step.at)}</p> : null}
-                    </div>
-                  </li>
-                ))}
+              <ol className="mt-5">
+                {timeline.map((step, index) => {
+                  const next = timeline[index + 1];
+                  // The segment is "reached" when it leads from a completed step to a completed or current one.
+                  const reachedSegment = step.state === "done" && next !== undefined && next.state !== "upcoming";
+                  return (
+                    <li key={step.status} className="flex gap-3">
+                      <div className="flex w-6 shrink-0 flex-col items-center" aria-hidden="true">
+                        {step.state === "done" ? (
+                          <span className="grid h-6 w-6 place-items-center rounded-full bg-teal text-white">
+                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          </span>
+                        ) : step.state === "current" ? (
+                          <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-primary bg-white ring-4 ring-primary/15">
+                            <span className="h-2 w-2 rounded-full bg-primary" />
+                          </span>
+                        ) : (
+                          <span className="h-6 w-6 rounded-full border-2 border-border bg-white" />
+                        )}
+                        {next ? <span className={`my-1 w-0.5 flex-1 rounded-full ${reachedSegment ? "bg-teal" : "bg-border"}`} /> : null}
+                      </div>
+                      <div className={next ? "min-h-[3.25rem] pb-4" : ""}>
+                        <p className={step.state === "upcoming" ? "font-bold leading-6 text-gray-text" : "font-extrabold leading-6 text-dark"}>{step.label}{step.state === "current" ? <span className="sr-only"> (estado actual)</span> : null}</p>
+                        {step.at ? <p className="text-xs text-gray-text">{formatDateTime(step.at)}</p> : null}
+                      </div>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
 
