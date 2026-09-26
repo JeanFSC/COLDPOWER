@@ -1,0 +1,22 @@
+{
+  "scenario": "B1.1-quote-to-sale",
+  "generatedAt": "2026-09-25T22:48:09.875Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "BLOCKED",
+  "error": "La cotización no quedó enviable después de editarla.",
+  "email": "b11.1790376450777@example.test",
+  "quoteName": "QA B1.1 1790376450777",
+  "stages": [
+    {
+      "stage": "public_request",
+      "bodyContainsSuccess": true
+    },
+    {
+      "stage": "staff_pricing",
+      "saved": false,
+      "reason": "El botón Editar no quedó visible."
+    }
+  ],
+  "apiProbes": [],
+  "quoteId": "CP-20260925-8AZB"
+}

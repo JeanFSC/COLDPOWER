@@ -1,0 +1,22 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3003/catalogo?aplicacion=industria-alimentaria&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=linea-blanca&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=aire-acondicionado&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=refrigeracion-comercial&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/contacto?motivo=proyecto&_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/sign-in?_rsc=5CB68i4pnAekjehf :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=industria-alimentaria&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=refrigeracion-comercial&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=linea-blanca&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?aplicacion=aire-acondicionado&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/contacto?motivo=proyecto&_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED",
+    "GET http://localhost:3003/sign-in?_rsc=tXyZJ52UQVBCVsD3 :: net::ERR_ABORTED"
+  ]
+}

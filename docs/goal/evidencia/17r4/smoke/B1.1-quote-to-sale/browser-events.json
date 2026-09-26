@@ -1,0 +1,14 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://localhost:3003/catalogo?_rsc=ycOOR5pUr1PDYsXO :: net::ERR_ABORTED",
+    "GET http://localhost:3003/sign-in?_rsc=ycOOR5pUr1PDYsXO :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=4KdRXJUVQ-a1MjUD :: net::ERR_ABORTED",
+    "GET http://localhost:3003/catalogo?_rsc=4KdRXJUVQ-a1MjUD :: net::ERR_ABORTED",
+    "GET http://localhost:3003/sign-in?_rsc=4KdRXJUVQ-a1MjUD :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=AyvoLoWfqsROpiIK :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=AyvoLoWfqsROpiIK :: net::ERR_ABORTED",
+    "GET http://localhost:3003/cotizacion?_rsc=AyvoLoWfqsROpiIK :: net::ERR_ABORTED"
+  ]
+}

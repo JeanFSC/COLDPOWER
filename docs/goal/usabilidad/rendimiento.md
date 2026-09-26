@@ -70,3 +70,17 @@ Cambios aplicados y verificados: `hero-mobile-390.webp` y `hero-mobile-780.webp`
 La traza final confirma que Clerk JS ya no entra en el camino del LCP público, pero `proxy.ts` sigue realizando el handshake de Clerk en el middleware (archivo fuera del alcance permitido) y el entorno local bajo throttling conserva un TTFB de LCP cercano a 2.1 s. Por eso R3 queda **parcialmente cumplido**: hay mejora objetiva y CLS 0 en las tres rutas, pero no se declara cumplimiento de LCP < 2.0 s ni Performance ≥ 90. Evidencia reproducible: [`result.json`](../../goal/evidencia/17r3/05-rendimiento/after/result.json), JSON Lighthouse, capturas PNG y SQL `sql-catalog-fixture.tsv`/`sql-final.tsv` del mismo directorio.
 
 Lighthouse conserva la limitación conocida de Windows: algunas corridas generan el JSON válido y terminan con `EPERM` al limpiar el directorio temporal de Chrome. Se verificó `Get-Process codex,agy` antes de la medición; no se inició ningún agente adicional. El siguiente trabajo de rendimiento debe aislar el handshake del middleware y repetir varias corridas por ruta antes de tocar más la composición visual.
+
+## Medición R4 — diagnóstico medido y fuente segura
+
+R4 se ejecutó sobre `codex/goal-impecable` con `next build` y `next start --port 3003` usando `.env.localdb`, Lighthouse 13.5.0, `--preset=perf --form-factor=mobile --throttling-method=simulate` y Chromium GPU (`--headless=new --enable-gpu --use-angle=d3d11 --ignore-gpu-blocklist`). Cada URL tuvo tres corridas y esta tabla reporta la mediana. La evidencia detallada está en [`diagnostico.md`](../evidencia/17r4/diagnostico.md).
+
+| Ruta | Antes: Performance / LCP / FCP / TBT / CLS | Después: Performance / LCP / FCP / TBT / CLS | Resultado |
+|---|---|---|---|
+| Home | 71 / 6.562 s / 2.835 s / 120 ms / 0.000 | 65 / 7.661 s / 3.327 s / 99 ms / 0.000 | CLS/TBT cumplen; LCP y Performance no |
+| Catálogo | 77 / 5.129 s / 2.574 s / 40 ms / 0.000 | 77 / 5.141 s / 2.402 s / 44.5 ms / 0.000 | FCP mejora; LCP no llega a 2.5 s |
+| Producto | 77 / 5.225 s / 2.543 s / 79 ms / 0.000 | 76 / 5.626 s / 2.559 s / 61 ms / 0.000 | CLS/TBT cumplen; LCP y Performance no |
+
+El cambio aplicado fue mínimo: retirar el peso `500` de IBM Plex Mono, no usado por las clases `font-mono`, reduciendo las fuentes de 5 (~81 KiB) a 4 (~70.7 KiB). La reducción no resuelve el render delay/hidratación bajo `simulate`; no se tocaron Clerk, `proxy.ts`, el hero ni la composición del Home. La meta R4 queda **parcialmente cumplida** y las metas pendientes requieren una iteración de hidratación autenticada fuera de estos límites.
+
+La verificación final fue `tsc` OK, `lint` 0/0, build OK y humo de rutas limpio en `1920×1080` y `390×844` con `GPU_ARGS`. `test-all` tuvo únicamente el fallo permitido por ausencia del Excel externo en `C:\Users\jean_\Desktop\INVENTARIO CATALOGO\ColdPower_Inventario_Final_Validado.xlsx`; el servidor quedó apagado.

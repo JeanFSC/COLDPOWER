@@ -51,8 +51,8 @@ async function main() {
     await saveBody(scenario, "02-account-body", page);
 
     await visit(page, "/cotizacion");
-    await fillLabel(page, "Nombre o razon social", "QA R3B sesión persistente");
-    await fillLabel(page, "Telefono", "999777666");
+    await fillLabel(page, "Nombre o razón social", "QA R3B sesión persistente");
+    await fillLabel(page, "Teléfono", "999777666");
     await fillLabel(page, "Correo opcional", "qa-r3b-session@example.test");
     const before = await page.locator("input, textarea").evaluateAll((elements) => Object.fromEntries(elements.filter((element) => element.value).map((element) => [element.id || element.getAttribute("name") || element.getAttribute("aria-label") || "field", element.value])));
     await capture(scenario, "03-quote-half-filled-before-hover", page);

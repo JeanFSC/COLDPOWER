@@ -69,3 +69,6 @@ docs/goal/evidencia/17r3/**/*.webm
 docs/goal/evidencia/17r3/**/*.zip
 docs/goal/evidencia/m10/**/*.png
 docs/goal/designs/**/lamina/node_modules/
+.qa-runtime/
+docs/goal/evidencia/17r4/**/*lighthouse*.json
+docs/goal/evidencia/17r4/**/*.png

@@ -1,0 +1,16 @@
+{
+  "scenario": "r3-auth-navigation",
+  "generatedAt": "2026-09-25T22:48:56.486Z",
+  "baseUrl": "http://localhost:3003",
+  "outcome": "BLOCKED",
+  "error": "page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3003/sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3003%2Fcuenta\"\n============================================================",
+  "fixtureId": null,
+  "storageState": false,
+  "stages": [
+    {
+      "stage": "home_auth_state",
+      "accountText": "Mi cuenta\nIngresar",
+      "signedInHeader": false
+    }
+  ]
+}

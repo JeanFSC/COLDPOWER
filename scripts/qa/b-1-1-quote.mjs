@@ -51,9 +51,9 @@ async function main() {
         await page.waitForTimeout(1_000);
       }
     }
-    await fillLabel(page, "Nombre o razon social", quoteName);
+    await fillLabel(page, "Nombre o razón social", quoteName);
     await fillLabel(page, "DNI", "77889911");
-    await fillLabel(page, "Telefono", "999888777");
+    await fillLabel(page, "Teléfono", "999888777");
     await fillLabel(page, "Correo opcional", email);
     await fillLabel(page, "Departamento", "Lima");
     await fillLabel(page, "Provincia", "Lima");
