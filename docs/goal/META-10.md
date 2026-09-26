@@ -130,3 +130,15 @@ Extraído de los módulos de referencia (Pagos, Inicio, Reportes, Usuarios).
 
 ## 5. Bitácora
 - 2026-09-25 00:5x: meta asignada. Inventario creado. Auditoría visual en espera de RAM (Codex R3b compilando).
+
+## 6. Estado al 2026-09-25 (noche)
+- **Re-auditoría v2 independiente (Gemini, solo lectura; verificada por Claude):** promedio general **9.17/10** (v1: 7.12). Admin 9.01; tienda y cuenta 9.31. Ninguna superficie bajo 8.2. 14 superficies ≥ 9.5.
+- **M10-06:** los 13 defectos de la v2 están corregidos e integrados (`37946b1`).
+- **Rendimiento (R4 + R5):**
+  - CLS = 0 y TBT < 200 ms: cumplen;
+  - LCP móvil simulado en local: 5–7,6 s;
+  - causa medida: ~367 KiB de JS de Clerk en las páginas públicas;
+  - la variante headless de Clerk no existe en `@clerk/nextjs` 7.7.1 (R5 se detuvo correctamente, sin cambios).
+  - **Decisión de Jean:** medir primero en producción, con CDN y caché real, antes de cambiar la autenticación.
+  - Si en producción el LCP sigue alto, la opción B es la sesión por servidor en las páginas públicas (riesgo medio, pruebas estrictas).
+- **Pendientes que dependen de Jean:** Neon activo y despliegue (para medir en producción y migrar 0053/0054 con respaldo), datos de empresa, IGV, WhatsApp, textos legales `[DEFINIR]`, publicación de productos y merge a `main`.
