@@ -15,6 +15,7 @@ export type CatalogQuery = {
   query?: string;
   categorySlug?: string;
   familySlug?: string;
+  productType?: string;
   brandSlug?: string;
   status?: string;
   sort?: ProductSort;
@@ -24,6 +25,7 @@ export type CatalogQuery = {
 };
 export type CatalogCategory = { id: string; name: string; slug: string; productCount: number };
 export type CatalogFamily = { id: string; categoryId: string; name: string; slug: string; productCount: number };
+export type CatalogProductType = { categoryId: string; familyId: string; name: string; productCount: number };
 export type CatalogBrand = { id: string; name: string; slug: string; productCount: number };
 export type CatalogPage = { products: Product[]; total: number; page: number; pageSize: number; totalPages: number };
 type CatalogJoinRow = CatalogProductSourceRow & { category: { id: string; name: string; slug: string }; family: { id: string; name: string; slug: string }; brand: { id: string; name: string; slug: string } | null };
@@ -69,6 +71,7 @@ function buildConditions(query: CatalogQuery, publicOnly = query.publicOnly !== 
   }
   if (query.categorySlug) conditions.push(eq(categories.slug, query.categorySlug));
   if (query.familySlug) conditions.push(eq(families.slug, query.familySlug));
+  if (query.productType) conditions.push(eq(products.productType, query.productType));
   if (query.brandSlug) conditions.push(eq(brands.slug, query.brandSlug));
   if (query.status === "out-of-stock") conditions.push(eq(products.availabilityStatus, "out_of_stock"));
   else if (query.status === "on-request") conditions.push(eq(products.availabilityStatus, "on_request"));
@@ -186,6 +189,28 @@ async function queryCatalogFamilies(categoryId: string | undefined, publicOnly: 
 export async function getCatalogFamilies(categoryId?: string, publicOnly = true) {
   if (!publicOnly) return queryCatalogFamilies(categoryId, false);
   return withRuntimeCache(`catalog:families:public:${categoryId ?? "all"}`, () => queryCatalogFamilies(categoryId, true));
+}
+
+export async function getCatalogProductTypes(): Promise<CatalogProductType[]> {
+  const rows = await getDb()
+    .select({
+      categoryId: categories.id,
+      familyId: families.id,
+      name: products.productType,
+      productCount: count(products.id),
+    })
+    .from(products)
+    .innerJoin(categories, effectiveCategoryJoin())
+    .innerJoin(families, effectiveFamilyJoin())
+    .where(and(
+      eq(categories.active, true),
+      eq(families.active, true),
+      sql`lower(${products.status}) in ('activo', 'active')`,
+      sql`btrim(${products.productType}) <> ''`,
+    ))
+    .groupBy(categories.id, families.id, products.productType)
+    .orderBy(asc(families.name), asc(products.productType));
+  return rows.map((row) => ({ ...row, productCount: Number(row.productCount) }));
 }
 
 async function queryCatalogBrands(publicOnly: boolean, categoryId?: string): Promise<CatalogBrand[]> {

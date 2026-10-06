@@ -2,7 +2,7 @@ import { getCatalogBrands, getCatalogCategories, getCatalogCategoryBySlug, getCa
 import type { Product, ProductStatus } from "@/types/product";
 
 export type ProductSort = "relevance" | "availability" | "consulted" | "price-asc" | "price-desc" | "updated" | "name-asc";
-export type CatalogFilters = { query?: string; category?: string | string[]; family?: string | string[]; brand?: string | string[]; status?: ProductStatus | ProductStatus[] | "all"; sort?: ProductSort; application?: string; relation?: string };
+export type CatalogFilters = { query?: string; category?: string | string[]; family?: string | string[]; productType?: string; brand?: string | string[]; status?: ProductStatus | ProductStatus[] | "all"; sort?: ProductSort; application?: string; relation?: string };
 
 export { getCatalogBrands as getBrands, getCatalogCategories as getCategories, getCatalogCategoryBySlug as getCategoryBySlug, getCatalogProductBySlug as getProductBySlug, getCatalogRelatedProducts as getRelatedProducts };
 

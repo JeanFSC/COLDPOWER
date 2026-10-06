@@ -755,3 +755,29 @@ final result: passed
 - accessibility/runtime: the 1920/390 hub revalidation reports axe 0, console 0, and exactly one personal admin link in the account menu.
 
 final result: passed
+
+## Menú «Todas las categorías» — 2026-10-05
+
+- source visual truth: `C:\Users\JEAN\AppData\Local\Temp\codex-clipboard-ca89c6b2-d41c-431a-8d32-08e84335efc9.png` (Impacto, menú abierto) y `C:\Users\JEAN\AppData\Local\Temp\codex-clipboard-71e22182-acc6-49a3-abff-24964d7276a0.png` (ColdPower antes del cambio).
+- fuente interactiva verificada: `https://www.impacto.com.pe/`; al pulsar «Categorías» abre un panel bajo el header, mantiene la URL, selecciona categorías en un lateral, cambia las secciones del panel y ofrece scroll y cierre.
+- implementación: `http://localhost:3000/catalogo`, navegador Brave personal; captura visible en la sesión con el panel abierto en Refrigeración. La API de captura entregó la imagen al navegador/sesión, no una ruta de archivo local.
+- viewport: implementación 1517 × 724 CSS px; las capturas fuente adjuntas tienen 1735 × 966 y 1906 × 954 px. Se comparó la jerarquía y el panel de navegación, sin afirmar una comparación píxel a píxel entre viewports distintos.
+- interacción verificada: abrir sin navegar, elegir categoría, mostrar sus familias publicadas, cerrar con Escape, entrar al filtro de una familia y limpiar el filtro.
+- comparación inicial y corrección: el primer panel abría Amoladoras y mostraba una sola familia; el estado inicial pasó a la categoría con más familias publicadas (Refrigeración) y se ajustó la grilla a cuatro columnas en el viewport amplio.
+- fidelidad: usa categorías y familias reales de PostgreSQL y el filtro de catálogo existente. Mantiene el header ColdPower y sus colores navy/azul/naranja; no copia la marca ni el contenido de Impacto. Las familias se muestran como grupos enlazables porque el modelo ColdPower no tiene un nivel de subcategoría adicional.
+- accesibilidad/responsive: diálogo modal etiquetado, foco inicial, ciclo de foco, cierre por Escape/backdrop y bloqueo de scroll de fondo; en móvil el panel usa pantalla completa, selector horizontal de categorías y lista vertical. El viewport móvil no se capturó en esta sesión.
+- build: `corepack pnpm build` pasó; ESLint pasó para los cuatro archivos modificados. La generación registró el warning conocido de disponibilidad de `company_settings` en la base local.
+- corrección del 2026-10-06: el menú ahora consulta la taxonomía activa completa, sin filtrar por cantidad de productos públicos. La base local reporta 27 categorías y 171 familias; Refrigeración muestra sus 45 familias en una grilla desplazable. Se ocultaron los conteos en este menú para no confundirlos con referencias publicadas. En Brave local se verificó el panel abierto y la lista larga desplazable después del rebuild.
+- build de la corrección: `corepack pnpm build` y ESLint focalizado (`src/app/layout.tsx`, `src/components/layout/CategoryMegaMenu.tsx`) pasaron. Se mantuvo el warning conocido de `company_settings`.
+
+final result: passed; menú de taxonomía verificado; viewport móvil no capturado
+
+### Tipos de producto en el mega-menú — 2026-10-06
+
+- Se reorganizó el panel derecho en grupos por familia: encabezado, enlace «Ver todo» y tipos de producto debajo, siguiendo la jerarquía observada en Impacto.
+- Los tipos se derivan del campo `product_type` de productos activos, relacionados con la familia y categoría editorial. El filtro del catálogo usa `tipo` y conserva los filtros al enviar el formulario.
+- En local, «Otros electrodomésticos» despliega Equipos de limpieza → Limpiadora a vapor; Motores → Motor; Otros → Centrifugador, Deshilachador y Olla; Termómetros → Termómetro.
+- El click de Centrifugador llega al catálogo con `tipo=Centrifugador`; actualmente devuelve cero referencias públicas porque las fichas de esa categoría siguen en revisión.
+- build y ESLint focalizado pasaron; el warning de `company_settings` local persiste.
+
+final result: passed; el árbol de tipos se ve y el filtro responde; viewport móvil no capturado

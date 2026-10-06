@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ChevronDown, Menu, Percent } from "lucide-react";
-import type { CatalogCategory } from "@/lib/catalog-repository";
+import { Percent } from "lucide-react";
+import type { CatalogCategory, CatalogFamily, CatalogProductType } from "@/lib/catalog-repository";
+import { CategoryMegaMenu } from "@/components/layout/CategoryMegaMenu";
 
 const technicalLinks = [
   { label: "Compresores", href: "/catalogo?familia=compresores" },
@@ -12,7 +13,7 @@ const technicalLinks = [
   { label: "Repuestos", href: "/categoria/repuestos-y-accesorios-generales" },
 ] as const;
 
-export function TechnicalNav({ categories = [] }: { categories?: CatalogCategory[] }) {
+export function TechnicalNav({ categories = [], families = [], productTypes = [] }: { categories?: CatalogCategory[]; families?: CatalogFamily[]; productTypes?: CatalogProductType[] }) {
   const dynamicLinks = categories
     .filter((category) => category.productCount > 0)
     .slice(0, 8)
@@ -22,7 +23,7 @@ export function TechnicalNav({ categories = [] }: { categories?: CatalogCategory
   return (
     <nav aria-label="Navegación técnica" className="home-category-nav" data-testid="technical-nav">
       <div className="home-wide-container home-category-nav-inner">
-        <Link href="/catalogo" prefetch={false} className="home-all-categories"><Menu aria-hidden="true" />Todas las categorías<ChevronDown aria-hidden="true" /></Link>
+        <CategoryMegaMenu categories={categories} families={families} productTypes={productTypes} />
         <div className="home-category-links">
           {links.map((link) => <Link key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
           <Link href="/catalogo?vista=marcas" prefetch={false}>Marcas</Link>

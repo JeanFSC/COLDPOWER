@@ -16,7 +16,7 @@ import { coldPowerClerkLocalization } from "@/components/auth/clerkAppearance";
 import { company } from "@/data/company";
 import { getOptionalUserId } from "@/lib/auth";
 import { authConfig, isAuthConfigured } from "@/lib/env";
-import { getCatalogCategories, type CatalogCategory } from "@/lib/catalog-repository";
+import { getCatalogCategories, getCatalogFamilies, getCatalogProductTypes, type CatalogCategory, type CatalogFamily, type CatalogProductType } from "@/lib/catalog-repository";
 import { getPublicCompanySettings } from "@/lib/company-settings-runtime";
 import "./globals.css";
 
@@ -66,8 +66,11 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [categories, publicSettings, devAuthUserId] = await Promise.all([
+  const [categories, navigationCategories, families, productTypes, publicSettings, devAuthUserId] = await Promise.all([
     loadShellCategories(),
+    loadNavigationCategories(),
+    loadNavigationFamilies(),
+    loadNavigationProductTypes(),
     getPublicCompanySettings(),
     process.env.CP_DEV_AUTH_BYPASS === "true" && process.env.CP_DEV_AUTH_USER_ID
       ? getOptionalUserId()
@@ -83,7 +86,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <PreviewBanner />
               <TopBar />
               <Header authEnabled={isAuthConfigured} categories={categories} devAuthUserId={devAuthUserId} />
-              <TechnicalNav categories={categories} />
+              <TechnicalNav categories={navigationCategories} families={families} productTypes={productTypes} />
             </>
           }
           publicAfter={
@@ -133,6 +136,45 @@ async function loadShellCategories(): Promise<CatalogCategory[]> {
   } catch (error) {
     console.warn(
       "[ColdPower] Categorías persistentes no disponibles para la navegación.",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+async function loadNavigationCategories(): Promise<CatalogCategory[]> {
+  try {
+    const categories = await getCatalogCategories(false);
+    return categories.map((category) => ({ ...category, productCount: 0 }));
+  } catch (error) {
+    console.warn(
+      "[ColdPower] Taxonomía persistente no disponible para el menú de categorías.",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+async function loadNavigationFamilies(): Promise<CatalogFamily[]> {
+  try {
+    const families = await getCatalogFamilies(undefined, false);
+    return families.map((family) => ({ ...family, productCount: 0 }));
+  } catch (error) {
+    console.warn(
+      "[ColdPower] Familias persistentes no disponibles para el menú de categorías.",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+async function loadNavigationProductTypes(): Promise<CatalogProductType[]> {
+  try {
+    const productTypes = await getCatalogProductTypes();
+    return productTypes.map((productType) => ({ ...productType, productCount: 0 }));
+  } catch (error) {
+    console.warn(
+      "[ColdPower] Tipos de producto publicados no disponibles para el menú de categorías.",
       error instanceof Error ? error.message : error,
     );
     return [];
