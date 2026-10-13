@@ -1269,7 +1269,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
           ) : null}
           <div className="flex flex-wrap gap-2">
             {canPaymentsView ? (
-              <Link href={payments[0]?.id ? `/admin/pagos?paymentId=${encodeURIComponent(String(payments[0].id))}` : `/admin/pagos?saleId=${encodeURIComponent(String(sale.id))}`} className={secondaryButtonClass}>Gestionar cobros</Link>
+              <Link href={`/admin/pagos?saleId=${encodeURIComponent(String(sale.id))}`} className={secondaryButtonClass}>Gestionar cobros</Link>
             ) : null}
             {orders[0]?.id ? (
               <Link href={`/admin/pedidos?orderId=${encodeURIComponent(String(orders[0].id))}`} className={secondaryButtonClass}>Ver pedido · {value(orders[0].code, String(orders[0].id))}</Link>

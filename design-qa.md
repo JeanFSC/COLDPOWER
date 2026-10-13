@@ -2606,3 +2606,17 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Cierre QA en Brave: devolución total mostró Reembolsado; cancelar venta con motivo QA mostró Cancelada. Neon confirma Chiclayo físico1/reservado0, Cusco7/1. No repetir restauración ni reembolso. Historial preservado.
 - Publicación autorizada de F247–F251 y auditoría. Observación pendiente aparte: enlace Gestionar cobros de algunas ventas puede seleccionar provisional al mostrar historial reembolsado; revisar criterio de selección sin confundir con corrección del formulario manual.
 - Auditoría integral sigue abierta. CMS excluido, móvil detenidoF127, Guardar nativo pendiente.
+## F252 — Cobros desde Ventas
+- Hallazgo confirmado: detalle de Venta usa payments[0] para Gestionar cobros, mientras consulta ordena solo por fecha de pedido, sin orden de pagos del mismo pedido. Puede abrir provisional Cancelado en vez del cobro confirmado/reembolsado.
+- Corrección local: Gestionar cobros navega a /admin/pagos?saleId=venta para mostrar todos los cobros y sus estados. El repositorio de pagos aplica saleId; enlaces individuales de pestaña Cobros conservan ID específico.
+- TypeScript y ESLint sesión14281 exit0. Diecisiete contratos existentes aprobados y nuevo contrato de alcance de venta añadido/aprobado. Rebuild y navegación real en Brave pendientes; no publicado todavía.
+- No se crearon pagos ni reservas nuevas. Casos F248/F251 cerrados y saldos QA restaurados. CMS excluido, móvil detenido F127 y Guardar nativo pendiente.
+### F252 — Revisión y consulta persistida
+- Revisor aprobó enlace a pagos por saleId, permisos payments.view y conservación del alcance en filtros/exportación; sin defectos accionables.
+- Consulta real getPaymentsPage filtrada por venta QA F251 devolvió exactamente dos items: pago REFUNDED y provisional CANCELLED. Primer script temporal usó propiedad rows inexistente y falló; corregido a items según contrato, lectura posterior aprobada. No defecto del sistema ni mutación de datos.
+- Build sesión29153 verificada activa, compilación9.5s correcta y TypeScript en curso. Servidor28104 detenido controladamente. Esperar salida terminal, levantar local y probar enlace en Brave antes publicar.
+- Main hasta49d59e6, cambios F252 locales. CMS excluido, móvil detenidoF127, Guardar nativo pendiente.
+### F252 — Cierre visual y publicación
+- Build29153 exit0, servidor77227 Ready235ms. Brave abrió Venta QA F251 y usó Gestionar cobros: URL /admin/pagos?saleId=sale-0e965445-a762-403c-945b-f03c2ed2f047; tabla muestra exactamente el pago Reembolsado y provisional Cancelado del mismo pedido ORD-20261013-74BD35.
+- Sin nuevo cobro, reserva ni cambio de saldo. Revisión y pruebas dirigidas aprobadas. Se publica corrección de enlace y auditoría conforme a autorización de Jean.
+- Auditoría integral abierta. CMS excluido, móvil detenidoF127, Guardar nativo y demás cobertura pendientes.

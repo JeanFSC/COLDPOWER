@@ -6,6 +6,13 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
+test("gestionar cobros muestra todos los pagos de la venta sin elegir un provisional", async () => {
+  const workspace = await read("src/components/admin/SalesControlCenter.tsx");
+  assert.match(workspace, /href=\{`\/admin\/pagos\?saleId=\$\{encodeURIComponent\(String\(sale\.id\)\)\}`\}[^>]*>Gestionar cobros/);
+  assert.doesNotMatch(workspace, /href=\{payments\[0\]\?\.id/);
+  assert.match(await read("src/lib/payments-repository.ts"), /if \(filters\.saleId\) conditions\.push\(eq\(orders\.saleId, filters\.saleId\)\)/);
+});
+
 test("ventas, clientes, pedidos y compras: enlaces nativos de archivo conservan filtros", async () => {
   for (const [file, endpoint] of [
     ["SalesControlCenter.tsx", "ventas"],
