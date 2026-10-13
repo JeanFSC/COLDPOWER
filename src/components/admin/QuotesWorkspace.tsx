@@ -601,7 +601,7 @@ export function QuotesWorkspace({
               <div>
                 <h2 className="font-display text-lg font-black text-slate-900">Bandeja comercial</h2>
                 <p className="mt-1 text-xs text-[#526578]">
-                  {page.totalItems} registros · ordenados por última actualización
+                  {page.totalItems} {page.totalItems === 1 ? "registro" : "registros"} · ordenados por última actualización
                 </p>
               </div>
               <button
@@ -816,7 +816,7 @@ export function QuotesWorkspace({
                     </span>
                     <div>
                       <p className="text-xs font-extrabold text-slate-900">{item.label}</p>
-                      <p className="text-[11px] text-[#526578]">{item.count} registros</p>
+                      <p className="text-[11px] text-[#526578]">{item.count} {item.count === 1 ? "registro" : "registros"}</p>
                     </div>
                   </div>
                   {index < flow.length - 1 ? (

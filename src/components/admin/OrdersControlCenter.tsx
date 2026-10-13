@@ -881,7 +881,7 @@ function OrderDrawer({
                           const reservation = detail.reservations.find((candidate) => candidate.id === item.reservationId);
                           return (
                             <p className="mt-1 break-all text-[10.5px] font-medium text-violet-700">
-                              Reserva {String(reservation?.id ?? item.reservationId)} · {text(String(reservation?.status ?? "ACTIVE"))} · {String(reservation?.quantity ?? item.quantity)} unidades · {String(detail.location?.name ?? "Local N/D")}
+                              Reserva {String(reservation?.id ?? item.reservationId)} · {text(String(reservation?.status ?? "ACTIVE"))} · {String(reservation?.quantity ?? item.quantity)} {Number(reservation?.quantity ?? item.quantity) === 1 ? "unidad" : "unidades"} · {String(detail.location?.name ?? "Local N/D")}
                             </p>
                           );
                         })()
@@ -979,7 +979,15 @@ function OrderDrawer({
                   </div>
                 ) : (
                   <p className="text-[11px] text-slate-500">
-                    Aún no hay una guía registrada. El avance depende del método de entrega y se habilita solo cuando el picking está completo.
+                    {String(order?.deliveryMethod) === "PICKUP"
+                      ? String(order?.status) === "DELIVERED"
+                        ? "Recojo completado en el local. Consulta el historial para ver el registro de entrega."
+                        : String(order?.status) === "CANCELLED"
+                          ? "Pedido cancelado. No hay un recojo pendiente."
+                          : String(order?.status) === "READY_FOR_PICKUP"
+                            ? "Pedido listo para recojo en el local. Registra la entrega cuando el cliente lo reciba."
+                            : "Recojo en local: completa la preparación y resuelve las incidencias bloqueantes antes de marcarlo listo."
+                      : "Aún no hay una guía registrada. El avance depende del método de entrega y se habilita solo cuando el picking está completo."}
                   </p>
                 )
               ) : null}

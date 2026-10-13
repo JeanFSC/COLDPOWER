@@ -1000,7 +1000,7 @@ function AdjustmentDialog({
           <p className="font-extrabold text-slate-700">Vista previa</p>
           <p className="mt-1">
             {product
-              ? `${inventoryMovementLabels[type]} · ${product.sku} · ${quantity || "0"} unidades en ${locations.find((location) => location.id === locationId)?.name ?? "el local seleccionado"}.`
+              ? `${inventoryMovementLabels[type]} · ${product.sku} · ${quantity || "0"} ${Number(quantity) === 1 ? "unidad" : "unidades"} en ${locations.find((location) => location.id === locationId)?.name ?? "el local seleccionado"}.`
               : "Selecciona una referencia para revisar el movimiento."}
           </p>
         </div>

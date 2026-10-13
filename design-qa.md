@@ -2521,3 +2521,48 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Desde la cotización se abrió OP-20261010-81F33B: Aging 0 días y Contacto más reciente 13 oct. 2026, 1:22 p. m. Captura visual inspeccionada; consola sin errores. Hallazgo de contacto resuelto para nuevos registros; no reconstrucción histórica.
 - Revisor independiente sin defectos accionables. Publicación de esta corrección autorizada por Jean. Sigue pendiente la cobertura integral del sistema, las descargas reales y Guardar nativo. CMS excluido y móvil detenido en F127.
 - Observación visual adicional para seguimiento: Ruta de una cotización muestra «1 registros» cuando el conteo es uno. No impide operar; corrección pendiente.
+## F242 — Respuesta y conversión comercial QA
+- Main publicado hasta ebdb376, árbol limpio al iniciar. Local 88551 con build F241 validado.
+- Brave abrió respuesta de COT-2026-C87EED v3. Rechazada sin motivo fue detenida por validación HTML: required=true, valueMissing=true, valid=false; no se registró rechazo.
+- Aceptación Presencial simulada con nota QA F242 sin contacto/compromiso externo: estado Aceptada, snapshot aceptado quote-version-a437805e-1112-42fc-baa4-5d45b355a6d9, PDF v3 y total 11 PEN. Habilitó Convertir en venta.
+- Conversión: local por defecto Almacén Lima, recojo, snapshot correcto 1 unidad/11 PEN. Confirmar venta devolvió INVENTORY_UNKNOWN porque QA-AUD-20261006 no tiene saldo cuantitativo en Lima; controles se rehabilitaron y formulario conserva datos.
+- Lectura directa de Neon confirma cotización ACCEPTED v3, 0 ventas y 0 pedidos para opportunity-24c1067f-7837-42ae-bd29-06e0518335b5. La comprobación de saldo en servicio antecede altas/reservas dentro de la transacción. Sin conversión parcial.
+- Pendiente completar conversión en local con saldo QA verificado y continuar pedido/pago/operaciones. No inventar stock para superar la validación. Captura del error inspeccionada. Mejora visual pendiente: quitar código técnico INVENTORY_UNKNOWN de mensaje visible conservando motivo; «1 registros» ya registrado en F241.
+- CMS excluido. Móvil detenido en F127 hasta orden de Jean. Guardar nativo y demás cobertura abierta.
+## F243 — Conversión con stock confirmado y trazabilidad
+- Lectura Neon previa: producto QA-AUD-20261006 en Chiclayo físico 1/reservado 0; Cusco físico 7/reservado 1. No se inventó saldo. Brave cambió el local de Lima a Chiclayo y confirmó la conversión.
+- Resultado persistido: cotización CONVERTED v3, una venta y un pedido ligados a la oportunidad QA. Venta sale-d39c638d-c21c-47af-a664-ff7505f9f799 (VTA-21091B84-E), pedido order-2c326391-365e-466f-ad47-ce0a31211d3d (ORD-20261013-B49BD2), pago payment-2823dc57-1376-4936-aef7-28b57e3bd00d pendiente.
+- Reserva reservation-37058137-f53c-4a8a-bc88-856ad1ee52e5 activa por una unidad en Chiclayo. Saldo posterior físico 1/reservado 1; Cusco sigue 7/1. Reserva QA retenida para continuar flujo y liberar o restaurar al cierre de la prueba.
+- Brave usó vínculos Cotización → Venta → Pedido. Venta Confirmada, 11 PEN, subtotal 11, descuento 0, saldo 11; snapshot SKU QA, una unidad a 11. Pedido pendiente de pago, recojo Chiclayo; preparación solicitado 1/preparado 0 y reserva activa visible. No permite preparar desde esta pestaña antes de pagar.
+- Pedido muestra advertencia de IGV sin configurar; no se inventó porcentaje tributario. Cobro real no realizado, entrega no ejecutada. Pendiente pago de prueba, preparación/entrega y cierre/restauración QA.
+- Observación visual adicional: reserva muestra «1 unidades»; corregir singular junto con «1 registros». CMS excluido, móvil detenido en F127, Guardar nativo pendiente.
+## F244 — Cobro y preparación QA
+- Brave confirmó cobro manual simulado de 11 PEN, Efectivo, referencia QA-F244-SIMULADO-11PEN y motivo explícito sin dinero real. Nuevo pago payment-bf775356-52ae-4eec-ab82-a56011bbdc0b Confirmado/Conciliado; provisional payment-2823dc57-1376-4936-aef7-28b57e3bd00d Cancelado/Conciliado. Pendientes de esta orden: 0.
+- Pedido ORD-20261013-B49BD2 pasó a Por preparar y Cobro Conciliado; iniciar preparación funcionó y mostró En preparación. Cancelación requiere gestionar reembolso antes, conforme a cobro confirmado.
+- Pestaña Preparación: +1 preparado actualizó solicitado 1/preparado 1, botón quedó deshabilitado al completar cantidad. Saldo QA Chiclayo sigue físico 1/reservado 1; Cusco 7/1 intacto.
+- Listo para recojo habilitado tras completar preparación; acción enviada, comprobación final de estado pendiente en esta entrada. No entrega ni consumo de reserva todavía. Continuar entrega simulada y cierre/restauración QA; pago y reserva de prueba permanecen trazables.
+- UX observada: tras confirmar manual, el detalle sigue mostrando el pago provisional Cancelado en vez del nuevo Confirmado; tabla sí muestra ambos correctamente. Evaluar mejora de navegación, no confundir con fallo del cobro.
+- CMS excluido, móvil detenido F127, Guardar nativo pendiente. No cambios al porcentaje tributario ni pagos externos.
+- F244 comprobación final Brave: pedido Listo para recojo, Cobro Conciliado, receptor opcional y Confirmar entrega habilitado. Entrega aún no ejecutada.
+
+## F245 — Entrega simulada y restauración de stock QA
+- Brave confirmó entrega de ORD-20261013-B49BD2 con receptor «QA AUDITORÍA F245 — entrega simulada, sin retiro físico». Estado Entregado, cobro Conciliado. Saldo Neon Chiclayo pasó físico 1/reservado 1 a 0/0; Cusco sigue 7/1.
+- Restauración por UI Inventario → Ajustar inventario: Chiclayo, SKU QA-AUD-20261006, Ajuste de entrada, cantidad 1, motivo explícito QA F245 y notas vinculadas al pedido/saldo previo. Confirmar movimiento cerró diálogo; motivo visible en Kardex.
+- Lectura Neon posterior confirma stock restaurado a Chiclayo físico 1/reservado 0; Cusco 7/1 intacto. No duplicar ajuste. Entrega consumida y ajuste compensatorio conservan trazabilidad; no retiro físico ni dinero real.
+- Flujo QA cubierto en Brave: versión enviada → aceptación → conversión → pago manual conciliado → preparación de una unidad → listo para recojo → entrega. Registros retenidos: venta sale-d39c638d-c21c-47af-a664-ff7505f9f799, pedido order-2c326391-365e-466f-ad47-ce0a31211d3d, pago confirmado payment-bf775356-52ae-4eec-ab82-a56011bbdc0b. No se declara completa la auditoría de todos los módulos ni la variante delivery/shipping.
+- Mejora visual pendiente: pestaña Entrega de recojo ya entregado sigue diciendo «Aún no hay una guía registrada» y explica picking; debería mostrar evidencia de recojo/entrega según método y estado. Restauración también mostró «1 unidades», ampliar corrección de singular.
+- CMS excluido; móvil detenido F127 hasta orden de Jean. Guardar nativo y demás cobertura pendiente. Servidor local permanece levantado.
+## F246 — Textos visuales de flujo comercial e inventario
+- Corrección local de singular: conteos de bandeja/ruta de Cotizaciones usan registro/registros; reserva en Pedidos usa unidad/unidades; vista previa de ajuste de Inventario usa unidad/unidades.
+- Entrega sin guía distingue PICKUP: si DELIVERED indica recojo completado y remite al historial; si pendiente explica pago/preparación necesarios. Otros métodos conservan mensaje de guía.
+- TypeScript y ESLint dirigidos aprobados. Validación visual con nuevo build, revisión y publicación pendientes. No cambió lógica de cobro, entrega ni saldo.
+- Stock QA ya restaurado según F245, no repetir movimiento. CMS excluido y móvil detenido F127. Auditoría integral y Guardar nativo siguen abiertos.
+### F246 — Build y corrección tras revisión
+- Build inicial sesión 8642 exit 0. Revisor detectó que mensaje PICKUP pendiente afirmaba pago obligatorio aunque el servicio admite recorrido desde RECEIVED; también aplicaba mensaje de preparación a CANCELLED.
+- Corrección: entregado indica completado/historial; cancelado indica sin recojo pendiente; READY_FOR_PICKUP indica listo y registrar recepción; demás indica completar preparación/resolver bloqueantes. Eliminada condición de pago no garantizada.
+- ESLint y TypeScript posteriores sesión 28355 exit 0. Build final sesión 53328 iniciado con código corregido; no modificar fuentes ni levantar servidor hasta resultado terminal. Revalidación del revisor y visual en Brave pendientes. No publicado todavía.
+### F246 — Validación final y publicación
+- Build final sesión 53328 exit 0, servidor 70217 Ready 223 ms. Revisor revalidó P2 corregido y no encontró defectos adicionales.
+- Brave en pedido entregado ORD-20261013-B49BD2: Entrega muestra «Recojo completado en el local. Consulta el historial para ver el registro de entrega»; Preparación muestra reserva Consumida y «1 unidad». Cotizaciones muestra Enviadas «1 registro» y mantiene plural para 2/6/9/11.
+- TypeScript, ESLint y tres contratos dirigidos aprobados; no nueva regresión integral en este cambio de textos (última integral F241). Vista previa de ajuste modificada, aún sin comprobación visual específica posterior al build; ramas cancelado/listo de nuevo mensaje solo revisadas estáticamente.
+- Se publica corrección de textos y evidencia F242–F246 conforme a autorización. Auditoría operativa integral sigue abierta; CMS excluido, móvil detenido F127 y Guardar nativo pendiente.
