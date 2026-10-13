@@ -9,6 +9,7 @@ import {
   getCategorySpend,
   getPurchaseAlerts,
   getPurchaseDetail,
+  getPurchaseDetailForReceipt,
   getPurchaseRequestDetail,
   getPurchaseRequestsPage,
   getPurchasesKpiSeries,
@@ -16,10 +17,11 @@ import {
   getSupplierScorecard,
   getSupplierSpendRanking,
 } from "@/lib/purchases-repository";
-import { PurchasesInvalidFilterError, parsePurchasesFilters, type PurchasesFilters } from "@/lib/purchases-contract";
+import { resolvePurchasesPageFilters } from "@/lib/purchases-page-filters";
 import { getInventoryProductOptions } from "@/lib/inventory-admin-service";
 import { PurchasesOperations } from "@/components/admin/PurchasesOperations";
 import { AdminPurchasesModule } from "@/components/admin/AdminPurchasesModule";
+import { purchaseReceiptViews } from "@/lib/purchase-receipt-view";
 
 export const metadata: Metadata = {
   title: "Compras | Panel admin ColdPower",
@@ -38,15 +40,9 @@ export default async function AdminComprasPage({
     else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
   }
   const db = getDb();
-  let purchaseFilters: PurchasesFilters;
-  let filterNotice: string | undefined;
-  try {
-    purchaseFilters = parsePurchasesFilters(query);
-  } catch (error) {
-    if (!(error instanceof PurchasesInvalidFilterError)) throw error;
-    purchaseFilters = parsePurchasesFilters(new URLSearchParams());
-    filterNotice = "Algunos filtros de compras no eran válidos y se restablecieron a una vista segura.";
-  }
+  const resolved = resolvePurchasesPageFilters(query);
+  const purchaseFilters = resolved.filters;
+  let filterNotice = resolved.filterNotice;
   const requestPageValue = Number(query.get("requestPage") ?? "1");
   const requestPageNumber = Number.isInteger(requestPageValue) && requestPageValue > 0 ? requestPageValue : 1;
   const [
@@ -75,13 +71,16 @@ export default async function AdminComprasPage({
       pageSize: 5,
     }),
     query.get("requestId") ? getPurchaseRequestDetail(query.get("requestId")!) : Promise.resolve(null),
-    query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
+    query.get("receiptId") ? getPurchaseDetailForReceipt(query.get("receiptId")!) : query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
     getCategorySpend(purchaseFilters),
     getSupplierSpendRanking(purchaseFilters),
     getSupplierScorecard(),
     getPurchaseAlerts(),
     getPurchasesKpiSeries(purchaseFilters),
   ]);
+  if (query.get("receiptId") && !selectedPurchase) {
+    filterNotice = [filterNotice, "No se encontró la recepción solicitada. Revisa el código y vuelve a seleccionar una recepción."].filter(Boolean).join(" ");
+  }
   const requestProductId = query.get("requestProductId") ?? undefined;
   const requestLocationId = query.get("requestLocationId") ?? undefined;
   const orderSupplierId = query.get("orderSupplierId") ?? undefined;
@@ -121,13 +120,7 @@ export default async function AdminComprasPage({
           unitCost: item.unitCost,
           currency: item.currency,
         })),
-        receipts: selectedPurchase.receipts.map(({ receipt }) => ({
-          id: receipt.id,
-          code: receipt.code,
-          purchaseId: receipt.purchaseId,
-          receivedAt: receipt.receivedAt,
-          status: receipt.status,
-        })),
+        receipts: purchaseReceiptViews(selectedPurchase.receipts, selectedPurchase.items),
       }
     : null;
   return (
@@ -143,9 +136,11 @@ export default async function AdminComprasPage({
       series={series}
       selectedRequest={selectedRequest}
       selectedPurchase={purchaseDetail}
+      selectedReceiptId={query.get("receiptId") ?? undefined}
       filters={purchaseFilters}
       filterNotice={filterNotice}
-      queryString={query.toString()}
+      queryString={resolved.queryString}
+      exportHref={resolved.exportHref}
       canManage={can(actor.role, "purchases.manage")}
       canReceive={can(actor.role, "purchases.receive")}
       canApprove={can(actor.role, "purchases.approve")}

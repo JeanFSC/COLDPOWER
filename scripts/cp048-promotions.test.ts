@@ -54,6 +54,25 @@ test("RBAC separa administrar promociones, aprobar descuentos y exportar", () =>
   assert.equal(can("GERENCIA", "promotions.export"), true);
 });
 
+test("la aplicación individual y su auditoría comparten transacción", () => {
+  const source = read("src/lib/promotion-service.ts").split("export async function applyPromotion(input:")[1];
+  assert.ok(source);
+  assert.match(source, /return getDb\(\)\.transaction\(async \(db\) =>/);
+  assert.match(source, /await db\.insert\(promotionApplications\)/);
+  assert.match(source, /await db\.insert\(auditLogs\)/);
+  assert.doesNotMatch(source, /const db = getDb\(\)/);
+});
+
+test("edición y aprobación leen el estado después de bloquear la mutación", () => {
+  for (const file of ["src/app/api/admin/promociones/[id]/route.ts", "src/app/api/admin/promociones/[id]/approval/route.ts"]) {
+    const source = read(file).split("export async function PATCH")[1];
+    assert.ok(source.indexOf("transaction(async (tx)") < source.indexOf("const [before]"));
+    assert.ok(source.indexOf("await lockPromotionMutation(tx)") < source.indexOf("const [before]"));
+    assert.match(source, /limit\(1\)\.for\("update"\)/);
+    assert.doesNotMatch(source, /await db\.select/);
+  }
+});
+
 test("el Gantt escala fechas por días de Lima dentro de la ventana visible", () => {
   const scale = createPromotionCalendarScale("2026-09-25T12:00:00-05:00");
   assert.deepEqual(scale, { from: "2026-09-18", to: "2026-11-12", totalDays: 56 });
@@ -64,10 +83,10 @@ test("el Gantt escala fechas por días de Lima dentro de la ventana visible", ()
 });
 
 test("la fixture de promociones sólo acepta PostgreSQL local y no Neon", () => {
-  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@127.0.0.1:5433/coldpower" }));
-  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@localhost:5433/coldpower" }));
-  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgres://coldpower:local@ep-example.neon.tech/coldpower" }), /127\.0\.0\.1|localhost/);
-  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "production", DATABASE_URL: "postgres://coldpower:local@127.0.0.1:5433/coldpower" }), /production/);
+  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgresql://fixture:example@127.0.0.1:5433/coldpower" }));
+  assert.doesNotThrow(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgresql://fixture:example@localhost:5433/coldpower" }));
+  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "development", DATABASE_URL: "postgresql://fixture:example@ep-example.neon.tech/coldpower" }), /127\.0\.0\.1|localhost/);
+  assert.throws(() => assertDevelopmentDatabase({ NODE_ENV: "production", DATABASE_URL: "postgresql://fixture:example@127.0.0.1:5433/coldpower" }), /production/);
 });
 
 test("promociones usan pickers buscables, edicion gobernada y precio compartido", () => {

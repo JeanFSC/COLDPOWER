@@ -6,6 +6,14 @@ export const paymentStatuses = ["PENDING", "UNDER_REVIEW", "CONFIRMED", "APPROVE
 export type PaymentStatus = (typeof paymentStatuses)[number];
 export const manualPaymentMethods = ["TRANSFER", "CASH", "DEPOSIT"] as const;
 export type ManualPaymentMethod = (typeof manualPaymentMethods)[number];
+
+export function isValidManualPaymentAmount(value: unknown, maximum = Infinity) {
+  if (typeof value !== "string" && typeof value !== "number") return false;
+  const raw = String(value).trim();
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) return false;
+  const amount = Number(raw);
+  return Number.isFinite(amount) && amount > 0 && amount <= maximum;
+}
 type CheckoutItem = { productId: string; quantity: number };
 export type CheckoutInput = { items: CheckoutItem[]; deliveryMethod: DeliveryMethod; locationId: string; name: string; phone: string; email: string | null; address: string | null; idempotencyKey: string };
 const orderTransitions: Record<OrderStatus, readonly OrderStatus[]> = {
@@ -63,7 +71,7 @@ export function validateManualPaymentInput(input: unknown) {
   const value = input as Record<string, unknown>; const orderId = text(value.orderId, 160); const method = text(value.method, 30); const amount = Number(value.amount); const currency = text(value.currency, 3).toUpperCase(); const reference = text(value.reference, 180) || null; const reason = text(value.reason, 500);
   if (!orderId) throw new Error("El pago necesita un pedido.");
   if (!(manualPaymentMethods as readonly string[]).includes(method)) throw new Error("Método de pago manual no confirmado.");
-  if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) throw new Error("El monto debe ser mayor que cero y tener como máximo dos decimales.");
+  if (!isValidManualPaymentAmount(value.amount)) throw new Error("El monto debe ser mayor que cero y tener como máximo dos decimales.");
   if (!/^[A-Z]{3}$/.test(currency)) throw new Error("La moneda debe ser ISO de tres letras.");
   if ((method === "TRANSFER" || method === "DEPOSIT") && !reference) throw new Error("La referencia es obligatoria para transferencias y depósitos.");
   if (!reason) throw new Error("El motivo de confirmación manual es obligatorio.");

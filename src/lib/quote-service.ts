@@ -8,6 +8,7 @@ import { canTransitionOpportunity } from "@/lib/crm-validation";
 import { canTransitionQuote, effectiveQuoteStatus, normalizeQuoteStatus, type QuoteWorkflowStatus } from "@/lib/quote-workflow";
 import type { QuoteResponseChannel, QuoteTaxMode } from "@/lib/quote-contract";
 import { notifyStaffOnce } from "@/lib/notifications-service";
+import { parseQuoteValidity } from "@/lib/quote-validity";
 
 type Actor = { userId: string | null; role: AppRole | string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
@@ -17,7 +18,7 @@ type QuoteLineInput = { productId: string; quantity: number; discountPercentage?
 function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 function text(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 function positiveInteger(value: unknown) { const number = Number(value); return Number.isInteger(number) && number > 0 ? number : null; }
-function dateValue(value: unknown) { if (value === null || value === undefined || value === "") return null; const date = new Date(String(value)); return Number.isNaN(date.getTime()) ? null : date; }
+const dateValue = parseQuoteValidity;
 function audit(actor: Actor, action: string, entityType: string, entityId: string, before: unknown, after: unknown, metadata?: Record<string, unknown>) { return { id: id("audit"), actorId: actor.userId, actorRole: actor.role, action, entityType, entityId, before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null, metadata: metadata ?? null }; }
 function legacyStatus(status: QuoteWorkflowStatus) { const values: Record<QuoteWorkflowStatus, (typeof quoteStatusHistory.$inferInsert)["toStatus"]> = { DRAFT: "borrador", SENT: "enviada", FOLLOW_UP: "cotizada", ACCEPTED: "aprobada", REJECTED: "cerrada", EXPIRED: "cerrada", CONVERTED: "convertida", CANCELLED: "cerrada" }; return values[status]; }
 
@@ -85,13 +86,14 @@ async function resolveLinePricing(tx: Transaction, input: QuoteLineInput, actor:
   return { product, quantity, baseUnitPrice: baseUnitPrice.toFixed(2), discountPercentage: discountPercentage.toFixed(2), discountAmount, finalUnitPrice, lineTotal: (Number(finalUnitPrice) * quantity).toFixed(2), currency, priceType: manual ? "MANUAL" : selected?.priceType ?? null, priceSourceId: manual ? null : selected?.id ?? null, priceReason: reason, discountStatus: state, discountReason: text(input.discountReason, 240) || null };
 }
 
-async function ensureOpportunity(tx: Transaction, customerId: string, opportunityId: string | null, quoteId: string, actor: Actor) {
+async function ensureOpportunity(tx: Transaction, customerId: string, opportunityId: string | null, actor: Actor) {
   if (opportunityId) {
     const [opportunity] = await tx.select().from(opportunities).where(eq(opportunities.id, opportunityId)).limit(1);
     if (!opportunity || opportunity.customerId !== customerId) throw new Error("La oportunidad no pertenece al cliente seleccionado.");
     return opportunity;
   }
-  const opportunity = (await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`, customerId, quoteId, title: "Nueva cotización comercial", origin: "LOCAL", stage: "QUOTING", assignedSellerId: actor.userId, createdBy: actor.userId }).returning())[0];
+  // The quote does not exist yet; link it after its insert in this transaction.
+  const opportunity = (await tx.insert(opportunities).values({ id: id("opportunity"), code: `OP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`, customerId, quoteId: null, title: "Nueva cotización comercial", origin: "LOCAL", stage: "QUOTING", assignedSellerId: actor.userId, createdBy: actor.userId }).returning())[0];
   return opportunity;
 }
 
@@ -102,7 +104,7 @@ export async function createAdminQuote(input: { customerId: string; opportunityI
     const [customer] = await tx.select().from(customers).where(eq(customers.id, input.customerId)).limit(1);
     if (!customer) throw new Error("El cliente seleccionado no existe.");
     const quoteId = id("quote");
-    const opportunity = await ensureOpportunity(tx, customer.id, input.opportunityId ?? null, quoteId, actor);
+    const opportunity = await ensureOpportunity(tx, customer.id, input.opportunityId ?? null, actor);
     const lineInputs = input.items ?? [];
     const lines = [] as Awaited<ReturnType<typeof resolveLinePricing>>[];
     for (const line of lineInputs) lines.push(await resolveLinePricing(tx, line, actor));
@@ -110,7 +112,7 @@ export async function createAdminQuote(input: { customerId: string; opportunityI
     const trackingCode = `COT-${new Date().getUTCFullYear()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
     const now = new Date();
     const [quote] = await tx.insert(quotes).values({ id: quoteId, trackingCode, userId: null, name: customer.name, customerType: customer.customerType, documentNumber: customer.documentNumber ?? customer.ruc ?? "", phone: customer.phone ?? customer.whatsapp ?? "", email: customer.email, department: "", province: "", district: "", preferredContact: customer.whatsapp ? "whatsapp" : customer.email ? "email" : "phone", productName: lines[0]?.product.commercialName ?? lines[0]?.product.normalizedName ?? null, sku: lines[0]?.product.sku ?? null, message: text(input.message, 2000) || "Propuesta comercial interna", status: "borrador", workflowStatus: "DRAFT", currentVersionNumber: 0, revision: 0, assignedSellerId: opportunity.assignedSellerId ?? actor.userId, origin: text(input.origin, 30) || "LOCAL", currency: totals.currency, subtotal: totals.subtotal, discountAmount: totals.discountAmount, taxAmount: totals.taxAmount, total: totals.total, taxMode: input.taxMode ?? "UNCONFIGURED", discountApprovalStatus: lines.some((line) => line.discountStatus === "PENDING") ? "PENDING" : "NOT_REQUIRED", validUntil: input.validUntil ?? null, createdAt: now, updatedAt: now }).returning();
-    if (input.opportunityId) {
+    {
       const nextStage = opportunity.stage === "NEW" || opportunity.stage === "CONTACTED" ? "QUOTING" : opportunity.stage;
       await tx.update(opportunities).set({ quoteId, stage: nextStage, updatedAt: now }).where(eq(opportunities.id, opportunity.id));
       if (nextStage !== opportunity.stage) await tx.insert(opportunityStageHistory).values({ id: id("opportunity-stage"), opportunityId: opportunity.id, fromStage: opportunity.stage, toStage: nextStage, changedBy: actor.userId ?? "system", note: "Cotización creada desde el pipeline" });

@@ -157,7 +157,7 @@ async function loadNavigationCategories(): Promise<CatalogCategory[]> {
 
 async function loadNavigationFamilies(): Promise<CatalogFamily[]> {
   try {
-    const families = await getCatalogFamilies(undefined, false);
+    const families = await getCatalogFamilies();
     return families.map((family) => ({ ...family, productCount: 0 }));
   } catch (error) {
     console.warn(

@@ -9,6 +9,7 @@ import {
   getPersonalUnreadKpi,
   listNotificationTypes,
   parseNotificationFilters,
+  NotificationInvalidFilterError,
 } from "@/lib/notifications-service";
 import {
   getNotificationAutomationMetrics,
@@ -44,6 +45,14 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
   inboxQuery.delete("notificationId");
 
   let loadError = false;
+  let filterError: string | null = null;
+  let inboxFilters: ReturnType<typeof parseNotificationFilters> | null = null;
+  try {
+    inboxFilters = parseNotificationFilters(inboxQuery);
+  } catch (error) {
+    if (!(error instanceof NotificationInvalidFilterError)) throw error;
+    filterError = "Revisa los filtros: la fecha Desde debe ser anterior o igual a Hasta y los valores deben ser válidos.";
+  }
   let page: Awaited<ReturnType<typeof getNotificationsPage>> = {
     items: [], page: 1, pageSize: 25, totalItems: 0, totalPages: 1,
     unreadCount: 0, metrics: { unread: 0, read: 0, dismissed: 0 },
@@ -58,7 +67,7 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
 
   try {
     [page, automation, types, rules, templates, schedules, personalUnread, preferences] = await Promise.all([
-      getNotificationsPage(actor.userId!, parseNotificationFilters(inboxQuery)),
+      inboxFilters ? getNotificationsPage(actor.userId!, inboxFilters) : Promise.resolve(page),
       getNotificationAutomationMetrics(),
       listNotificationTypes(actor.userId!),
       listNotificationRules(),
@@ -101,6 +110,7 @@ export default async function AdminNotificacionesPage({ searchParams }: { search
           types={types}
           selectedId={selectedNotificationId}
           loadError={loadError ? "No pudimos cargar las notificaciones." : null}
+          filterError={filterError}
         />
       }
       detail={detail}

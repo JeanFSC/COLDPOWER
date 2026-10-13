@@ -1,4 +1,5 @@
 import { alias } from "drizzle-orm/pg-core";
+import { salesConditions as dashboardSalesConditions } from "@/lib/dashboard-sales-scope";
 import {
   and,
   asc,
@@ -82,6 +83,10 @@ function salesListRows(db: ReturnType<typeof getDb>, where: SQL | undefined, pag
 
 function salesWhere(db: ReturnType<typeof getDb>, filters: SalesFilters) {
   const conditions: SQL[] = [];
+  if (filters.dashboardScope) {
+    const scope = filters.dashboardScope;
+    conditions.push(...dashboardSalesConditions(db, scope.filters, { from: new Date(scope.from), to: new Date(scope.to) }, scope.currency));
+  }
   if (filters.query) {
     const pattern = `%${filters.query.trim()}%`;
     conditions.push(

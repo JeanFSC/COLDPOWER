@@ -2,9 +2,34 @@ import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { assertUserChangeAllowed, canInviteRole, UserAdministrationError, parseUserFilters } from "../src/lib/user-administration";
+import { resolveUsersPageFilters } from "../src/lib/users-page-filters";
 
 const root = process.cwd();
 const read = (file: string) => readFileSync(`${root}/${file}`, "utf8");
+
+test("usuarios: fechas de calendario y roles inválidos se rechazan", () => {
+  for (const key of ["createdFrom", "createdTo", "lastSignInFrom", "lastSignInTo"]) {
+    for (const value of ["2026-02-30", "2026-02-29", "2026-13-01", "2026-04-31"]) {
+      assert.throws(() => parseUserFilters(new URLSearchParams(`${key}=${value}`)));
+    }
+    assert.equal(parseUserFilters(new URLSearchParams(`${key}=2024-02-29`))[key as "createdFrom"], "2024-02-29");
+  }
+  assert.throws(() => parseUserFilters(new URLSearchParams("role=UNKNOWN")));
+  assert.equal(parseUserFilters(new URLSearchParams("role=customer")).role, "customer");
+});
+
+test("usuarios: lista y exportación comparten filtros efectivos", () => {
+  for (const query of ["status=UNKNOWN&query=QA", "role=UNKNOWN", "createdFrom=2026-02-30", "page=0"]) {
+    const result = resolveUsersPageFilters(new URLSearchParams(query));
+    assert.deepEqual(result.filters, {});
+    assert.match(result.filterNotice ?? "", /se restablecieron/);
+    assert.equal(result.exportHref, "/api/admin/usuarios/export");
+  }
+  const result = resolveUsersPageFilters(new URLSearchParams("query=ana&role=VENTAS&page=999&pageSize=5&userId=ignored"));
+  assert.equal(result.filters.page, 999);
+  assert.equal(result.filterNotice, undefined);
+  assert.equal(result.exportHref, "/api/admin/usuarios/export?query=ana&role=VENTAS");
+});
 
 test("usuarios: listado paginado y filtros", () => {
   const filters = parseUserFilters(new URLSearchParams("query=ana&role=GERENCIA&status=ACTIVE&createdFrom=2026-01-01&lastSignInTo=2026-02-01&page=2&pageSize=50"));

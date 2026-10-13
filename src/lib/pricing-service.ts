@@ -5,6 +5,11 @@ import { normalizePriceDetails } from "@/lib/pricing-validation";
 import { can, type AppRole } from "@/lib/roles";
 
 type PriceWindow = { validFrom: Date; validUntil: Date | null };
+type PricingTransaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+
+async function lockPriceRequest(tx: PricingTransaction, requestKey: string | null) {
+  if (requestKey) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`price-request:${requestKey}`}))`);
+}
 
 export function isPriceWindowOverlapping(existing: PriceWindow, incoming: PriceWindow) {
   const existingEnd = existing.validUntil?.getTime() ?? Number.POSITIVE_INFINITY;
@@ -53,12 +58,13 @@ export async function schedulePriceReplacement(id: string, input: Omit<PriceMuta
   if (window.validFrom <= new Date()) throw new Error("PRICE_REPLACEMENT_MUST_BE_FUTURE");
   const db = getDb();
   return db.transaction(async (tx) => {
+    await lockPriceRequest(tx, requestKey);
     const [current] = await tx.select().from(productPrices).where(and(eq(productPrices.id, id), eq(productPrices.active, true))).limit(1);
     if (!current) throw new Error("PRICE_NOT_FOUND");
     if (requestKey) {
       const [previousRequest] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, requestKey)).limit(1);
       if (previousRequest) {
-        if (samePriceRequest(previousRequest, { productId: current.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status })) return { price: previousRequest, closed: null, idempotent: true };
+        if (samePriceRequest(previousRequest, { productId: current.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed })) return { price: previousRequest, closed: null, idempotent: true };
         throw new Error("PRICE_IDEMPOTENCY_CONFLICT");
       }
     }
@@ -101,8 +107,8 @@ async function assertNoOverlap(tx: Parameters<Parameters<ReturnType<typeof getDb
   if (rows.some((row) => row.id !== excludeId && isPriceWindowOverlapping({ validFrom: row.validFrom, validUntil: row.validUntil }, window))) throw new Error("PRICE_WINDOW_OVERLAP");
 }
 
-function samePriceRequest(row: { productId: string; priceType: string; amount: string; currency: string; validFrom: Date; validUntil: Date | null; status: string }, values: { productId: string; priceType: string; amount: string; currency: string; validFrom: Date; validUntil: Date | null; status: string }) {
-  return row.productId === values.productId && row.priceType === values.priceType && String(row.amount) === String(values.amount) && row.currency === values.currency && row.validFrom.getTime() === values.validFrom.getTime() && (row.validUntil?.getTime() ?? null) === (values.validUntil?.getTime() ?? null) && row.status === values.status;
+function samePriceRequest(row: { productId: string; priceType: string; amount: string; currency: string; validFrom: Date; validUntil: Date | null; status: string; wholesaleMinQty: number | null; minimumAllowed: string | null }, values: { productId: string; priceType: string; amount: string; currency: string; validFrom: Date; validUntil: Date | null; status: string; wholesaleMinQty: number | null; minimumAllowed: string | null }) {
+  return row.productId === values.productId && row.priceType === values.priceType && String(row.amount) === String(values.amount) && row.currency === values.currency && row.validFrom.getTime() === values.validFrom.getTime() && (row.validUntil?.getTime() ?? null) === (values.validUntil?.getTime() ?? null) && row.status === values.status && row.wholesaleMinQty === values.wholesaleMinQty && row.minimumAllowed === values.minimumAllowed;
 }
 
 export async function createPrice(input: PriceMutationInput, actor: PricingActor) {
@@ -113,17 +119,18 @@ export async function createPrice(input: PriceMutationInput, actor: PricingActor
   assertPricePermission(actor, normalized.priceType);
   const db = getDb();
   return db.transaction(async (tx) => {
+    await lockPriceRequest(tx, requestKey);
     const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, input.productId)).limit(1);
     if (!product) throw new Error("PRODUCT_NOT_FOUND");
     if (requestKey) {
       const [previousRequest] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, requestKey)).limit(1);
       if (previousRequest) {
-        if (samePriceRequest(previousRequest, { productId: input.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status })) return { price: previousRequest, idempotent: true };
+        if (samePriceRequest(previousRequest, { productId: input.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed })) return { price: previousRequest, idempotent: true };
         throw new Error("PRICE_IDEMPOTENCY_CONFLICT");
       }
     }
     const [duplicate] = await tx.select().from(productPrices).where(and(eq(productPrices.productId, input.productId), eq(productPrices.priceType, normalized.priceType), eq(productPrices.amount, normalized.amount), eq(productPrices.currency, normalized.currency), eq(productPrices.status, normalized.status))).orderBy(desc(productPrices.createdAt)).limit(1);
-    if (duplicate && samePriceRequest(duplicate, { productId: input.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status })) return { price: duplicate, idempotent: true };
+    if (duplicate && samePriceRequest(duplicate, { productId: input.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, validFrom: window.validFrom, validUntil: window.validUntil, status: normalized.status, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed })) return { price: duplicate, idempotent: true };
     await assertNoOverlap(tx, input.productId, normalized.priceType, window);
     const [created] = await tx.insert(productPrices).values({ id: `price-${crypto.randomUUID()}`, productId: input.productId, priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed, status: normalized.status, active: normalized.status === "ACTIVE", validFrom: window.validFrom, validUntil: window.validUntil, idempotencyKey: requestKey, createdBy: actor.userId }).returning();
     await tx.insert(priceHistory).values({ id: `price-history-${crypto.randomUUID()}`, productId: input.productId, priceId: created.id, priceType: normalized.priceType, previousAmount: null, newAmount: normalized.amount, currency: normalized.currency, reason, changedBy: actor.userId });
@@ -134,22 +141,24 @@ export async function createPrice(input: PriceMutationInput, actor: PricingActor
 
 export async function updatePrice(id: string, input: Omit<PriceMutationInput, "productId">, actor: PricingActor) {
   const normalized = normalizePriceDetails(input);
-  const window = parseWindow(input);
   const reason = mutationReason(input);
   const requestKey = idempotencyKey(input);
   const db = getDb();
   assertPricePermission(actor, normalized.priceType);
   return db.transaction(async (tx) => {
+    await lockPriceRequest(tx, requestKey);
     if (requestKey) {
       const [previousRequest] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, requestKey)).limit(1);
       if (previousRequest) {
-        if (previousRequest.id === id) return { price: previousRequest, idempotent: true };
+        const replayWindow = parseWindow({ ...input, validFrom: input.validFrom === undefined || input.validFrom === null || input.validFrom === "" ? previousRequest.validFrom.toISOString() : input.validFrom });
+        if (previousRequest.id === id && samePriceRequest(previousRequest, { productId: previousRequest.productId, ...normalized, ...replayWindow })) return { price: previousRequest, idempotent: true };
         throw new Error("PRICE_IDEMPOTENCY_CONFLICT");
       }
     }
     const [before] = await tx.select().from(productPrices).where(eq(productPrices.id, id)).limit(1);
     if (!before) throw new Error("PRICE_NOT_FOUND");
     if (before.priceType === "COST" && !can(actor.role, "pricing.cost.edit")) throw new Error("PRICING_COST_FORBIDDEN");
+    const window = parseWindow(input);
     await assertNoOverlap(tx, before.productId, normalized.priceType, window, id);
     const [after] = await tx.update(productPrices).set({ priceType: normalized.priceType, amount: normalized.amount, currency: normalized.currency, wholesaleMinQty: normalized.wholesaleMinQty, minimumAllowed: normalized.minimumAllowed, status: normalized.status, active: normalized.status === "ACTIVE", validFrom: window.validFrom, validUntil: window.validUntil, idempotencyKey: requestKey ?? before.idempotencyKey, updatedAt: new Date() }).where(eq(productPrices.id, id)).returning();
     await tx.insert(priceHistory).values({ id: `price-history-${crypto.randomUUID()}`, productId: before.productId, priceId: id, priceType: normalized.priceType, previousAmount: before.amount, newAmount: normalized.amount, currency: normalized.currency, reason, changedBy: actor.userId });
@@ -165,10 +174,11 @@ export async function archivePrice(id: string, reason: unknown, actor: PricingAc
   const requestKey = idempotencyKey({ idempotencyKey: idempotencyKeyInput });
   const db = getDb();
   return db.transaction(async (tx) => {
+    await lockPriceRequest(tx, requestKey);
     if (requestKey) {
       const [previousRequest] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, requestKey)).limit(1);
       if (previousRequest) {
-        if (previousRequest.id === id && !previousRequest.active) return { price: previousRequest, idempotent: true };
+        if (previousRequest.id === id && previousRequest.status === "ARCHIVED") return { price: previousRequest, idempotent: true };
         throw new Error("PRICE_IDEMPOTENCY_CONFLICT");
       }
     }

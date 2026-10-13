@@ -1,11 +1,9 @@
+import { tabularWorkbook } from "@/lib/tabular-workbook";
+import { csvCell } from "@/lib/csv";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { parseKardexFilters } from "@/lib/inventory-admin-contract";
 import { getInventoryKardexExport } from "@/lib/inventory-admin-service";
-
-function csvCell(value: unknown) {
-  return `"${String(value ?? "").replaceAll('"', '""')}"`;
-}
 
 export async function GET(request: Request) {
   try {
@@ -14,6 +12,9 @@ export async function GET(request: Request) {
     const items = await getInventoryKardexExport(filters);
     const header = ["Fecha", "Movimiento", "Cantidad", "Entrada", "Salida", "Delta reservado", "Disponible después", "Referencia", "Actor", "Motivo", "Notas"];
     const rows = items.map((item) => [item.createdAt.toISOString(), item.label, item.quantity, item.entry, item.exit, item.reservedDelta, item.availableAfter, item.referenceLabel, item.actorName ?? "Sistema", item.reason ?? "", item.notes ?? ""]);
+    if (new URL(request.url).searchParams.get("format") === "xlsx") {
+      return new Response(Buffer.from(tabularWorkbook("Kardex", header, rows)), { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": `attachment; filename="kardex-${filters.productId}-${filters.locationId}.xlsx"`, "cache-control": "no-store" } });
+    }
     const body = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
     return new Response(`\uFEFF${body}\r\n`, { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="kardex-${filters.productId}-${filters.locationId}.csv"`, "cache-control": "no-store" } });
   } catch (error) {

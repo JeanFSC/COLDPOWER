@@ -76,10 +76,12 @@ export function QuoteConversionControl({
   quoteId,
   status,
   acceptedVersionId,
+  onConverted,
 }: {
   quoteId: string;
   status: string;
   acceptedVersionId?: string | null;
+  onConverted?: () => void;
 }) {
   const eligible = status === "ACCEPTED" && Boolean(acceptedVersionId);
   const router = useRouter();
@@ -151,6 +153,7 @@ export function QuoteConversionControl({
             : null,
       });
       setOpen(false);
+      onConverted?.();
       router.refresh();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "No se pudo convertir la cotización.");

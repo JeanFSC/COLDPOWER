@@ -11,9 +11,20 @@ function assertDiscountPermission(actor: PricingActor) {
   if (!can(actor.role, "pricing.discount.manage")) throw new Error("DISCOUNT_FORBIDDEN");
 }
 
+function parseDiscountDate(input: unknown) {
+  if (input === undefined || input === "" || input === null) return null;
+  const raw = String(input);
+  const calendar = /^(\d{4}-\d{2}-\d{2})(?:$|T)/.exec(raw);
+  if (calendar) {
+    const civilDate = new Date(`${calendar[1]}T00:00:00Z`);
+    if (Number.isNaN(civilDate.getTime()) || civilDate.toISOString().slice(0, 10) !== calendar[1]) throw new Error("DISCOUNT_INVALID_WINDOW");
+  }
+  return new Date(raw);
+}
+
 function parseDates(input: DiscountInput) {
-  const validFrom = input.validFrom === undefined || input.validFrom === "" || input.validFrom === null ? null : new Date(String(input.validFrom));
-  const validUntil = input.validUntil === undefined || input.validUntil === "" || input.validUntil === null ? null : new Date(String(input.validUntil));
+  const validFrom = parseDiscountDate(input.validFrom);
+  const validUntil = parseDiscountDate(input.validUntil);
   if ((validFrom && Number.isNaN(validFrom.getTime())) || (validUntil && Number.isNaN(validUntil.getTime())) || (validFrom && validUntil && validUntil <= validFrom)) throw new Error("DISCOUNT_INVALID_WINDOW");
   return { validFrom, validUntil };
 }
@@ -39,12 +50,15 @@ export async function createDiscountRule(input: DiscountInput, actor: PricingAct
 export async function updateDiscountRule(id: string, input: DiscountInput, actor: PricingActor) {
   assertDiscountPermission(actor);
   const values = validateDiscountInput(input);
-  const dates = parseDates(input);
   const note = reason(input);
   const requestedStatus = input.status === undefined ? undefined : validateDiscountRuleStatus(input.status);
   return getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(discountRules).where(eq(discountRules.id, id)).limit(1);
+    const [before] = await tx.select().from(discountRules).where(eq(discountRules.id, id)).limit(1).for("update");
     if (!before) throw new Error("DISCOUNT_NOT_FOUND");
+    const dates = parseDates({
+      validFrom: input.validFrom === undefined ? before.validFrom : input.validFrom,
+      validUntil: input.validUntil === undefined ? before.validUntil : input.validUntil,
+    });
     const status = requestedStatus ?? before.status;
     if (before.name === values.name && String(before.maxPercentage) === values.maxPercentage && String(before.approvalAbovePercentage) === values.approvalAbovePercentage && before.status === status && (before.validFrom?.getTime() ?? null) === (dates.validFrom?.getTime() ?? null) && (before.validUntil?.getTime() ?? null) === (dates.validUntil?.getTime() ?? null)) return { rule: before, idempotent: true };
     const [after] = await tx.update(discountRules).set({ ...values, status, validFrom: dates.validFrom, validUntil: dates.validUntil, updatedAt: new Date() }).where(eq(discountRules.id, id)).returning();
@@ -58,7 +72,7 @@ export async function setDiscountRuleStatus(id: string, statusInput: unknown, re
   const status = validateDiscountRuleStatus(statusInput);
   const note = reason({ reason: reasonInput });
   return getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(discountRules).where(eq(discountRules.id, id)).limit(1);
+    const [before] = await tx.select().from(discountRules).where(eq(discountRules.id, id)).limit(1).for("update");
     if (!before) throw new Error("DISCOUNT_NOT_FOUND");
     if (before.status === status) return { rule: before, idempotent: true };
     const [after] = await tx.update(discountRules).set({ status, updatedAt: new Date() }).where(and(eq(discountRules.id, id), eq(discountRules.status, before.status))).returning();

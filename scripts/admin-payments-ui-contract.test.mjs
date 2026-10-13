@@ -6,6 +6,15 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
+test("pagos: devolución muestra estado, monto en su moneda y motivo persistidos", async () => {
+  const workspace = await read("src/components/admin/PaymentsControlCenter.tsx");
+  assert.match(workspace, /SUCCEEDED: "Confirmado"/);
+  assert.match(workspace, /FAILED: "Fallido"/);
+  assert.match(workspace, /tab === "Reembolsos" \? \(/);
+  assert.match(workspace, /money\(String\(row.currency \?\? currency\), String\(row.amount\)\)/);
+  assert.match(workspace, /Motivo: \{String\(row.reason/);
+});
+
 test("pagos: el centro vigente consulta proveedor, confirma y solicita reembolso", async () => {
   const page = await read("src/app/admin/pagos/page.tsx");
   const workspace = await read("src/components/admin/PaymentsControlCenter.tsx");

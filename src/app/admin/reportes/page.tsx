@@ -6,6 +6,8 @@ import { type DashboardFilters } from "@/lib/operations-dashboard";
 import { getReportSnapshot, listReportOptions, listReportSchedules } from "@/lib/reporting-service";
 import { dashboardFiltersToQuery, DashboardInvalidFilterError } from "@/lib/dashboard-contract";
 import { parseReportsFilters } from "@/lib/reports-contract";
+import { formatAdminMoney as formatMoney } from "@/lib/admin-money-display";
+import { familyFilterOptions } from "@/lib/filter-options";
 
 export const metadata: Metadata = {
   title: "Reportes | Panel admin ColdPower",
@@ -93,13 +95,13 @@ export default async function AdminReportesPage({
     {
       label: "Ventas hoy",
       value: data ? formatMoney(data.salesToday.total, data.currency) : "N/D",
-      note: data ? "Período actual" : "Datos no disponibles",
+      note: data ? "Hoy · hora de Lima" : "Datos no disponibles",
       tone: "blue" as const,
     },
     {
-      label: "Ventas del mes",
-      value: data ? formatMoney(data.salesMonth.total, data.currency) : "N/D",
-      note: data ? "Acumulado" : "Datos no disponibles",
+      label: "Ventas del período",
+      value: data ? formatMoney(data.salesRange.total, data.currency) : "N/D",
+      note: data ? "Rango seleccionado" : "Datos no disponibles",
       tone: "orange" as const,
     },
     {
@@ -125,7 +127,7 @@ export default async function AdminReportesPage({
     {
       label: "Pedidos activos",
       value: data?.orders.total ?? "N/D",
-      note: data ? "En el rango" : "Datos no disponibles",
+      note: data ? "Estado actual · sin filtro de fecha" : "Datos no disponibles",
       tone: "blue" as const,
     },
     {
@@ -211,7 +213,7 @@ export default async function AdminReportesPage({
         name="familyId"
         label="Familia"
         value={filters.familyId}
-        options={options.families.map((row) => ({ value: row.id, label: row.name }))}
+        options={familyFilterOptions(options.families, options.categories)}
       />
       <SelectField
         name="brandId"
@@ -282,18 +284,10 @@ export default async function AdminReportesPage({
       controls={controls}
       data={data}
       schedules={schedules}
+      executionConfigured={Boolean(process.env.CRON_SECRET?.trim())}
       reportFilters={filters}
       currentUserId={actor.userId}
       canViewCatalog={can(actor.role, "catalog.product.view")}
     />
   );
-}
-
-function formatMoney(value: number | null | undefined, currency: string | null | undefined) {
-  if (value === null || value === undefined || !currency || !Number.isFinite(value)) return "N/D";
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
 }

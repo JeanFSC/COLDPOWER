@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { manualPaymentMethods, type ManualPaymentMethod } from "@/lib/sales-validation";
+import { isValidManualPaymentAmount, manualPaymentMethods, type ManualPaymentMethod } from "@/lib/sales-validation";
+import { paymentMethodLabel } from "@/lib/payment-display";
 
 function readApiError(payload: unknown, fallback: string) {
   if (typeof payload === "object" && payload !== null && "error" in payload) {
@@ -56,10 +57,11 @@ export function ManualPaymentControl({
         : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2)),
   );
   const numericAmount = Number(enteredAmount);
-  const validAmount = Number.isFinite(numericAmount) && numericAmount > 0 && numericAmount <= Number(amount);
+  const validAmount = isValidManualPaymentAmount(enteredAmount, Number(amount));
+  const referenceRequired = method === "TRANSFER" || method === "DEPOSIT";
 
   async function confirmPayment() {
-    if (!validAmount || !reason.trim()) return;
+    if (!validAmount || !reason.trim() || (referenceRequired && !reference.trim())) return;
     setBusy(true);
     setMessage("");
     setMessageKind("success");
@@ -114,7 +116,7 @@ export function ManualPaymentControl({
         >
           {manualPaymentMethods.map((item) => (
             <option key={item} value={item}>
-              {item}
+              {paymentMethodLabel(item)}
             </option>
           ))}
         </select>
@@ -122,7 +124,8 @@ export function ManualPaymentControl({
           aria-label="Referencia del pago"
           value={reference}
           onChange={(event) => setReference(event.target.value)}
-          placeholder="Referencia (opcional)"
+          placeholder={referenceRequired ? "Referencia obligatoria" : "Referencia (opcional)"}
+          aria-required={referenceRequired}
           maxLength={180}
           className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
         />
@@ -136,14 +139,14 @@ export function ManualPaymentControl({
         />
         <button
           type="button"
-          disabled={busy || !reason.trim() || !validAmount}
+          disabled={busy || !reason.trim() || !validAmount || (referenceRequired && !reference.trim())}
           onClick={() => void confirmPayment()}
           className="h-9 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "Confirmando…" : "Confirmar"}
         </button>
       </div>
-      {!validAmount ? <p className="text-[11px] font-semibold text-amber-800">Ingresa un monto mayor que cero y no mayor al saldo pendiente.</p> : null}
+      {!validAmount ? <p className="text-[11px] font-semibold text-amber-800">Ingresa un monto mayor que cero, con un máximo de dos decimales y no mayor al saldo pendiente.</p> : null}
       {message ? (
         <p
           className={messageKind === "error" ? "text-xs font-bold text-rose-700" : "text-xs font-bold text-emerald-700"}

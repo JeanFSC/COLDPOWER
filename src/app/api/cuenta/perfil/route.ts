@@ -7,6 +7,7 @@ import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { customerAddresses, customers } from "@/db/crm-schema";
 import { normalizePhone, sanitizeText } from "@/lib/quote";
+import { loadProfileForUpdate } from "@/lib/account-profile-lock";
 
 const contactPreferences = new Set(["email", "phone", "whatsapp"]);
 
@@ -137,23 +138,7 @@ export async function PATCH(request: Request) {
   try {
     const db = getDb();
     const result = await db.transaction(async (tx) => {
-      const [current] = await tx
-        .select({
-          userName: users.name,
-          userPhone: users.phone,
-          customerId: customers.id,
-          customerName: customers.name,
-          customerPhone: customers.phone,
-          customerWhatsapp: customers.whatsapp,
-          companyName: customers.legalName,
-          customerAddress: customers.address,
-          contactPreference: customers.contactPreference,
-        })
-        .from(users)
-        .leftJoin(customers, eq(customers.userId, users.id))
-        .where(eq(users.id, userId))
-        .for("update")
-        .limit(1);
+      const current = await loadProfileForUpdate(tx, userId);
 
       if (!current) throw new ProfileInputError("No encontramos tu cuenta local.");
       if (!current.customerId && [companyName, address, contactPreference].some((value) => value !== undefined)) {

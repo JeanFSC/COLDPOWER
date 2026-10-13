@@ -1,3 +1,4 @@
+import { paymentCode } from "@/lib/payment-display";
 import {
   and,
   asc,
@@ -605,10 +606,6 @@ function relationResult<T>(items: T[], page: number, pageSize: number, totalItem
   };
 }
 
-function paymentReference(id: string) {
-  return `PAGO-${(id.split("-").at(-1) ?? id.slice(-8)).toUpperCase()}`;
-}
-
 export async function getCustomer360(
   customerId: string,
   filters: CustomerRelationFilters = {},
@@ -835,7 +832,7 @@ export async function getCustomer360(
       ? relationResult(
           paymentRows.map((row) => ({
             ...row.payments,
-            paymentCode: paymentReference(row.payments.id),
+            paymentCode: paymentCode(row.payments.id),
             orderCode: row.orders.code,
           })),
           pages.payments.page,

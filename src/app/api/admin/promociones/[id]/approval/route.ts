@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { promotions } from "@/db/operations-schema";
 import { promotionApprovalChanges } from "@/lib/promotion-service";
+import { lockPromotionMutation } from "@/lib/promotion-mutation-lock";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
@@ -16,7 +17,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (decision !== "APPROVED" && decision !== "REJECTED") return apiError("PROMOTION_APPROVAL_INVALID", "La decisión debe ser APPROVED o REJECTED.", 400);
   try {
     const result = await getDb().transaction(async (tx) => {
-      const [before] = await tx.select().from(promotions).where(eq(promotions.id, id)).limit(1);
+      await lockPromotionMutation(tx);
+      const [before] = await tx.select().from(promotions).where(eq(promotions.id, id)).limit(1).for("update");
       if (!before) throw new Error("PROMOTION_NOT_FOUND");
       if (decision === "APPROVED" && before.createdBy && before.createdBy === actor.userId) throw new Error("PROMOTION_SELF_APPROVAL");
       const [after] = await tx.update(promotions).set(promotionApprovalChanges(decision, actor.userId)).where(eq(promotions.id, id)).returning();

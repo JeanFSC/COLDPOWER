@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 const roleOptions = [
   ["SUPERADMIN", "Superadmin"],
@@ -15,13 +16,13 @@ const roleOptions = [
 ] as const;
 
 const eventTypes = [
-  "QUOTE_CREATED",
-  "LEAD_CREATED",
-  "FOLLOW_UP_OVERDUE",
-  "ORDER_CREATED",
-  "ORDER_READY",
-  "PAYMENT_APPROVED",
-  "TRANSFER_APPROVAL_PENDING",
+  ["QUOTE_CREATED", "Cotización creada"],
+  ["LEAD_CREATED", "Lead creado"],
+  ["FOLLOW_UP_OVERDUE", "Seguimiento vencido"],
+  ["ORDER_CREATED", "Pedido creado"],
+  ["ORDER_READY", "Pedido listo"],
+  ["PAYMENT_APPROVED", "Pago aprobado"],
+  ["TRANSFER_APPROVAL_PENDING", "Transferencia pendiente de aprobación"],
 ] as const;
 
 type Template = {
@@ -30,8 +31,15 @@ type Template = {
   titleTemplate: string;
   bodyTemplate: string;
   linkTemplate: string | null;
+  enabled: boolean;
 };
 type Rule = { id: string; name: string; eventType: string; status: string; severity: string };
+const scheduleStatusLabels: Record<string, string> = {
+  SCHEDULED: "Programado",
+  SENT: "Enviado",
+  FAILED: "Fallido",
+  CANCELLED: "Cancelado",
+};
 type Schedule = {
   id: string;
   title: string;
@@ -124,7 +132,7 @@ async function send(path: string, body: unknown, method = "POST") {
   });
   const payload = (await response.json().catch(() => ({}))) as { error?: unknown };
   if (!response.ok)
-    throw new Error(typeof payload.error === "string" ? payload.error : "No se pudo guardar.");
+    throw new Error(apiErrorMessage(payload.error, "No se pudo guardar."));
 }
 
 export function NotificationAdminControls({
@@ -138,6 +146,8 @@ export function NotificationAdminControls({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabKey>("aviso");
+  const [templateId, setTemplateId] = useState("");
+  const selectedTemplate = templates.find((template) => template.id === templateId);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [manualRoles, setManualRoles] = useState<string[]>([]);
@@ -167,7 +177,7 @@ export function NotificationAdminControls({
     setMessage(null);
     try {
       await send(path, body);
-      form.reset();
+      if (path !== "/api/admin/notificaciones/plantillas" || !templateId) form.reset();
       setManualRoles([]);
       setScheduleRoles([]);
       setRuleRoles([]);
@@ -276,11 +286,20 @@ export function NotificationAdminControls({
 
         {tab === "plantilla" ? (
           <div className="space-y-4">
+            <Field text="Plantilla a editar">
+              <select aria-label="Plantilla a editar" className={field} value={templateId} disabled={busy} onChange={(event) => { setTemplateId(event.target.value); setMessage(null); }}>
+                <option value="">Crear nueva plantilla</option>
+                {templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+              </select>
+            </Field>
             <form
+              key={templateId}
               className="space-y-3"
               onSubmit={(event) => {
                 const data = new FormData(event.currentTarget);
                 void submit(event, "/api/admin/notificaciones/plantillas", {
+                  id: selectedTemplate?.id,
+                  enabled: data.get("enabled") === "on",
                   name: data.get("name"),
                   titleTemplate: data.get("titleTemplate"),
                   bodyTemplate: data.get("bodyTemplate"),
@@ -289,12 +308,13 @@ export function NotificationAdminControls({
               }}
             >
               <Field text="Nombre de plantilla">
-                <input required name="name" aria-label="Nombre de plantilla" className={field} placeholder="Ej. Pago aprobado" />
+                <input required name="name" aria-label="Nombre de plantilla" defaultValue={selectedTemplate?.name ?? ""} className={field} placeholder="Ej. Pago aprobado" />
               </Field>
               <Field text="Título de la plantilla">
                 <input
                   required
                   name="titleTemplate"
+                  defaultValue={selectedTemplate?.titleTemplate ?? ""}
                   aria-label="Título de la plantilla"
                   className={field}
                   placeholder="Pago {{entity.code}}"
@@ -304,6 +324,7 @@ export function NotificationAdminControls({
                 <textarea
                   required
                   name="bodyTemplate"
+                  defaultValue={selectedTemplate?.bodyTemplate ?? ""}
                   aria-label="Cuerpo de la plantilla"
                   rows={3}
                   className={`${field} h-auto py-2`}
@@ -313,11 +334,16 @@ export function NotificationAdminControls({
               <Field text="Ruta interna (opcional)">
                 <input
                   name="linkTemplate"
+                  defaultValue={selectedTemplate?.linkTemplate ?? ""}
                   aria-label="Ruta interna de la plantilla"
                   className={field}
                   placeholder="/admin/pedidos"
                 />
               </Field>
+              <label className="flex items-center gap-2 text-xs text-slate-700">
+                <input type="checkbox" name="enabled" defaultChecked={selectedTemplate?.enabled ?? true} />
+                Plantilla habilitada
+              </label>
               <div className="flex justify-end border-t border-slate-100 pt-3">
                 <button className={primaryButton} disabled={busy}>
                   <Icon path={ICON.checkCircle} className="h-3.5 w-3.5" />
@@ -360,19 +386,19 @@ export function NotificationAdminControls({
               <Field text="Nombre de la regla">
                 <input required name="name" aria-label="Nombre de la regla" className={field} placeholder="Ej. Stock crítico" />
               </Field>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Field text="Evento que activa la regla">
                   <select name="eventType" aria-label="Evento que activa la regla" className={field}>
-                    {eventTypes.map((type) => (
-                      <option key={type}>{type}</option>
+                    {eventTypes.map(([type, label]) => (
+                      <option key={type} value={type}>{label}</option>
                     ))}
                   </select>
                 </Field>
                 <Field text="Severidad">
                   <select name="severity" aria-label="Severidad de la regla" className={field}>
-                    <option>INFO</option>
-                    <option>WARNING</option>
-                    <option>CRITICAL</option>
+                    <option value="INFO">Informativa</option>
+                    <option value="WARNING">Advertencia</option>
+                    <option value="CRITICAL">Crítica</option>
                   </select>
                 </Field>
               </div>
@@ -386,7 +412,7 @@ export function NotificationAdminControls({
                   ))}
                 </select>
               </Field>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Field text="Campo de condición">
                   <select name="conditionField" aria-label="Campo de condición" className={field}>
                     <option value="entity.status">Estado de entidad</option>
@@ -414,10 +440,10 @@ export function NotificationAdminControls({
                   placeholder="Ej. 5"
                 />
               </Field>
-              <Field text="Cooldown en segundos (opcional)">
+              <Field text="Intervalo mínimo entre avisos (segundos, opcional)">
                 <input
                   name="cooldownSeconds"
-                  aria-label="Cooldown en segundos opcional"
+                  aria-label="Intervalo mínimo entre avisos en segundos opcional"
                   type="number"
                   min="0"
                   step="1"
@@ -487,7 +513,7 @@ export function NotificationAdminControls({
                   placeholder="Contenido del aviso"
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Field text="Fecha y hora">
                   <input required name="scheduledAt" aria-label="Fecha y hora programadas" type="datetime-local" className={field} />
                 </Field>
@@ -517,14 +543,14 @@ export function NotificationAdminControls({
             </form>
             {schedules.length ? (
               <div className="space-y-1.5 border-t border-slate-100 pt-3">
-                {schedules.slice(0, 4).map((schedule) => (
+                {schedules.map((schedule) => (
                   <div
                     key={schedule.id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/70 px-2.5 py-1.5"
+                    className="flex flex-col gap-1 rounded-lg border border-slate-100 bg-slate-50/70 px-2.5 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
                   >
-                    <span className="truncate text-[11px] font-semibold text-slate-700">{schedule.title}</span>
-                    <span className="flex shrink-0 items-center gap-2 text-[10.5px] font-medium text-slate-400">
-                      {new Date(schedule.scheduledAt).toLocaleString("es-PE")} · {schedule.status}
+                    <span className="min-w-0 break-words text-[11px] font-semibold text-slate-700">{schedule.title}</span>
+                    <span className="flex shrink-0 flex-wrap items-center gap-2 text-[10.5px] font-medium text-slate-500">
+                      {new Date(schedule.scheduledAt).toLocaleString("es-PE", { timeZone: "America/Lima" })} · {scheduleStatusLabels[schedule.status] ?? schedule.status}
                       {schedule.status === "SCHEDULED" ? (
                         <button
                           type="button"

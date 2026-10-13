@@ -20,7 +20,8 @@ assert.doesNotMatch(views, /Transferencia bancaria.*Deposito en cuenta.*Tarjeta 
 assert.match(views, /aria-label|aria-labelledby/);
 assert.match(shell, /sticky|lg:sticky/);
 assert.doesNotMatch(shell, />12<|2024 ColdPower/);
-assert.match(shell, /router\.push/);
+assert.match(shell, /if \(event\.key === "Enter" && query\)[\s\S]*?setIsCommandOpen\(true\)/);
+assert.match(shell, /href=\{item\.href\}/);
 assert.match(operationsRoute, /requirePermission\("operations\.view"\)/);
 assert.match(operationsRoute, /<OperationsCenter/);
 assert.match(home, /Tanda2Home|Tanda2Dashboard/);

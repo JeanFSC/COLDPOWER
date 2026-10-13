@@ -7,10 +7,10 @@ import {
   getPendingInvitationsCount,
   getUserPage,
   listStaffInvitations,
-  parseUserFilters,
   canInviteRole,
   staffRoleCatalog,
 } from "@/lib/user-administration";
+import { resolveUsersPageFilters } from "@/lib/users-page-filters";
 
 export const metadata: Metadata = {
   title: "Usuarios | Panel admin ColdPower",
@@ -35,24 +35,19 @@ export default async function AdminUsuariosPage({
 }) {
   const actor = await requirePermission("users.view");
   const query = toQuery((await searchParams) ?? {});
-  let filters: ReturnType<typeof parseUserFilters> = {};
+  const { filters, filterNotice, exportHref } = resolveUsersPageFilters(query);
   let loadError = false;
-  try {
-    filters = parseUserFilters(query);
-  } catch (error) {
-    console.error("ColdPower: filtros de usuarios inválidos", error);
-    loadError = true;
-  }
+  let invitationsError = false;
   let pendingInvitations = 0;
   let invitations: Awaited<ReturnType<typeof listStaffInvitations>> = { items: [], totalItems: 0 };
   try {
     [pendingInvitations, invitations] = await Promise.all([
       getPendingInvitationsCount(),
-      listStaffInvitations(query.get("query") ?? undefined),
+      listStaffInvitations(filters.query),
     ]);
   } catch (error) {
     console.error("ColdPower: Clerk no respondió para usuarios e invitaciones", error);
-    loadError = true;
+    invitationsError = true;
   }
 
   const selectedId = query.get("userId") ?? undefined;
@@ -83,12 +78,11 @@ export default async function AdminUsuariosPage({
     createdAt: user.createdAt,
     roleLabel: userRoleLabel(user.role),
   }));
-  const exportHref = `/api/admin/usuarios/export${query.toString() ? `?${query.toString()}` : ""}`;
   return (
     <AdminUsersStitch
       users={users}
       metrics={page.metrics}
-      filters={filters}
+      filters={{ ...filters, page: page.page, pageSize: page.pageSize }}
       invitations={invitations.items}
       canInvite={can(actor.role, "users.invite")}
       canManage={can(actor.role, "roles.manage")}
@@ -99,6 +93,8 @@ export default async function AdminUsuariosPage({
       detail={detail}
       detailError={detailError}
       loadError={loadError}
+      invitationsError={invitationsError}
+      filterNotice={filterNotice}
     />
   );
 }

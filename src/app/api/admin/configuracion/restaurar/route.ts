@@ -7,6 +7,8 @@ import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { publicCompanySettings } from "@/lib/company-settings";
 import { validateCompanySettingsInput } from "@/lib/company-settings-validation";
+import { assertCompanySettingsRestorePermissions, CompanySettingsRestorePermissionError } from "@/lib/company-settings-restore-permissions";
+import { invalidateRuntimeCache } from "@/lib/runtime-cache";
 
 export async function POST(request: Request) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;
@@ -30,6 +32,7 @@ export async function POST(request: Request) {
       if (!history) throw new Error("La versión solicitada no existe.");
       if ((current?.version ?? 0) !== expectedVersion) throw new Error("COMPANY_SETTINGS_CONFLICT");
       const candidate = validateCompanySettingsInput(history.after);
+      assertCompanySettingsRestorePermissions(actor.role, current, candidate);
       const nextVersion = (current?.version ?? 0) + 1;
       const [after] = current
         ? await tx.update(companySettings).set({ ...candidate, version: nextVersion, validationStatus: "VALID", updatedBy: actor.userId, updatedAt: new Date() }).where(eq(companySettings.id, "default")).returning()
@@ -40,8 +43,10 @@ export async function POST(request: Request) {
       return after;
     });
     revalidateTag("coldpower-company-settings", "max");
+    invalidateRuntimeCache("company-settings:");
     return NextResponse.json({ settings: publicCompanySettings(saved), version: saved.version, restoredVersion: version });
   } catch (error) {
+    if (error instanceof CompanySettingsRestorePermissionError) return apiError(error.code, error.message, 403);
     if (error instanceof Error && error.message === "COMPANY_SETTINGS_CONFLICT") return apiError("COMPANY_SETTINGS_CONFLICT", "La configuración cambió mientras restaurabas.", 409);
     return apiError("COMPANY_SETTINGS_RESTORE_FAILED", error instanceof Error ? error.message : "No se pudo restaurar la configuración.", 400);
   }

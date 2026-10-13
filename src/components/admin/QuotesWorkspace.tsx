@@ -1,4 +1,6 @@
 "use client";
+import { quoteValidityDateInput } from "@/lib/quote-validity";
+import { QuoteLookupStatus, useQuoteLookup } from "@/components/admin/QuoteLookup";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -33,7 +35,7 @@ import {
   type QuoteListItem,
   type QuotePageResponse,
 } from "@/lib/quote-contract";
-import { quoteStatusLabels, type QuoteDisplayStatus } from "@/lib/quote-workflow";
+import { quoteStatusLabels, quoteHistoryStatusLabel, type QuoteDisplayStatus } from "@/lib/quote-workflow";
 
 type Props = {
   page: QuotePageResponse;
@@ -204,8 +206,8 @@ function dateLabel(value: string | Date | null | undefined, withTime = false) {
   return Number.isNaN(date.getTime())
     ? "—"
     : withTime
-      ? date.toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })
-      : date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
+      ? date.toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" })
+      : date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric", timeZone: "America/Lima" });
 }
 function amount(currency: string | null | undefined, value: string | number | null | undefined) {
   return value === null || value === undefined || value === ""
@@ -282,7 +284,7 @@ export function QuotesWorkspace({
   const [search, setSearch] = useState(params.get("query") ?? "");
   const [detailId, setDetailId] = useState<string | null>(() => params.get("quoteId"));
   const [detail, setDetail] = useState<Detail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(Boolean(params.get("quoteId")));
   const [drawerTab, setDrawerTab] = useState<
     "summary" | "pricing" | "activity" | "versions" | "history"
   >("summary");
@@ -298,6 +300,16 @@ export function QuotesWorkspace({
   const [notice, setNotice] = useState("");
 
   const can = (permission: string) => permissions.includes(permission);
+  const closeNewQuote = () => {
+    setNewQuoteOpen(false);
+    if (params.get("new") !== "1") return false;
+    const next = new URLSearchParams(params);
+    next.delete("new");
+    router.replace(`/admin/cotizaciones${next.toString() ? `?${next.toString()}` : ""}`, {
+      scroll: false,
+    });
+    return true;
+  };
   const pushParams = (changes: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     for (const [key, value] of Object.entries(changes)) {
@@ -312,6 +324,7 @@ export function QuotesWorkspace({
     setDrawerTab("summary");
     setDetail(null);
     setDetailLoading(true);
+    setActionError("");
     try {
       const response = await fetch(`/api/admin/cotizaciones/${encodeURIComponent(id)}`, {
         cache: "no-store",
@@ -320,7 +333,7 @@ export function QuotesWorkspace({
       if (!response.ok) throw new Error(readApiError(payload, "No se pudo cargar la cotización."));
       setDetail(payload.data ?? payload);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "No se pudo cargar la cotización.");
+      setActionError(error instanceof Error ? error.message : "No se pudo cargar la cotización.");
     } finally {
       setDetailLoading(false);
     }
@@ -861,16 +874,16 @@ export function QuotesWorkspace({
             router.refresh();
             void openDetail(detailId);
           }}
+          onRetry={() => void openDetail(detailId)}
         />
       ) : null}
       {newQuoteOpen ? (
         <NewQuoteDrawer
           opportunityId={opportunityId}
           customerId={customerId}
-          close={() => setNewQuoteOpen(false)}
+          close={closeNewQuote}
           onSaved={() => {
-            setNewQuoteOpen(false);
-            router.refresh();
+            if (!closeNewQuote()) router.refresh();
           }}
           can={can}
         />
@@ -1165,6 +1178,7 @@ function DetailDrawer({
   approveDiscount,
   can,
   onEdited,
+  onRetry,
 }: {
   detail: Detail | null;
   loading: boolean;
@@ -1181,13 +1195,23 @@ function DetailDrawer({
   approveDiscount: (approvalId: string, approved: boolean) => Promise<void>;
   can: (permission: string) => boolean;
   onEdited: () => void;
+  onRetry: () => void;
 }) {
   const [editing, setEditing] = useState(false);
-  if (loading || !detail)
+  if (loading)
     return (
       <DrawerShell eyebrow="Cotización" title="Cargando detalle…" close={close}>
         <div className="grid flex-1 place-items-center text-sm text-[#526578]">
           <RefreshCw className="animate-spin" size={20} />
+        </div>
+      </DrawerShell>
+    );
+  if (!detail)
+    return (
+      <DrawerShell eyebrow="Cotización" title="No se pudo cargar el detalle" close={close}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <p role="alert" className="text-sm text-rose-700">{error || "El detalle no está disponible."}</p>
+          <Button type="button" onClick={onRetry}>Reintentar</Button>
         </div>
       </DrawerShell>
     );
@@ -1214,12 +1238,15 @@ function DetailDrawer({
             <span className="text-xs text-[#526578]">Actualizada {dateLabel(quote.updatedAt)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <a
+            {detail.versions.length ? <a
               href={`/api/admin/cotizaciones/${encodeURIComponent(quote.id)}/pdf`}
               className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-slate-900 hover:border-blue-600"
             >
               <Download size={14} /> PDF
-            </a>
+            </a> : <span className="grid gap-1 text-xs text-[#526578]">
+              <span className="inline-flex items-center gap-2 font-bold"><Download size={14} /> PDF</span>
+              <span>Disponible después de registrar el envío</span>
+            </span>}
             {can("quotes.edit") && status === "DRAFT" ? (
               <button
                 type="button"
@@ -1324,6 +1351,7 @@ function DetailDrawer({
               quoteId={quote.id}
               status={status}
               acceptedVersionId={quote.acceptedVersionId}
+              onConverted={onEdited}
             />
           ) : null}
           {can("quotes.edit") && ["DRAFT", "SENT", "FOLLOW_UP", "ACCEPTED"].includes(status) ? (
@@ -1682,7 +1710,7 @@ function HistoryTab({ detail }: { detail: Detail }) {
           <Timeline
             key={item.id}
             icon={<Clock3 size={15} />}
-            title={`${item.fromStatus ? statusLabel(item.fromStatus) : "Creada"} → ${statusLabel(item.toStatus)}`}
+            title={`${item.fromStatus ? quoteHistoryStatusLabel(item.fromStatus) : "Creada"} → ${quoteHistoryStatusLabel(item.toStatus)}`}
             meta={dateLabel(item.createdAt, true)}
             body={item.note || "Sin nota"}
           />
@@ -1970,10 +1998,22 @@ function NewQuoteDrawer({
   can: (permission: string) => boolean;
 }) {
   const [customerQuery, setCustomerQuery] = useState("");
-  const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [customer, setCustomer] = useState<CustomerOption | null>(null);
   const [productQuery, setProductQuery] = useState("");
-  const [products, setProducts] = useState<ProductOption[]>([]);
+  const customerLookup = useQuoteLookup<CustomerOption>(
+    !customer && customerQuery.trim().length >= 2
+      ? `/api/admin/clientes?query=${encodeURIComponent(customerQuery.trim())}&page=1&pageSize=8`
+      : null,
+    "No se pudieron buscar clientes. Intenta nuevamente.",
+  );
+  const productLookup = useQuoteLookup<ProductOption>(
+    productQuery.trim().length >= 2
+      ? `/api/admin/precios/productos?q=${encodeURIComponent(productQuery.trim())}`
+      : null,
+    "No se pudieron buscar productos. Intenta nuevamente.",
+  );
+  const customers = customerLookup.items;
+  const products = uniqueProductOptions(productLookup.items);
   const [lines, setLines] = useState<DraftLine[]>([]);
   const [validUntil, setValidUntil] = useState("");
   const [taxMode, setTaxMode] = useState("UNCONFIGURED");
@@ -1990,8 +2030,7 @@ function NewQuoteDrawer({
       cache: "no-store",
     })
       .then(async (response) => {
-        const payload = (await response.json()) as {
-          data?: {
+        type OpportunityPrefill = {
             customerId?: string;
             customerName?: string | null;
             customerEmail?: string | null;
@@ -2002,12 +2041,12 @@ function NewQuoteDrawer({
               productNameSnapshot: string;
               quantity: number;
             }>;
-          };
         };
+        const payload = (await response.json()) as OpportunityPrefill & { data?: OpportunityPrefill };
         if (!response.ok)
           throw new Error("No se pudo cargar la oportunidad para preparar la cotización.");
-        const source = payload.data;
-        if (!source?.customerId) return;
+        const source = payload.data ?? payload;
+        if (!source.customerId) throw new Error("La oportunidad no tiene un cliente asociado.");
         setCustomer({
           id: source.customerId,
           name: source.customerName || "Cliente de la oportunidad",
@@ -2075,28 +2114,6 @@ function NewQuoteDrawer({
       });
     return () => controller.abort();
   }, [customerId, opportunityId]);
-  useEffect(() => {
-    if (customerQuery.trim().length < 2 || customer) return;
-    const controller = new AbortController();
-    void fetch(`/api/admin/clientes?query=${encodeURIComponent(customerQuery)}&page=1&pageSize=8`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((payload: { items?: CustomerOption[] }) => setCustomers(payload.items ?? []))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [customerQuery, customer]);
-  useEffect(() => {
-    if (productQuery.trim().length < 2) return;
-    const controller = new AbortController();
-    void fetch(`/api/admin/precios/productos?q=${encodeURIComponent(productQuery)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((payload: { items?: ProductOption[] }) => setProducts(uniqueProductOptions(payload.items ?? [])))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [productQuery]);
   const addProduct = (product: ProductOption) => {
     setLines((current) =>
       current.some((line) => line.productId === product.productId)
@@ -2114,7 +2131,6 @@ function NewQuoteDrawer({
           ],
     );
     setProductQuery("");
-    setProducts([]);
   };
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -2155,8 +2171,8 @@ function NewQuoteDrawer({
             ? "Cargando cliente y productos de la oportunidad…"
             : "Selecciona un cliente y productos reales del catálogo. Los precios se resolverán y quedarán congelados al enviar."}
         </p>
-        <label className="mt-6 grid gap-2 text-sm font-bold text-slate-900">
-          Cliente
+        <div className="mt-6 grid min-w-0 gap-2 text-sm font-bold text-slate-900">
+          <span>Cliente</span>
           {customer ? (
             <span className="flex items-center justify-between rounded-lg border border-emerald-600/20 bg-emerald-600/5 px-3 py-3 text-sm text-emerald-700">
               {customer.name}
@@ -2176,6 +2192,7 @@ function NewQuoteDrawer({
           ) : (
             <>
               <input
+                aria-label="Cliente"
                 required={!customer}
                 value={customerQuery}
                 onChange={(event) => setCustomerQuery(event.target.value)}
@@ -2190,7 +2207,6 @@ function NewQuoteDrawer({
                       key={item.id}
                       onClick={() => {
                         setCustomer(item);
-                        setCustomers([]);
                       }}
                       className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                     >
@@ -2202,12 +2218,14 @@ function NewQuoteDrawer({
                   ))}
                 </div>
               ) : null}
+              <QuoteLookupStatus query={customerQuery} kind="clientes" {...customerLookup} count={customers.length} />
             </>
           )}
-        </label>
-        <label className="mt-5 grid gap-2 text-sm font-bold text-slate-900">
-          Agregar producto
+        </div>
+        <div className="mt-5 grid min-w-0 gap-2 text-sm font-bold text-slate-900">
+          <span>Agregar producto</span>
           <input
+            aria-label="Agregar producto"
             value={productQuery}
             onChange={(event) => setProductQuery(event.target.value)}
             className="h-11 rounded-lg border border-[#dfe9f1] px-3 font-normal"
@@ -2228,18 +2246,21 @@ function NewQuoteDrawer({
               ))}
             </div>
           ) : null}
-        </label>
+          <QuoteLookupStatus query={productQuery} kind="productos" {...productLookup} count={products.length} />
+        </div>
         <div className="mt-4 grid gap-2">
           {lines.map((line, index) => (
             <div
               key={line.productId}
-              className="flex items-center gap-3 rounded-lg border border-[#e0eaf2] p-3"
+              className="grid min-w-0 grid-cols-[16px_minmax(0,1fr)_44px] items-center gap-3 rounded-lg border border-[#e0eaf2] p-3 sm:grid-cols-[16px_minmax(0,1fr)_80px_44px]"
             >
               <PackageSearch size={16} className="shrink-0 text-blue-600" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
-                <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
+                <p className="break-words text-xs font-bold text-slate-900">{line.name}</p>
+                <p className="break-all font-mono text-[10px] text-[#526578]">{line.sku}</p>
               </div>
+              <label className="col-start-2 row-start-2 grid min-w-0 gap-1 text-[11px] font-bold text-[#526578] sm:col-start-3 sm:row-start-1">
+                <span className="sm:hidden">Cantidad</span>
               <input
                 aria-label={`Cantidad ${line.sku}`}
                 type="number"
@@ -2254,14 +2275,15 @@ function NewQuoteDrawer({
                     ),
                   )
                 }
-                className="h-9 w-20 rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
+                className="h-9 w-20 max-w-full rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
               />
+              </label>
               <button
                 type="button"
                 onClick={() =>
                   setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-[#526578] hover:text-rose-700"
+                className="col-start-3 row-start-1 inline-flex h-11 w-11 items-center justify-center rounded-lg text-[#526578] hover:bg-rose-50 hover:text-rose-700 sm:col-start-4"
                 aria-label={`Quitar ${line.sku}`}
               >
                 <X size={16} />
@@ -2344,9 +2366,15 @@ function EditQuoteDrawer({
     })),
   );
   const [productQuery, setProductQuery] = useState("");
-  const [products, setProducts] = useState<ProductOption[]>([]);
+  const productLookup = useQuoteLookup<ProductOption>(
+    productQuery.trim().length >= 2
+      ? `/api/admin/precios/productos?q=${encodeURIComponent(productQuery.trim())}`
+      : null,
+    "No se pudieron buscar productos. Intenta nuevamente.",
+  );
+  const products = uniqueProductOptions(productLookup.items);
   const [validUntil, setValidUntil] = useState(
-    detail.quote.validUntil ? detail.quote.validUntil.slice(0, 10) : "",
+    quoteValidityDateInput(detail.quote.validUntil),
   );
   const [taxMode, setTaxMode] = useState(detail.quote.taxMode || "UNCONFIGURED");
   const [message, setMessage] = useState(detail.quote.message || "");
@@ -2373,17 +2401,6 @@ function EditQuoteDrawer({
       .catch(() => undefined);
     return () => controller.abort();
   }, [canDiscount]);
-  useEffect(() => {
-    if (productQuery.trim().length < 2) return;
-    const controller = new AbortController();
-    void fetch(`/api/admin/precios/productos?q=${encodeURIComponent(productQuery)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((payload: { items?: ProductOption[] }) => setProducts(uniqueProductOptions(payload.items ?? [])))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [productQuery]);
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
@@ -2446,9 +2463,10 @@ function EditQuoteDrawer({
           Los precios se vuelven a resolver en el servidor. Al enviar se creará una versión
           inmutable de esta propuesta.
         </p>
-        <label className="mt-6 grid gap-2 text-sm font-bold text-slate-900">
-          Agregar producto
+        <div className="mt-6 grid min-w-0 gap-2 text-sm font-bold text-slate-900">
+          <span>Agregar producto</span>
           <input
+            aria-label="Agregar producto"
             value={productQuery}
             onChange={(event) => setProductQuery(event.target.value)}
             className="h-11 rounded-lg border border-[#dfe9f1] px-3 font-normal"
@@ -2474,7 +2492,6 @@ function EditQuoteDrawer({
                         },
                       ]);
                     setProductQuery("");
-                    setProducts([]);
                   }}
                   className="rounded-md px-3 py-2 text-left text-xs hover:bg-[#f4f8fb]"
                 >
@@ -2484,18 +2501,21 @@ function EditQuoteDrawer({
               ))}
             </div>
           ) : null}
-        </label>
+          <QuoteLookupStatus query={productQuery} kind="productos" {...productLookup} count={products.length} />
+        </div>
         <div className="mt-4 grid gap-2">
           {lines.map((line, index) => (
             <div
               key={line.productId}
-              className="rounded-lg border border-[#e0eaf2] p-3"
+              className="min-w-0 rounded-lg border border-[#e0eaf2] p-3"
             >
-              <div className="flex items-center gap-3">
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_44px] items-center gap-3 sm:grid-cols-[minmax(0,1fr)_80px_44px]">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-slate-900">{line.name}</p>
-                  <p className="font-mono text-[10px] text-[#526578]">{line.sku}</p>
+                  <p className="break-words text-xs font-bold text-slate-900">{line.name}</p>
+                  <p className="break-all font-mono text-[10px] text-[#526578]">{line.sku}</p>
                 </div>
+                <label className="col-start-1 row-start-2 grid min-w-0 gap-1 text-[11px] font-bold text-[#526578] sm:col-start-2 sm:row-start-1">
+                  <span className="sm:hidden">Cantidad</span>
                 <input
                   aria-label={`Cantidad ${line.sku}`}
                   type="number"
@@ -2510,14 +2530,15 @@ function EditQuoteDrawer({
                       ),
                     )
                   }
-                  className="h-9 w-20 rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
+                  className="h-9 w-20 max-w-full rounded-lg border border-[#dfe9f1] px-2 text-center text-sm"
                 />
+                </label>
                 <button
                   type="button"
                   onClick={() =>
                     setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))
                   }
-                  className="text-[#526578] hover:text-rose-700"
+                  className="col-start-2 row-start-1 inline-flex h-11 w-11 items-center justify-center rounded-lg text-[#526578] hover:bg-rose-50 hover:text-rose-700 sm:col-start-3"
                   aria-label={`Quitar ${line.sku}`}
                 >
                   <X size={16} />

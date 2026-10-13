@@ -19,7 +19,9 @@ import {
   UsersRound,
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
+import { filterOptionsWithSelection } from "@/lib/filter-options";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
+import { customerCreateStepError } from "@/lib/customer-create-step";
 import type {
   CustomerAttentionKey,
   CustomerListItem,
@@ -88,7 +90,7 @@ const initialCreate: CreateState = {
 };
 const typeLabels: Record<string, string> = {
   PERSON: "Persona",
-  COMPANY: "Empresa",
+  COMPANY: "Empresa corporativa",
   CONSUMIDOR: "Consumidor",
   TECNICO: "Técnico",
   EMPRESA: "Empresa",
@@ -211,7 +213,9 @@ export function CustomersControlCenter({
   mergeCandidates: Array<{ id: string; name: string }>;
 }) {
   const router = useRouter();
-  const [drawer, setDrawer] = useState<"create" | "edit" | "merge" | "deactivate" | null>(null);
+  const [drawer, setDrawer] = useState<"create" | "edit" | "merge" | "deactivate" | null>(
+    canManage && new URLSearchParams(queryString).get("new") === "1" && !customerId ? "create" : null,
+  );
   const [actionId, setActionId] = useState<string | null>(null);
   const [selected, setSelected] = useState<CustomerListItem | null>(null);
   const [create, setCreate] = useState<CreateState>(initialCreate);
@@ -234,6 +238,7 @@ export function CustomersControlCenter({
   const baseHref = useMemo(() => {
     const params = new URLSearchParams(queryString);
     params.delete("customerId");
+    params.delete("new");
     return `/admin/clientes${params.size ? `?${params.toString()}` : ""}`;
   }, [queryString]);
   useEffect(() => {
@@ -302,6 +307,7 @@ export function CustomersControlCenter({
   const openDetail = (id: string, initialComposer?: "activity" | "task") => {
     setActionId(null);
     const params = new URLSearchParams(queryString);
+    params.delete("new");
     params.set("customerId", id);
     if (initialComposer) params.set("customerAction", initialComposer);
     else params.delete("customerAction");
@@ -309,8 +315,14 @@ export function CustomersControlCenter({
   };
   const closeDetail = () => router.push(baseHref);
   const updateCreate = (key: keyof CreateState, value: string) => {
+    setNotice(null);
     setDuplicatesChecked(false);
     setCreate((previous) => ({ ...previous, [key]: value }));
+  };
+  const advanceCreateStep = () => {
+    const error = customerCreateStepError(create, createStep);
+    setNotice(error);
+    if (!error) setCreateStep((step) => Math.min(3, step + 1));
   };
   const updateEdit = (key: keyof CreateState, value: string) =>
     setEdit((previous) => ({ ...previous, [key]: value }));
@@ -477,7 +489,7 @@ export function CustomersControlCenter({
             : null;
         if (details && typeof details === "object")
           setNotice(
-            `${failure(data, "El cliente tiene operaciones abiertas.")} Oportunidades: ${String((details as { opportunities?: unknown }).opportunities ?? 0)}, cotizaciones: ${String((details as { quotes?: unknown }).quotes ?? 0)}, pedidos: ${String((details as { orders?: unknown }).orders ?? 0)}.`,
+            `${failure(data, "El cliente tiene operaciones abiertas.")} Oportunidades comerciales y de posventa: ${String((details as { opportunities?: unknown }).opportunities ?? 0)}, cotizaciones: ${String((details as { quotes?: unknown }).quotes ?? 0)}, pedidos: ${String((details as { orders?: unknown }).orders ?? 0)}.`,
           );
         else throw new Error(failure(data, "No se pudo desactivar el cliente."));
         return;
@@ -504,13 +516,14 @@ export function CustomersControlCenter({
         </div>
         <div className="flex items-center gap-2">
           {canExport ? (
-            <Link
+            <a
               href={`/api/admin/clientes/export?${queryString}`}
+              download
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#dce6ee] bg-white px-3.5 text-[10px] font-extrabold text-[#304b66]"
             >
               <Download className="h-4 w-4" />
               Exportar
-            </Link>
+            </a>
           ) : null}
           {canManage ? (
             <button
@@ -583,6 +596,7 @@ export function CustomersControlCenter({
           label="Estado"
           values={page.facets.statuses}
           queryString={queryString}
+          labels={statusLabels}
         />
         <SelectFilter
           name="customerType"
@@ -798,12 +812,14 @@ export function CustomersControlCenter({
         <aside className="space-y-3">
           <Distribution
             title="Distribución por tipo"
+            emptyMessage="Sin clientes en este alcance."
             rows={page.metrics.distributionByType}
             total={page.metrics.total}
             formatLabel={(label) => typeLabels[label] ?? label}
           />
           <Distribution
             title="Distribución geográfica"
+            emptyMessage="Sin ubicaciones en este alcance."
             rows={page.metrics.distributionByLocation}
             total={page.metrics.total}
           />
@@ -981,12 +997,18 @@ export function CustomersControlCenter({
       </AdminDrawer>
       <AdminDrawer
         open={drawer === "create"}
-        onClose={close}
+        onClose={() => {
+          close();
+          if (new URLSearchParams(queryString).get("new") === "1") router.replace(baseHref);
+        }}
         title="Nuevo cliente"
         footer={
           <div className="flex justify-end gap-2">
             <button
-              onClick={close}
+              onClick={() => {
+                close();
+                if (new URLSearchParams(queryString).get("new") === "1") router.replace(baseHref);
+              }}
               className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[10px] font-extrabold text-[#304b66]"
             >
               Cancelar
@@ -1004,7 +1026,7 @@ export function CustomersControlCenter({
               <button
                 type="button"
                 disabled={busy || (createStep === 1 && !create.name.trim())}
-                onClick={() => setCreateStep((step) => Math.min(3, step + 1))}
+                onClick={advanceCreateStep}
                 className="h-10 rounded-lg bg-[#2277ee] px-4 text-[10px] font-extrabold text-white disabled:opacity-50"
               >
                 Siguiente
@@ -1066,7 +1088,11 @@ export function CustomersControlCenter({
         <MergeForm
           customers={mergeCandidates}
           ids={mergeIds}
-          setIds={setMergeIds}
+          setIds={(ids) => {
+            setMergeIds(ids.primaryId === ids.secondaryId ? { ...ids, secondaryId: "" } : ids);
+            setMergePreview(null);
+            setNotice(null);
+          }}
           preview={mergePreview}
           reason={reason}
           setReason={setReason}
@@ -1143,16 +1169,18 @@ function SelectFilter({
   labels?: Record<string, string>;
 }) {
   const active = new URLSearchParams(queryString).get(name) ?? "";
+  const options = filterOptionsWithSelection(values, active);
   return (
     <label className="relative">
       <select
+        key={`${name}:${active}`}
         name={name}
         aria-label={label}
         defaultValue={active}
         className="has-custom-chevron h-10 appearance-none rounded-lg border border-[#dce6ee] bg-white py-0 pl-3 pr-8 text-[10px] font-extrabold text-[#304b66]"
       >
         <option value="">{label}</option>
-        {values.map((value) => (
+        {options.map((value) => (
           <option key={value} value={value}>
             {labels[value] ?? value}
           </option>
@@ -1440,11 +1468,13 @@ function Pager({
 }
 function Distribution({
   title,
+  emptyMessage,
   rows,
   total,
   formatLabel,
 }: {
   title: string;
+  emptyMessage: string;
   rows: Array<{ label: string; count: number }>;
   total: number;
   formatLabel?: (label: string) => string;
@@ -1464,7 +1494,7 @@ function Distribution({
       <div className="mt-3 grid gap-2.5">
         {displayRows.length ? (
           displayRows.map((row) => {
-            const pct = total ? Math.max(4, Math.round((row.count / total) * 100)) : 0;
+            const pct = total ? Math.round((row.count / total) * 1000) / 10 : 0;
             return (
               <div key={row.label}>
                 <div className="flex justify-between text-[10px] font-semibold text-[#526b84]">
@@ -1483,7 +1513,7 @@ function Distribution({
             );
           })
         ) : (
-          <p className="text-[10px] text-[#8296a9]">Sin ubicación registrada.</p>
+          <p className="text-[10px] text-[#8296a9]">{emptyMessage}</p>
         )}
       </div>
       <Link
@@ -1611,7 +1641,7 @@ function CreateCustomerForm({
             value={create.legalName}
             onChange={(value) => update("legalName", value)}
           />
-          <Field label="RUC" value={create.ruc} onChange={(value) => update("ruc", value)} />
+          <Field label={create.customerType === "EMPRESA" || create.customerType === "COMPANY" ? "RUC *" : "RUC"} value={create.ruc} onChange={(value) => update("ruc", value)} />
           <Field
             label="Documento"
             value={create.documentNumber}
@@ -1825,6 +1855,11 @@ function MergeForm({
   onPreview: () => void;
 }) {
   const moved = preview?.moved as Record<string, unknown> | undefined;
+  const impactLabels: Record<string, string> = {
+    contacts: "Contactos", addresses: "Direcciones", opportunities: "Oportunidades",
+    quotes: "Cotizaciones", sales: "Ventas", orders: "Pedidos", activities: "Actividades",
+    tasks: "Tareas", notes: "Notas", attachments: "Adjuntos",
+  };
   return (
     <div className="space-y-4">
       {notice ? <Notice text={notice} /> : null}
@@ -1836,6 +1871,7 @@ function MergeForm({
         Principal
         <select
           value={ids.primaryId}
+          disabled={busy}
           onChange={(event) => setIds({ ...ids, primaryId: event.target.value })}
           className="h-10 rounded-lg border border-[#dce6ee] px-3 text-xs font-semibold"
         >
@@ -1851,6 +1887,7 @@ function MergeForm({
         Secundario
         <select
           value={ids.secondaryId}
+          disabled={busy}
           onChange={(event) => setIds({ ...ids, secondaryId: event.target.value })}
           className="h-10 rounded-lg border border-[#dce6ee] px-3 text-xs font-semibold"
         >
@@ -1879,7 +1916,7 @@ function MergeForm({
             {Object.entries(moved ?? {}).map(([key, value]) => (
               <div key={key} className="rounded-lg bg-white p-2 text-center">
                 <p className="text-sm font-black text-[#102a43]">{String(value)}</p>
-                <p className="text-[8px] font-extrabold uppercase text-[#71869c]">{key}</p>
+                <p className="break-words text-[10px] font-semibold text-[#526b84]">{impactLabels[key] ?? "Otros registros"}</p>
               </div>
             ))}
           </div>

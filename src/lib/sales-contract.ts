@@ -1,4 +1,5 @@
 import { paymentStatusEnum, saleStatusEnum } from "@/db/sales-schema";
+import { parseDashboardSalesScope, type DashboardSalesScope } from "@/lib/dashboard-sales-navigation";
 
 export class SalesInvalidFilterError extends Error {
   constructor() {
@@ -7,6 +8,7 @@ export class SalesInvalidFilterError extends Error {
   }
 }
 export type SalesFilters = {
+  dashboardScope?: DashboardSalesScope;
   query?: string;
   status?: (typeof saleStatusEnum.enumValues)[number];
   sellerId?: string;
@@ -44,6 +46,8 @@ function date(params: URLSearchParams, key: string) {
   return value;
 }
 export function parseSalesFilters(params: URLSearchParams): SalesFilters {
+  let dashboardScope: DashboardSalesScope | undefined;
+  try { dashboardScope = parseDashboardSalesScope(params.get("dashboardScope")); } catch { throw new SalesInvalidFilterError(); }
   const status = text(params, "status");
   const paymentStatus = text(params, "paymentStatus");
   const paymentReconciliation = text(params, "paymentReconciliation");
@@ -65,6 +69,7 @@ export function parseSalesFilters(params: URLSearchParams): SalesFilters {
   const dateTo = date(params, "dateTo") ?? date(params, "createdTo");
   if (dateFrom && dateTo && dateFrom > dateTo) throw new SalesInvalidFilterError();
   return {
+    dashboardScope,
     query: text(params, "query") ?? text(params, "q"),
     status: status as SalesFilters["status"],
     sellerId: text(params, "sellerId"),

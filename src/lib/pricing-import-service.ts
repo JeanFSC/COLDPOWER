@@ -1,9 +1,10 @@
-import * as XLSX from "xlsx";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { readPricingImportRows } from "@/lib/pricing-import-file";
+import { createHash } from "node:crypto";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, priceHistory, productPrices, products } from "@/db/schema";
 import { type PricingPriceType } from "@/lib/pricing-contract";
-import { type PricingActor } from "@/lib/pricing-service";
+import { isPriceWindowOverlapping, type PricingActor } from "@/lib/pricing-service";
 import { normalizePriceDetails } from "@/lib/pricing-validation";
 import { can } from "@/lib/roles";
 
@@ -44,10 +45,7 @@ function value(row: SourceRow, key: keyof typeof headerAliases) { for (const [he
 function hasHeader(columns: string[], key: keyof typeof headerAliases) { return columns.some((column) => aliases[normalizeHeader(column)] === key); }
 
 function parseFile(data: ArrayBuffer) {
-  const workbook = XLSX.read(Buffer.from(data), { type: "buffer", cellDates: false, raw: false });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!sheet) throw new Error("PRICING_IMPORT_EMPTY");
-  return XLSX.utils.sheet_to_json<SourceRow>(sheet, { defval: null, raw: false });
+  return readPricingImportRows(data);
 }
 
 function parseAmount(raw: string) {
@@ -59,7 +57,13 @@ function parseAmount(raw: string) {
 
 function parseDate(raw: string, fallback: Date) {
   if (!raw) return fallback;
-  const value = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T00:00:00-05:00`) : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw) ? new Date(`${raw}:00-05:00`) : new Date(raw);
+  const calendar = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(raw);
+  if (calendar) {
+    const [, year, month, day] = calendar;
+    const civilDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+    if (Number.isNaN(civilDate.getTime()) || civilDate.toISOString().slice(0, 10) !== `${year}-${month}-${day}`) throw new Error("La fecha de vigencia no es válida.");
+  }
+  const value = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T00:00:00-05:00`) : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(raw) ? new Date(`${raw}${raw.length === 16 ? ":00" : ""}-05:00`) : new Date(raw);
   if (Number.isNaN(value.getTime())) throw new Error("La fecha de vigencia no es válida.");
   return value;
 }
@@ -142,10 +146,25 @@ export async function applyPricingImport(data: ArrayBuffer, filename: string, ac
   const preview = await buildPreview(data, filename, actor, reason);
   if (preview.errors) throw new Error(`PRICING_IMPORT_PREFLIGHT_FAILED:${preview.errors}`);
   const db = getDb();
+  const batchId = `pricing-import-${createHash("sha256").update(Buffer.from(data)).update(JSON.stringify({ reason, filename, actorId: actor.userId })).digest("hex")}`;
   return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${batchId}))`);
+    const [applied] = await tx.select({ id: auditLogs.id }).from(auditLogs).where(and(eq(auditLogs.entityId, batchId), eq(auditLogs.action, "pricing.import_applied")));
+    if (applied) return { ...publicPreview(preview), newPrices: 0, changes: 0, idempotent: true };
+    const pairs = preview.rows.filter(row => row.productId && row.priceType).map(row => ({ productId: row.productId!, priceType: row.priceType! })).sort((a, b) => `${a.productId}:${a.priceType}`.localeCompare(`${b.productId}:${b.priceType}`));
+    for (const pair of pairs) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${pair.productId}), hashtext(${pair.priceType}))`);
     for (const row of preview.rows) {
       if (!row.price || !row.productId || !row.priceType) continue;
-      const key = `pricing-import:${filename}:${row.rowNumber}:${row.priceType}`;
+      const prices = await tx.select().from(productPrices).where(and(eq(productPrices.productId, row.productId), eq(productPrices.priceType, row.priceType), eq(productPrices.active, true)));
+      if (prices.some(price => price.id !== row.currentPriceId && isPriceWindowOverlapping(price, row.price!))) throw new Error("PRICING_IMPORT_STALE");
+      if (row.currentPriceId) {
+        const current = prices.find(price => price.id === row.currentPriceId);
+        if (!current || !row.price.current || current.updatedAt.getTime() !== row.price.current.updatedAt.getTime()) throw new Error("PRICING_IMPORT_STALE");
+      }
+    }
+    for (const row of preview.rows) {
+      if (!row.price || !row.productId || !row.priceType) continue;
+      const key = `${batchId}:${row.rowNumber}:${row.priceType}`;
       if (row.currentPriceId) {
         const [updated] = await tx.update(productPrices).set({ amount: row.price.amount, currency: row.price.currency, wholesaleMinQty: row.price.wholesaleMinQty, minimumAllowed: row.price.minimumAllowed, validFrom: row.price.validFrom, validUntil: row.price.validUntil, idempotencyKey: key, updatedAt: new Date() }).where(and(eq(productPrices.id, row.currentPriceId), eq(productPrices.productId, row.productId))).returning();
         if (!updated) throw new Error("PRICING_IMPORT_STALE");
@@ -155,7 +174,7 @@ export async function applyPricingImport(data: ArrayBuffer, filename: string, ac
         await tx.insert(priceHistory).values({ id: `price-history-${crypto.randomUUID()}`, productId: row.productId, priceId: created.id, priceType: created.priceType, previousAmount: null, newAmount: created.amount, currency: created.currency, reason: row.price.reason, changedBy: actor.userId });
       }
     }
-    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "pricing.import_applied", entityType: "pricing_import", entityId: `pricing-import-${crypto.randomUUID()}`, before: null, after: { filename, rowsRead: preview.rowsRead, newPrices: preview.newPrices, changes: preview.changes }, metadata: { reason } });
-    return preview;
+    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "pricing.import_applied", entityType: "pricing_import", entityId: batchId, before: null, after: { filename, rowsRead: preview.rowsRead, newPrices: preview.newPrices, changes: preview.changes }, metadata: { reason } });
+    return { ...publicPreview(preview), idempotent: false };
   });
 }

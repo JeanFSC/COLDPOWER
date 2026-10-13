@@ -3,6 +3,25 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
+test("cotización nueva enlaza la oportunidad después de persistir su FK y oculta errores SQL", () => {
+  const service = read("src/lib/quote-service.ts");
+  const route = read("src/app/api/admin/cotizaciones/route.ts");
+  const create = service.slice(service.indexOf("export async function createAdminQuote"), service.indexOf("export async function updateAdminQuoteDraft"));
+  assert.match(service, /customerId, quoteId: null, title: "Nueva cotización comercial"/);
+  assert.ok(create.indexOf("tx.insert(quotes)") < create.indexOf("tx.update(opportunities)"));
+  assert.doesNotMatch(create, /if \(input.opportunityId\)/);
+  assert.match(route, /error instanceof DrizzleQueryError/);
+  assert.match(route, /No se pudo guardar la cotización\. Intenta nuevamente en unos momentos\.", 503/);
+});
+
+test("conversión recarga el detalle persistido además de la bandeja", () => {
+  const control = read("src/components/admin/QuoteConversionControl.tsx");
+  const workspace = read("src/components/admin/QuotesWorkspace.tsx");
+  assert.match(control, /onConverted\?\.\(\)/);
+  assert.match(workspace, /onConverted=\{onEdited\}/);
+  assert.match(workspace, /void openDetail\(detailId\)/);
+});
+
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 

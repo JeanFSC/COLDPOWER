@@ -6,6 +6,7 @@ import { getPublishedMediaForEntities } from "@/lib/media-repository";
 import { loadRetailPricesWithPromotions } from "@/lib/retail-price";
 import { mapCatalogProductRow, type CatalogProductSourceRow } from "@/lib/catalog-view-model";
 import { invalidateRuntimeCache, withRuntimeCache } from "@/lib/runtime-cache";
+import { catalogFamilyConditions } from "@/lib/catalog-family-conditions";
 import type { Product } from "@/types/product";
 import type { ProductSort } from "@/lib/catalog";
 
@@ -182,7 +183,7 @@ export async function getCatalogCategoryBySlug(slug: string) {
 }
 
 async function queryCatalogFamilies(categoryId: string | undefined, publicOnly: boolean): Promise<CatalogFamily[]> {
-  const rows = await getDb().select({ id: families.id, categoryId: families.categoryId, name: families.name, slug: families.slug, productCount: count(products.id) }).from(families).leftJoin(products, and(effectiveFamilyJoin(), ...(publicOnly ? publicConditions() : []))).where(categoryId ? eq(families.categoryId, categoryId) : undefined).groupBy(families.id, families.categoryId, families.name, families.slug).orderBy(asc(families.name));
+  const rows = await getDb().select({ id: families.id, categoryId: families.categoryId, name: families.name, slug: families.slug, productCount: count(products.id) }).from(families).leftJoin(products, and(effectiveFamilyJoin(), ...(publicOnly ? publicConditions() : []))).where(catalogFamilyConditions(categoryId, publicOnly)).groupBy(families.id, families.categoryId, families.name, families.slug).orderBy(asc(families.name));
   return rows.map((row) => ({ ...row, productCount: Number(row.productCount) }));
 }
 

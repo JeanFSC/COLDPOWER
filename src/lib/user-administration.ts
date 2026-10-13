@@ -18,9 +18,27 @@ export class UserAdministrationError extends Error {
 }
 export class UserInvalidFilterError extends Error { constructor() { super("USER_INVALID_FILTER"); this.name = "UserInvalidFilterError"; } }
 
-function parseDate(value: string | undefined) { if (!value) return undefined; if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new UserInvalidFilterError(); return value; }
+function parseDate(value: string | undefined) {
+  if (!value) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new UserInvalidFilterError();
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) throw new UserInvalidFilterError();
+  return value;
+}
 function parsePositive(value: string | undefined) { if (!value) return undefined; const parsed = Number(value); if (!Number.isInteger(parsed) || parsed < 1) throw new UserInvalidFilterError(); return parsed; }
-export function parseUserFilters(params: URLSearchParams): UserFilters { const date = (key: string) => parseDate(params.get(key)?.trim() || undefined); const createdFrom = date("createdFrom"); const createdTo = date("createdTo"); const lastSignInFrom = date("lastSignInFrom"); const lastSignInTo = date("lastSignInTo"); if ((createdFrom && createdTo && createdFrom > createdTo) || (lastSignInFrom && lastSignInTo && lastSignInFrom > lastSignInTo)) throw new UserInvalidFilterError(); const status = params.get("status")?.trim() || undefined; if (status && !["ACTIVE", "INACTIVE", "SUSPENDED"].includes(status)) throw new UserInvalidFilterError(); return { query: params.get("query")?.trim() || undefined, role: params.get("role")?.trim() || undefined, status: status as UserStatus | undefined, createdFrom, createdTo, lastSignInFrom, lastSignInTo, page: parsePositive(params.get("page") || undefined), pageSize: parsePositive(params.get("pageSize") || undefined) }; }
+export function parseUserFilters(params: URLSearchParams): UserFilters {
+  const date = (key: string) => parseDate(params.get(key)?.trim() || undefined);
+  const createdFrom = date("createdFrom");
+  const createdTo = date("createdTo");
+  const lastSignInFrom = date("lastSignInFrom");
+  const lastSignInTo = date("lastSignInTo");
+  if ((createdFrom && createdTo && createdFrom > createdTo) || (lastSignInFrom && lastSignInTo && lastSignInFrom > lastSignInTo)) throw new UserInvalidFilterError();
+  const status = params.get("status")?.trim() || undefined;
+  if (status && !["ACTIVE", "INACTIVE", "SUSPENDED"].includes(status)) throw new UserInvalidFilterError();
+  const role = params.get("role")?.trim() || undefined;
+  if (role && !isAppRole(role)) throw new UserInvalidFilterError();
+  return { query: params.get("query")?.trim() || undefined, role, status: status as UserStatus | undefined, createdFrom, createdTo, lastSignInFrom, lastSignInTo, page: parsePositive(params.get("page") || undefined), pageSize: parsePositive(params.get("pageSize") || undefined) };
+}
 
 function dateStart(value: string) { return new Date(`${value}T00:00:00-05:00`); }
 function dateAfter(value: string) { return new Date(dateStart(value).getTime() + 86_400_000); }
@@ -34,8 +52,32 @@ export function assertUserChangeAllowed({ actorRole, actorUserId, targetId, next
 export async function checkUserChangeAllowed(input: Omit<Parameters<typeof assertUserChangeAllowed>[0], "target" | "activeSuperadmins">) { const target = await getManagedUser(input.targetId); return assertUserChangeAllowed({ ...input, target, activeSuperadmins: await countActiveSuperadmins() }); }
 export function auditUserSnapshot(user: ManagedUser) { return { id: user.id, email: user.email, role: user.role, roleCode: user.roleCode, status: user.status, name: user.name, clerkSyncStatus: user.clerkSyncStatus }; }
 
-export async function getUserPage(filters: UserFilters = {}, pendingInvitations = 0): Promise<UserPageResponse> { const pageSize = Math.min(100, Math.max(1, Math.floor(filters.pageSize ?? 25))); const page = Math.max(1, Math.floor(filters.page ?? 1)); const where = userWhere(filters); const db = getDb(); const [items, total, active, inactive, suspended, administrators] = await Promise.all([db.select().from(users).where(where).orderBy(desc(users.createdAt), desc(users.id)).limit(pageSize).offset((page - 1) * pageSize), db.select({ value: count() }).from(users).where(where), db.select({ value: count() }).from(users).where(and(where, eq(users.status, "ACTIVE"))), db.select({ value: count() }).from(users).where(and(where, eq(users.status, "INACTIVE"))), db.select({ value: count() }).from(users).where(and(where, eq(users.status, "SUSPENDED"))), db.select({ value: count() }).from(users).where(and(where, eq(users.roleCode, "SUPERADMIN"), eq(users.status, "ACTIVE")))]); const totalItems = Number(total[0]?.value ?? 0); return { items: items.map(mapUser), page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active: Number(active[0]?.value ?? 0), inactive: Number(inactive[0]?.value ?? 0), suspended: Number(suspended[0]?.value ?? 0), administrators: Number(administrators[0]?.value ?? 0), pendingInvitations } }; }
-
+export async function getUserPage(filters: UserFilters = {}, pendingInvitations = 0): Promise<UserPageResponse> {
+  const pageSize = Math.min(100, Math.max(1, Math.floor(filters.pageSize ?? 25)));
+  const requestedPage = Math.max(1, Math.floor(filters.page ?? 1));
+  const where = userWhere(filters);
+  const db = getDb();
+  const [total, active, inactive, suspended, administrators] = await Promise.all([
+    db.select({ value: count() }).from(users).where(where),
+    db.select({ value: count() }).from(users).where(and(where, eq(users.status, "ACTIVE"))),
+    db.select({ value: count() }).from(users).where(and(where, eq(users.status, "INACTIVE"))),
+    db.select({ value: count() }).from(users).where(and(where, eq(users.status, "SUSPENDED"))),
+    db.select({ value: count() }).from(users).where(and(where, eq(users.roleCode, "SUPERADMIN"), eq(users.status, "ACTIVE"))),
+  ]);
+  const totalItems = Number(total[0]?.value ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const page = Math.min(requestedPage, totalPages);
+  const items = await db.select().from(users).where(where)
+    .orderBy(desc(users.createdAt), desc(users.id)).limit(pageSize).offset((page - 1) * pageSize);
+  return {
+    items: items.map(mapUser), page, pageSize, totalItems, totalPages,
+    metrics: {
+      total: totalItems, active: Number(active[0]?.value ?? 0),
+      inactive: Number(inactive[0]?.value ?? 0), suspended: Number(suspended[0]?.value ?? 0),
+      administrators: Number(administrators[0]?.value ?? 0), pendingInvitations,
+    },
+  };
+}
 export async function getPendingInvitationsCount() { const response = await (await clerkClient()).invitations.getInvitationList({ status: "pending", limit: 1, offset: 0 }); return Number(response.totalCount ?? 0); }
 export async function getManagedUserDetail(id: string) { const user = await getManagedUser(id); const events = await getDb().select().from(auditLogs).where(and(eq(auditLogs.entityType, "user"), eq(auditLogs.entityId, id))).orderBy(desc(auditLogs.createdAt)).limit(100); let invitation = null as ReturnType<typeof mapInvitation> | null; try { const response = await (await clerkClient()).invitations.getInvitationList({ query: user.email, limit: 20, offset: 0 }); invitation = response.data.map(mapInvitation).find((candidate) => candidate.emailAddress.toLowerCase() === user.email.toLowerCase()) ?? null; } catch { /* Clerk may be temporarily unavailable; sync status remains visible. */ } return { user: mapUser(user), history: events, lastAccess: user.lastSignInAt, invitation, clerkEvents: events.filter((event) => event.action.startsWith("clerk.") || event.action.startsWith("access.user_")), audit: events }; }
 

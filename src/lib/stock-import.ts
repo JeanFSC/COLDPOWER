@@ -15,8 +15,10 @@ export function planStockImport(sourceRows: StockSourceRow[], catalog: StockCata
   for (const [index, source] of sourceRows.entries()) {
     const sku = stringValue(source.sku);
     const locationCode = stringValue(source.locationCode);
-    const quantity = Number(source.quantity);
-    if (!sku || !locationCode || !Number.isInteger(quantity) || quantity <= 0) {
+    const quantity = typeof source.quantity === "number" || typeof source.quantity === "string"
+      ? Number(source.quantity)
+      : Number.NaN;
+    if (!sku || !locationCode || !Number.isSafeInteger(quantity) || quantity <= 0 || quantity > 2_147_483_647) {
       errors.push(`Fila ${index + 1}: SKU exacto, ubicación y cantidad positiva son obligatorios.`);
       continue;
     }

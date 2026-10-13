@@ -33,7 +33,8 @@ test("CP-033 inventory UI uses safe workflow controls and refreshes router state
   assert.match(page, /<th[^>]*>Producto<\/th>/);
   assert.match(page, /Movimientos globales/);
   assert.match(movements, /getInventoryMovementsPage/);
-  assert.match(page, /CSV/);
+  assert.match(page, /ExportFormatMenu href=\{exportHref\} label="Exportar Kardex" formats=\{\["xlsx", "csv"\]\}/);
+  assert.match(await read("src/components/admin/ExportFormatMenu.tsx"), /csv: "CSV \(\.csv\)"/);
   assert.match(page, /Nuevo traslado/);
   assert.match(page, /Registrar movimiento/);
   assert.match(page, /InventoryOperationsTabs/);

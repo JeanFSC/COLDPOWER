@@ -31,11 +31,16 @@ export function getPriceEffectiveStatus(price: Pick<PricingPriceRecord, "active"
 }
 
 function currentFirst(prices: PricingPriceRecord[], type: PricingPriceType, at: Date) {
-  return prices
+  const candidates = prices
     .filter((price) => price.priceType === type)
-    .sort((a, b) => b.validFrom.getTime() - a.validFrom.getTime())
-    .find((price) => isPriceEffectiveAt(price, at))
-    ?? prices.filter((price) => price.priceType === type).sort((a, b) => b.validFrom.getTime() - a.validFrom.getTime())[0]
+    .sort((a, b) => b.validFrom.getTime() - a.validFrom.getTime());
+  const lastChange = (price: PricingPriceRecord) => {
+    const updated = price.updatedAt ? new Date(price.updatedAt).getTime() : NaN;
+    return Number.isFinite(updated) ? updated : price.validFrom.getTime();
+  };
+  return candidates.find((price) => isPriceEffectiveAt(price, at))
+    ?? candidates.find((price) => price.active && price.status === "ACTIVE")
+    ?? candidates.sort((a, b) => lastChange(b) - lastChange(a) || b.id.localeCompare(a.id))[0]
     ?? null;
 }
 

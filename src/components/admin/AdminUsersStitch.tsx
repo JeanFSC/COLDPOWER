@@ -21,6 +21,7 @@ import { StaffInvitationActions } from "@/components/admin/StaffInvitationAction
 import { StaffInvitationForm } from "@/components/admin/StaffInvitationForm";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 import { UserRoleControl } from "@/components/admin/UserRoleControl";
+import { userRoleCatalog } from "@/lib/user-administration-contracts";
 import { permissionsForRole, type AppRole, type Permission } from "@/lib/roles";
 import type {
   ClerkInvitationItem,
@@ -111,7 +112,7 @@ function Metric({
         <Icon className="h-5 w-5" />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-medium text-slate-500">{label}</p>
+        <p className="break-words text-[11px] font-medium text-slate-500">{label}</p>
         <p className="text-xl font-bold leading-tight text-slate-900">{value}</p>
         <p className="mt-0.5 text-[10px] text-slate-400">{note}</p>
       </div>
@@ -140,6 +141,8 @@ export function AdminUsersStitch({
   detail,
   detailError,
   loadError,
+  invitationsError = false,
+  filterNotice,
 }: {
   users: UserDisplayRow[];
   metrics: UserPageResponse["metrics"];
@@ -154,6 +157,8 @@ export function AdminUsersStitch({
   detail: Detail | null;
   detailError: string | null;
   loadError: boolean;
+  invitationsError?: boolean;
+  filterNotice?: string;
 }) {
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 25;
@@ -162,9 +167,10 @@ export function AdminUsersStitch({
     { length: Math.min(5, totalPages) },
     (_, index) => Math.max(1, Math.min(page - 2, totalPages - 4)) + index,
   );
-  const roles = [...new Set(users.map((user) => user.role))].sort();
   return (
     <div className="space-y-6 pb-2">
+      {filterNotice ? <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">{filterNotice}</p> : null}
+      {loadError ? <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">No se pudo cargar la lista de usuarios. Actualiza la página para volver a intentarlo.</p> : null}
       <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-sm">
@@ -207,42 +213,42 @@ export function AdminUsersStitch({
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         <Metric
           label="Usuarios activos"
-          value={metrics.active}
+          value={loadError ? "N/D" : metrics.active}
           note="Dato actual"
           icon={Users}
           tone="bg-blue-50 text-blue-600"
         />
         <Metric
           label="Invitaciones pendientes"
-          value={metrics.pendingInvitations}
+          value={invitationsError ? "N/D" : metrics.pendingInvitations}
           note="Pendientes en Clerk"
           icon={Mail}
           tone="bg-amber-50 text-amber-600"
         />
         <Metric
-          label="Roles configurados"
+          label="Roles en la matriz"
           value={MATRIX_ROLES.length}
-          note="Roles operativos visibles"
+          note="Matriz resumida"
           icon={ShieldCheck}
           tone="bg-purple-50 text-purple-600"
         />
         <Metric
           label="Inactivos"
-          value={metrics.inactive}
+          value={loadError ? "N/D" : metrics.inactive}
           note="Según filtros actuales"
           icon={UserPlus}
           tone="bg-teal-50 text-teal-600"
         />
         <Metric
           label="Superadmins"
-          value={metrics.administrators}
+          value={loadError ? "N/D" : metrics.administrators}
           note="Activos actualmente"
           icon={Settings2}
           tone="bg-rose-50 text-rose-500"
         />
         <Metric
           label="Suspendidos"
-          value={metrics.suspended}
+          value={loadError ? "N/D" : metrics.suspended}
           note="Estado persistido"
           icon={Clock3}
           tone="bg-amber-50 text-amber-500"
@@ -259,7 +265,7 @@ export function AdminUsersStitch({
             <input
               name="query"
               defaultValue={filters.query}
-              placeholder="Buscar por nombre, correo o rol..."
+              placeholder="Buscar por nombre, correo o teléfono..."
               className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
@@ -271,9 +277,9 @@ export function AdminUsersStitch({
               className="w-44"
               options={[
                 { value: "", label: "Rol: Todos" },
-                ...roles.map((role) => ({
-                  value: role,
-                  label: `Rol: ${ROLE_LABELS[role] ?? role}`,
+                ...userRoleCatalog.map((role) => ({
+                  value: role.value,
+                  label: `Rol: ${role.label}`,
                 })),
               ]}
             />
@@ -383,14 +389,14 @@ export function AdminUsersStitch({
               ) : (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center text-xs text-slate-400">
-                    No se encontraron usuarios para estos filtros.
+                    {loadError ? "La lista de usuarios no está disponible." : "No se encontraron usuarios para estos filtros."}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <footer className="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+        {!loadError ? <footer className="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
           <span>
             Mostrando{" "}
             <strong className="text-slate-900">
@@ -400,17 +406,22 @@ export function AdminUsersStitch({
             de <strong className="text-slate-900">{metrics.total}</strong> usuarios
           </span>
           <nav className="flex items-center gap-1" aria-label="Paginación de usuarios">
-            <Link
+            {page <= 1 ? (
+              <span aria-label="Página anterior" aria-disabled="true" className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-300">
+                <ChevronLeft className="h-4 w-4" />
+              </span>
+            ) : <Link
               href={hrefFor(filters, { page: String(Math.max(1, page - 1)) })}
               aria-label="Página anterior"
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400"
             >
               <ChevronLeft className="h-4 w-4" />
-            </Link>
+            </Link>}
             {pages.map((number) => (
               <Link
                 key={number}
                 href={hrefFor(filters, { page: String(number) })}
+                aria-current={number === page ? "page" : undefined}
                 className={
                   number === page
                     ? "flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 font-medium text-white"
@@ -420,15 +431,19 @@ export function AdminUsersStitch({
                 {number}
               </Link>
             ))}
-            <Link
+            {page >= totalPages ? (
+              <span aria-label="Página siguiente" aria-disabled="true" className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-300">
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            ) : <Link
               href={hrefFor(filters, { page: String(Math.min(totalPages, page + 1)) })}
               aria-label="Página siguiente"
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600"
             >
               <ChevronRight className="h-4 w-4" />
-            </Link>
+            </Link>}
           </nav>
-        </footer>
+        </footer> : null}
       </section>
       <section className="grid gap-6 xl:grid-cols-3">
         <article
@@ -516,7 +531,7 @@ export function AdminUsersStitch({
             })}
             {!invitations.length ? (
               <p className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-[11px] text-slate-400">
-                No hay invitaciones pendientes.
+                {invitationsError ? "No se pudieron consultar las invitaciones pendientes." : "No hay invitaciones pendientes."}
               </p>
             ) : null}
           </div>
@@ -524,7 +539,7 @@ export function AdminUsersStitch({
             href="#user-invitation"
             className="mt-auto inline-flex items-center justify-center gap-1.5 border-t border-slate-100 pt-4 text-xs font-semibold text-blue-600"
           >
-            Gestionar invitaciones ({metrics.pendingInvitations})
+            Gestionar invitaciones ({invitationsError ? "N/D" : metrics.pendingInvitations})
             <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </article>
@@ -637,8 +652,8 @@ export function AdminUsersStitch({
       ) : null}
       <section id="user-invitation" className="scroll-mt-6">
         {canInvite ? <StaffInvitationForm allowSuperadmin={allowSuperadmin} roles={inviteRoles} /> : null}
-        {loadError ? (
-          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+        {invitationsError ? (
+          <p role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
             Clerk no respondió; las invitaciones se mostrarán cuando la sincronización se recupere.
           </p>
         ) : null}

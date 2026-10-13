@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+
 import { ArrowRight, CheckCircle2, ClipboardList, PackageCheck, Truck } from "lucide-react";
 import { AdminSelect } from "@/components/admin/AdminSelect";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 type Supplier = { id: string; name: string; currency: string; status: string };
 type Location = { id: string; name: string };
@@ -129,6 +130,7 @@ export function PurchasesOperations({
   initialOrderSupplierId?: string;
   initialOrderLocationId?: string;
 }) {
+
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error">("success");
   const [busy, setBusy] = useState(false);
@@ -165,6 +167,31 @@ export function PurchasesOperations({
     displayedProductOptions.length > 0 &&
     receptionPurchaseId !== "" &&
     receptionProductId !== "";
+
+  useEffect(() => {
+    const focusOrder = () => {
+      if (window.location.hash !== "#purchase-order-tools" || !canManage) return;
+      const target = document.getElementById("purchase-order-tools");
+      target?.scrollIntoView({ block: "start" });
+      target?.focus({ preventScroll: true });
+    };
+    const frame = window.requestAnimationFrame(focusOrder);
+    const repeatOrderAnchor = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const anchor = event.target instanceof Element ? event.target.closest('a[href="#purchase-order-tools"]') : null;
+      if (anchor && window.location.hash === "#purchase-order-tools") {
+        event.preventDefault();
+        focusOrder();
+      }
+    };
+    window.addEventListener("hashchange", focusOrder);
+    document.addEventListener("click", repeatOrderAnchor, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", focusOrder);
+      document.removeEventListener("click", repeatOrderAnchor, true);
+    };
+  }, [canManage]);
 
   useEffect(() => {
     const query = productQuery.trim();
@@ -213,20 +240,22 @@ export function PurchasesOperations({
     onSuccess?: () => void,
   ) {
     event.preventDefault();
+    const form = event.currentTarget;
     setBusy(true);
     setMessage("");
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const data = Object.fromEntries(new FormData(form).entries());
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     if (submitter instanceof HTMLButtonElement && submitter.name)
       data[submitter.name] = submitter.value;
     try {
       await post(path, transform(data));
       setMessageTone("success");
-      setMessage("Guardado. Recarga para ver los datos persistidos.");
-      event.currentTarget.reset();
+      setMessage("Guardado correctamente.");
+      form.reset();
       setProductQuery("");
       setRequestProductQuery("");
       onSuccess?.();
+      window.location.reload();
     } catch (error) {
       setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "Error");
@@ -272,8 +301,9 @@ export function PurchasesOperations({
         notes: data.notes,
       });
       setMessageTone("success");
-      setMessage("Proveedor guardado. Recarga para ver los datos persistidos.");
+      setMessage("Proveedor guardado correctamente.");
       form.reset();
+      window.location.reload();
     } catch (error) {
       setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "No se pudo guardar el proveedor.");
@@ -366,8 +396,10 @@ export function PurchasesOperations({
           {!requestDependenciesReady ? (
             <div className="mt-3">
               <DependencyNote tone="warning">
-                <strong>Antes de crear una solicitud:</strong> debe existir un local activo y un
-                producto encontrado en el catálogo.
+                <strong>Antes de crear una solicitud:</strong>{" "}
+                {locations.length === 0
+                  ? "registra un local activo para continuar."
+                  : "busca y selecciona un producto del catálogo por SKU o nombre (mínimo 2 caracteres)."}
               </DependencyNote>
             </div>
           ) : null}
@@ -514,6 +546,8 @@ export function PurchasesOperations({
 
         <form
           id="purchase-order-tools"
+          tabIndex={-1}
+          style={{ scrollMarginTop: "6rem" }}
           onSubmit={(event) =>
             void submit(
               event,
@@ -539,7 +573,7 @@ export function PurchasesOperations({
               },
             )
           }
-          className={canManage ? "rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs" : "hidden"}
+          className={canManage ? "rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs lg:col-span-2" : "hidden"}
         >
           <StepHeading
             number="3"
@@ -553,12 +587,14 @@ export function PurchasesOperations({
           {!orderDependenciesReady ? (
             <div className="mt-3">
               <DependencyNote tone="warning">
-                <strong>Antes de crear una orden:</strong> registra al menos un proveedor, un local
-                activo y un producto disponible.
+                <strong>Antes de crear una orden:</strong>{" "}
+                {suppliers.length === 0 || locations.length === 0
+                  ? "registra un proveedor y un local activo para continuar."
+                  : "busca y selecciona un producto del catálogo por SKU o nombre (mínimo 2 caracteres)."}
               </DependencyNote>
             </div>
           ) : null}
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
             <AdminSelect
               name="supplierId"
               ariaLabel="Proveedor de la orden de compra"
@@ -622,7 +658,7 @@ export function PurchasesOperations({
               placeholder="Moneda"
               className={`${inputClass} uppercase`}
             />
-            <label className="block text-[11px] font-semibold text-slate-500">
+            <label className="block text-[11px] font-semibold text-slate-500 lg:col-span-2">
               Entrega esperada (opcional)
               <input
                 type="datetime-local"
@@ -778,7 +814,6 @@ type ReceivingOption = {
 };
 
 function PurchaseReceptionForm() {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [options, setOptions] = useState<ReceivingOption[]>([]);
   const [purchaseId, setPurchaseId] = useState("");
@@ -798,7 +833,7 @@ function PurchaseReceptionForm() {
         .then(async (response) => {
           const payload = (await response.json()) as { options?: ReceivingOption[]; error?: unknown };
           if (!response.ok)
-            throw new Error(typeof payload.error === "string" ? payload.error : "No se pudieron cargar las OC.");
+            throw new Error(apiErrorMessage(payload.error, "No se pudieron cargar las OC."));
           setOptions(payload.options ?? []);
           setPurchaseId((current) => (payload.options?.some((option) => option.id === current) ? current : ""));
         })
@@ -829,12 +864,16 @@ function PurchaseReceptionForm() {
     setBusy(true);
     setMessage("");
     try {
-      await post("/api/admin/compras/recepciones", { purchaseId, items }, idempotencyKey);
+      const result = await post("/api/admin/compras/recepciones", { purchaseId, items }, idempotencyKey) as { result?: { receipt?: { id?: string } } };
       setMessage("Recepción registrada. Stock y Kardex fueron actualizados dentro de la misma transacción.");
       setQuantities({});
       setPurchaseId("");
       setIdempotencyKey(crypto.randomUUID());
-      router.refresh();
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("purchaseId", purchaseId);
+      if (result.result?.receipt?.id) nextUrl.searchParams.set("receiptId", result.result.receipt.id);
+      else nextUrl.searchParams.delete("receiptId");
+      window.location.assign(nextUrl.toString());
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo registrar la recepción.");
     } finally {

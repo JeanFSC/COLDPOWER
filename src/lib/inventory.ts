@@ -33,6 +33,14 @@ async function updateBalance(tx: Transaction, input: InventoryInput, operation: 
   return { ...next, available: availableQuantity(next) };
 }
 
+/** Initial import cannot replace or add to an already populated balance. */
+export async function importOpeningBalanceInTransaction(tx: Transaction, input: InventoryInput) {
+  await tx.insert(inventoryBalances).values({ id: `balance-${input.productId}-${input.locationId}`, productId: input.productId, locationId: input.locationId, onHand: 0, reserved: 0 }).onConflictDoNothing({ target: [inventoryBalances.productId, inventoryBalances.locationId] });
+  const [balance] = await tx.select().from(inventoryBalances).where(and(eq(inventoryBalances.productId, input.productId), eq(inventoryBalances.locationId, input.locationId))).for("update").limit(1);
+  if (!balance || balance.onHand !== 0 || balance.reserved !== 0) throw new Error("El saldo ya tiene existencias o reservas; utiliza un ajuste trazado.");
+  return updateBalance(tx, input, { type: "OPENING_BALANCE", quantity: input.quantity });
+}
+
 export async function notifyInventoryState(productId: string, locationId: string, available?: number) {
   const [product] = await getDb().select({ name: products.commercialName, normalizedName: products.normalizedName, minimumStock: inventoryBalances.minimumStock, computedAvailable: sql<number>`${inventoryBalances.onHand} - ${inventoryBalances.reserved}` }).from(inventoryBalances).innerJoin(products, eq(inventoryBalances.productId, products.id)).where(and(eq(inventoryBalances.productId, productId), eq(inventoryBalances.locationId, locationId))).limit(1);
   if (!product) return [];

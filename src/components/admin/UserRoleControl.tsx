@@ -21,6 +21,7 @@ export function UserRoleControl({ userId, role, status }: { userId: string; role
   function update(payload: { role?: AppRole; status?: UserStatus }) {
     setError(null);
     startTransition(async () => {
+      try {
       const response = await fetch(`/api/admin/usuarios/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -33,6 +34,10 @@ export function UserRoleControl({ userId, role, status }: { userId: string; role
       }
       setPendingChange(null);
       router.refresh();
+      } catch {
+        setPendingChange(null);
+        setError("No se pudo confirmar el cambio. Actualiza la ficha y comprueba el estado actual antes de volver a intentarlo.");
+      }
     });
   }
 

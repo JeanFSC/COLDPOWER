@@ -16,6 +16,7 @@ function readInput(body: unknown): BulkPriceInput {
     minimumAllowed: input.minimumAllowed,
     reason: input.reason,
     idempotencyKey: input.idempotencyKey,
+    preflightFingerprint: input.preflightFingerprint,
   };
 }
 
@@ -24,6 +25,7 @@ function mapError(error: unknown) {
   const message = error instanceof Error ? error.message : "No se pudo procesar la operación masiva.";
   if (message.startsWith("BULK_PREFLIGHT_FAILED:")) return apiError("BULK_PREFLIGHT_FAILED", "La operación fue bloqueada por la revisión previa.", 400, { blocked: Number(message.split(":")[1]) });
   if (message === "BULK_STALE_PREFLIGHT") return apiError(message, "Los precios cambiaron mientras revisabas la operación. Ejecuta la revisión otra vez.", 409);
+  if (message === "BULK_IDEMPOTENCY_CONFLICT") return apiError(message, "Esta solicitud ya se utilizó con otros datos. Revisa la operación antes de volver a aplicarla.", 409);
   if (["BULK_PRODUCTS_REQUIRED", "BULK_PRICE_TYPE_INVALID", "BULK_OPERATION_INVALID", "BULK_AMOUNT_INVALID", "BULK_PERCENTAGE_INVALID", "BULK_CURRENCY_INVALID", "PRICE_REASON_REQUIRED"].includes(message) || message.startsWith("BULK_")) return apiError("BULK_INVALID", "Revisa la selección, operación, importe y motivo.", 400, { detail: message });
   if (/precio|moneda|importe|cantidad|mínimo/.test(message)) return apiError("BULK_INVALID", message, 400);
   return apiError("BULK_UNAVAILABLE", "No se pudo completar la operación masiva.", 503);
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
     const mode = body && typeof body === "object" && "mode" in body ? (body as { mode?: unknown }).mode : "preflight";
     if (mode === "preflight") return apiSuccess({ preview: await previewBulkPrice(input, actor) });
     if (mode !== "apply") return apiError("BULK_MODE_REQUIRED", "Indica si deseas revisar o aplicar la operación.", 400);
+    if (typeof input.preflightFingerprint !== "string" || !/^[a-f0-9]{64}$/.test(input.preflightFingerprint)) return apiError("BULK_PREFLIGHT_REQUIRED", "Ejecuta la revisión previa antes de aplicar los cambios.", 400);
     const result = await applyBulkPrice(input, actor);
     clearPublicCatalogRuntimeCache();
     return apiSuccess({ result });

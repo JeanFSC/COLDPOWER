@@ -7,6 +7,22 @@ import { validateCompanySettingsInput } from "../src/lib/company-settings-valida
 const root = process.cwd();
 const read = (file: string) => readFileSync(`${root}/${file}`, "utf8");
 
+test("restaurar configuración valida campos protegidos e invalida caché interna", () => {
+  const route = read("src/app/api/admin/configuracion/restaurar/route.ts");
+  assert.match(route, /assertCompanySettingsRestorePermissions\(actor.role, current, candidate\)/);
+  assert.ok(route.indexOf("assertCompanySettingsRestorePermissions(actor.role, current, candidate)") < route.indexOf("tx.update(companySettings)"));
+  assert.match(route, /invalidateRuntimeCache\("company-settings:"\)/);
+  assert.match(route, /CompanySettingsRestorePermissionError/);
+});
+
+test("configuración: locales no se truncan a cinco registros", () => {
+  const page = read("src/app/admin/configuracion/page.tsx");
+  const locationsQuery = page.split("db.select({ id: locations.id")[1]?.split("\n")[0];
+  assert.ok(locationsQuery);
+  assert.doesNotMatch(locationsQuery, /\.limit\(/);
+  assert.match(locationsQuery, /locations\.id\)/);
+});
+
 test("configuración: creación, actualización y validación", () => {
   const input = validateCompanySettingsInput({ country: "PE", ruc: "20123456786", email: " contacto@coldpower.pe ", website: "https://coldpower.pe", locations: [{ name: "Lima", address: "Av. 1" }, { name: "Arequipa" }], legalLinks: { privacy: "https://coldpower.pe/privacidad" } });
   assert.equal(input.email, "contacto@coldpower.pe");

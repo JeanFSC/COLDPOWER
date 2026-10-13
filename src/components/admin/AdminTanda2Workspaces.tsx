@@ -1,4 +1,6 @@
+import { formatAdminMoney as money } from "@/lib/admin-money-display";
 import Link from "next/link";
+import { ExportFormatMenu } from "@/components/admin/ExportFormatMenu";
 import {
   AlertCircle,
   ArrowDownRight,
@@ -75,6 +77,7 @@ import { getHomeActivitySummary, getOperationsDashboard } from "@/lib/operations
 import { getOperationsWorkspace } from "@/lib/operations-workspace";
 import type { OperationsFilters } from "@/lib/operations-contract";
 import { formatPeriodDelta } from "@/lib/period-metrics";
+import { dashboardSalesHref } from "@/lib/dashboard-sales-navigation";
 import { paymentMethodLabel } from "@/lib/payment-display";
 
 type DashboardData = Awaited<ReturnType<typeof getOperationsDashboard>>;
@@ -112,14 +115,7 @@ function actionPriority(item: { id: string; count: number }) {
   return { label: "Media", icon: Package, iconBg: "bg-amber-50", iconInk: "text-amber-600", badge: "bg-amber-50 text-amber-700" };
 }
 
-function money(value: number | null | undefined, currency: string | null | undefined) {
-  if (value === null || value === undefined || !currency || !Number.isFinite(value)) return "N/D";
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+
 
 function number(value: number | null | undefined) {
   return value === null || value === undefined || !Number.isFinite(value)
@@ -163,7 +159,6 @@ function Delta({
   }
   const isGood = invert ? value < 0 : value > 0;
   const isBad = invert ? value > 0 : value < 0;
-  const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Info;
   const label = unit === "pp"
     ? `${value === 0 ? "→" : value > 0 ? "↗" : "↘"} ${Math.abs(value).toFixed(1)} pp vs. período anterior`
     : periodDelta.label;
@@ -171,7 +166,6 @@ function Delta({
     <span
       className={`mt-2 inline-flex items-center gap-1 text-[11px] font-bold ${isGood ? "text-emerald-600" : isBad ? "text-rose-500" : muted}`}
     >
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {label}
     </span>
   );
@@ -552,7 +546,7 @@ function dashboardActivityHref(activity: DashboardData["recentActivity"][number]
   const entityId = encodeURIComponent(activity.entityId);
   if (activity.entityType === "product") return `/admin/catalogo/${entityId}`;
   if (activity.entityType === "customer") return `/admin/clientes?query=${encodeURIComponent(activity.entityLabel)}`;
-  if (activity.entityType === "payment") return `/admin/pagos?orderId=${entityId}`;
+  if (activity.entityType === "payment") return `/admin/pagos?paymentId=${entityId}`;
   if (activity.entityType === "quote") return "/admin/cotizaciones";
   if (activity.entityType === "order") return "/admin/pedidos";
   if (activity.entityType === "sale") return "/admin/ventas";
@@ -739,9 +733,7 @@ export function Tanda2Dashboard({
         description="Visión general comercial, financiera y operativa de ColdPower."
       >
         {dashboardFilters(data, filterOptions)}
-        <Action href={`/api/admin/dashboard/export?${q.toString()}`} icon={Download} download>
-          Exportar reporte
-        </Action>
+        <ExportFormatMenu href={`/api/admin/dashboard/export?${q.toString()}`} label="Exportar dashboard" formats={["xlsx", "csv", "pdf"]} mobileAlign="start" />
       </T2PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -888,7 +880,7 @@ export function Tanda2Dashboard({
                 pointDetails={data.salesSeries.map((row, index) => ({
                   ...row,
                   previousTotal: data.previousSalesSeries[index]?.total ?? 0,
-                  href: `/admin/ventas?createdFrom=${row.date.slice(0, 10)}&createdTo=${row.date.slice(0, 10)}`,
+                  href: dashboardSalesHref(data.filters, row.date, data.granularity, data.range, data.currency ?? undefined),
                 }))}
               />
             ) : (
@@ -1760,6 +1752,7 @@ export function Tanda2Reports({
             schedules={schedules}
             filters={reportFilters}
             currentUserId={currentUserId}
+            executionConfigured={Boolean(process.env.CRON_SECRET?.trim())}
           />
           <div className="grid gap-3 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <Panel
@@ -2368,6 +2361,8 @@ export function Tanda2Purchases({
                   items={selectedRequest.items.map((item) => ({
                     productId: item.productId,
                     quantityRequested: item.quantityRequested,
+                    skuSnapshot: item.skuSnapshot,
+                    productNameSnapshot: item.productNameSnapshot,
                   }))}
                   suppliers={suppliers}
                 />
@@ -3352,35 +3347,35 @@ export function Tanda2Home({
     {
       id: "catalog.create",
       label: "Nuevo producto",
-      href: "/admin/catalogo",
+      href: "/admin/catalogo?new=1",
       Icon: Package,
       permission: "catalog.product.create" as const,
     },
     {
       id: "quotes.create",
       label: "Nueva cotización",
-      href: "/admin/cotizaciones",
+      href: "/admin/cotizaciones?new=1",
       Icon: FileText,
       permission: "quotes.create" as const,
     },
     {
       id: "customers.create",
       label: "Nuevo cliente",
-      href: "/admin/clientes",
+      href: "/admin/clientes?new=1",
       Icon: UsersRound,
       permission: "customers.create" as const,
     },
     {
       id: "inventory.adjust",
       label: "Ajustar inventario",
-      href: "/admin/inventario",
+      href: "/admin/inventario?action=adjust",
       Icon: PackageCheck,
       permission: "inventory.adjust" as const,
     },
     {
       id: "purchases.manage",
       label: "Crear OC",
-      href: "/admin/compras",
+      href: "/admin/compras#purchase-order-tools",
       Icon: ShoppingCart,
       permission: "purchases.manage" as const,
     },
@@ -3478,8 +3473,10 @@ export function Tanda2Home({
       return (
         <Panel key={widgetId} title="Accesos rápidos" subtitle="Atajos para tareas comunes">
           <div className="mt-3 divide-y divide-slate-100">
-            {permittedQuickActions.map(({ id, label, href, Icon }) => (
-              <Link
+            {permittedQuickActions.map(({ id, label, href, Icon }) => {
+              // Native navigation lets the browser resolve a section after the full page loads.
+              const ActionLink = href.includes("#") ? "a" : Link;
+              return <ActionLink
                 key={id}
                 href={href}
                 className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0"
@@ -3487,8 +3484,8 @@ export function Tanda2Home({
                 <Icon className="h-4 w-4 text-blue-600" aria-hidden="true" />
                 <span className="flex-1 text-[10px] font-extrabold text-slate-700">{label}</span>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-              </Link>
-            ))}
+              </ActionLink>;
+            })}
           </div>
         </Panel>
       );
@@ -3697,7 +3694,7 @@ export function Tanda2Home({
         <div className="grid flex-1 gap-3 sm:grid-cols-3">
           {[
             { label: "Revisa tus pendientes", note: "Tareas y seguimientos de hoy", href: "/admin/operaciones", Icon: GraduationCap },
-            { label: "Crea una cotización", note: "Genera una cotización para un cliente", href: "/admin/cotizaciones", Icon: Star },
+            { label: "Crea una cotización", note: "Genera una cotización para un cliente", href: "/admin/cotizaciones?new=1", Icon: Star },
             { label: "Confirma disponibilidad", note: "Consulta stock antes de ofertar", href: "/admin/inventario", Icon: Keyboard },
           ].map(({ label, note, href, Icon }) => (
             <Link
@@ -3717,7 +3714,7 @@ export function Tanda2Home({
           href="/admin/operaciones"
           className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-blue-700"
         >
-          Ver guía completa
+          Ver centro operativo
           <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>

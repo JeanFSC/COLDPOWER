@@ -1,12 +1,14 @@
+import { csvText } from "@/lib/csv";
+import { tabularWorkbook, type WorkbookValue } from "@/lib/tabular-workbook";
 import type { PricingListResponse } from "@/lib/pricing-contract";
 
 function escapeCsv(value: unknown) {
-  const text = value === null || value === undefined ? "" : String(value);
+  const text = csvText(value);
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-export function toPricingCsv(data: PricingListResponse, canViewCost: boolean) {
-  const rows: unknown[][] = [["sku", "producto", "categoría", "familia", "marca", "tipo", "importe", "moneda", "estado", "vigencia desde", "vigencia hasta"]];
+function pricingRows(data: PricingListResponse, canViewCost: boolean) {
+  const rows: WorkbookValue[][] = [["sku", "producto", "categoría", "familia", "marca", "tipo", "importe", "moneda", "estado", "vigencia desde", "vigencia hasta"]];
   for (const item of data.items) {
     const prices = item.prices?.length ? item.prices : [item.price];
     for (const price of prices) {
@@ -27,5 +29,14 @@ export function toPricingCsv(data: PricingListResponse, canViewCost: boolean) {
       ]);
     }
   }
-  return `\uFEFF${rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")}\r\n`;
+  return rows;
+}
+
+export function toPricingCsv(data: PricingListResponse, canViewCost: boolean) {
+  return `\uFEFF${pricingRows(data, canViewCost).map((row) => row.map(escapeCsv).join(",")).join("\r\n")}\r\n`;
+}
+
+export function toPricingWorkbook(data: PricingListResponse, canViewCost: boolean) {
+  const [header, ...rows] = pricingRows(data, canViewCost);
+  return tabularWorkbook("Precios", header as string[], rows.map(row => row.map((value, index) => index === 6 && value !== "" && value !== null && value !== undefined ? Number(value) : value)));
 }

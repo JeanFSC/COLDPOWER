@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import type { DashboardFilters } from "@/lib/dashboard-contract";
 import { allOperationalRoles, can, roleLabel, type AppRole } from "@/lib/roles";
+import { reportExecutionPresentation } from "@/lib/report-schedule-presentation";
 
 type ReportSchedule = {
   id: string;
@@ -44,6 +45,16 @@ function frequencyLabel(value: ReportSchedule["frequency"]) {
   return value === "DAILY" ? "Diario" : value === "WEEKLY" ? "Semanal" : "Mensual";
 }
 
+function runStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    RUNNING: "En ejecución",
+    SUCCEEDED: "Completada",
+    FAILED: "Fallida",
+    SKIPPED: "Omitida",
+  };
+  return labels[status] ?? "Estado desconocido";
+}
+
 function scheduleStatusMeta(status: ReportSchedule["status"]) {
   if (status === "ACTIVE") return { label: "Activa", classes: "bg-[#e4f7ef] text-[#13895a]", icon: CheckCircle2 };
   if (status === "PAUSED") return { label: "Pausada", classes: "bg-[#fff5e8] text-[#a96216]", icon: Clock3 };
@@ -54,11 +65,14 @@ export function ReportScheduleControls({
   schedules,
   filters,
   currentUserId,
+  executionConfigured = false,
 }: {
   schedules: ReportSchedule[];
   filters: DashboardFilters;
   currentUserId: string;
+  executionConfigured?: boolean;
 }) {
+  const execution = reportExecutionPresentation(executionConfigured);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -138,13 +152,14 @@ export function ReportScheduleControls({
           <div>
             <h2 className="text-[13px] font-black text-[#102a43]">Reportes programados</h2>
             <p className="mt-1 text-[10px] font-semibold leading-4 text-[#748aa0]">
-              Se guardan con los filtros actuales y se entregarán primero en tu inbox interno.
+              Se guardan con los filtros actuales. Los reportes se entregan en tu inbox interno cuando se ejecutan.
             </p>
           </div>
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-extrabold text-emerald-700">
-            Ejecución automática activa
+          <span className={`rounded-full px-2.5 py-1 text-[9px] font-extrabold ${execution.classes}`}>
+            {execution.label}
           </span>
         </div>
+        {execution.warning ? <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">{execution.warning}</p> : null}
         {message ? (
           <p className="mt-3 text-[10px] font-bold text-[#c34242]" aria-live="polite">
             {message}
@@ -191,8 +206,8 @@ export function ReportScheduleControls({
                       {dateTimeLabel(schedule.nextRunAt)}
                     </td>
                     <td className="px-2 py-3 text-[10px] font-semibold text-[#526b84]">
-                      {schedule.runCount ? `${schedule.runCount} ejecución(es)` : "Sin ejecuciones"}
-                      {schedule.lastRun ? ` · ${schedule.lastRun.status}` : ""}
+                      {schedule.runCount ? `${schedule.runCount} ${schedule.runCount === 1 ? "ejecución" : "ejecuciones"}` : "Sin ejecuciones"}
+                      {schedule.lastRun ? ` · ${runStatusLabel(schedule.lastRun.status)}` : ""}
                     </td>
                     <td className="px-2 py-3">
                       {(() => {
@@ -257,6 +272,7 @@ export function ReportScheduleControls({
           className="space-y-5"
           onSubmit={(event) => void save(event)}
         >
+          {execution.warning ? <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">{execution.warning}</p> : null}
           <div>
             <label className="grid gap-1.5 text-[10px] font-extrabold text-[#526b84]">
               Nombre de la programación

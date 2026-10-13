@@ -59,12 +59,14 @@ export function moduleLabel(rawModule: string, action: string, entityType: strin
 }
 
 const ENTITY_LABELS: Record<string, string> = {
+  purchase: "Orden de compra", report: "Reporte",
   product: "Producto", products: "Productos", sale: "Venta", order: "Pedido", quote: "Cotización",
   opportunity: "Oportunidad", user: "Usuario", payment: "Pago", inventory: "Inventario",
   company_settings: "Configuración", customer: "Cliente", operations_workspace: "Espacio de operaciones",
   work_item: "Tarea", integration: "Integración", price: "Precio", discount_rule: "Regla de descuento",
   media_asset: "Recurso", clerk_webhook: "Webhook de Clerk", report_schedule: "Reporte programado",
   promotion: "Promoción", location: "Almacén", transfer: "Transferencia", reservation: "Reserva",
+  promotion_application: "Aplicación de promoción", pricing_import: "Importación de precios",
   inventory_reservation: "Reserva de inventario", inventory_movement: "Movimiento de almacén",
   product_price: "Precio", quote_discount_approval: "Descuento de cotización", purchase_request: "Solicitud de compra",
   purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
@@ -77,6 +79,10 @@ export function entityLabel(entityType: string): string {
 // humanized read of the action's last segment for anything not explicitly mapped
 // (new actions still render as readable text, never a blank cell).
 const ACTION_LABELS: Record<string, string> = {
+  "purchases.purchase_created": "Creó una orden de compra",
+  "purchases.purchase_issued": "Emitió una orden de compra",
+  "purchases.purchase_cancelled": "Canceló una orden de compra",
+  "purchases.receipt_posted": "Registró una recepción de compra",
   APPROVED: "Aprobó la operación", REJECTED: "Rechazó la operación", approved: "Aprobó la operación", rejected: "Rechazó la operación",
   PRODUCT_CREATED: "Creó el producto", PRODUCT_DUPLICATE_REVIEWED: "Revisó un posible duplicado",
   PRODUCT_EDITORIAL_UPDATED: "Actualizó contenido editorial", PRODUCT_IMPORTED: "Importó el producto",
@@ -117,6 +123,7 @@ const ACTION_LABELS: Record<string, string> = {
   "payments.provider_created": "Registró un pago en la pasarela",
   "customer.updated": "Actualizó el cliente",
   "promotions.applied": "Aplicó una promoción", "promotions.created": "Creó una promoción",
+  "qa.promotion_replay_fixture": "Registró una prueba QA de reintento de promoción",
   "promotions.exported": "Exportó promociones", "promotions.updated": "Actualizó una promoción",
   "purchases.exported": "Exportó compras", "quotes.exported": "Exportó cotizaciones", "quotes.pdf_generated": "Generó un PDF de cotización",
   "reports.exported": "Exportó reportes", "reports.schedule_cancelled": "Canceló un reporte programado",

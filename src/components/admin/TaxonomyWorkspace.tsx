@@ -20,6 +20,7 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import type { TaxonomyEntity, TaxonomyItem, TaxonomyPage } from "@/lib/taxonomy-admin";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 type NodeSelection = { entity: TaxonomyEntity; id: string };
 
@@ -56,9 +57,7 @@ function statusClass(active: boolean) {
 function getErrorMessage(value: unknown, fallback: string) {
   if (!value || typeof value !== "object") return fallback;
   const record = value as { error?: unknown; errorObject?: { message?: unknown } };
-  if (typeof record.error === "string") return record.error;
-  if (typeof record.errorObject?.message === "string") return record.errorObject.message;
-  return fallback;
+  return apiErrorMessage(record.error, apiErrorMessage(record.errorObject, fallback));
 }
 
 function StatCard({ label, value, hint, tone = "blue", icon: Icon }: { label: string; value: number; hint: string; tone?: "blue" | "green" | "purple" | "amber"; icon: typeof Layers3 }) {
@@ -201,9 +200,9 @@ export function TaxonomyWorkspace({ categories, families, brands, canManageCateg
           <p className="mt-1 text-[13px] font-semibold text-[#607894]">Organiza categorías, familias y marcas sin perder el control editorial.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a href="/api/admin/taxonomia/export?entity=categories" className={secondaryButton} download>
-            <ArrowDownToLine className="h-4 w-4" aria-hidden="true" /> Exportar
-          </a>
+          {selectedCanManage ? <a href={`/api/admin/taxonomia/export?entity=${selection.entity}`} className={secondaryButton} download title={`Exporta todas las ${entityLabel(selection.entity)}s en Excel`}>
+            <ArrowDownToLine className="h-4 w-4" aria-hidden="true" /> Exportar {entityLabel(selection.entity)}s
+          </a> : null}
           {canManageCategories ? <button type="button" className={primaryButton} onClick={openCreate}><Plus className="h-4 w-4" aria-hidden="true" /> Nueva categoría</button> : null}
         </div>
       </header>

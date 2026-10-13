@@ -1,22 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, MoreVertical, PlayCircle } from "lucide-react";
+import { requestIntegrationTest } from "@/lib/integration-test-request";
 
 export function TestIntegrationsButton({ integrationKey, compact = false }: { integrationKey?: string; compact?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const errorId = useId();
 
   async function run() {
     setBusy(true);
     setError("");
     try {
-      const url = integrationKey ? `/api/admin/configuracion/integraciones/${integrationKey}/probar` : "/api/admin/configuracion/integraciones/probar";
-      const response = await fetch(url, { method: "POST" });
-      const result = await response.json() as { error?: string; errorObject?: { message?: string } };
-      if (!response.ok) throw new Error(result.errorObject?.message || result.error || "No se pudo probar la integración.");
+      await requestIntegrationTest(integrationKey);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo probar la integración.");
@@ -27,19 +26,19 @@ export function TestIntegrationsButton({ integrationKey, compact = false }: { in
 
   if (compact) {
     return (
-      <button type="button" onClick={run} disabled={busy} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#dce6ee] bg-white px-2 text-[10px] font-extrabold text-[#2277ee] transition hover:border-[#2277ee] disabled:opacity-50">
+      <div className="inline-flex min-w-0 flex-col items-end gap-1"><button type="button" onClick={run} disabled={busy} aria-busy={busy} aria-describedby={error ? errorId : undefined} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#dce6ee] bg-white px-2 text-[10px] font-extrabold text-[#2277ee] transition hover:border-[#2277ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50">
         {busy ? <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" /> : <PlayCircle className="h-3 w-3" aria-hidden="true" />}
-        Probar
-      </button>
+        {busy ? "Probando…" : "Probar"}
+      </button>{error ? <span id={errorId} role="alert" className="max-w-[220px] break-words text-right text-[10px] font-semibold text-[#b42318]">{error}</span> : null}</div>
     );
   }
   return (
     <div className="inline-flex flex-col items-end gap-1">
-      <button type="button" onClick={run} disabled={busy} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#2277ee] px-3.5 text-[11px] font-extrabold text-white shadow-[0_6px_14px_rgba(34,119,238,0.18)] transition hover:bg-[#1769d4] disabled:opacity-60">
+      <button type="button" onClick={run} disabled={busy} aria-busy={busy} aria-describedby={error ? errorId : undefined} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#2277ee] px-3.5 text-[11px] font-extrabold text-white shadow-[0_6px_14px_rgba(34,119,238,0.18)] transition hover:bg-[#1769d4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-60">
         {busy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <PlayCircle className="h-4 w-4" aria-hidden="true" />}
         {busy ? "Probando…" : "Probar integración"}
       </button>
-      {error ? <span role="alert" className="max-w-[220px] text-right text-[10px] font-semibold text-[#b42318]">{error}</span> : null}
+      {error ? <span id={errorId} role="alert" className="max-w-[220px] break-words text-right text-[10px] font-semibold text-[#b42318]">{error}</span> : null}
     </div>
   );
 }
@@ -48,13 +47,17 @@ export function IntegrationRowMenu({ integrationKey }: { integrationKey: string 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   async function run() {
     setOpen(false);
     setBusy(true);
+    setError("");
     try {
-      const response = await fetch(`/api/admin/configuracion/integraciones/${integrationKey}/probar`, { method: "POST" });
-      if (response.ok) router.refresh();
+      await requestIntegrationTest(integrationKey);
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "No se pudo probar la integración.");
     } finally {
       setBusy(false);
     }
@@ -62,6 +65,7 @@ export function IntegrationRowMenu({ integrationKey }: { integrationKey: string 
 
   return (
     <div className="relative inline-block shrink-0">
+      {error ? <p role="alert" className="mb-2 max-w-[220px] break-words text-right text-[11px] font-semibold text-[#b42318]">{error}</p> : null}
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}

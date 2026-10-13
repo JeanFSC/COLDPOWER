@@ -3,6 +3,7 @@ import { apiError, apiSuccess } from "@/lib/api-errors";
 import { getPurchaseRequestsPage } from "@/lib/purchases-repository";
 import { createPurchaseRequest } from "@/lib/purchases-service";
 import { validatePurchaseRequestInput } from "@/lib/purchases-validation";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: Request) {
   try {
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
       { ...input, idempotencyKey: request.headers.get("Idempotency-Key") ?? input.idempotencyKey },
       actor,
     );
+    revalidatePath("/admin/compras");
     return apiSuccess({ result }, result.idempotent ? 200 : 201);
   } catch (error) {
     if (error instanceof ApiAuthorizationError)

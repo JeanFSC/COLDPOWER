@@ -1,3 +1,4 @@
+import { formatPurchaseMoney as money } from "@/lib/purchase-money-display";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
@@ -15,6 +16,8 @@ import {
 import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 import { PurchaseActions } from "@/components/admin/PurchaseActions";
 import { PurchaseRequestActions } from "@/components/admin/PurchaseRequestActions";
+import { purchaseOrderHref, purchaseReceiptHref, purchaseRequestPageHref } from "@/lib/purchases-navigation";
+import { filterOptionsWithSelection } from "@/lib/filter-options";
 import type {
   PurchaseListItem,
   PurchaseRequestListItem,
@@ -61,9 +64,7 @@ function attentionBadge(value: string) {
   if (value === "Parcial") return "bg-orange-50 text-orange-600";
   return "bg-emerald-50 text-emerald-600";
 }
-function money(value: number | string, currency: string) {
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(value));
-}
+
 function dateLabel(value: Date | string | null | undefined) {
   if (!value) return "N/D";
   const date = new Date(value);
@@ -103,8 +104,10 @@ export function AdminPurchasesModule({
   series,
   selectedRequest,
   selectedPurchase,
+  selectedReceiptId,
   filters,
   queryString,
+  exportHref,
   filterNotice,
   canManage,
   canReceive,
@@ -122,7 +125,7 @@ export function AdminPurchasesModule({
   alerts: Alerts;
   series: KpiSeries;
   selectedRequest?: {
-    request: { id: string; code: string; status: string; source: string; locationId: string | null; notes: string | null; rejectionReason: string | null; createdAt: Date | string };
+    request: { id: string; code: string; status: string; source: string; locationId: string | null; notes: string | null; rejectionReason: string | null; convertedPurchaseId?: string | null; createdAt: Date | string };
     items: Array<{ id: string; productId: string; skuSnapshot: string; productNameSnapshot: string; quantityRequested: number; notes: string | null }>;
   } | null;
   selectedPurchase?: {
@@ -130,10 +133,12 @@ export function AdminPurchasesModule({
     supplierName: string;
     locationName: string;
     items: Array<{ id: string; productId: string; skuSnapshot: string; productNameSnapshot: string; quantityOrdered: number; quantityReceived: number; unitCost: string; currency: string }>;
-    receipts: Array<{ id: string; code: string; purchaseId: string; receivedAt: Date | string; status: string }>;
+    receipts: Array<{ id: string; code: string; purchaseId: string; receivedAt: Date | string; status: string; items: Array<{ id: string; sku: string | null; name: string | null; quantity: number }> }>;
   } | null;
+  selectedReceiptId?: string;
   filters: PurchasesFilters;
   queryString: string;
+  exportHref: string;
   filterNotice?: string;
   canManage: boolean;
   canReceive: boolean;
@@ -154,7 +159,7 @@ export function AdminPurchasesModule({
     { key: "receptions", label: "Recepciones pendientes", value: String(metrics.pending + metrics.partialReceived), note: "OC pendientes o parciales", icon: PackageCheck, iconBg: "bg-orange-50", iconInk: "text-orange-600", tone: "orange", sparkline: series.receptions },
     { key: "spend", label: "Gasto del período", value: amountLabel, note: series.spend ? "Subtotal de OC filtradas" : "Multimoneda: tendencia separada por moneda", icon: Truck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.spend },
     { key: "leadTime", label: "Lead time promedio", value: metrics.leadTimeDays == null ? "N/D" : `${metrics.leadTimeDays} días`, note: metrics.leadTimeDays == null ? "Sin OC emitida y recibida con fechas" : "Emisión a recepción final", icon: Clock, iconBg: "bg-purple-50", iconInk: "text-purple-600", tone: "purple", sparkline: null },
-    { key: "incidents", label: "Proveedores con incidencias", value: String(metrics.incidents), note: "OC abiertas con proveedor inactivo", icon: AlertTriangle, iconBg: "bg-rose-50", iconInk: "text-rose-600", tone: "red", sparkline: series.incidentPurchases },
+    { key: "incidents", label: "OC con proveedor inactivo", value: String(metrics.incidents), note: "Todos los estados del alcance", icon: AlertTriangle, iconBg: "bg-rose-50", iconInk: "text-rose-600", tone: "red", sparkline: series.incidentPurchases },
   ];
 
   const categoryCurrencies = [...new Set(categorySpend.map((row) => row.currency))];
@@ -186,6 +191,12 @@ export function AdminPurchasesModule({
   const supplierRows = topSuppliers;
 
   const activeQuery = new URLSearchParams(queryString);
+  const pendingRequestQuery = new URLSearchParams(activeQuery);
+  pendingRequestQuery.delete("requestId");
+  pendingRequestQuery.delete("purchaseId");
+  pendingRequestQuery.delete("receiptId");
+  pendingRequestQuery.set("requestStatus", "SUBMITTED");
+  pendingRequestQuery.set("requestPage", "1");
   const purchaseCurrency = purchasePage.items[0]?.currency ?? "PEN";
 
   return (
@@ -202,15 +213,15 @@ export function AdminPurchasesModule({
         </div>
         {canManage || canReceive ? (
           <div className="flex items-center gap-2.5">
-            {canManage ? <Link href="#supplier-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
+            {canManage ? <Link prefetch={false} href="#supplier-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
               <UsersRound className="h-3.5 w-3.5 text-slate-500" />
               Nuevo proveedor
             </Link> : null}
-            {canManage ? <Link href="#purchase-order-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
+            {canManage ? <Link prefetch={false} href="#purchase-order-tools" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300">
               <FileText className="h-3.5 w-3.5 text-slate-500" />
               Crear OC
             </Link> : null}
-            {canReceive ? <Link href="#purchase-receipt-tools" className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700">
+            {canReceive ? <Link prefetch={false} href="#purchase-receipt-tools" className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-semibold text-white shadow-xs shadow-blue-500/25 transition-colors hover:bg-blue-700">
               <PackageCheck className="h-3.5 w-3.5" />
               Registrar recepción
             </Link> : null}
@@ -234,20 +245,20 @@ export function AdminPurchasesModule({
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="block truncate text-[11px] font-medium text-slate-500">{item.label}</span>
-                  <span className="block truncate text-lg font-bold leading-snug text-slate-900">{item.value}</span>
+                  <span className="block text-[11px] font-medium text-slate-500">{item.label}</span>
                 </div>
               </div>
+              <p className="mt-3 break-words text-lg font-bold leading-snug text-slate-900">{item.value}</p>
               {item.sparkline ? (
                 <AdminSparkline
                   tone={item.tone}
                   data={item.sparkline}
-                  ariaLabel={item.sparkline.some((value) => value > 0) ? `Tendencia real de ${item.label.toLowerCase()} (últimos 14 días)` : `${item.note}; sin serie histórica comparable`}
+                  ariaLabel={`${item.key === "spend" ? "Subtotal de OC" : item.key === "incidents" ? "OC con proveedor actualmente inactivo" : item.key === "open" ? "OC actualmente abiertas" : item.key === "requests" ? "Solicitudes actualmente en revisión" : "OC actualmente pendientes de recepción"} por fecha de creación (últimos 14 días${item.key === "requests" ? "" : ", filtros seleccionados"})${item.sparkline.every((value) => value === 0) ? "; todos los valores son cero" : ""}`}
                 />
               ) : (
                 <div className="mt-3 h-8" aria-hidden="true" />
               )}
-              <p className="mt-1 truncate text-[10.5px] font-semibold text-slate-400">{item.note}</p>
+              <p className="mt-1 text-[10.5px] font-semibold text-slate-400">{item.note}</p>
             </div>
           );
         })}
@@ -331,7 +342,7 @@ export function AdminPurchasesModule({
             <a href="#suppliers-panel" className="text-xs font-medium text-blue-600 hover:underline">Ver todos</a>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-2.5 pt-3">
-            <ScoreTile icon={Clock} tone="emerald" label="Puntualidad" value={scorecard.onTimeRate == null ? "N/D" : `${scorecard.onTimeRate}%`} />
+            <ScoreTile icon={Clock} tone="emerald" label="Puntualidad" value={scorecard.onTimeRate == null ? "Sin fechas" : `${scorecard.onTimeRate}%`} note={`${scorecard.evaluatedOrders} con fechas · ${scorecard.completedOrders} recibidas`} />
             <ScoreTile icon={PackageCheck} tone="emerald" label="Fill rate" value={scorecard.fillRate == null ? "N/D" : `${scorecard.fillRate}%`} />
             <ScoreTile icon={AlertTriangle} tone="rose" label="Incidencias" value={String(scorecard.incidents)} />
             <ScoreTile icon={UsersRound} tone="blue" label="Proveedores activos" value={`${scorecard.activeSuppliers}/${scorecard.totalSuppliers}`} />
@@ -352,9 +363,9 @@ export function AdminPurchasesModule({
               <h2 className="text-sm font-bold text-slate-900">Órdenes de compra</h2>
               <span className="text-xs font-normal text-slate-400">{purchasePage.totalItems} resultados</span>
             </div>
-            <Link href={`/api/admin/compras/export?${queryString}`} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50">
+            <a href={exportHref} download className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50">
               Exportar
-            </Link>
+            </a>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left text-xs">
@@ -371,12 +382,12 @@ export function AdminPurchasesModule({
                   return (
                     <tr key={purchase.id} className="transition-colors hover:bg-slate-50/60">
                       <td className="px-3 py-3">
-                        <Link href={`/admin/compras?${new URLSearchParams({ ...Object.fromEntries(activeQuery), purchaseId: purchase.id }).toString()}`} className="font-semibold text-blue-600 hover:underline">
+                        <Link prefetch={false} href={purchaseOrderHref(queryString, purchase.id)} className="font-semibold text-blue-600 hover:underline">
                           {purchase.code}
                         </Link>
                       </td>
-                      <td className="px-3 py-3 font-medium text-slate-900"><Link href={`/admin/compras/proveedores/${encodeURIComponent(purchase.supplierId)}`} className="text-blue-600 hover:underline">{purchase.supplierName}</Link></td>
-                      <td className="px-3 py-3 text-slate-500"><Link href={`/admin/compras?locationId=${encodeURIComponent(purchase.locationId)}`} className="hover:text-blue-600 hover:underline">{locationById.get(purchase.locationId) ?? "N/D"}</Link></td>
+                      <td className="px-3 py-3 font-medium text-slate-900"><Link prefetch={false} href={`/admin/compras/proveedores/${encodeURIComponent(purchase.supplierId)}`} className="text-blue-600 hover:underline">{purchase.supplierName}</Link></td>
+                      <td className="px-3 py-3 text-slate-500"><Link prefetch={false} href={`/admin/compras?locationId=${encodeURIComponent(purchase.locationId)}`} className="hover:text-blue-600 hover:underline">{locationById.get(purchase.locationId) ?? "N/D"}</Link></td>
                       <td className="px-3 py-3 text-slate-500">{dateLabel(purchase.createdAt)}</td>
                       <td className="px-3 py-3 text-slate-500">{dateLabel(purchase.expectedDeliveryAt)}</td>
                       <td className="px-3 py-3 font-semibold text-slate-900">{canViewCosts ? money(purchase.subtotal, purchase.currency) : "—"}</td>
@@ -387,7 +398,7 @@ export function AdminPurchasesModule({
                         <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10.5px] font-medium ${attentionBadge(attention)}`}>{attention}</span>
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <Link href={`/admin/compras?${new URLSearchParams({ ...Object.fromEntries(activeQuery), purchaseId: purchase.id }).toString()}`} className="inline-flex rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label={`Ver OC ${purchase.code}`}>
+                        <Link prefetch={false} href={purchaseOrderHref(queryString, purchase.id)} className="inline-flex rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label={`Ver OC ${purchase.code}`}>
                           <Eye className="h-4 w-4" />
                         </Link>
                       </td>
@@ -405,8 +416,8 @@ export function AdminPurchasesModule({
           <PurchasesPager page={purchasePage.page} total={purchasePage.totalPages} queryString={queryString} totalItems={purchasePage.totalItems} pageSize={purchasePage.pageSize} />
         </section>
 
-        <div className="space-y-4 xl:col-span-4">
-          <PanelCard title="Solicitudes de compra" action={<Link href={`/admin/compras?${new URLSearchParams({ ...Object.fromEntries(activeQuery), requestStatus: "SUBMITTED", requestPage: "1" }).toString()}`} className="text-xs font-medium text-blue-600 hover:underline">Ver pendientes</Link>}>
+        <div className="min-w-0 space-y-4 xl:col-span-4">
+          <PanelCard title="Solicitudes de compra" action={<Link prefetch={false} href={`/admin/compras?${pendingRequestQuery.toString()}`} className="text-xs font-medium text-blue-600 hover:underline">Ver pendientes</Link>}>
             {requestPage.items.length ? (
               <div className="space-y-2">
                 {requestPage.items.map((request) => (
@@ -448,8 +459,8 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedRequest.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-mono text-slate-500"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="text-blue-600 hover:underline">{item.skuSnapshot}</Link></td>
-                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-mono text-slate-500"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="text-blue-600 hover:underline">{item.skuSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityRequested}</td>
                         </tr>
                       ))}
@@ -459,11 +470,16 @@ export function AdminPurchasesModule({
                 {selectedRequest.request.rejectionReason ? (
                   <p className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-[10.5px] font-medium text-rose-700">Motivo de rechazo: {selectedRequest.request.rejectionReason}</p>
                 ) : null}
+                {selectedRequest.request.convertedPurchaseId ? (
+                  <Link prefetch={false} href={purchaseOrderHref(queryString, selectedRequest.request.convertedPurchaseId)} className="inline-flex rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Ver orden de compra creada
+                  </Link>
+                ) : null}
                 <PurchaseRequestActions
                   requestId={selectedRequest.request.id}
                   status={selectedRequest.request.status}
                   locationId={selectedRequest.request.locationId}
-                  items={selectedRequest.items.map((item) => ({ productId: item.productId, quantityRequested: item.quantityRequested }))}
+                  items={selectedRequest.items.map((item) => ({ productId: item.productId, quantityRequested: item.quantityRequested, skuSnapshot: item.skuSnapshot, productNameSnapshot: item.productNameSnapshot }))}
                   suppliers={suppliers}
                   canApprove={canApprove}
                   canManage={canManage}
@@ -492,7 +508,7 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedPurchase.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityOrdered}</td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityReceived}</td>
                         </tr>
@@ -504,9 +520,17 @@ export function AdminPurchasesModule({
                   <p className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-[10.5px] font-medium text-rose-700">Motivo de cancelación: {selectedPurchase.purchase.cancellationReason}</p>
                 ) : null}
                 {selectedPurchase.receipts.length ? (
-                  <p className="text-[10.5px] font-medium text-slate-500">Recepciones: {selectedPurchase.receipts.map((receipt) => <Link key={receipt.id} href={`/admin/compras?purchaseId=${encodeURIComponent(receipt.purchaseId)}`} className="mr-1 text-blue-600 hover:underline">{receipt.code}</Link>)}</p>
+                  <div className="space-y-2 text-[10.5px] font-medium text-slate-500">
+                    <p>Recepciones: {selectedPurchase.receipts.map((receipt) => <Link prefetch={false} key={receipt.id} href={purchaseReceiptHref(queryString, selectedPurchase.purchase.id, receipt.id)} aria-current={receipt.id === selectedReceiptId ? "true" : undefined} className="mr-1 text-blue-600 hover:underline">{receipt.code}</Link>)}</p>
+                    {selectedPurchase.receipts.filter(receipt => receipt.id === selectedReceiptId).map(receipt => <section key={receipt.id} aria-label={`Recepción ${receipt.code}`} className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+                      <h3 className="font-bold text-slate-800">Recepción {receipt.code}</h3>
+                      <p className="mt-1">{new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" }).format(new Date(receipt.receivedAt))} · {receipt.status === "POSTED" ? "Registrada" : receipt.status}</p>
+                      <table className="mt-2 w-full text-left"><caption className="sr-only">Cantidades de esta entrega</caption><thead><tr><th className="py-1">Producto</th><th className="py-1 text-right">Recibido</th></tr></thead><tbody>{receipt.items.map(item => <tr key={item.id} className="border-t border-blue-100"><td className="py-2 pr-2"><span className="block break-words text-slate-700">{item.name ?? "Sin nombre en el registro"}</span><span className="break-all">{item.sku ?? "Sin SKU en el registro"}</span></td><td className="py-2 text-right font-bold text-slate-700">{item.quantity}</td></tr>)}</tbody></table>
+                      {!receipt.items.length ? <p className="mt-2">Esta recepción no tiene líneas registradas.</p> : null}
+                    </section>)}
+                  </div>
                 ) : null}
-                <PurchaseActions purchaseId={selectedPurchase.purchase.id} status={selectedPurchase.purchase.status} canManage={canManage} />
+                <PurchaseActions key={`${selectedPurchase.purchase.id}:${selectedPurchase.purchase.status}`} purchaseId={selectedPurchase.purchase.id} status={selectedPurchase.purchase.status} canManage={canManage} />
               </div>
             </PanelCard>
           ) : null}
@@ -514,8 +538,8 @@ export function AdminPurchasesModule({
           <PanelCard title="Proveedores" id="suppliers-panel">
             {suppliers.length ? (
               <div className="space-y-2">
-                {suppliers.slice(0, 6).map((supplier) => (
-                  <Link key={supplier.id} href={`/admin/compras/proveedores/${encodeURIComponent(supplier.id)}`} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-colors hover:border-slate-200">
+                {suppliers.map((supplier) => (
+                  <Link prefetch={false} key={supplier.id} href={`/admin/compras/proveedores/${encodeURIComponent(supplier.id)}`} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-colors hover:border-slate-200">
                     <span className="min-w-0">
                       <strong className="block truncate text-[11.5px] font-semibold text-slate-800">{supplier.name}</strong>
                       <small className="mt-0.5 block text-[10px] text-slate-400">{supplier.currency}</small>
@@ -541,7 +565,7 @@ export function AdminPurchasesModule({
   );
 }
 
-function ScoreTile({ icon: Icon, tone, label, value }: { icon: typeof Clock; tone: "emerald" | "rose" | "blue"; label: string; value: string }) {
+function ScoreTile({ icon: Icon, tone, label, value, note }: { icon: typeof Clock; tone: "emerald" | "rose" | "blue"; label: string; value: string; note?: string }) {
   const toneClasses = tone === "emerald" ? "bg-emerald-50 text-emerald-600" : tone === "rose" ? "bg-rose-50 text-rose-500" : "bg-blue-50 text-blue-600";
   return (
     <div className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/70 p-3">
@@ -551,6 +575,7 @@ function ScoreTile({ icon: Icon, tone, label, value }: { icon: typeof Clock; ton
       <div className="min-w-0">
         <p className="truncate text-[10px] font-medium text-slate-400">{label}</p>
         <p className="text-base font-bold leading-tight text-slate-900">{value}</p>
+        {note ? <p className="mt-1 text-[10px] leading-4 text-slate-600">{note}</p> : null}
       </div>
     </div>
   );
@@ -594,10 +619,10 @@ function RequestRow({ request, locationById, queryString }: { request: PurchaseR
   const params = new URLSearchParams(queryString);
   params.set("requestId", request.id);
   return (
-    <Link href={`/admin/compras?${params.toString()}`} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-colors hover:border-slate-200">
+    <Link prefetch={false} href={`/admin/compras?${params.toString()}`} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-colors hover:border-slate-200">
       <span className="min-w-0">
         <strong className="block truncate text-[11.5px] font-semibold text-slate-800">{request.code}</strong>
-        <small className="mt-0.5 block truncate text-[10px] text-slate-400">{locationById.get(request.locationId ?? "") ?? "N/D"} · {request.itemCount} líneas</small>
+        <small className="mt-0.5 block truncate text-[10px] text-slate-400">{locationById.get(request.locationId ?? "") ?? "N/D"} · {request.itemCount} {request.itemCount === 1 ? "línea" : "líneas"}</small>
       </span>
       <span className={`shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-medium ${statusBadge(request.status)}`}>{statusLabel(request.status)}</span>
     </Link>
@@ -618,7 +643,7 @@ function PurchasesPager({ page, total, queryString, totalItems, pageSize }: { pa
       {total > 1 ? (
         <nav aria-label="Paginación de órdenes de compra" className="flex items-center gap-1">
           {pageNumbers(page, total).map((value) => (
-            <Link key={value} href={href(value)} aria-current={value === page ? "page" : undefined} className={value === page ? "flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-semibold text-white" : "flex h-7 w-7 items-center justify-center rounded-lg text-xs text-slate-600 hover:text-slate-900"}>
+            <Link prefetch={false} key={value} href={href(value)} aria-current={value === page ? "page" : undefined} className={value === page ? "flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-semibold text-white" : "flex h-7 w-7 items-center justify-center rounded-lg text-xs text-slate-600 hover:text-slate-900"}>
               {value}
             </Link>
           ))}
@@ -639,20 +664,15 @@ function RequestsPager({
   queryString: string;
   totalItems: number;
 }) {
-  const href = (value: number) => {
-    const params = new URLSearchParams(queryString);
-    params.set("requestStatus", params.get("requestStatus") ?? "SUBMITTED");
-    params.set("requestPage", String(value));
-    return `/admin/compras?${params.toString()}`;
-  };
+  const href = (value: number) => purchaseRequestPageHref(queryString, value);
   return (
     <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
-      <span>{totalItems} solicitudes</span>
+      <span>{totalItems} {totalItems === 1 ? "solicitud" : "solicitudes"}</span>
       {total > 1 ? (
         <div className="flex gap-1">
-          <Link href={href(Math.max(1, page - 1))} className="rounded-md border border-slate-200 px-2 py-1">Anterior</Link>
+          {page > 1 ? <Link prefetch={false} href={href(page - 1)} className="rounded-md border border-slate-200 px-2 py-1">Anterior</Link> : <span role="link" aria-disabled="true" className="rounded-md border border-slate-200 px-2 py-1 opacity-50">Anterior</span>}
           <span className="px-2 py-1 font-semibold">{page}/{total}</span>
-          <Link href={href(Math.min(total, page + 1))} className="rounded-md border border-slate-200 px-2 py-1">Siguiente</Link>
+          {page < total ? <Link prefetch={false} href={href(page + 1)} className="rounded-md border border-slate-200 px-2 py-1">Siguiente</Link> : <span role="link" aria-disabled="true" className="rounded-md border border-slate-200 px-2 py-1 opacity-50">Siguiente</span>}
         </div>
       ) : null}
     </div>
@@ -677,7 +697,7 @@ function PurchasesFilterBar({
       </label>
       <select aria-label="Filtrar por estado" name="status" defaultValue={filters.status ?? ""} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
         <option value="">Todos los estados</option>
-        {facets.statuses.map((value) => (
+        {filterOptionsWithSelection(facets.statuses, filters.status ?? "").map((value) => (
           <option key={value} value={value}>{statusLabel(value)}</option>
         ))}
       </select>
@@ -698,7 +718,7 @@ function PurchasesFilterBar({
         <div className="absolute right-0 z-30 mt-2 grid w-[min(92vw,560px)] gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl sm:grid-cols-2">
           <select name="currency" defaultValue={filters.currency ?? ""} className="h-10 rounded-lg border border-slate-200 px-2 text-xs">
             <option value="">Todas las monedas</option>
-            {facets.currencies.map((value) => (
+            {filterOptionsWithSelection(facets.currencies, filters.currency ?? "").map((value) => (
               <option key={value} value={value}>{value}</option>
             ))}
           </select>
@@ -717,7 +737,7 @@ function PurchasesFilterBar({
         </div>
       </details>
       <button className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-blue-700">Filtrar</button>
-      <Link href="/admin/compras" className="h-10 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-600 leading-10 transition-colors hover:bg-slate-50">Limpiar</Link>
+      <Link prefetch={false} href="/admin/compras" className="h-10 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-600 leading-10 transition-colors hover:bg-slate-50">Limpiar</Link>
     </form>
   );
 }

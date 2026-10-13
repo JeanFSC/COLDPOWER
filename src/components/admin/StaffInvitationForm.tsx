@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AdminSelect } from "@/components/admin/AdminSelect";
 import type { AppRole } from "@/lib/roles";
 import { staffRoleCatalog } from "@/lib/user-administration-contracts";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 type InvitationRole = Exclude<AppRole, "customer">;
 
@@ -15,7 +16,7 @@ export function StaffInvitationForm({ allowSuperadmin = false, roles }: { allowS
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<InvitationRole>(roleOptions[0]?.value ?? "OPERACIONES_VENTAS");
+  const [role, setRole] = useState<InvitationRole | "">("");
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"error" | "success">("success");
   const [isPending, startTransition] = useTransition();
@@ -23,25 +24,36 @@ export function StaffInvitationForm({ allowSuperadmin = false, roles }: { allowS
     event.preventDefault();
     setMessage(null);
     setMessageKind("success");
+    if (!roleOptions.some((option) => option.value === role)) {
+      setMessageKind("error");
+      setMessage("Selecciona el rol inicial del usuario antes de enviar la invitación.");
+      return;
+    }
     startTransition(async () => {
+      try {
       const response = await fetch("/api/admin/usuarios/invitaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, email, role }),
       });
-      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+      const result = (await response.json().catch(() => null)) as { error?: unknown } | null;
       if (!response.ok) {
         setMessageKind("error");
         setMessage(
-          typeof result?.error === "string" ? result.error : "No se pudo enviar la invitación.",
+          apiErrorMessage(result?.error, "No se pudo enviar la invitación."),
         );
         return;
       }
       setFirstName("");
       setLastName("");
       setEmail("");
+      setRole("");
       setMessage("Invitación enviada. El rol se aplicará al aceptar el correo.");
       router.refresh();
+      } catch {
+        setMessageKind("error");
+        setMessage("No se pudo confirmar el envío de la invitación. Revisa la lista antes de volver a intentarlo.");
+      }
     });
   }
 
@@ -98,9 +110,9 @@ export function StaffInvitationForm({ allowSuperadmin = false, roles }: { allowS
           <p className="mb-1.5 text-[11px] font-semibold text-slate-700">Rol inicial</p>
           <AdminSelect
             ariaLabel="Rol inicial"
-            options={roleOptions}
+            options={[{ value: "", label: "Selecciona un rol" }, ...roleOptions]}
             value={role}
-            onValueChange={(value) => setRole(value as InvitationRole)}
+            onValueChange={(value) => setRole(value as InvitationRole | "")}
             disabled={isPending}
           />
         </div>

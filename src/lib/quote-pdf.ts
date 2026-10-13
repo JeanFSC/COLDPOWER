@@ -9,7 +9,7 @@ export function createQuoteSnapshotPdf(input: { trackingCode: string; customerNa
     "ColdPower · Propuesta comercial",
     `${input.trackingCode} · Versión ${input.versionNumber}`,
     `Cliente: ${input.customerName}${input.customerDocument ? ` · ${input.customerDocument}` : ""}`,
-    `Vigencia: ${input.validUntil ? new Date(input.validUntil).toLocaleDateString("es-PE") : "Por definir"}`,
+    `Vigencia: ${input.validUntil ? new Date(input.validUntil).toLocaleDateString("es-PE", { timeZone: "America/Lima" }) : "Por definir"}`,
     "",
     ...input.items.flatMap((item) => [`${item.sku} · ${item.name}`, `Cantidad ${item.quantity} · Unitario ${money(item.unitPrice)} · Total ${money(item.lineTotal)}`]),
     "",

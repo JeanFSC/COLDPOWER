@@ -12,7 +12,7 @@ test("inventario: la vista vigente recibe datos persistentes y expone controles 
 
   assert.match(page, /InventoryAdminWorkspace/);
   assert.match(page, /requirePermission\("inventory\.view"\)/);
-  assert.match(page, /getInventoryAdminPage\(filters\)/);
+  assert.match(page, /getInventoryAdminPage\(filters, incomingParams.get\("importBatchId"\) \|\| undefined\)/);
   assert.match(page, /data=\{data\}/);
   assert.match(page, /INVENTORY_INVALID_FILTER/);
   assert.match(page, /canAdjust: can\(actor\.role, "inventory\.adjust"\)/);

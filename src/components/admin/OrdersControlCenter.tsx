@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
+import { filterOptionsWithSelection } from "@/lib/filter-options";
 import type { OrderListItem, OrdersPageResponse } from "@/lib/orders-contract";
 import { taxBreakdownFromSnapshot, unconfiguredTaxBreakdown } from "@/lib/tax";
 
@@ -210,10 +211,10 @@ export function OrdersControlCenter({
           </div>
         </div>
         <div className="flex items-center gap-2.5">
-          <Link href={`/api/admin/pedidos/export?${queryString}`} className={secondaryButtonClass}>
+          <a href={`/api/admin/pedidos/export?${queryString}`} download className={secondaryButtonClass}>
             <Download className="h-3.5 w-3.5 text-slate-500" />
             Exportar
-          </Link>
+          </a>
           <button
             onClick={() => setDetailId(prepare[0]?.id ?? null)}
             disabled={!prepare.length}
@@ -471,13 +472,14 @@ function Select({
   query: string;
 }) {
   const current = new URLSearchParams(query).get(name) ?? "";
+  const options = filterOptionsWithSelection(values, current);
   return (
     <AdminSelect
       name={name}
       ariaLabel={label}
       className="w-auto min-w-[10rem]"
       value={current}
-      options={[{ value: "", label }, ...values.map((value) => ({ value, label: labels[value] ?? text(value) }))]}
+      options={[{ value: "", label }, ...options.map((value) => ({ value, label: labels[value] ?? text(value) }))]}
     />
   );
 }
@@ -1033,7 +1035,7 @@ function OrderDrawer({
                   </button>
                 ) : null}
                 {canPaymentsView ? (
-                  <Link href="/admin/pagos" className={secondaryButtonClass}>
+                  <Link href={`/admin/pagos?orderId=${encodeURIComponent(String(detail.order.id))}`} className={secondaryButtonClass}>
                     Gestionar pago
                   </Link>
                 ) : null}

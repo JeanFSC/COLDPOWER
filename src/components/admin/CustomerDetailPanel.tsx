@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { customerRelationLabel } from "@/lib/customer-relation-label";
 import {
   CalendarPlus,
   CheckSquare,
@@ -98,7 +99,10 @@ const relationLabels: Record<RelationKey, string> = {
   tasks: "Tareas",
 };
 const typeLabels: Record<string, string> = {
-  COMPANY: "Empresa",
+  COMPANY: "Empresa corporativa",
+  CONSUMIDOR: "Consumidor",
+  DISTRIBUIDOR: "Distribuidor",
+  TECNICO: "Técnico",
   EMPRESA: "Empresa",
   BUSINESS: "Negocio",
   PERSON: "Persona",
@@ -756,7 +760,7 @@ function RelationSection({
               <div key={`${relationKey}-${index}`} className="rounded-md bg-[#fbfcfd] p-3">
                 <p className="text-xs font-bold text-[#304b66]">{href ? <a href={href} className="text-[#2277ee] hover:underline">{title}</a> : title}</p>
                 <p className="mt-1 text-[11px] text-[#8296a9]">
-                  {humanLabel(value(row, ["status", "stage", "type", "description", "body"]), {})} ·{" "}
+                  {customerRelationLabel(relationKey, value(row, ["status", "stage", "type", "description", "body"]))} ·{" "}
                   {dateValue(row.occurredAt ?? row.updatedAt ?? row.createdAt ?? row.dueAt)}
                 </p>
                 {amount ? <p className="mt-1 text-[11px] font-extrabold text-[#304b66]">Monto: {amount}</p> : null}
@@ -1040,7 +1044,7 @@ function CustomerRelationComposer({
       <form onSubmit={(event) => void submit(event)} className="w-full max-w-lg rounded-xl bg-white p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#2277ee]">Customer 360°</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#2277ee]">Cliente 360°</p>
             <h3 className="mt-1 text-lg font-black text-[#102a43]">{title}</h3>
             <p className="mt-1 text-xs text-[#8296a9]">Cliente: {customerName}</p>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -22,10 +23,12 @@ import {
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSparkline } from "@/components/admin/AdminChartsLazy";
 import { ManualPaymentControl } from "@/components/admin/ManualPaymentControl";
+import { filterOptionsWithSelection } from "@/lib/filter-options";
 import type { PaymentListItem, PaymentsPageResponse } from "@/lib/payments-contract";
 import type { getPaymentsKpiSeries } from "@/lib/payments-repository";
 import {
   groupPaymentMethodBreakdown,
+  isPendingProviderPayment,
   paymentCode,
   paymentMethodKey,
   paymentMethodLabel,
@@ -60,6 +63,8 @@ const labels: Record<string, string> = {
   REJECTED: "Rechazado",
   CANCELLED: "Cancelado",
   REFUNDED: "Reembolsado",
+  SUCCEEDED: "Confirmado",
+  FAILED: "Fallido",
   REFUND_REQUIRED: "Por reembolsar",
   ERROR: "Error",
   MATCH: "Conciliado",
@@ -234,13 +239,14 @@ export function PaymentsControlCenter({
             <p className="text-xs font-normal text-slate-500">Administra, revisa y concilia los pagos recibidos.</p>
           </div>
         </div>
-        <Link
+        <a
           href={"/api/admin/pagos/export?" + queryString}
+          download="coldpower-pagos.xlsx"
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300"
         >
           <Download className="h-4 w-4 text-slate-500" />
           Exportar reporte
-        </Link>
+        </a>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -355,6 +361,10 @@ export function PaymentsControlCenter({
         action="/admin/pagos"
         className="flex flex-wrap gap-2 rounded-xl border border-slate-200/90 bg-white p-2.5 shadow-2xs"
       >
+        {["orderId", "saleId", "customerId", "queue", "pageSize"].map((name) => {
+          const value = new URLSearchParams(queryString).get(name);
+          return value ? <input key={name} type="hidden" name={name} value={value} /> : null;
+        })}
         <label className="flex h-10 min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-3">
           <Search className="h-4 w-4 text-slate-400" />
           <input
@@ -519,15 +529,18 @@ function Select({
   values: string[];
   query: string;
 }) {
+  const selected = new URLSearchParams(query).get(name) ?? "";
+  const options = filterOptionsWithSelection(values, selected);
   return (
     <select
+      key={`${name}:${selected}`}
       name={name}
       aria-label={title}
-      defaultValue={new URLSearchParams(query).get(name) ?? ""}
+      defaultValue={selected}
       className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700"
     >
       <option value="">{title}</option>
-      {values.map((value) => (
+      {options.map((value) => (
         <option key={value} value={value}>
           {label(value)}
         </option>
@@ -728,6 +741,7 @@ function PaymentDrawer({
   canManual: boolean;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [detail, setDetail] = useState<Detail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -777,9 +791,7 @@ function PaymentDrawer({
   ).toFixed(2);
   const orderStatus = String(detail?.order?.status ?? "");
   const orderClosed = ["CANCELLED", "DELIVERED"].includes(orderStatus);
-  const providerPending =
-    String(payment?.methodType) === "PROVIDER" &&
-    ["PENDING", "UNDER_REVIEW"].includes(String(payment?.status));
+  const providerPending = isPendingProviderPayment(payment);
   const manualPaymentBlockedReason = orderClosed
     ? "El pedido está cerrado; gestiona la devolución o el ajuste desde el flujo correspondiente."
     : providerPending
@@ -796,6 +808,7 @@ function PaymentDrawer({
           : (detail?.statusHistory ?? []);
   async function load() {
     await loadDetail();
+    router.refresh();
   }
   async function updateProvider() {
     if (!paymentId) return;
@@ -1005,6 +1018,14 @@ function PaymentDrawer({
                     className="rounded-lg border border-slate-100 p-3 text-[11px] text-slate-600"
                   >
                     {paymentHistoryLabel(row)} · {limaDateTime(row.createdAt)}
+                    {tab === "Reembolsos" ? (
+                      <div className="mt-2 space-y-1">
+                        <p className="font-semibold text-slate-800">
+                          Monto: {row.amount == null ? "No disponible" : money(String(row.currency ?? currency), String(row.amount))}
+                        </p>
+                        <p className="break-words">Motivo: {String(row.reason ?? "No registrado")}</p>
+                      </div>
+                    ) : null}
                   </div>
                 ))
               ) : (

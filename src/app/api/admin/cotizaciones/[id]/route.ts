@@ -24,7 +24,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   let body: unknown;
   try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
   const input = body && typeof body === "object" ? body as Record<string, unknown> : {};
-  if (Array.isArray(input.items) || input.taxMode || input.validUntil || input.message !== undefined) {
+  if (Array.isArray(input.items) || input.taxMode || input.validUntil !== undefined || input.message !== undefined) {
     try {
       const parsed = parseAdminQuoteInput(input);
       const quote = await updateAdminQuoteDraft(id, { items: parsed.items, message: parsed.message, validUntil: parsed.validUntil, taxMode: parsed.taxMode }, actor);

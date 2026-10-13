@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useConfirmedNotifications } from "@/components/admin/useConfirmedNotifications";
 import { NotificationDetail } from "@/components/admin/AdminNotificationDetail";
 import { NotificationAdminControls } from "@/components/admin/NotificationAdminControls";
 import { NotificationRuleToggle } from "@/components/admin/NotificationRuleToggle";
@@ -45,6 +48,9 @@ const severityMeta: Record<string, { iconBg: string; iconInk: string; iconPath: 
 };
 
 function deltaDisplay(key: string, kpi: PeriodKpi) {
+  if (key === "activeRules" || key === "scheduled") {
+    return { text: "Estado actual", color: "text-slate-400" };
+  }
   const badWhenUp = new Set(["unread", "failed", "slaAlerts"]);
   const delta = formatPeriodDelta(kpi.current, kpi.previous);
   const color = delta.direction === "unavailable" || delta.direction === "new"
@@ -71,8 +77,10 @@ export type AdminNotificationsModuleProps = {
 };
 
 export function NotificationsModule({ loadError, canManage, canPreferences, preferences, personalUnread, automation, inboxSlot, detail, rules, templates, schedules }: AdminNotificationsModuleProps) {
+  const confirmed = useConfirmedNotifications(automation);
+  personalUnread = confirmed.personalUnread ?? personalUnread;
   const kpis: Array<{ key: string; label: string; kpi: PeriodKpi; iconBg: string; iconInk: string; iconPath: string }> = [
-    { key: "unread", label: "No leídas", kpi: personalUnread, iconBg: "bg-blue-50", iconInk: "text-blue-600", iconPath: ICON.bell },
+    { key: "unread", label: "No leídas · últimas 24 h", kpi: personalUnread, iconBg: "bg-blue-50", iconInk: "text-blue-600", iconPath: ICON.bell },
     { key: "activeRules", label: "Automatizaciones activas", kpi: automation.activeRules, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", iconPath: ICON.gear },
     { key: "failed", label: "Fallidas", kpi: automation.failed, iconBg: "bg-rose-50", iconInk: "text-rose-600", iconPath: ICON.alertTriangle },
     { key: "slaAlerts", label: "Alertas SLA", kpi: automation.slaAlerts, iconBg: "bg-amber-50", iconInk: "text-amber-600", iconPath: ICON.clock },
@@ -80,21 +88,14 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
     { key: "scheduled", label: "En cola", kpi: automation.scheduled, iconBg: "bg-sky-50", iconInk: "text-sky-600", iconPath: ICON.send },
   ];
 
-  const delivery = automation.delivery;
-  const deliveryTotal = Math.max(1, delivery.entregadas + delivery.enCola + delivery.fallidas + delivery.pendientes + delivery.noLeidas);
+  const delivery = { ...automation.delivery, noLeidas: confirmed.globalUnreadCount ?? automation.delivery.noLeidas };
   const deliveryRows = [
-    { label: "Entregadas (30d)", value: delivery.entregadas, dot: "bg-emerald-500", hex: "#10b981" },
-    { label: "En cola", value: delivery.enCola, dot: "bg-blue-500", hex: "#3b82f6" },
-    { label: "Fallidas (30d)", value: delivery.fallidas, dot: "bg-rose-500", hex: "#f43f5e" },
-    { label: "Pendientes", value: delivery.pendientes, dot: "bg-amber-500", hex: "#f59e0b" },
-    { label: "No leídas", value: delivery.noLeidas, dot: "bg-purple-500", hex: "#a855f7" },
+    { label: "Avisos creados · últimos 30 días", value: delivery.entregadas, dot: "bg-emerald-500" },
+    { label: "Avisos sin leer · actualmente", value: delivery.noLeidas, dot: "bg-purple-500" },
+    { label: "Programaciones futuras", value: delivery.enCola, dot: "bg-blue-500" },
+    { label: "Programaciones vencidas", value: delivery.pendientes, dot: "bg-amber-500" },
+    { label: "Programaciones fallidas · últimos 30 días", value: delivery.fallidas, dot: "bg-rose-500" },
   ];
-  let cursor = 0;
-  const donutSegments = deliveryRows.map((row) => {
-    const start = cursor;
-    cursor += row.value;
-    return { ...row, dasharray: `${(row.value / deliveryTotal) * 87.96} 87.96`, offset: `${-(start / deliveryTotal) * 87.96}` };
-  });
 
   return (
     <div className="space-y-6">
@@ -135,6 +136,8 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
         })}
       </section>
 
+      <p className="text-xs text-slate-500">No leídas: avisos dirigidos a ti, creados en las últimas 24 horas y aún sin leer. La campana incluye todas tus no leídas, también las anteriores.</p>
+
       <div className="grid grid-cols-12 items-start gap-5">
         <div className="col-span-12 lg:col-span-5">{inboxSlot}</div>
 
@@ -153,7 +156,7 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
             </div>
             {rules.length ? (
               <div className="space-y-2">
-                {rules.slice(0, 6).map((rule) => {
+                {rules.map((rule) => {
                   const meta = severityMeta[rule.severity] ?? severityMeta.INFO;
                   return (
                     <div key={rule.id} className="flex items-center justify-between gap-2.5 rounded-lg border border-slate-100 bg-slate-50/70 p-2 transition-all hover:border-slate-200 hover:bg-slate-100/70">
@@ -179,34 +182,23 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
           <div className="flex flex-1 flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
             <div className="mb-1 flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold tracking-tight text-slate-900">Estado de entrega</h3>
-                <p className="text-[10.5px] font-normal text-slate-400">Entregadas/fallidas: últimos 30 días · resto: ahora</p>
+                <h3 className="text-xs font-bold tracking-tight text-slate-900">Avisos y programaciones</h3>
+                <p className="mt-1 text-[10.5px] font-normal text-slate-500">Todo el equipo · indicadores independientes</p>
               </div>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <div className="relative my-0.5 flex h-24 w-24 shrink-0 items-center justify-center">
-                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" fill="none" r="14" stroke="#f1f5f9" strokeWidth={4} />
-                  {donutSegments.map((segment) => (
-                    <circle key={segment.label} cx="18" cy="18" fill="none" r="14" stroke={segment.hex} strokeDasharray={segment.dasharray} strokeDashoffset={segment.offset} strokeWidth={4} />
-                  ))}
-                </svg>
-                <div className="absolute flex select-none flex-col items-center justify-center text-center">
-                  <span className="text-lg font-extrabold leading-none tracking-tight text-slate-900">{deliveryTotal}</span>
-                  <span className="mt-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-slate-400">Total</span>
-                </div>
-              </div>
-              <div className="w-full space-y-1.5 divide-y divide-slate-100/80 text-xs">
+              <dl className="mt-2 w-full space-y-1.5 divide-y divide-slate-100/80 text-xs">
                 {deliveryRows.map((row) => (
                   <div key={row.label} className="flex items-center justify-between pt-1">
-                    <div className="flex min-w-0 items-center gap-1.5 truncate">
+                    <dt className="flex min-w-0 items-center gap-1.5">
                       <span className={`h-2 w-2 shrink-0 rounded-full ${row.dot}`} />
-                      <span className="truncate text-[11.5px] font-medium text-slate-700">{row.label}</span>
-                    </div>
-                    <span className="shrink-0 text-[11.5px] font-bold text-slate-900">{row.value}</span>
+                      <span className="text-[11.5px] font-medium text-slate-700">{row.label}</span>
+                    </dt>
+                    <dd className="ml-3 shrink-0 text-[11.5px] font-bold text-slate-900">{row.value}</dd>
                   </div>
                 ))}
-              </div>
+              </dl>
+              <p className="mt-2 text-[10.5px] leading-relaxed text-slate-500">Un aviso creado puede seguir sin leer. Cada destinatario cuenta como un aviso; las programaciones se cuentan por separado.</p>
             </div>
           </div>
 
@@ -220,7 +212,7 @@ export function NotificationsModule({ loadError, canManage, canPreferences, pref
             </div>
             {templates.length ? (
               <div className="space-y-1.5">
-                {templates.slice(0, 5).map((template) => (
+                {templates.map((template) => (
                   <div key={template.id} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 p-2">
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent bg-purple-50 text-purple-500">

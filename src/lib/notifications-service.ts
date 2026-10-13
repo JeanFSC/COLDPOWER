@@ -9,6 +9,7 @@ import { isNotificationTypeEnabled } from "@/lib/notification-preferences";
 import { notificationPermissionForType } from "@/lib/notification-permissions";
 import { allOperationalRoles, can, type AppRole } from "@/lib/roles";
 import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
+import { notificationPriority } from "@/lib/notification-display";
 
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
 export class NotificationInvalidFilterError extends Error { constructor() { super("NOTIFICATION_INVALID_FILTER"); this.name = "NotificationInvalidFilterError"; } }
@@ -30,16 +31,8 @@ export type NotificationPriority = "Alta" | "Media" | "Baja";
 // fan-out, manual sends, schedules) never gets a severity, so fall back to a heuristic on
 // the type string itself, same spirit as isFailedAction in the audit module: computed
 // display classification, not a fabricated stored value.
-const highPriorityType = /CRITICAL|FAILED|OVERDUE|URGENT|BLOCKED/i;
-const mediumPriorityType = /PENDING|REVIEW|WARNING|LOW$/i;
 export function priorityOf(notification: { type: string; metadata: Record<string, unknown> | null }): NotificationPriority {
-  const severity = typeof notification.metadata?.severity === "string" ? notification.metadata.severity : null;
-  if (severity === "CRITICAL") return "Alta";
-  if (severity === "WARNING") return "Media";
-  if (severity === "INFO") return "Baja";
-  if (highPriorityType.test(notification.type)) return "Alta";
-  if (mediumPriorityType.test(notification.type)) return "Media";
-  return "Baja";
+  return notificationPriority(notification);
 }
 
 function mapNotification(row: typeof notifications.$inferSelect) { const metadata = safeMetadata(row.metadata); return { id: row.id, type: row.type, title: row.title, body: row.body, link: row.link, state: row.state, createdAt: row.createdAt, readAt: row.readAt, dismissedAt: row.dismissedAt, metadata, dedupeKey: row.dedupeKey, priority: priorityOf({ type: row.type, metadata }) }; }
@@ -76,6 +69,14 @@ export async function getUnreadNotificationCount(recipientId: string) {
     .from(notifications)
     .where(and(eq(notifications.recipientId, recipientId), eq(notifications.state, "UNREAD")));
   return Number(row?.value ?? 0);
+}
+
+export async function getNotificationReadSummary(recipientId: string) {
+  const [unreadCount, personalUnread, globalUnread] = await Promise.all([
+    getUnreadNotificationCount(recipientId), getPersonalUnreadKpi(recipientId),
+    getDb().select({ value: count() }).from(notifications).where(eq(notifications.state, "UNREAD")),
+  ]);
+  return { unreadCount, personalUnread, globalUnreadCount: Number(globalUnread[0]?.value ?? 0) };
 }
 export async function listNotifications(recipientId: string) { return (await getNotificationsPage(recipientId, { page: 1, pageSize: 100 })).items; }
 
@@ -123,9 +124,8 @@ export async function notifyStaffOnce(input: NotificationInput & { dedupeKey: st
   await dispatchConfiguredRule(input, normalized);
   return rows;
 }
-export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>) {
+export async function createNotifications(rows: Array<{ recipientId: string; type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; dedupeKey?: string | null }>, db: Pick<ReturnType<typeof getDb>, "select" | "insert"> = getDb()) {
   if (!rows.length) return [];
-  const db = getDb();
   const recipientIds = [...new Set(rows.map((row) => row.recipientId))];
   const preferenceRows = await db
     .select({ userId: notificationPreferences.userId, preferences: notificationPreferences.preferences })

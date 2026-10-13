@@ -1,7 +1,7 @@
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { DashboardInvalidFilterError, parseDashboardFilters } from "@/lib/dashboard-contract";
-import { dashboardHasExportableData, toDashboardCsv } from "@/lib/dashboard-export";
+import { dashboardHasExportableData, toDashboardCsv, toDashboardWorkbook } from "@/lib/dashboard-export";
 import { buildDashboardReportSections, createDashboardSnapshotPdf } from "@/lib/dashboard-pdf";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
 
@@ -12,6 +12,9 @@ export async function GET(request: Request) {
     const filters = parseDashboardFilters(url.searchParams);
     const data = await getOperationsDashboard(filters, actor);
     if (!dashboardHasExportableData(data)) return apiError("DASHBOARD_EMPTY", "No existen datos para exportar en este alcance.", 404);
+    if (url.searchParams.get("format") === "xlsx") {
+      return new Response(Buffer.from(toDashboardWorkbook(data, actor)), { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="coldpower-dashboard.xlsx"', "cache-control": "no-store" } });
+    }
     if (url.searchParams.get("format") === "csv") {
       return new Response(toDashboardCsv(data, actor), { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": "attachment; filename=coldpower-dashboard.csv", "cache-control": "no-store" } });
     }

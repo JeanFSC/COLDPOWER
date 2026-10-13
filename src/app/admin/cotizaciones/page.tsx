@@ -25,6 +25,7 @@ export default async function AdminCotizacionesPage({
   const quotePage = await getQuotesPage(parseQuoteFilters(query));
   return (
     <QuotesWorkspace
+      key={query.get("new") === "1" ? "create-quote" : "quote-list"}
       page={quotePage}
       permissions={permissionsForRole(actor.role)}
       queryString={query.toString()}

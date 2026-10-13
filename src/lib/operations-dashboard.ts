@@ -1,3 +1,4 @@
+import { productConditions, salesConditions } from "@/lib/dashboard-sales-scope";
 import { alias } from "drizzle-orm/pg-core";
 import { and, count, desc, eq, exists, gte, inArray, isNull, lt, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
@@ -47,7 +48,7 @@ function limaDayKey(date: Date) {
   const parts = limaParts(date);
   return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
-export type SalesSeriesPoint = { date: string; total: number; count: number; orders?: number; units?: number; margin?: number | null };
+export type SalesSeriesPoint = { date: string; total: number; count: number; orders?: number; units?: number; margin?: number | null; grossProfit?: number | null };
 export type DashboardCurrencyBreakdown = { currency: string; sales: number; salesCount: number };
 type ProductTrendRow = { productId: string; date: string; revenue: string | number | null };
 type ProductRevenueRow = { productId: string; revenue: string | number | null };
@@ -159,25 +160,6 @@ function dashboardRoleLabel(role: AppRole | null) {
   if (role === "REPORTES") return "Soporte";
   return "Usuarios internos";
 }
-function productConditions(filters: DashboardFilters) {
-  const conditions: SQL[] = [];
-  if (filters.productId) conditions.push(eq(products.id, filters.productId));
-  if (filters.categoryId) conditions.push(or(eq(products.categoryId, filters.categoryId), eq(products.editorialCategoryId, filters.categoryId))!);
-  if (filters.familyId) conditions.push(or(eq(products.familyId, filters.familyId), eq(products.editorialFamilyId, filters.familyId))!);
-  if (filters.brandId) conditions.push(or(eq(products.brandId, filters.brandId), eq(products.editorialBrandId, filters.brandId))!);
-  return conditions.length ? and(...conditions) : undefined;
-}
-function salesConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window: Window, currency?: string) {
-  const conditions = conditionList(eq(sales.status, "CONFIRMED"), gte(sales.createdAt, window.from), lt(sales.createdAt, window.to));
-  if (currency) conditions.push(eq(sales.currency, currency));
-  if (filters.sellerId) conditions.push(eq(sales.sellerId, filters.sellerId));
-  if (filters.customerId) conditions.push(eq(sales.customerId, filters.customerId));
-  if (filters.channel) conditions.push(exists(db.select({ id: opportunities.id }).from(opportunities).where(and(eq(opportunities.id, sales.opportunityId), eq(opportunities.origin, filters.channel as never)))));
-  const selected = productConditions(filters);
-  if (selected) conditions.push(exists(db.select({ id: saleItems.id }).from(saleItems).innerJoin(products, eq(saleItems.productId, products.id)).where(and(eq(saleItems.saleId, sales.id), selected))));
-  if (filters.locationId || filters.orderStatus) conditions.push(exists(db.select({ id: orders.id }).from(orders).where(and(eq(orders.saleId, sales.id), filters.locationId ? eq(orders.locationId, filters.locationId) : undefined, filters.orderStatus ? eq(orders.status, filters.orderStatus as never) : undefined))));
-  return conditions;
-}
 function orderConditions(db: ReturnType<typeof getDb>, filters: DashboardFilters, window?: Window, currency?: string) {
   const conditions = conditionList(window ? gte(orders.createdAt, window.from) : undefined, window ? lt(orders.createdAt, window.to) : undefined);
   if (currency) conditions.push(eq(orders.currency, currency));
@@ -241,7 +223,10 @@ async function salesSeries(db: ReturnType<typeof getDb>, filters: DashboardFilte
     const lineCount = Number(row.lineCount ?? 0);
     const costedLineCount = Number(row.costedLineCount ?? 0);
     const point: SalesSeriesPoint = { date: String(row.date), total, count: Number(row.count ?? 0), orders: Number(row.orders ?? 0), units: Number(row.units ?? 0) };
-    if (lineCount > 0 && lineCount === costedLineCount && total !== 0) point.margin = (total - Number(row.cost ?? 0)) / total;
+    if (lineCount > 0 && lineCount === costedLineCount) {
+      point.grossProfit = total - Number(row.cost ?? 0);
+      point.margin = total !== 0 ? point.grossProfit / total : null;
+    }
     return point;
   }), granularity);
 }
@@ -306,6 +291,11 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const categoryScope = selectedProduct ? and(or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!, selectedProduct) : undefined;
   const categorySummaryPromise = db.select({ categoryId: categories.id, categoryName: categories.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).innerJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range, resolvedCurrency), categoryScope)).groupBy(categories.id, categories.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
   const historicalSales = alias(sales, "historical_sales");
+  const familySummaryPromise = db.select({ familyId: families.id, familyName: families.name, units: sql<string>`coalesce(sum(${saleItems.quantity}), 0)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)` })
+    .from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id))
+    .innerJoin(families, eq(sql`coalesce(${products.editorialFamilyId}, ${products.familyId})`, families.id))
+    .where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct))
+    .groupBy(families.id, families.name).orderBy(desc(sql`sum(${saleItems.lineTotal})`));
   const previous = previousWindow(range);
   const granularity = resolveGranularity(range, filters.granularity);
   // All 35 queries below (24 + 7 + 4 in the old code) are independent of each
@@ -339,7 +329,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
      db.select({ lineCount: count(saleItems.id), costedLineCount: sql<string>`count(*) filter (where ${saleItems.costSnapshot} is not null)`, revenue: sql<string>`coalesce(sum(${saleItems.lineTotal}), 0)`, cost: sql<string>`coalesce(sum(${saleItems.quantity} * ${saleItems.costSnapshot}), 0)` }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency), selectedProduct)),
     db.select({ id: products.id, name: sql<string>`coalesce(${products.commercialName}, ${products.originalName})`, sku: products.sku, categoryName: categories.name, units: sql.raw("coalesce(sum(sale_items.quantity), 0)"), revenue: sql.raw("coalesce(sum(sale_items.line_total), 0)") }).from(saleItems).innerJoin(sales, eq(saleItems.saleId, sales.id)).innerJoin(products, eq(saleItems.productId, products.id)).leftJoin(categories, or(eq(products.editorialCategoryId, categories.id), and(isNull(products.editorialCategoryId), eq(products.categoryId, categories.id)))!).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(products.id, products.commercialName, products.originalName, products.sku, categories.name).orderBy(desc(sql.raw("sum(sale_items.line_total)"))).limit(5),
     db.select({ id: customers.id, name: customers.name, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).innerJoin(customers, eq(sales.customerId, customers.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(customers.id, customers.name).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
-    db.select({ id: users.id, name: sql<string>`coalesce(${users.name}, ${users.email})`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
+    db.select({ id: users.id, name: sql<string>`coalesce(nullif(trim(${users.name}), ''), nullif(trim(${users.email}), ''), 'Sin vendedor asignado')`, orders: count(sales.id), revenue: sql.raw("coalesce(sum(sales.total), 0)") }).from(sales).leftJoin(users, eq(sales.sellerId, users.id)).where(and(...salesConditions(db, filters, range, resolvedCurrency))).groupBy(users.id, users.name, users.email).orderBy(desc(sql.raw("sum(sales.total)"))).limit(5),
     db.select({ channel: opportunities.origin, count: count() }).from(opportunities).where(and(...opportunityConditions(db, filters, range, filters.currency))).groupBy(opportunities.origin).orderBy(desc(count())).limit(8),
     salesSeries(db, filters, range, resolvedCurrency, granularity),
     salesSeries(db, filters, previous, resolvedCurrency, granularity),
@@ -380,7 +370,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
   const topCustomerIds = topCustomers.map((row) => row.id);
   const topSellerIds = topSellers.map((row) => row.id).filter((id): id is string => Boolean(id));
   const effectiveQuoteSellerId = sql<string>`coalesce(${opportunities.assignedSellerId}, ${quotes.assignedSellerId})`;
-  const [categorySummaryRows, topProductTrendRows, topProductPreviousRevenueRows, topCustomerLatestRows, sellerConversionRows] = await Promise.all([
+  const [categorySummaryRows, topProductTrendRows, topProductPreviousRevenueRows, topCustomerLatestRows, sellerConversionRows, familySummaryRows] = await Promise.all([
     categorySummaryPromise,
     topProductTrendPromise,
     topProductPreviousRevenuePromise,
@@ -395,6 +385,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     topSellerIds.length
       ? db.select({ sellerId: effectiveQuoteSellerId, quoteCount: count(), converted: sql<number>`count(*) filter (where ${quotes.workflowStatus} = 'CONVERTED' or ${quotes.status} = 'convertida')`, rejected: sql<number>`count(*) filter (where ${quotes.workflowStatus} = 'REJECTED')`, expired: sql<number>`count(*) filter (where ${quotes.workflowStatus} = 'EXPIRED' or (${quotes.validUntil} is not null and ${quotes.validUntil} < ${now} and ${quotes.workflowStatus} in ('SENT', 'FOLLOW_UP')))`, }).from(quotes).leftJoin(opportunities, eq(opportunities.quoteId, quotes.id)).where(and(inArray(effectiveQuoteSellerId, topSellerIds), filters.currency ? eq(quotes.currency, filters.currency) : undefined)).groupBy(effectiveQuoteSellerId)
       : Promise.resolve([]),
+    familySummaryPromise,
   ]);
   const buildPaymentScope = (window: Window) => conditionList(
     inArray(payments.status, ["CONFIRMED", "APPROVED"]),
@@ -534,6 +525,8 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     };
   });
   const categoryRevenueTotal = categorySummaryRows.reduce((sum, row) => sum + Number(row.revenue ?? 0), 0);
+  const familyRevenueTotal = familySummaryRows.reduce((sum, row) => sum + Number(row.revenue ?? 0), 0);
+  const familySummary = familySummaryRows.map((row) => ({ familyId: row.familyId, familyName: row.familyName, units: Number(row.units ?? 0), revenue: Number(row.revenue ?? 0), percentage: familyRevenueTotal ? Number(row.revenue ?? 0) / familyRevenueTotal * 100 : 0 }));
   const categorySummary = categorySummaryRows.map((row) => ({ categoryId: row.categoryId, categoryName: row.categoryName, units: Number(row.units ?? 0), revenue: Number(row.revenue ?? 0), percentage: categoryRevenueTotal ? (Number(row.revenue ?? 0) / categoryRevenueTotal) * 100 : 0 }));
   const productMedia = await getPublishedMediaForEntities("product", topProducts.map((row) => row.id));
   const topProductTrendById = new Map<string, ProductTrendRow[]>();
@@ -627,8 +620,8 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
       return { ...row, orders: Number(row.orders), revenue: Number(row.revenue), quotes: stats?.quotes ?? 0, conversion: stats?.conversion ?? null };
     }),
     channels: channels.map((row) => ({ channel: row.channel, count: Number(row.count) })),
-    salesSeries: currentSalesSeries,
-    previousSalesSeries,
+    salesSeries: currentSalesSeries.map((point) => ({ ...point, margin: canViewFinancials ? point.margin ?? null : null, grossProfit: canViewFinancials ? point.grossProfit ?? (point.count === 0 ? 0 : null) : null })),
+    previousSalesSeries: previousSalesSeries.map((point) => ({ ...point, margin: canViewFinancials ? point.margin ?? null : null, grossProfit: canViewFinancials ? point.grossProfit ?? (point.count === 0 ? 0 : null) : null })),
     collectedSeries: collectedSeriesRows,
     fillRate,
     avgPrepDays,
@@ -642,6 +635,7 @@ export async function getOperationsDashboard(filters: DashboardFilters = {}, act
     pendingActions,
     comparisons,
     categorySummary,
+    familySummary,
     userSummary: userSummaryRows.map((row) => ({ role: row.role, roleCode: row.role, roleLabel: dashboardRoleLabel(row.role as AppRole | null), status: row.status, statusCode: row.status, statusLabel: statusLabels[row.status] ?? "Estado", count: Number(row.count) })),
     recentActivity: recentActivityView,
   };

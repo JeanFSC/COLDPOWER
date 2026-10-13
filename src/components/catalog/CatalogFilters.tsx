@@ -40,6 +40,7 @@ export function CatalogFilters({
 }: CatalogFiltersProps) {
   return (
     <form
+      key={JSON.stringify(filters)}
       action={action}
       onSubmit={() => trackCatalogEvent("filter_applied", { category: firstValue(filters.category), sort: filters.sort })}
       className="rounded-md border border-border bg-white p-4 shadow-card lg:sticky lg:top-28"

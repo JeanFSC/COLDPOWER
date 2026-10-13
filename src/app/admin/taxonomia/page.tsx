@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { TaxonomyWorkspace } from "@/components/admin/TaxonomyWorkspace";
 import { requireTaxonomyPageAccess } from "@/lib/taxonomy-access";
-import { getTaxonomyPage } from "@/lib/taxonomy-admin";
+import { getTaxonomyTree } from "@/lib/taxonomy-admin";
 import { can } from "@/lib/roles";
 
 export const metadata: Metadata = { title: "Categorías, familias y marcas | Panel admin ColdPower" };
@@ -9,9 +9,9 @@ export const metadata: Metadata = { title: "Categorías, familias y marcas | Pan
 export default async function AdminTaxonomiaPage() {
   const actor = await requireTaxonomyPageAccess();
   const [categoryPage, familyPage, brandPage] = await Promise.all([
-    getTaxonomyPage({ entity: "categories", page: 1, pageSize: 100 }),
-    getTaxonomyPage({ entity: "families", page: 1, pageSize: 100 }),
-    getTaxonomyPage({ entity: "brands", page: 1, pageSize: 100 }),
+    getTaxonomyTree("categories"),
+    getTaxonomyTree("families"),
+    getTaxonomyTree("brands"),
   ]);
   return (
     <TaxonomyWorkspace

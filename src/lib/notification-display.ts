@@ -1,4 +1,6 @@
 const eventLabels: Record<string, string> = {
+  CONTACT_SUBMITTED: "Consulta de contacto",
+  LEAD_CREATED: "Lead nuevo",
   INVENTORY_CRITICAL: "Stock crítico",
   INVENTORY_LOW: "Stock bajo",
   FOLLOW_UP_OVERDUE: "Seguimiento vencido",
@@ -11,7 +13,18 @@ const eventLabels: Record<string, string> = {
   TRANSFER_UPDATED: "Transferencia actualizada",
   MANUAL: "Aviso manual",
   SCHEDULED: "Aviso programado",
+  SCHEDULED_REPORT: "Reporte programado",
 };
+
+export function notificationPriority(notification: { type: string; metadata: Record<string, unknown> | null }): "Alta" | "Media" | "Baja" {
+  const severity = notification.metadata?.severity;
+  if (severity === "CRITICAL") return "Alta";
+  if (severity === "WARNING") return "Media";
+  if (severity === "INFO") return "Baja";
+  if (/CRITICAL|FAILED|OVERDUE|URGENT|BLOCKED/i.test(notification.type)) return "Alta";
+  if (/PENDING|REVIEW|WARNING|LOW$/i.test(notification.type)) return "Media";
+  return "Baja";
+}
 
 export function notificationEventLabel(value: string) {
   return eventLabels[value] ?? value.toLowerCase().replaceAll("_", " ").replace(/^./, (char) => char.toUpperCase());

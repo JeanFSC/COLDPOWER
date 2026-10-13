@@ -1,6 +1,22 @@
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { reserveInventory } from "@/lib/inventory";
 import { apiError, apiSuccess } from "@/lib/api-errors";
+import { getInventoryDetailReservations } from "@/lib/inventory-admin-service";
+import { parseInventoryDetailReservationFilters } from "@/lib/inventory-detail-reservation-filters";
+
+export async function GET(request: Request) {
+  try {
+    await requireApiPermission("inventory.view");
+    const filters = parseInventoryDetailReservationFilters(new URL(request.url).searchParams);
+    if (!filters) {
+      return apiError("INVALID_RESERVATION_FILTER", "Producto, local y página válida son obligatorios.", 400);
+    }
+    return apiSuccess(await getInventoryDetailReservations(filters.productId, filters.locationId, filters.page));
+  } catch (error) {
+    if (error instanceof ApiAuthorizationError) return apiError("INVENTORY_FORBIDDEN", "No tienes permiso para ver el inventario.", 403);
+    return apiError("RESERVATIONS_UNAVAILABLE", "No se pudieron cargar las reservas.", 503);
+  }
+}
 
 export async function POST(request: Request) {
   let actor: Awaited<ReturnType<typeof requireApiPermission>>;

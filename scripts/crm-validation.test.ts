@@ -2,6 +2,19 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { assertOpportunityTransition, canTransitionOpportunity, validateCustomerInput, validateOpportunityInput } from "../src/lib/crm-validation";
 
+test("la edición parcial conserva el nombre cuando no se envía", () => {
+  assert.deepEqual(validateCustomerInput({ notes: "  QA AUDITORÍA  " }, true), { notes: "QA AUDITORÍA" });
+  assert.deepEqual(validateCustomerInput({ status: "INACTIVE" }, true), { status: "INACTIVE" });
+  assert.deepEqual(validateCustomerInput({}, true), {});
+  assert.deepEqual(validateCustomerInput({ name: "  Cliente QA  " }, true), { name: "Cliente QA" });
+});
+
+test("la edición parcial rechaza borrar el nombre obligatorio", () => {
+  for (const name of ["", "   ", null, 42]) {
+    assert.throws(() => validateCustomerInput({ name }, true), /nombre.*obligatorio/);
+  }
+});
+
 test("CRM valida tipos de cliente y conserva datos opcionales", () => {
   const customer = validateCustomerInput({ name: "  Cliente real ", customerType: "EMPRESA", ruc: "20123456786" });
   assert.equal(customer.name, "Cliente real");

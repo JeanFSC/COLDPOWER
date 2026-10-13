@@ -1,6 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateCheckoutInput, validateManualPaymentInput } from "../src/lib/sales-validation";
+import { isValidManualPaymentAmount, validateCheckoutInput, validateManualPaymentInput } from "../src/lib/sales-validation";
+
+test("pago manual valida centavos sin redondear entradas ni rechazar decimales válidos", () => {
+  for (const value of ["1.01", "14.49", "0.01", 14.49, "11.00"]) {
+    assert.equal(isValidManualPaymentAmount(value), true, String(value));
+    assert.equal(validateManualPaymentInput({ orderId: "qa-order", method: "CASH", amount: value, currency: "PEN", reason: "QA" }).amount, Number(value).toFixed(2));
+  }
+  for (const value of ["1.001", "1e1", "", "0", "-1", "Infinity", "NaN", true, null, {}, "0.001"]) {
+    assert.equal(isValidManualPaymentAmount(value), false, String(value));
+    assert.throws(() => validateManualPaymentInput({ orderId: "qa-order", method: "CASH", amount: value, currency: "PEN", reason: "QA" }), /dos decimales/);
+  }
+  assert.equal(isValidManualPaymentAmount("11.01", 11), false);
+  assert.equal(isValidManualPaymentAmount("11.00", 11), true);
+});
 
 test("checkout valida cantidades y no acepta precios enviados por el navegador", () => {
   assert.deepEqual(validateCheckoutInput({

@@ -7,6 +7,7 @@ import { promotionCategories, promotionProducts, promotions } from "@/db/operati
 import { assertPromotionApproval, assertPromotionConflict, promotionRequiresApproval, PromotionDomainError, validatePromotionAssociations } from "@/lib/promotion-service";
 import { getPromotionDetail } from "@/lib/promotion-repository";
 import { validatePromotionInput } from "@/lib/operations-validation";
+import { lockPromotionMutation } from "@/lib/promotion-mutation-lock";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -37,12 +38,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return apiError("PROMOTION_INVALID", "Los datos de la promoción no son válidos.", 400);
 
   try {
-    const db = getDb();
-    const [before] = await db.select().from(promotions).where(eq(promotions.id, id)).limit(1);
-    if (!before) return apiError("PROMOTION_NOT_FOUND", "Promoción no encontrada.", 404);
+    const after = await getDb().transaction(async (tx) => {
+    await lockPromotionMutation(tx);
+    const [before] = await tx.select().from(promotions).where(eq(promotions.id, id)).limit(1).for("update");
+    if (!before) throw new PromotionDomainError("PROMOTION_NOT_FOUND", "Promoción no encontrada.", 404);
     const [currentProducts, currentCategories] = await Promise.all([
-      db.select({ productId: promotionProducts.productId }).from(promotionProducts).where(eq(promotionProducts.promotionId, id)),
-      db.select({ categoryId: promotionCategories.categoryId }).from(promotionCategories).where(eq(promotionCategories.promotionId, id)),
+      tx.select({ productId: promotionProducts.productId }).from(promotionProducts).where(eq(promotionProducts.promotionId, id)),
+      tx.select({ categoryId: promotionCategories.categoryId }).from(promotionCategories).where(eq(promotionCategories.promotionId, id)),
     ]);
     const value = body as Record<string, unknown>;
     const input = validatePromotionInput({
@@ -60,7 +62,6 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       policy: value.policy ?? before.policy,
     });
     await validatePromotionAssociations(input);
-    const after = await db.transaction(async (tx) => {
       const approvalRequired = await promotionRequiresApproval(tx, input);
       const commercialValueChanged = "discountValue" in value || "type" in value;
       const approvalStatus = approvalRequired ? (before.approvalStatus === "APPROVED" && !commercialValueChanged ? "APPROVED" : "PENDING") : "NOT_REQUIRED";

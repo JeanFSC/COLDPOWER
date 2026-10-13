@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, locations, products } from "@/db/schema";
 import {
@@ -73,25 +73,33 @@ export async function findSupplierDuplicates(
     .limit(20);
 }
 
+type PurchaseTransaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+
+async function assertSupplierIdentityAvailable(tx: PurchaseTransaction, input: Partial<SupplierInput>, excludeId?: string) {
+  const identityKeys = [input.identification ? `supplier-identification:${input.identification}` : null, input.email ? `supplier-email:${input.email.toLowerCase()}` : null].filter((key): key is string => Boolean(key)).sort();
+  for (const key of identityKeys) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${key}))`);
+  const exactConditions = [
+    input.identification ? eq(suppliers.identification, input.identification) : undefined,
+    input.email ? sql`lower(${suppliers.email}) = ${input.email.toLowerCase()}` : undefined,
+  ].filter(Boolean);
+  const existing = exactConditions.length
+    ? await tx
+        .select({
+          id: suppliers.id,
+          identification: suppliers.identification,
+          email: suppliers.email,
+        })
+        .from(suppliers)
+        .where(and(or(...(exactConditions as never[])), excludeId ? ne(suppliers.id, excludeId) : undefined))
+        .limit(1)
+    : [];
+  if (existing.length)
+    throw new Error("Ya existe un proveedor con la misma identificación o correo.");
+}
+
 export async function createSupplier(input: SupplierInput, actor: Actor) {
   return getDb().transaction(async (tx) => {
-    const exactConditions = [
-      input.identification ? eq(suppliers.identification, input.identification) : undefined,
-      input.email ? eq(suppliers.email, input.email.toLowerCase()) : undefined,
-    ].filter(Boolean);
-    const existing = exactConditions.length
-      ? await tx
-          .select({
-            id: suppliers.id,
-            identification: suppliers.identification,
-            email: suppliers.email,
-          })
-          .from(suppliers)
-          .where(or(...(exactConditions as never[])))
-          .limit(1)
-      : [];
-    if (existing.length)
-      throw new Error("Ya existe un proveedor con la misma identificación o correo.");
+    await assertSupplierIdentityAvailable(tx, input);
     const [created] = await tx
       .insert(suppliers)
       .values({ id: id("supplier"), ...input })
@@ -109,6 +117,8 @@ export async function updateSupplier(
   reason?: string,
 ) {
   return getDb().transaction(async (tx) => {
+    if (!reason?.trim()) throw new Error("La modificación del proveedor requiere un motivo.");
+    await assertSupplierIdentityAvailable(tx, input, supplierId);
     const [before] = await tx
       .select()
       .from(suppliers)
@@ -116,7 +126,6 @@ export async function updateSupplier(
       .for("update")
       .limit(1);
     if (!before) throw new Error("Proveedor no encontrado.");
-    if (!reason?.trim()) throw new Error("La modificación del proveedor requiere un motivo.");
     const [after] = await tx
       .update(suppliers)
       .set({ ...input, updatedAt: new Date() })
@@ -142,6 +151,7 @@ export async function listPurchases() {
 export async function createPurchase(input: PurchaseInput, actor: Actor) {
   return getDb().transaction(async (tx) => {
     if (input.idempotencyKey) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`purchase-create:${input.idempotencyKey}`}))`);
       const [existing] = await tx
         .select()
         .from(purchases)
@@ -310,6 +320,7 @@ export async function cancelPurchase(purchaseId: string, reason: string, actor: 
 export async function createPurchaseRequest(input: PurchaseRequestInput, actor: Actor) {
   return getDb().transaction(async (tx) => {
     if (input.idempotencyKey) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`purchase-request-create:${input.idempotencyKey}`}))`);
       const [existing] = await tx
         .select()
         .from(purchaseRequests)
@@ -561,6 +572,7 @@ export async function convertPurchaseRequest(
 export async function receivePurchase(input: ReceiptInput, actor: Actor) {
   const result = await getDb().transaction(async (tx) => {
     if (input.idempotencyKey) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`purchase-receipt:${input.idempotencyKey}`}))`);
       const [existing] = await tx
         .select()
         .from(purchaseReceipts)

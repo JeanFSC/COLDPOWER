@@ -6,6 +6,20 @@ const catalog: StockCatalogRow[] = [
   { sku: "CP-001", productId: "p1" },
   { sku: "CP-002", productId: "p2" },
 ];
+test("cantidades deben caber en el entero del saldo PostgreSQL", () => {
+  assert.equal(planStockImport([{sku:"CP-001",locationCode:"ALM-1",quantity:2_147_483_648}],catalog).canApply,false);
+});
+
+test("cantidades booleanas y objetos no se convierten en existencias", () => {
+  for (const quantity of [true, false, [1], { valueOf: () => 1 }, null, undefined]) {
+    const report = planStockImport([{ sku: "CP-001", locationCode: "ALM-1", quantity }], catalog);
+    assert.equal(report.canApply, false);
+    assert.equal(report.rows.length, 0);
+  }
+  for (const quantity of [1, "1", " 2 "]) {
+    assert.equal(planStockImport([{ sku: "CP-001", locationCode: "ALM-1", quantity }], catalog).canApply, true);
+  }
+});
 
 test("un archivo sin cantidad o ubicación nunca puede aplicar", () => {
   const report = planStockImport([{ sku: "CP-001", nombre: "Producto" }], catalog);

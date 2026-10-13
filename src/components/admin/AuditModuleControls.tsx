@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, Filter, ListFilter } from "lucide-react";
 import type { AuditSavedFilter } from "@/lib/audit-contract";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 // Custom dropdown replacing a native <select> for the toolbar filters — a native
 // select's closed control can be restyled, but its open option list is always
@@ -100,11 +101,32 @@ export function CopyButton({ value, className = "text-slate-400 hover:text-slate
 export function SaveFilterButton({ currentQuery, className }: { currentQuery: string; className: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const running = useRef(false);
+  const input = useRef<HTMLInputElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const formId = useId();
+  useEffect(() => { if (open) input.current?.focus(); }, [open]);
 
-  async function save() {
-    const name = window.prompt("Nombre para este filtro:");
-    if (!name || !name.trim()) return;
+  function close() {
+    setOpen(false);
+    trigger.current?.focus();
+  }
+
+  async function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (running.current) return;
+    if (!name.trim() || name.trim().length > 80) {
+      setFailed(true);
+      setMessage("Escribe un nombre de entre 1 y 80 caracteres.");
+      return;
+    }
+    running.current = true;
     setBusy(true);
+    setMessage(null);
     try {
       const filters = Object.fromEntries(new URLSearchParams(currentQuery).entries());
       const response = await fetch("/api/admin/auditoria/filtros", {
@@ -112,21 +134,48 @@ export function SaveFilterButton({ currentQuery, className }: { currentQuery: st
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), filters }),
       });
-      if (response.ok) router.refresh();
+      const result = await response.json().catch(() => null) as { error?: unknown } | null;
+      if (!response.ok) {
+        setFailed(true);
+        setMessage(apiErrorMessage(result?.error, "No se pudo guardar el filtro."));
+        return;
+      }
+      setFailed(false);
+      setMessage("Filtro guardado. Puedes aplicarlo desde Más filtros.");
+      setName("");
+      close();
+      router.refresh();
+    } catch {
+      setFailed(true);
+      setMessage("No se pudo confirmar el guardado. Revisa Más filtros antes de volver a intentarlo.");
     } finally {
+      running.current = false;
       setBusy(false);
     }
   }
 
   return (
-    <button type="button" onClick={save} disabled={busy} className={className}>
-      <Filter className="h-3.5 w-3.5" />
-      <span>{busy ? "Guardando…" : "Guardar filtro"}</span>
-    </button>
+    <div className="relative">
+      <button ref={trigger} type="button" onClick={() => { setMessage(null); setOpen(current => !current); }} disabled={busy} aria-expanded={open} aria-controls={formId} className={className}>
+        <Filter className="h-3.5 w-3.5" />
+        <span>{busy ? "Guardando…" : "Guardar filtro"}</span>
+      </button>
+      {open ? <form id={formId} aria-label="Guardar filtro de auditoría" onSubmit={save} onKeyDown={event => { if (event.key === "Escape" && !busy) { event.preventDefault(); close(); } }} className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-3rem)] rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+        <label className="block text-xs font-semibold text-slate-700">Nombre del filtro
+          <input ref={input} required maxLength={80} value={name} disabled={busy} onChange={event => setName(event.target.value)} className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
+        </label>
+        <p className="mt-2 text-[11px] text-slate-500">Guarda los criterios aplicados para usarlos de nuevo.</p>
+        <div className="mt-3 flex justify-end gap-2">
+          <button type="button" disabled={busy} onClick={close} className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600">Cancelar</button>
+          <button type="submit" disabled={busy} aria-busy={busy} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-60">{busy ? "Guardando…" : "Guardar"}</button>
+        </div>
+      </form> : null}
+      {message ? <p role={failed ? "alert" : "status"} className={`mt-2 max-w-80 text-xs ${failed ? "text-rose-700" : "text-emerald-700"}`}>{message}</p> : null}
+    </div>
   );
 }
 
-export function SavedFiltersMenu({ savedFilters, className }: { savedFilters: AuditSavedFilter[]; className: string }) {
+export function SavedFiltersMenu({ savedFilters, className, unavailable = false }: { savedFilters: AuditSavedFilter[]; className: string; unavailable?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -165,7 +214,7 @@ export function SavedFiltersMenu({ savedFilters, className }: { savedFilters: Au
       {open ? (
         <div className="absolute left-0 top-full z-20 mt-1.5 w-64 rounded-lg border border-slate-200 bg-white p-1.5 shadow-[0_12px_28px_rgba(16,42,67,0.14)]">
           <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Filtros guardados</p>
-          {savedFilters.length ? (
+          {unavailable ? <p role="alert" className="px-2 py-2 text-xs text-amber-800">No se pudieron cargar los filtros guardados. Actualiza la página para volver a intentarlo.</p> : savedFilters.length ? (
             savedFilters.map((filter) => (
               <div key={filter.id} className="flex items-center gap-1 rounded-md hover:bg-slate-50">
                 <a

@@ -8,6 +8,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { id } = await params;
     let body: unknown; try { body = await request.json(); } catch { return apiError("INVALID_JSON", "JSON inválido.", 400); }
     const value = body && typeof body === "object" ? body as Record<string, unknown> : {};
+    if (value.amount !== undefined && typeof value.amount !== "string") return apiError("PAYMENT_REFUND_AMOUNT_INVALID", "El monto debe enviarse como texto con un máximo de dos decimales.", 400);
     const reason = typeof value.reason === "string" ? value.reason.trim() : "";
     const amount = typeof value.amount === "string" ? value.amount.trim() : undefined;
     const result = await refundPayment(id, { amount, reason, idempotencyKey: request.headers.get("Idempotency-Key") ?? undefined }, actor);

@@ -1,14 +1,11 @@
+import { tabularWorkbook } from "@/lib/tabular-workbook";
+import { csvCell as csv } from "@/lib/csv";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { OrdersInvalidFilterError, parseOrdersFilters } from "@/lib/orders-contract";
 import { getOrdersPage } from "@/lib/orders-repository";
 import { writeAuditLog } from "@/lib/audit";
 import { can } from "@/lib/roles";
-
-function csv(value: unknown) {
-  const text = value instanceof Date ? value.toISOString() : value == null ? "" : String(value);
-  return `"${text.replaceAll('"', '""')}"`;
-}
 
 export async function GET(request: Request) {
   try {
@@ -47,7 +44,7 @@ export async function GET(request: Request) {
       "Dirección",
       "Actualizado",
     ];
-    const body = rows
+    const values = rows
       .map((row) =>
         [
           row.code,
@@ -63,18 +60,15 @@ export async function GET(request: Request) {
           row.createdAt,
           row.deliveryAddress,
           row.updatedAt,
-        ]
-          .map(csv)
-          .join(","),
-      )
-      .join("\n");
-    return new Response(`\uFEFF${header.map(csv).join(",")}\n${body}\n`, {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="pedidos-${new Date().toISOString().slice(0, 10)}.csv"`,
-        "Cache-Control": "no-store",
-      },
-    });
+        ],
+      );
+    const filename = `pedidos-${new Date().toISOString().slice(0, 10)}`;
+    if (new URL(request.url).searchParams.get("format") === "csv") {
+      const body = values.map((row) => row.map(csv).join(",")).join("\n");
+      return new Response(`\uFEFF${header.map(csv).join(",")}\n${body}\n`, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${filename}.csv"`, "Cache-Control": "no-store" } });
+    }
+    const workbookRows = values.map((row) => row.map((value, index) => canViewAmounts && index === 3 && value != null ? Number(value) : value));
+    return new Response(Buffer.from(tabularWorkbook("Pedidos", header, workbookRows)), { headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="${filename}.xlsx"`, "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("ORDERS_EXPORT_FORBIDDEN", "No tienes permiso para exportar pedidos.", 403);
     if (error instanceof OrdersInvalidFilterError) return apiError("ORDERS_INVALID_FILTER", "Los filtros de pedidos no son válidos.", 400);

@@ -1,3 +1,4 @@
+import { formatAdminMoney as money } from "@/lib/admin-money-display";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -18,6 +19,7 @@ import {
 import type { ReactNode } from "react";
 import { AdminLineChart } from "@/components/admin/AdminChartsLazy";
 import { ReportScheduleControls } from "@/components/admin/ReportScheduleControls";
+import { ReportDetailTabs } from "@/components/admin/ReportDetailTabs";
 import type { DashboardFilters } from "@/lib/dashboard-contract";
 import { getOperationsDashboard } from "@/lib/operations-dashboard";
 import { formatPeriodDelta } from "@/lib/period-metrics";
@@ -45,14 +47,7 @@ const tone: Record<MetricTone, { icon: string; dot: string }> = {
   purple: { icon: "bg-violet-50 text-violet-600", dot: "bg-violet-500" },
 };
 
-function money(value: number | null | undefined, currency: string | null | undefined) {
-  if (value === null || value === undefined || !currency || !Number.isFinite(value)) return "N/D";
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+
 function number(value: number | null | undefined) {
   return new Intl.NumberFormat("es-PE").format(value ?? 0);
 }
@@ -62,28 +57,27 @@ function dateLabel(value: string) {
   );
 }
 
-function MetricSparkline({ tone, values }: { tone: MetricTone; values: number[] | undefined }) {
+function MetricSparkline({ tone, values }: { tone: MetricTone; values: Array<number | null | undefined> | undefined }) {
   const palette: Record<MetricTone, string> = {
     blue: "#3b82f6", orange: "#f97316", green: "#10b981", red: "#f43f5e", purple: "#8b5cf6",
   };
-  const series = values?.filter(Number.isFinite) ?? [];
-  if (series.length < 2) {
-    const visualPath: Record<MetricTone, string> = {
-      blue: "M0,18 C15,22 25,10 45,15 C65,20 75,5 100,10",
-      orange: "M0,16 C18,22 30,12 55,14 C75,16 85,8 100,16",
-      green: "M0,19 C16,11 31,18 50,8 C68,2 83,12 100,7",
-      red: "M0,9 C18,17 32,6 51,15 C70,22 84,8 100,14",
-      purple: "M0,17 C17,8 31,20 49,10 C69,2 82,15 100,8",
-    };
-    return <svg className="mt-1 h-6 w-full" viewBox="0 0 100 24" preserveAspectRatio="none" aria-label="Visual de tendencia pendiente de serie historica"><path d={visualPath[tone]} fill="none" stroke={palette[tone]} strokeWidth="2" strokeLinecap="round" /></svg>;
+  const series = values ?? [];
+  const known = series.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (known.length < 2) {
+    return <p className="mt-1 flex h-6 items-center text-[10px] text-slate-400">Sin serie histórica disponible</p>;
   }
-  const high = Math.max(...series);
-  const low = Math.min(...series);
+  const high = Math.max(...known);
+  const low = Math.min(...known);
   const range = Math.max(1, high - low);
   const path = series.map((value, index) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      return "";
+    }
     const x = (index / (series.length - 1)) * 100;
     const y = 21 - ((value - low) / range) * 17;
-    return `${index === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+    const previous = series[index - 1];
+    const command = typeof previous === "number" && Number.isFinite(previous) ? "L" : "M";
+    return `${command}${x.toFixed(2)},${y.toFixed(2)}`;
   }).join(" ");
   return <svg className="mt-1 h-6 w-full" viewBox="0 0 100 24" preserveAspectRatio="none" aria-label="Tendencia del indicador"><path d={path} fill="none" stroke={palette[tone]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
@@ -98,6 +92,7 @@ export function AdminReportsStitch({
   reportFilters,
   currentUserId,
   canViewCatalog,
+  executionConfigured,
 }: {
   data: DashboardData | null;
   metrics: Array<{ label: string; value: string | number; note?: string; tone?: MetricTone }>;
@@ -108,6 +103,7 @@ export function AdminReportsStitch({
   reportFilters: DashboardFilters;
   currentUserId: string;
   canViewCatalog: boolean;
+  executionConfigured: boolean;
 }) {
   const currency = data?.currency;
   const previousSales = data?.previousSalesSeries.reduce((sum, row) => sum + row.total, 0) ?? 0;
@@ -116,10 +112,9 @@ export function AdminReportsStitch({
       ? formatPeriodDelta(data.conversion.percentage, data.previousConversion)
       : null;
   const salesTrend = data?.salesSeries.map((row) => row.total);
-  const orderTrend = data?.salesSeries.map((row) => row.orders ?? 0);
-  const marginTrend = data?.salesSeries.some((row) => row.margin !== null && row.margin !== undefined)
-    ? data.salesSeries.map((row) => row.margin ?? 0)
-    : undefined;
+  const marginTrend = data?.salesSeries.map((row) =>
+    typeof row.margin === "number" && Number.isFinite(row.margin) ? row.total * row.margin : null,
+  );
   const ticketTrend = data?.salesSeries.map((row) => row.count > 0 ? row.total / row.count : 0);
   const ticketNow = data?.salesRange.count ? data.salesRange.total / data.salesRange.count : null;
   const salesDelta = data ? formatPeriodDelta(data.salesRange.total, previousSales) : null;
@@ -130,7 +125,7 @@ export function AdminReportsStitch({
     ? formatPeriodDelta(ticketNow, data.previousAverageTicket)
     : null;
   const stockDelta = data ? formatPeriodDelta(data.comparisons.criticalStock.current, data.comparisons.criticalStock.previous) : null;
-  const categories = data?.categorySummary.slice(0, 6) ?? [];
+  const categories = data?.familySummary.slice(0, 6) ?? [];
   const maxCategoryRevenue = Math.max(1, ...categories.map((item) => item.revenue));
   const insights: Array<{
     title: string;
@@ -166,7 +161,7 @@ export function AdminReportsStitch({
   if (currency && categories[0])
     insights.push({
       title: "Familia con mayor aporte",
-      detail: `${categories[0].categoryName} representa ${categories[0].percentage.toFixed(1)}% de las ventas del periodo.`,
+      detail: `${categories[0].familyName} representa ${categories[0].percentage.toFixed(1)}% de las ventas del periodo.`,
       href: "#category-sales",
       icon: Target,
       className: "bg-blue-50 text-blue-600",
@@ -223,16 +218,14 @@ export function AdminReportsStitch({
                 : CircleDollarSign;
           const style = tone[item.tone ?? "blue"];
           const metricTone = item.tone ?? "blue";
-          const trend = item.label.startsWith("Ventas")
+          const trend = item.label === "Ventas del período"
             ? salesTrend
             : item.label.includes("Margen")
               ? marginTrend
               : item.label.includes("Ticket")
                 ? ticketTrend
-                : item.label.includes("Pedidos")
-                  ? orderTrend
-                  : undefined;
-          const delta = item.label.startsWith("Ventas")
+                : undefined;
+          const delta = item.label === "Ventas del período"
             ? salesDelta
             : item.label.includes("Margen")
               ? grossDelta
@@ -257,8 +250,8 @@ export function AdminReportsStitch({
                 </div>
               </div>
               <div className="mt-3">
-                {!delta || delta.value === null ? <p className="text-[10px] font-normal text-slate-400">{delta?.label ?? item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${deltaIsGood ? "text-emerald-600" : "text-rose-600"}`}><span aria-hidden="true">{delta.direction === "down" ? "↘" : "↗"}</span><span>{delta.label}</span></p>}
-                <MetricSparkline tone={metricTone} values={trend} />
+                {!delta || delta.value === null ? <p className="text-[10px] font-normal text-slate-400">{delta?.label ?? item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${deltaIsGood ? "text-emerald-600" : "text-rose-600"}`}><span>{delta.label}</span></p>}
+                {item.label === "Ventas hoy" || item.label === "Pedidos activos" ? null : <MetricSparkline tone={metricTone} values={trend} />}
               </div>
             </article>
           );
@@ -309,6 +302,10 @@ export function AdminReportsStitch({
                     <i className="size-2 rounded-full bg-slate-300" />
                     Periodo anterior
                   </span>
+                  <span className="flex items-center gap-1.5">
+                    <i className="size-2 rounded-full bg-emerald-600" />
+                    Margen bruto (%)
+                  </span>
                 </div>
               </div>
               <div className="mt-4 h-[245px]">
@@ -317,6 +314,7 @@ export function AdminReportsStitch({
                     comparison
                     data={data.salesSeries.map((row) => row.total)}
                     previous={data.previousSalesSeries.map((row) => row.total)}
+                    margin={data.salesSeries.map((row) => row.margin)}
                     labels={data.salesSeries.map((row) => dateLabel(row.date))}
                     currencyAxis
                     currency={currency}
@@ -341,7 +339,7 @@ export function AdminReportsStitch({
                 <div className="mt-7 flex h-[218px] items-end gap-3 border-b border-slate-100 px-1">
                   {categories.map((category, index) => (
                     <div
-                      key={category.categoryId}
+                      key={category.familyId}
                       className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
                     >
                       <span className="truncate text-[10px] font-bold text-slate-700">
@@ -354,10 +352,10 @@ export function AdminReportsStitch({
                         }}
                       />
                       <span
-                        title={category.categoryName}
+                        title={category.familyName}
                         className="w-full truncate text-center text-[9px] font-medium text-slate-500"
                       >
-                        {category.categoryName}
+                        {category.familyName}
                       </span>
                     </div>
                   ))}
@@ -373,11 +371,7 @@ export function AdminReportsStitch({
           </section>
           <section className="grid gap-6 xl:grid-cols-12">
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-6">
-              <div className="flex gap-6 border-b border-slate-100 px-5 pt-4 text-xs font-semibold">
-                <span className="border-b-2 border-blue-600 pb-3 text-blue-600">Ventas</span>
-                <span className="pb-3 text-slate-400">Inventario</span>
-                <span className="pb-3 text-slate-400">Clientes</span>
-              </div>
+              <ReportDetailTabs inventory={<section className="p-5"><h2 className="text-sm font-bold text-slate-900">Resumen de inventario</h2><p className="mt-1 text-[11px] text-slate-500">Estado actual del inventario para los filtros seleccionados; no es una serie histórica.</p><dl className="mt-4 divide-y divide-slate-100 text-xs">{[["Productos con stock crítico", data?.criticalStock], ["Productos agotados", data?.noStock], ["Productos sin stock registrado", data?.unknownStock], ["Unidades reservadas", data?.reservedUnits], ["Locales activos", data?.activeLocations]].map(([label, value]) => <div key={String(label)} className="flex justify-between gap-4 py-3"><dt>{label}</dt><dd className="font-bold tabular-nums">{number(value as number | undefined)}</dd></div>)}</dl><Link href="/admin/inventario" className="mt-4 inline-block text-xs font-semibold text-blue-600">Abrir inventario</Link></section>} customers={<section className="p-5"><h2 className="text-sm font-bold text-slate-900">Resumen de clientes</h2><p className="mt-1 text-[11px] text-slate-500">Clientes nuevos y recurrentes en el período seleccionado. Cartera activa: estado actual.</p><dl className="mt-4 divide-y divide-slate-100 text-xs">{[["Clientes nuevos", data?.newCustomers], ["Clientes recurrentes", data?.returningCustomers], ["Clientes activos", data?.activeCustomersCount]].map(([label, value]) => <div key={String(label)} className="flex justify-between gap-4 py-3"><dt>{label}</dt><dd className="font-bold tabular-nums">{number(value as number | undefined)}</dd></div>)}</dl><Link href="/admin/clientes" className="mt-4 inline-block text-xs font-semibold text-blue-600">Abrir clientes</Link></section>}>
               <div className="flex items-center justify-between gap-3 px-5 py-4">
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">Detalle de ventas</h2>
@@ -422,9 +416,9 @@ export function AdminReportsStitch({
                               {money(row.total, currency)}
                             </td>
                             <td className="px-3 py-3">
-                              {data?.grossProfit == null
+                              {row.grossProfit == null
                                 ? "N/D"
-                                : money(data.grossProfit, currency)}
+                                : money(row.grossProfit, currency)}
                             </td>
                             <td className="px-3 py-3">{number(row.orders)}</td>
                             <td
@@ -440,6 +434,7 @@ export function AdminReportsStitch({
                   </tbody>
                 </table>
               </div>
+              </ReportDetailTabs>
             </article>
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-3">
               <h2 className="text-sm font-bold text-slate-900">Productos más vendidos</h2>
@@ -448,7 +443,11 @@ export function AdminReportsStitch({
               </p>
               <div className="mt-2 divide-y divide-slate-100">
                 {currency ? (
-                  (data?.topProducts ?? []).slice(0, 5).map((product, index) => (
+                  !data ? (
+                    <p className="py-6 text-center text-xs text-slate-500">Datos de ventas no disponibles.</p>
+                  ) : !data.topProducts.length ? (
+                    <p className="py-6 text-center text-xs text-slate-500">Sin productos con ventas en los filtros seleccionados.</p>
+                  ) : data.topProducts.slice(0, 5).map((product, index) => (
                     <div
                       key={product.id}
                       className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 py-3 text-[10px]"
@@ -527,6 +526,7 @@ export function AdminReportsStitch({
                 schedules={schedules}
                 filters={reportFilters}
                 currentUserId={currentUserId}
+                executionConfigured={executionConfigured}
               />
             </div>
           </details>

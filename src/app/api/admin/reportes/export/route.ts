@@ -5,12 +5,13 @@ import { getDb } from "@/db";
 import { DashboardInvalidFilterError } from "@/lib/dashboard-contract";
 import { parseReportsFilters } from "@/lib/reports-contract";
 import { getReportSnapshot } from "@/lib/reporting-service";
-import { toDashboardCsv } from "@/lib/dashboard-export";
+import { toDashboardCsv, toDashboardWorkbook } from "@/lib/dashboard-export";
 
 export async function GET(request: Request) {
   try {
     const actor = await requireApiPermission("reports.export");
-    const filters = parseReportsFilters(new URL(request.url).searchParams);
+    const params = new URL(request.url).searchParams;
+    const filters = parseReportsFilters(params);
     const data = await getReportSnapshot(filters, actor);
     await getDb()
       .insert(auditLogs)
@@ -25,10 +26,11 @@ export async function GET(request: Request) {
         after: null,
         metadata: { filters },
       });
-    return new Response(toDashboardCsv(data, actor), {
+    const csv = params.get("format") === "csv";
+    return new Response(csv ? toDashboardCsv(data, actor) : Buffer.from(toDashboardWorkbook(data, actor)), {
       headers: {
-        "content-type": "text/csv; charset=utf-8",
-        "content-disposition": "attachment; filename=coldpower-reportes.csv",
+        "content-type": csv ? "text/csv; charset=utf-8" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "content-disposition": `attachment; filename="coldpower-reportes.${csv ? "csv" : "xlsx"}"`,
         "cache-control": "no-store",
       },
     });

@@ -30,21 +30,23 @@ export async function withRuntimeCache<T>(
   }
 
   const pending = loader();
-  entries.set(key, {
+  const entry: RuntimeCacheEntry<T> = {
     expiresAt: now + (options.ttlMs ?? 60_000),
     pending,
-  });
+  };
+  entries.set(key, entry);
 
   try {
     const value = await pending;
-    entries.set(key, {
-      expiresAt: now + (options.ttlMs ?? 60_000),
-      value,
-    });
+    if (entries.get(key) === entry) {
+      entries.set(key, {
+        expiresAt: entry.expiresAt,
+        value,
+      });
+    }
     return value;
   } catch (error) {
-    const latest = entries.get(key) as RuntimeCacheEntry<T> | undefined;
-    if (latest?.pending === pending) entries.delete(key);
+    if (entries.get(key) === entry) entries.delete(key);
     throw error;
   }
 }

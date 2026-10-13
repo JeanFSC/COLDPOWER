@@ -7,10 +7,11 @@ import { getSupplierDetail } from "@/lib/purchases-repository";
 
 export const metadata: Metadata = { title: "Detalle del proveedor | Compras | Panel admin ColdPower" };
 
-export default async function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SupplierDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const actor = await requirePermission("purchases.view");
   const { id } = await params;
-  const detail = await getSupplierDetail(id);
+  const query = await searchParams;
+  const detail = await getSupplierDetail(id, { receiptsPage: Number(query.receiptsPage), documentsPage: Number(query.documentsPage), ordersPage: Number(query.ordersPage), productsPage: Number(query.productsPage) });
   if (!detail) notFound();
   return <SupplierDetailWorkspace detail={detail} canManage={can(actor.role, "purchases.manage")} />;
 }

@@ -119,6 +119,8 @@ export async function createProviderPayment(input: { orderId: string; returnUrl?
     if (!order) throw new PaymentDomainError("ORDER_NOT_FOUND", "Pedido no encontrado.", 404);
     if (["CANCELLED", "DELIVERED"].includes(order.status)) throw new PaymentDomainError("PAYMENT_NOT_ALLOWED", "El pedido no admite un nuevo pago.", 409);
     if (order.paymentDueAt && order.paymentDueAt.getTime() <= Date.now()) throw new PaymentDomainError("ORDER_PAYMENT_EXPIRED", "El plazo de pago del pedido venció. Vuelve a armar tu carrito.", 409);
+    const ledger = await summarizeOrderPaymentLedger(tx, order);
+    if (ledger.balance <= 0.005) throw new PaymentDomainError("PAYMENT_ALREADY_CONFIRMED", "El pedido ya está cubierto por pagos confirmados.", 409);
     const [currentPayment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
     if (currentPayment && !retryablePaymentStatuses.includes(currentPayment.status)) throw new PaymentDomainError(currentPayment.status === "CONFIRMED" || currentPayment.status === "APPROVED" ? "PAYMENT_ALREADY_CONFIRMED" : "PAYMENT_NOT_ALLOWED", "El pedido ya tiene un pago en curso o confirmado.", 409);
     let created: PaymentCreateResult;
@@ -201,10 +203,17 @@ async function markOrderPaid(tx: Parameters<Parameters<ReturnType<typeof getDb>[
 
 export async function refundPayment(paymentId: string, input: { amount?: string; reason: string; idempotencyKey?: string }, actor: Actor) {
   if (!input.reason.trim()) throw new PaymentDomainError("PAYMENT_REFUND_REASON_REQUIRED", "El motivo del reembolso es obligatorio.");
+  if (input.amount !== undefined && (!/^\d+(\.\d{1,2})?$/.test(input.amount.trim()) || !Number.isFinite(Number(input.amount)) || Number(input.amount) <= 0)) {
+    throw new PaymentDomainError("PAYMENT_REFUND_AMOUNT_INVALID", "Indica un monto positivo con un máximo de dos decimales.", 400);
+  }
   const db = getDb();
   const prepared = await db.transaction(async (tx) => {
     const key = input.idempotencyKey ?? `refund-${paymentId}-${input.amount ?? "full"}-${crypto.randomUUID()}`;
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`refund:${key}`}))`);
     const [existing] = await tx.select().from(paymentRefunds).where(eq(paymentRefunds.idempotencyKey, key)).limit(1);
+    if (existing && (existing.paymentId !== paymentId || (input.amount !== undefined && amount(input.amount) !== amount(existing.amount)))) {
+      throw new PaymentDomainError("PAYMENT_REFUND_IDEMPOTENCY_CONFLICT", "La clave de solicitud ya corresponde a otro pago o monto.", 409);
+    }
     if (existing && existing.status !== "FAILED") return { refund: existing, payment: null, idempotent: true };
     const [payment] = await tx.select().from(payments).where(eq(payments.id, paymentId)).for("update").limit(1);
     if (!payment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado.", 404);
@@ -222,26 +231,22 @@ export async function refundPayment(paymentId: string, input: { amount?: string;
       [refund] = await tx.insert(paymentRefunds).values({ id: id("refund"), paymentId, provider: payment.provider, providerReference: null, idempotencyKey: key, amount: refundAmount.toFixed(2), currency: payment.currency, status: manual ? "SUCCEEDED" : "PENDING", reason: input.reason.trim().slice(0, 500), requestedBy: actor.userId, confirmedAt: manual ? new Date() : null }).returning();
     }
     await tx.insert(auditLogs).values(audit(actor, "payments.refund_requested", paymentId, payment, refund, { refundId: refund.id, reason: input.reason.trim().slice(0, 500) }));
+    if (manual) {
+      // The payment row remains locked: refund, projection, history and audit commit together.
+      const [totalRefunds] = await tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, payment.id), eq(paymentRefunds.status, "SUCCEEDED")));
+      const refundedTotal = amount(totalRefunds?.total ?? 0);
+      const isFullRefund = refundedTotal + 0.005 >= amount(payment.amount);
+      let updatedPayment = payment;
+      if (isFullRefund) {
+        [updatedPayment] = await tx.update(payments).set({ status: "REFUNDED", metadata: { ...(payment.metadata ?? {}), requiresRefund: false }, updatedAt: new Date() }).where(eq(payments.id, payment.id)).returning();
+        await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: payment.status, toStatus: "REFUNDED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: null, reason: refund.reason });
+      }
+      await tx.insert(auditLogs).values(audit(actor, "payments.refund_confirmed", payment.id, payment, updatedPayment, { refundId: refund.id, refundedTotal: refundedTotal.toFixed(2), fullRefund: isFullRefund, method: "MANUAL" }));
+      return { refund, payment: updatedPayment, idempotent: false, manual: true };
+    }
     return { refund, payment, idempotent: false, manual };
   });
-  if (prepared.idempotent || !prepared.payment) return prepared;
-  if (prepared.manual) {
-    return db.transaction(async (tx) => {
-      const [currentPayment] = await tx.select().from(payments).where(eq(payments.id, prepared.payment!.id)).for("update").limit(1);
-      if (!currentPayment) throw new PaymentDomainError("PAYMENT_NOT_FOUND", "Pago no encontrado.", 404);
-      const [totalRefunds] = await tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).where(and(eq(paymentRefunds.paymentId, currentPayment.id), eq(paymentRefunds.status, "SUCCEEDED")));
-      const refundedTotal = amount(totalRefunds?.total ?? 0);
-      const isFullRefund = refundedTotal + 0.005 >= amount(currentPayment.amount);
-      let updatedPayment = currentPayment;
-      if (isFullRefund) {
-        if (!canTransitionPayment(currentPayment.status, "REFUNDED")) throw new PaymentDomainError("PAYMENT_REFUND_STATE_CONFLICT", "El estado del pago cambió y no permite completar el reembolso.", 409);
-        [updatedPayment] = await tx.update(payments).set({ status: "REFUNDED", metadata: { ...(currentPayment.metadata ?? {}), requiresRefund: false }, updatedAt: new Date() }).where(eq(payments.id, currentPayment.id)).returning();
-        await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: currentPayment.id, fromStatus: currentPayment.status, toStatus: "REFUNDED", changedBy: actor.userId, actorRole: actor.role ?? null, provider: null, reason: prepared.refund.reason });
-      }
-      await tx.insert(auditLogs).values(audit(actor, "payments.refund_confirmed", currentPayment.id, currentPayment, updatedPayment, { refundId: prepared.refund.id, refundedTotal: refundedTotal.toFixed(2), fullRefund: isFullRefund, method: "MANUAL" }));
-      return { refund: prepared.refund, payment: updatedPayment, idempotent: false };
-    });
-  }
+  if (prepared.idempotent || !prepared.payment || prepared.manual) return prepared;
   let result: PaymentRefundResult;
   try { result = await getPaymentProvider().refund(prepared.payment.providerReference!, prepared.refund.amount); } catch (error) {
     await db.update(paymentRefunds).set({ status: "FAILED", metadata: { error: error instanceof Error ? error.message : "REFUND_PROVIDER_ERROR" }, updatedAt: new Date() }).where(eq(paymentRefunds.id, prepared.refund.id));

@@ -67,6 +67,10 @@ function positiveInteger(params: URLSearchParams, key: string) {
 function optionalDate(params: URLSearchParams, key: string) {
   const value = optionalText(params, key);
   if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new PricingInvalidFilterError();
+  if (value) {
+    const date = new Date(`${value}T00:00:00Z`);
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new PricingInvalidFilterError();
+  }
   return value;
 }
 

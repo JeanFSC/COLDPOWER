@@ -14,7 +14,14 @@ export type PurchaseRequestInput = { locationId: string; source?: PurchaseReques
 function text(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
 function nullableText(value: unknown, max: number) { return text(value, max) || null; }
 function currency(value: unknown) { const result = text(value, 3).toUpperCase(); if (!/^[A-Z]{3}$/.test(result)) throw new Error("La moneda debe ser ISO de tres letras."); return result; }
-function positiveMoney(value: unknown) { const amount = Number(value); if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) throw new Error("El costo debe ser positivo y tener como máximo dos decimales."); return amount.toFixed(2); }
+function positiveMoney(value: unknown) {
+  const raw = typeof value === "string" ? value.trim() : typeof value === "number" ? String(value) : "";
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) throw new Error("El costo debe ser positivo y tener como máximo dos decimales.");
+  const [whole, decimal = ""] = raw.split(".");
+  const cents = BigInt(whole) * BigInt(100) + BigInt(decimal.padEnd(2, "0"));
+  if (cents <= BigInt(0) || cents >= BigInt("100000000000000")) throw new Error("El costo debe ser positivo y estar dentro del límite permitido.");
+  return `${cents / BigInt(100)}.${(cents % BigInt(100)).toString().padStart(2, "0")}`;
+}
 export function validatePurchaseRequestConversionItems(items: Array<{ productId: string; quantityRequested: number }>, unitCosts: Record<string, unknown>) {
   if (!items.length) throw new Error("La solicitud no tiene líneas para convertir.");
   return items.map((item) => {

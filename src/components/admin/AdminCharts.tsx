@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { boundedSmoothPath, marginDomain } from "@/lib/chart-geometry";
+import { formatAdminMoney as formatMoney } from "@/lib/admin-money-display";
+import { formatSalesAxisValue } from "@/lib/chart-axis-label";
 
 export type AdminChartPoint = {
   date: string;
@@ -58,19 +61,7 @@ const sparklineFills = {
 function validSeries(series?: number[]) {
   return series?.filter((value) => Number.isFinite(value)) ?? [];
 }
-function formatMoney(value: number, currency: string | null | undefined, maximumFractionDigits = 0) {
-  if (!currency || !Number.isFinite(value)) return "N/D";
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency, maximumFractionDigits }).format(value);
-}
 
-function formatSalesAxisValue(value: number, currency: string | null | undefined) {
-  const symbol = currency === "USD" ? "US$" : currency === "PEN" ? "S/" : currency ?? "";
-  if (!Number.isFinite(value) || value === 0) return `${symbol} 0`;
-  const absolute = Math.abs(value);
-  if (absolute >= 1_000_000) return `${symbol} ${(value / 1_000_000).toFixed(1)}M`;
-  if (absolute >= 1_000) return `${symbol} ${(value / 1_000).toFixed(absolute >= 10_000 ? 0 : 1)}k`;
-  return `${symbol} ${Math.round(value)}`;
-}
 
 function drawSmoothSparkline(
   context: CanvasRenderingContext2D,
@@ -177,26 +168,13 @@ export function AdminLineChart({
   // Scale the margin (%) line to its own real peak instead of a fixed 50% ceiling — a fixed
   // cap silently clipped any day above 50% margin into a flat plateau, which reads as a
   // rendering bug rather than real data.
-  const marginPeak = marginValues.reduce<number>((peak, value) => (value !== null && value > peak ? value : peak), 0);
-  const marginMax = hasMargin ? Math.min(1, Math.max(0.2, Math.ceil((marginPeak * 1.15) / 0.05) * 0.05)) : 0.5;
+  const { min: marginMin, max: marginMax, ticks: marginTicks } = marginDomain(marginValues);
   const marginPoints = marginValues.map((value, index) => value === null ? null : {
     x: pad.left + (marginValues.length <= 1 ? chartWidth / 2 : (index / (marginValues.length - 1)) * chartWidth),
-    y: pad.top + (1 - Math.min(Math.max(value, 0), marginMax) / marginMax) * chartHeight,
+    y: pad.top + (1 - (value - marginMin) / (marginMax - marginMin)) * chartHeight,
   });
   const smoothPath = (points: Array<{ x: number; y: number }>) => {
-    if (!points.length) return "";
-    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
-    let path = `M ${points[0].x} ${points[0].y}`;
-    for (let index = 0; index < points.length - 1; index += 1) {
-      const previous = points[index - 1] ?? points[index];
-      const start = points[index];
-      const end = points[index + 1];
-      const next = points[index + 2] ?? end;
-      const controlOne = { x: start.x + (end.x - previous.x) / 6, y: start.y + (end.y - previous.y) / 6 };
-      const controlTwo = { x: end.x - (next.x - start.x) / 6, y: end.y - (next.y - start.y) / 6 };
-      path += ` C ${controlOne.x} ${controlOne.y}, ${controlTwo.x} ${controlTwo.y}, ${end.x} ${end.y}`;
-    }
-    return path;
+    return boundedSmoothPath(points);
   };
   const groupSegments = (points: Array<{ x: number; y: number } | null>) => {
     const segments: Array<Array<{ x: number; y: number }>> = [];
@@ -229,8 +207,8 @@ export function AdminLineChart({
       <p className="sr-only">{ariaLabel}. Valores actuales: {current.map((value, index) => `${labels?.[index] ?? `Punto ${index + 1}`}: ${currencyAxis ? formatMoney(value, currency) : Math.round(value)}`).join("; ")}.</p>
       <table className="sr-only">
         <caption>{ariaLabel}</caption>
-        <thead><tr><th scope="col">Período</th><th scope="col">Actual</th>{comparison ? <th scope="col">Anterior</th> : null}</tr></thead>
-        <tbody>{current.map((value, index) => <tr key={`accessible-${index}`}><th scope="row">{labels?.[index] ?? `Punto ${index + 1}`}</th><td>{currencyAxis ? formatMoney(value, currency) : Math.round(value)}</td>{comparison ? <td>{prior[index] === undefined ? "N/D" : currencyAxis ? formatMoney(prior[index], currency) : Math.round(prior[index])}</td> : null}</tr>)}</tbody>
+        <thead><tr><th scope="col">Período</th><th scope="col">Actual</th>{comparison ? <th scope="col">Anterior</th> : null}{hasMargin ? <th scope="col">Margen bruto</th> : null}</tr></thead>
+        <tbody>{current.map((value, index) => <tr key={`accessible-${index}`}><th scope="row">{labels?.[index] ?? `Punto ${index + 1}`}</th><td>{currencyAxis ? formatMoney(value, currency) : Math.round(value)}</td>{comparison ? <td>{prior[index] === undefined ? "N/D" : currencyAxis ? formatMoney(prior[index], currency) : Math.round(prior[index])}</td> : null}{hasMargin ? <td>{marginValues[index] == null ? "N/D" : `${(marginValues[index]! * 100).toFixed(1)}%`}</td> : null}</tr>)}</tbody>
       </table>
       <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${viewBox.width} ${viewBox.height}`} preserveAspectRatio="none" aria-hidden="true">
         {filled ? (
@@ -255,7 +233,7 @@ export function AdminLineChart({
             {hasMargin ? (
               <>
                 <line x1={viewBox.width - pad.right} x2={viewBox.width - pad.right} y1={pad.top} y2={pad.top + chartHeight} stroke="#bfe2cf" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                {[marginMax, marginMax * 0.75, marginMax * 0.5, marginMax * 0.25, 0].map((value, index) => {
+                {marginTicks.map((value, index) => {
                   const y = pad.top + (index / 4) * chartHeight;
                   return <line key={`margin-tick-${index}`} x1={viewBox.width - pad.right} x2={viewBox.width - pad.right + 6} y1={y} y2={y} stroke="#4fa87c" strokeWidth="1.3" vectorEffect="non-scaling-stroke" />;
                 })}
@@ -273,7 +251,7 @@ export function AdminLineChart({
       </svg>
       <div className={`pointer-events-none absolute inset-0 font-semibold text-[#8195aa] ${largeLabels ? "text-[12px] font-bold" : "text-[10px]"}`}>
         {yTicks.map((value, index) => <span key={`y-label-${index}`} className={`absolute left-0 -translate-y-1/2 whitespace-nowrap ${largeLabels ? "text-right" : ""}`} style={{ top: `${((pad.top + (index / 4) * chartHeight) / viewBox.height) * 100}%`, width: largeLabels ? `${((pad.left - 14) / viewBox.width) * 100}%` : undefined }}>{currencyAxis ? formatSalesAxisValue(value, currency) : Math.round(value)}</span>)}
-        {hasMargin ? [marginMax, marginMax * 0.75, marginMax * 0.5, marginMax * 0.25, 0].map((value, index) => <span key={`margin-label-${index}`} className={`absolute right-0 -translate-y-1/2 whitespace-nowrap font-bold text-[#159263]`} style={{ top: `${((pad.top + (index / 4) * chartHeight) / viewBox.height) * 100}%` }}>{Math.round(value * 100)}%</span>) : null}
+        {hasMargin ? marginTicks.map((value, index) => <span key={`margin-label-${index}`} className={`absolute right-0 -translate-y-1/2 whitespace-nowrap font-bold text-[#159263]`} style={{ top: `${((pad.top + (index / 4) * chartHeight) / viewBox.height) * 100}%` }}>{Math.round(value * 100)}%</span>) : null}
         {labelIndexes.map((index) => {
           const currentPoint = currentPoints[index] ?? currentPoints[0];
           if (!currentPoint) return null;
@@ -299,11 +277,11 @@ export function AdminLineChart({
         const tooltip = activePoint === index ? (
           <span className={`pointer-events-none absolute z-10 w-56 rounded-lg border border-[#dce6ee] bg-[#102a43] px-3.5 py-2.5 text-left text-[11px] font-semibold text-white shadow-[0_8px_20px_rgba(16,42,67,0.18)] ${position.y < 70 ? "top-[calc(100%+10px)]" : "bottom-[calc(100%+10px)]"} ${index < 2 ? "left-0" : index >= currentPoints.length - 2 ? "right-0" : "left-1/2 -translate-x-1/2"}`}>
             <strong className="block text-[11px] text-white">{detail.date.replace("T", " · ")}</strong>
-            <span className="mt-1.5 flex items-center justify-between gap-3"><span className="text-[#c8d8e7]">Ventas</span><b>{formatMoney(detail.total, currency, 2)}</b></span>
+            <span className="mt-1.5 flex items-center justify-between gap-3"><span className="text-[#c8d8e7]">Ventas</span><b>{formatMoney(detail.total, currency)}</b></span>
             <span className="mt-1 flex items-center justify-between gap-3"><span className="text-[#c8d8e7]">Ventas confirmadas</span><b>{detail.count}</b></span>
             {detail.units !== undefined ? <span className="mt-1 flex items-center justify-between gap-3"><span className="text-[#c8d8e7]">Unidades</span><b>{detail.units}</b></span> : null}
             {marginValue !== null && marginValue !== undefined ? <span className="mt-1 flex items-center justify-between gap-3"><span className="flex items-center gap-1.5 text-[#c8d8e7]"><i className="h-1.5 w-1.5 rounded-full bg-[#3fbf87]" />Margen bruto</span><b>{(marginValue * 100).toFixed(1)}%</b></span> : null}
-            {detail.previousTotal !== undefined ? <span className="mt-1 flex items-center justify-between gap-3 border-t border-white/15 pt-1"><span className="text-[#c8d8e7]">Período anterior</span><b>{formatMoney(detail.previousTotal, currency, 2)}</b></span> : null}
+            {detail.previousTotal !== undefined ? <span className="mt-1 flex items-center justify-between gap-3 border-t border-white/15 pt-1"><span className="text-[#c8d8e7]">Período anterior</span><b>{formatMoney(detail.previousTotal, currency)}</b></span> : null}
           </span>
         ) : null;
         const columnStyle = { left: `${(position.x / viewBox.width) * 100}%`, top: 0, height: "100%", width: `${(columnWidth / viewBox.width) * 100}%` };

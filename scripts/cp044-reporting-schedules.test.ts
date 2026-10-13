@@ -1,6 +1,36 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
+import { createNotifications } from "../src/lib/notifications-service";
+
+test("reportes: entrega transaccional conserva preferencias y normalización", async () => {
+  for (const enabled of [false, true]) {
+    let inserted: unknown[] = [];
+    const transaction = {
+      select: () => ({ from: () => ({ where: async () => [{ userId: "qa-owner", preferences: { SCHEDULED_REPORT: enabled } }] }) }),
+      insert: () => ({ values: (values: unknown[]) => {
+        inserted = values;
+        return { onConflictDoNothing: () => ({ returning: async () => values }) };
+      } }),
+    } as unknown as NonNullable<Parameters<typeof createNotifications>[1]>;
+    const result = await createNotifications([{ recipientId: "qa-owner", type: "SCHEDULED_REPORT", title: " Reporte QA ", body: " QA ", link: "/admin/reportes", dedupeKey: "qa-report" }], transaction);
+    assert.equal(result.length, enabled ? 1 : 0);
+    assert.equal(inserted.length, enabled ? 1 : 0);
+    if (enabled) assert.equal((inserted[0] as { title: string }).title, "Reporte QA");
+  }
+});
+import { REPORT_RUN_LEASE_MS, reportRunLeaseExpired } from "../src/lib/report-run-lease";
+
+test("reportes: lease distingue ejecución vigente, expirada y sin fecha de inicio", () => {
+  const now = new Date("2026-10-08T12:00:00Z");
+  const createdAt = new Date(now.getTime() - REPORT_RUN_LEASE_MS);
+  assert.equal(reportRunLeaseExpired({ startedAt: new Date(now.getTime() - REPORT_RUN_LEASE_MS + 1), createdAt }, now), false);
+  assert.equal(reportRunLeaseExpired({ startedAt: createdAt, createdAt }, now), true);
+  assert.equal(reportRunLeaseExpired({ startedAt: null, createdAt }, now), true);
+  assert.equal(reportRunLeaseExpired({ startedAt: new Date(now.getTime() + 1), createdAt }, now), false);
+  assert.equal(reportRunLeaseExpired({ startedAt: createdAt, createdAt }, new Date(NaN)), false);
+});
+import { reportExecutionPresentation } from "../src/lib/report-schedule-presentation";
 import {
   getNextReportOccurrence,
   normalizeReportScheduleInput,
@@ -56,5 +86,17 @@ test("reportes: el flujo expone dominio, migración, API y UI persistentes", () 
   assert.match(read("src/lib/reporting-service.ts"), /for\("update"\)/);
   assert.match(read("src/app/api/cron/gestion/route.ts"), /CRON_SECRET/);
   assert.match(read("src/components/admin/ReportScheduleControls.tsx"), /INTERNAL|inbox interno/i);
-  assert.match(read("src/components/admin/ReportScheduleControls.tsx"), /EjecuciÃ³n automÃ¡tica activa|Ejecución automática activa/i);
+  assert.match(read("src/components/admin/ReportScheduleControls.tsx"), /reportExecutionPresentation\(executionConfigured\)/);
+  assert.match(read("src/app/admin/reportes/page.tsx"), /executionConfigured=\{Boolean\(process.env.CRON_SECRET\?\.trim\(\)\)\}/);
+  assert.doesNotMatch(read("src/components/admin/ReportScheduleControls.tsx"), /Ejecución automática activa/);
+});
+
+test("reportes: an unavailable executor cannot be presented as active", () => {
+  const unavailable = reportExecutionPresentation(false);
+  assert.equal(unavailable.label, "Ejecución no habilitada");
+  assert.match(unavailable.warning!, /aún no se entregará/);
+  const configured = reportExecutionPresentation(true);
+  assert.equal(configured.label, "Programaciones guardadas");
+  assert.equal(configured.warning, null);
+  assert.doesNotMatch(configured.label, /activa/i);
 });

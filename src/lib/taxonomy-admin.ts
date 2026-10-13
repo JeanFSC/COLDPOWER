@@ -80,6 +80,18 @@ export async function getTaxonomyPage(filters: TaxonomyFilters): Promise<Taxonom
   return { entity: filters.entity, items, page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))), pageSize, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / pageSize)), metrics: { total: totalItems, active, inactive, used, unused: Math.max(0, totalItems - used), productsWithoutBrand: normalizeCount(unbranded?.value) } };
 }
 
+/** The management tree needs every entity; the public API remains paginated. */
+export async function getTaxonomyTree(entity: TaxonomyEntity): Promise<TaxonomyPage> {
+  const first = await getTaxonomyPage({ entity, page: 1, pageSize: 100 });
+  const remaining = await Promise.all(
+    Array.from({ length: first.totalPages - 1 }, (_, index) =>
+      getTaxonomyPage({ entity, page: index + 2, pageSize: 100 }),
+    ),
+  );
+  const items = [...first.items, ...remaining.flatMap((page) => page.items)];
+  return { ...first, items, page: 1, pageSize: Math.max(1, items.length), totalPages: 1 };
+}
+
 export async function getTaxonomyDetail(entity: TaxonomyEntity, id: string, page = 1, pageSize = 25) {
   const db = getDb();
   const safePage = Math.max(1, page);

@@ -27,7 +27,7 @@ export default async function AdminConfiguracionPage() {
       db.select({ legalName: companySettings.legalName, tradeName: companySettings.tradeName, ruc: companySettings.ruc, paymentMethods: companySettings.paymentMethods, version: companySettings.version, updatedAt: companySettings.updatedAt, logoMediaId: companySettings.logoMediaId, phone: companySettings.phone, whatsapp: companySettings.whatsapp, email: companySettings.email, salesEmail: companySettings.salesEmail }).from(companySettings).where(eq(companySettings.id, "default")).limit(1),
       db.select({ count: count() }).from(locations).where(eq(locations.active, true)),
       db.select({ count: count() }).from(locations),
-      db.select({ id: locations.id, code: locations.code, name: locations.name, type: locations.type, address: locations.address, city: locations.city, active: locations.active }).from(locations).orderBy(desc(locations.createdAt)).limit(5),
+      db.select({ id: locations.id, code: locations.code, name: locations.name, type: locations.type, address: locations.address, city: locations.city, active: locations.active }).from(locations).orderBy(desc(locations.createdAt), locations.id),
       listActivePriceTypes(),
       listDocumentSeries(),
       listIntegrations(),

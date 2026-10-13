@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { MarkAsReadButton } from "@/components/admin/NotificationDetailActions";
-import { priorityOf } from "@/lib/notifications-service";
-import { notificationBodyLabel, notificationEventLabel } from "@/lib/notification-display";
+import { notificationBodyLabel, notificationEventLabel, notificationPriority } from "@/lib/notification-display";
+import { useConfirmedNotifications } from "@/components/admin/useConfirmedNotifications";
 import type { getNotificationDetail } from "@/lib/notification-rules-service";
 
 type Detail = NonNullable<Awaited<ReturnType<typeof getNotificationDetail>>>;
@@ -33,6 +35,7 @@ const stateClasses: Record<string, string> = {
 };
 const stateLabel: Record<string, string> = { UNREAD: "No leído", READ: "Leído", DISMISSED: "Descartado" };
 const originLabel: Record<Detail["originKind"], string> = {
+  report: "Generada por reporte programado",
   rule: "Generada por regla automática",
   schedule: "Generada por aviso programado",
   manual: "Generada por aviso manual",
@@ -45,13 +48,14 @@ function initialsOf(name: string | null, fallback: string) {
   if (parts.length < 2) return source.slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
-const dateTimeFormat = new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const dateTimeFormat = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 function formatDateTime(value: Date | string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "—" : dateTimeFormat.format(date).replace(".", "");
 }
 
 export function NotificationDetail({ detail }: { detail: Detail | null }) {
+  const confirmed = useConfirmedNotifications(detail);
   if (!detail) {
     return (
       <aside className="flex min-h-[180px] h-fit flex-col items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white p-6 text-center shadow-2xs">
@@ -62,8 +66,12 @@ export function NotificationDetail({ detail }: { detail: Detail | null }) {
     );
   }
 
-  const { notification, recipients, origin, originKind } = detail;
-  const priority = priorityOf({ type: notification.type, metadata: notification.metadata as Record<string, unknown> | null });
+  const { origin, originKind } = detail;
+  const update = confirmed.notifications.find((row) => row.id === detail.notification.id);
+  const notification = { ...detail.notification, ...update };
+  const recipients = detail.recipients.map((recipient) => ({ ...recipient,
+    ...confirmed.notifications.find((row) => row.id === recipient.id) }));
+  const priority = notificationPriority({ type: notification.type, metadata: notification.metadata as Record<string, unknown> | null });
   const hero = priorityHero[priority];
 
   const events: Array<{ label: string; time: Date; detail?: string }> = [];
@@ -112,7 +120,7 @@ export function NotificationDetail({ detail }: { detail: Detail | null }) {
           </div>
           <div className="flex items-center justify-between pt-1.5">
             <span className="font-normal text-slate-400">Canal</span>
-            <span className="text-[11.5px] font-medium text-slate-700">In-App</span>
+            <span className="text-[11.5px] font-medium text-slate-700">Interno</span>
           </div>
           {notification.link ? (
             <div className="flex items-center justify-between pt-1.5">

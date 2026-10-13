@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { AuditModule } from "@/components/admin/AdminAuditModule";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
-import { diffAuditSnapshots, parseAuditFilters, presentAuditItem, type AuditListItem, type AuditPageResponse } from "@/lib/audit-contract";
+import { diffAuditSnapshots, presentAuditItem, type AuditListItem, type AuditPageResponse } from "@/lib/audit-contract";
+import { resolveAuditPageFilters } from "@/lib/audit-page-filters";
 import { sanitizeAuditValue } from "@/lib/operational-semantics";
 import { getAuditPage, getAuditDetail, getRelatedAuditEvents, listSavedAuditFilters } from "@/lib/audit-repository";
 
@@ -45,32 +46,42 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
   // baseQuery drives every href the page builds (pagination, tabs, row links, saved
   // filters) — it is the current filter set with page/eventId/tab stripped, so those
   // three are always set explicitly by the link building them, never inherited by accident.
-  const baseParams = new URLSearchParams(query);
-  baseParams.delete("page");
-  baseParams.delete("eventId");
-  baseParams.delete("tab");
-  const baseQuery = baseParams.toString();
+  const { filters, filterNotice, baseQuery, exportHref } = resolveAuditPageFilters(query);
 
-  const [pageResult, selectedResult, savedFilters] = await Promise.all([
-    Promise.resolve().then(() => getAuditPage(parseAuditFilters(query))).catch((error) => {
+  const [pageResult, detailResult, savedFilterResult] = await Promise.all([
+    getAuditPage(filters).catch((error) => {
       console.error("ColdPower: no se pudo cargar la auditoría", error);
       return null;
     }),
-    eventId ? getAuditDetail(eventId).catch(() => null) : Promise.resolve(null),
-    listSavedAuditFilters(actor.userId).catch(() => []),
+    eventId ? getAuditDetail(eventId).then(item => ({ item, error: null as string | null })).catch((error) => {
+      console.error("ColdPower: no se pudo cargar el detalle de auditoría", error);
+      return { item: null, error: "No se pudo cargar el evento. Actualiza la página para volver a intentarlo." };
+    }) : Promise.resolve({ item: null, error: null }),
+    listSavedAuditFilters(actor.userId).then(items => ({ items, error: false })).catch((error) => {
+      console.error("ColdPower: no se pudieron cargar los filtros guardados", error);
+      return { items: [], error: true };
+    }),
   ]);
   // Everything handed to the client component is serialized into the page payload, so
   // redaction must happen here, not only in what the UI chooses to render.
   const present = <T extends AuditListItem>(item: T) => presentAuditItem(item, canViewSensitive, sanitizeAuditValue);
   const page = pageResult ? { ...pageResult, items: pageResult.items.map(present) } : emptyPage;
   const loadError = pageResult === null;
+  const selectedResult = detailResult.item;
+  const savedFilters = savedFilterResult.items;
+  const savedFiltersError = savedFilterResult.error;
 
   const selected = selectedResult ? present(selectedResult) : null;
+  const detailError = detailResult.error ?? (eventId && !selected ? "El evento solicitado no existe." : null);
 
-  const relatedEvents = selected ? (await getRelatedAuditEvents(selectedResult!).catch(() => [])).map(present) : [];
+  const relatedResult = selected ? await getRelatedAuditEvents(selectedResult!).then(items => ({ items, error: false })).catch((error) => {
+    console.error("ColdPower: no se pudieron cargar los eventos relacionados", error);
+    return { items: [], error: true };
+  }) : { items: [], error: false };
+  const relatedEvents = relatedResult.items.map(present);
+  const relatedEventsError = relatedResult.error;
   const diff = selected && canViewSensitive ? diffAuditSnapshots(selected.before, selected.after) : [];
 
-  const exportHref = `/api/admin/auditoria/export${query.toString() ? `?${query.toString()}` : ""}`;
 
   return (
     <AuditModule
@@ -81,13 +92,7 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
       rows={page.items}
       pagination={{ page: page.page, totalPages: page.totalPages, totalItems: page.totalItems }}
       facets={{ modules: page.facets.modules, severities: page.facets.severities }}
-      filters={{
-        query: query.get("query") ?? undefined,
-        module: query.get("module") ?? undefined,
-        severity: query.get("severity") ?? undefined,
-        dateFrom: query.get("dateFrom") ?? undefined,
-        dateTo: query.get("dateTo") ?? undefined,
-      }}
+      filters={filters}
       baseQuery={baseQuery}
       exportHref={exportHref}
       selected={selected}
@@ -97,6 +102,10 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
       tab={tab}
       savedFilters={savedFilters}
       loadError={loadError}
+      filterNotice={filterNotice}
+      detailError={detailError}
+      relatedEventsError={relatedEventsError}
+      savedFiltersError={savedFiltersError}
     />
   );
 }

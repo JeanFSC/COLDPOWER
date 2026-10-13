@@ -2,6 +2,7 @@ import { and, count, desc, eq, gt, gte, inArray, lt, lte, or, sql } from "drizzl
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { crmTasks } from "@/db/crm-schema";
+import { reportScheduleRuns } from "@/db/reporting-schema";
 import {
   notificationRules,
   notificationSchedules,
@@ -575,6 +576,7 @@ export async function createNotificationSchedule(input: NotificationScheduleInpu
     throw new Error("La fecha programada debe estar en el futuro.");
   return getDb().transaction(async (tx) => {
     if (input.idempotencyKey) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`notification-schedule:${input.idempotencyKey}`}))`);
       const [existing] = await tx
         .select()
         .from(notificationSchedules)
@@ -883,13 +885,19 @@ export async function getNotificationDetail(notificationId: string, restrictToRe
   const metadata = row.metadata as Record<string, unknown> | null;
   const ruleId = typeof metadata?.ruleId === "string" ? metadata.ruleId : null;
   const scheduleId = typeof metadata?.scheduleId === "string" ? metadata.scheduleId : null;
+  const isReport = row.type === "SCHEDULED_REPORT" && Boolean(scheduleId);
+  const scheduledFor = typeof metadata?.scheduledFor === "string" ? new Date(metadata.scheduledFor) : null;
+  const reportRun = isReport && scheduleId && scheduledFor && !Number.isNaN(scheduledFor.getTime())
+    ? (await db.select({ id: reportScheduleRuns.id }).from(reportScheduleRuns)
+      .where(and(eq(reportScheduleRuns.scheduleId, scheduleId), eq(reportScheduleRuns.scheduledFor, scheduledFor))).limit(1))[0]
+    : null;
   const originEntityId = ruleId ?? scheduleId ?? (row.type === "MANUAL" ? row.id : null);
-  const originAction = ruleId ? "notifications.rule_triggered" : scheduleId ? "notifications.schedule_sent" : row.type === "MANUAL" ? "notifications.manual_sent" : null;
-  const origin = originEntityId && originAction
-    ? (await db.select({ action: auditLogs.action, createdAt: auditLogs.createdAt }).from(auditLogs).where(and(eq(auditLogs.entityId, originEntityId), eq(auditLogs.action, originAction))).orderBy(desc(auditLogs.createdAt)).limit(1))[0] ?? null
+  const originAction = isReport ? "reports.schedule_run_succeeded" : ruleId ? "notifications.rule_triggered" : scheduleId ? "notifications.schedule_sent" : row.type === "MANUAL" ? "notifications.manual_sent" : null;
+  const origin = originEntityId && originAction && (!isReport || reportRun)
+    ? (await db.select({ action: auditLogs.action, createdAt: auditLogs.createdAt }).from(auditLogs).where(and(eq(auditLogs.entityId, originEntityId), eq(auditLogs.action, originAction), ...(isReport && reportRun ? [eq(auditLogs.entityType, "report_schedule"), sql`${auditLogs.metadata}->>'runId' = ${reportRun.id}`] : []))).orderBy(desc(auditLogs.createdAt)).limit(1))[0] ?? null
     : null;
 
-  return { notification: row, recipients, origin, originKind: ruleId ? ("rule" as const) : scheduleId ? ("schedule" as const) : row.type === "MANUAL" ? ("manual" as const) : ("event" as const) };
+  return { notification: row, recipients, origin, originKind: isReport ? ("report" as const) : ruleId ? ("rule" as const) : scheduleId ? ("schedule" as const) : row.type === "MANUAL" ? ("manual" as const) : ("event" as const) };
 }
 
 export async function cancelNotificationSchedule(scheduleId: string, actor: Actor) {

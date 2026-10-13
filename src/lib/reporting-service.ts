@@ -2,6 +2,9 @@ import { and, count, desc, eq, inArray, lte } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { reportScheduleRuns, reportSchedules } from "@/db/reporting-schema";
+import { notifications } from "@/db/operations-schema";
+import { reportRunLeaseExpired } from "@/lib/report-run-lease";
+import { createNotifications } from "@/lib/notifications-service";
 import {
   getOperationsDashboard,
   listReportOptions,
@@ -13,7 +16,6 @@ import {
   type DashboardFilters,
 } from "@/lib/dashboard-contract";
 import { allOperationalRoles, can, type AppRole } from "@/lib/roles";
-import { createNotifications } from "@/lib/notifications-service";
 
 export const reportScheduleFrequencies = ["DAILY", "WEEKLY", "MONTHLY"] as const;
 export type ReportScheduleFrequency = (typeof reportScheduleFrequencies)[number];
@@ -289,7 +291,7 @@ function reportNotificationBody(
   return `El reporte "${schedule.name}" ya está disponible. Ventas confirmadas del período: ${amount}.`;
 }
 
-export async function processDueReportSchedules(now = new Date()) {
+export async function processDueReportSchedules(now = new Date(), loadSnapshot = getReportSnapshot) {
   const db = getDb();
   const candidates = await db
     .select()
@@ -328,7 +330,8 @@ export async function processDueReportSchedules(now = new Date()) {
         )
         .for("update")
         .limit(1);
-      if (existing?.status === "RUNNING" || existing?.status === "SUCCEEDED") return null;
+      if (existing?.status === "SUCCEEDED") return null;
+      if (existing?.status === "RUNNING" && !reportRunLeaseExpired(existing, now)) return null;
       const [run] = existing
         ? await tx
             .update(reportScheduleRuns)
@@ -347,35 +350,54 @@ export async function processDueReportSchedules(now = new Date()) {
             })
             .returning();
       if (!run) throw new Error("No se pudo iniciar la ejecución del reporte.");
-      return { schedule, run, scheduledFor };
+      if (existing?.status === "RUNNING") await tx.insert(auditLogs).values({
+        id: id("audit"), actorId: schedule.createdBy, actorRole: "SYSTEM",
+        action: "reports.schedule_run_recovered", entityType: "report_schedule", entityId: schedule.id,
+        before: { runId: existing.id, startedAt: existing.startedAt },
+        after: { runId: run.id, startedAt: run.startedAt }, metadata: { recovery: "EXPIRED_LEASE" },
+      });
+      return { schedule, run, scheduledFor, claimedAt: now };
     });
     if (!claim) continue;
     processed += 1;
 
     try {
       const filters = claim.schedule.filters as DashboardFilters;
-      const snapshot = await getReportSnapshot(filters, { userId: claim.schedule.createdBy, role: "REPORTES" });
+      const snapshot = await loadSnapshot(filters, { userId: claim.schedule.createdBy, role: "REPORTES" });
       const recipientIds = await activeReportRecipientIds(claim.schedule);
-      const notifications = await createNotifications(
-        recipientIds.map((recipientId) => ({
+      const completed = await db.transaction(async (tx) => {
+        // Match the claim's lock order. Ownership must survive through delivery and commit.
+        const [currentSchedule] = await tx.select().from(reportSchedules).where(eq(reportSchedules.id, claim.schedule.id)).for("update");
+        const [ownedRun] = await tx.select().from(reportScheduleRuns).where(and(
+          eq(reportScheduleRuns.id, claim.run.id), eq(reportScheduleRuns.status, "RUNNING"),
+          eq(reportScheduleRuns.startedAt, claim.claimedAt),
+        )).for("update");
+        if (!currentSchedule || !ownedRun) return false;
+        if (currentSchedule.status !== "ACTIVE") {
+          await tx.update(reportScheduleRuns).set({ status: "SKIPPED", finishedAt: now, error: "La programación se pausó o canceló antes de entregar." }).where(eq(reportScheduleRuns.id, ownedRun.id));
+          await tx.insert(auditLogs).values({ id: id("audit"), actorId: claim.schedule.createdBy, actorRole: "SYSTEM", action: "reports.schedule_run_skipped", entityType: "report_schedule", entityId: claim.schedule.id, before: { status: "RUNNING" }, after: { status: "SKIPPED" }, metadata: { runId: ownedRun.id, reason: "SCHEDULE_INACTIVE" } });
+          return false;
+        }
+        const dedupeKey = `report-schedule:${claim.schedule.id}:${claim.scheduledFor.toISOString()}`;
+        if (recipientIds.length) await createNotifications(recipientIds.map((recipientId) => ({
           recipientId,
           type: "SCHEDULED_REPORT",
-          title: `Reporte listo: ${claim.schedule.name}`,
-          body: reportNotificationBody(claim.schedule, snapshot),
-          link: `/admin/reportes?${dashboardFiltersToQuery(filters).toString()}`,
+          title: `Reporte listo: ${claim.schedule.name}`.slice(0, 180),
+          body: reportNotificationBody(claim.schedule, snapshot).slice(0, 1000),
+          link: `/admin/reportes?${dashboardFiltersToQuery(filters).toString()}`.slice(0, 500),
           metadata: {
             scheduleId: claim.schedule.id,
             scheduledFor: claim.scheduledFor.toISOString(),
             currency: snapshot.currency,
           },
-          dedupeKey: `report-schedule:${claim.schedule.id}:${claim.scheduledFor.toISOString()}`,
-        })),
-      );
-      await db.transaction(async (tx) => {
+          dedupeKey,
+        })), tx);
+        const [delivered] = await tx.select({ total: count() }).from(notifications).where(eq(notifications.dedupeKey, dedupeKey));
+        const notificationCount = Number(delivered?.total ?? 0);
         const nextRunAt = getNextReportOccurrence(claim.scheduledFor, claim.schedule.frequency);
         await tx
           .update(reportScheduleRuns)
-          .set({ status: "SUCCEEDED", notificationCount: notifications.length, finishedAt: now, error: null })
+          .set({ status: "SUCCEEDED", notificationCount, finishedAt: now, error: null })
           .where(eq(reportScheduleRuns.id, claim.run.id));
         await tx
           .update(reportSchedules)
@@ -389,15 +411,21 @@ export async function processDueReportSchedules(now = new Date()) {
           entityType: "report_schedule",
           entityId: claim.schedule.id,
           before: { status: "ACTIVE", nextRunAt: claim.scheduledFor },
-          after: { status: "SUCCEEDED", nextRunAt, notificationCount: notifications.length },
+          after: { status: "SUCCEEDED", nextRunAt, notificationCount },
           metadata: { runId: claim.run.id, delivery: "INTERNAL_INBOX" },
         });
+        return true;
       });
-      succeeded += 1;
+      if (completed) succeeded += 1;
     } catch (error) {
-      failed += 1;
       const message = error instanceof Error ? error.message.slice(0, 500) : "Error desconocido al ejecutar el reporte.";
-      await db.transaction(async (tx) => {
+      const recorded = await db.transaction(async (tx) => {
+        await tx.select({ id: reportSchedules.id }).from(reportSchedules).where(eq(reportSchedules.id, claim.schedule.id)).for("update");
+        const [ownedRun] = await tx.select().from(reportScheduleRuns).where(and(
+          eq(reportScheduleRuns.id, claim.run.id), eq(reportScheduleRuns.status, "RUNNING"),
+          eq(reportScheduleRuns.startedAt, claim.claimedAt),
+        )).for("update");
+        if (!ownedRun) return false;
         await tx
           .update(reportScheduleRuns)
           .set({ status: "FAILED", error: message, finishedAt: now })
@@ -413,7 +441,9 @@ export async function processDueReportSchedules(now = new Date()) {
           after: { status: "FAILED", error: message },
           metadata: { runId: claim.run.id },
         });
+        return true;
       });
+      if (recorded) failed += 1;
     }
   }
   return { processed, succeeded, failed };

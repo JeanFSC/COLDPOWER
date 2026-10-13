@@ -27,5 +27,9 @@ test("purchases presents a guided workflow with persistent endpoints", () => {
   assert.match(source, /recepciones\/opciones/);
   assert.match(source, /Idempotency-Key/);
   assert.match(source, /canReceive/);
-  assert.match(page, /PurchasesInvalidFilterError/);
+  const filters = fs.readFileSync("src/lib/purchases-page-filters.ts", "utf8");
+  assert.match(page, /resolvePurchasesPageFilters\(query\)/);
+  assert.match(filters, /error instanceof PurchasesInvalidFilterError/);
+  assert.match(page, /exportHref=\{resolved\.exportHref\}/);
+  assert.match(page, /queryString=\{resolved\.queryString\}/);
 });

@@ -42,6 +42,7 @@ export default async function AdminClientesPage({
   ]);
   return (
     <CustomersControlCenter
+      key={query.get("new") === "1" ? "create-customer" : "customer-list"}
       page={page}
       queryString={query.toString()}
       canManage={can(actor.role, "customers.manage")}

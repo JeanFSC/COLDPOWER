@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition, type DragEvent, type FormE
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminTooltip } from "@/components/admin/AdminTooltip";
+import { crmActivityLabel, crmFollowupStatusLabel } from "@/lib/crm-activity-label";
 import {
   canTransitionOpportunity,
   opportunityOrigins,
@@ -2040,7 +2041,7 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
                             {dateLabel(item.dueAt, true)} · {item.assignedToName ?? "Sin asignar"}
                           </p>
                         </div>
-                        <span className="text-[10px] font-black text-slate-500">{item.status}</span>
+                        <span className="text-[10px] font-black text-slate-500">{crmFollowupStatusLabel(item.status)}</span>
                       </div>
                       {item.status === "PENDING" ? (
                         <div className="mt-2 flex gap-2">
@@ -2078,14 +2079,14 @@ export function PipelineWorkspace({ board, queryString, deepLink }: PipelineWork
               <div className="rounded-lg border border-slate-200 p-3 text-xs font-semibold text-slate-600">
                 {detail.quoteId ? (
                   <a
-                    href={`/admin/cotizaciones?query=${encodeURIComponent(detail.quoteId)}`}
+                    href={`/admin/cotizaciones?quoteId=${encodeURIComponent(detail.quoteId)}`}
                     className="font-black text-blue-600"
                   >
-                    Abrir cotización {detail.quoteId}
+                    Abrir cotización vinculada
                   </a>
                 ) : (
                   <a
-                    href={`/admin/cotizaciones?opportunityId=${encodeURIComponent(detail.id)}`}
+                    href={`/admin/cotizaciones?new=1&opportunityId=${encodeURIComponent(detail.id)}`}
                     className="font-black text-blue-600"
                   >
                     Crear cotización desde esta oportunidad
@@ -2481,7 +2482,7 @@ function Timeline({
           <span className="absolute -left-[5px] top-1 h-2 w-2 rounded-full bg-blue-600" />
           <p className="text-xs font-black text-slate-700">{item.subject}</p>
           <p className="mt-1 text-[10px] font-semibold text-slate-400">
-            {item.type} · {item.actorName} · {dateLabel(item.createdAt, true)}
+            {crmActivityLabel(item.type)} · {item.actorName} · {dateLabel(item.createdAt, true)}
           </p>
           {item.body ? <p className="mt-2 text-xs leading-5 text-slate-600">{item.body}</p> : null}
         </div>

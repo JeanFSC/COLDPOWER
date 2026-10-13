@@ -1,10 +1,34 @@
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
+import { isPendingProviderPayment } from "../src/lib/payment-display";
+
+test("pagos: placeholder sin pasarela permite pago manual sin desbloquear cobros externos", () => {
+  const pending = { methodType: "PROVIDER", method: "UNCONFIGURED", status: "PENDING", provider: null, providerReference: null };
+  assert.equal(isPendingProviderPayment(pending), false);
+  assert.equal(isPendingProviderPayment({ ...pending, provider: "mock" }), true);
+  assert.equal(isPendingProviderPayment({ ...pending, providerReference: "external-1" }), true);
+  assert.equal(isPendingProviderPayment({ ...pending, method: "CARD" }), true);
+  assert.equal(isPendingProviderPayment({ ...pending, status: "UNDER_REVIEW", provider: "mock" }), true);
+  assert.equal(isPendingProviderPayment({ ...pending, status: "UNDER_REVIEW" }), true);
+  assert.equal(isPendingProviderPayment({ ...pending, methodType: "MANUAL" }), false);
+  assert.equal(isPendingProviderPayment({ ...pending, status: "CONFIRMED" }), false);
+  assert.equal(isPendingProviderPayment(null), false);
+});
 import { canTransitionPayment, normalizeProviderStatus, parsePaymentsFilters, PaymentsInvalidFilterError, reconciliationState, summarizePaymentLedger } from "../src/lib/payments-contract";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(`${root}/${path}`, "utf8");
+
+test("pago completo cierra solo placeholders sin proveedor ni intentos y conserva trazabilidad", () => {
+  const service = read("src/lib/sales-service.ts");
+  assert.match(service, /if \(netReceived \+ 0\.005 >= money\(order.total\)\)/);
+  assert.match(service, /eq\(payments.method, "UNCONFIGURED"\)/);
+  assert.match(service, /isNull\(payments.provider\), isNull\(payments.providerReference\)/);
+  assert.match(service, /notExists\(tx.select\(\{ id: paymentAttempts.id \}\)/);
+  assert.match(service, /payments.placeholder_closed/);
+  assert.match(service, /fromStatus: "PENDING", toStatus: "CANCELLED"/);
+});
 
 test("pagos: filtros, fechas y paginación", () => {
   const result = parsePaymentsFilters(new URLSearchParams("query=ORD-1&status=PENDING&provider=culqi&method=TRANSFER&orderId=o1&customerId=c1&dateFrom=2026-01-01&dateTo=2026-01-31&page=2&pageSize=50"));
@@ -80,6 +104,49 @@ test("pagos: exportación incluye conciliación financiera completa", () => {
   for (const field of ["Esperado", "Neto recibido", "Diferencia", "Conciliación"]) {
     assert.match(route, new RegExp(field));
   }
+});
+
+test("pagos: exportación usa descarga nativa y conserva los filtros", () => {
+  const control = read("src/components/admin/PaymentsControlCenter.tsx");
+  assert.match(control, /<a\s+href=\{"\/api\/admin\/pagos\/export\?" \+ queryString\}\s+download="coldpower-pagos\.xlsx"/);
+});
+
+test("pagos: mutaciones refrescan detalle y bandeja persistida", () => {
+  const control = read("src/components/admin/PaymentsControlCenter.tsx");
+  assert.match(control, /async function load\(\)\s*\{\s*await loadDetail\(\);\s*router\.refresh\(\);/);
+  assert.match(control, /onConfirmed=\{\(\) => load\(\)\}/);
+});
+
+test("pagos: servidor serializa con pasarela y bloquea cobro manual externo pendiente", () => {
+  const service = read("src/lib/sales-service.ts").split("export async function registerManualPayment")[1];
+  assert.match(service, /pg_advisory_xact_lock\(hashtext/);
+  assert.ok(service.indexOf("pg_advisory_xact_lock") < service.indexOf("existingPaymentByKey"));
+  assert.ok(service.indexOf("pendingProviderPayments.some(isPendingProviderPayment)") < service.indexOf("tx.insert(payments)"));
+  assert.match(read("src/app/api/admin/pagos/manual/route.ts"), /PAYMENT_PROVIDER_PENDING[\s\S]*409/);
+});
+
+test("pagos: servidor valida saldo neto antes de insertar cobros manuales", () => {
+  const service = read("src/lib/sales-service.ts").split("export async function registerManualPayment")[1];
+  assert.match(service, /summarizePaymentLedger\(order.total, existingPayments, existingRefunds\).balance/);
+  assert.ok(service.indexOf("PAYMENT_AMOUNT_EXCEEDS_BALANCE") < service.indexOf("tx.insert(payments)"));
+  assert.match(service, /requestedAmount !== money\(requestedAmount\)/);
+  assert.match(read("src/app/api/admin/pagos/manual/route.ts"), /PAYMENT_AMOUNT_EXCEEDS_BALANCE[\s\S]*409/);
+});
+
+test("pagos: reembolsos rechazan tipo numérico sin asumir devolución total", () => {
+  const route = read("src/app/api/admin/pagos/[id]/refund/route.ts");
+  assert.match(route, /value\.amount !== undefined && typeof value\.amount !== "string"/);
+  assert.ok(route.indexOf("PAYMENT_REFUND_AMOUNT_INVALID") < route.indexOf("await refundPayment"));
+  const service = read("src/lib/payment-service.ts");
+  assert.match(service, /existing\.paymentId !== paymentId/);
+  assert.match(service, /PAYMENT_REFUND_IDEMPOTENCY_CONFLICT/);
+});
+
+test("pagos: devolución manual confirma estado e historial dentro de la transacción inicial", () => {
+  const refund = read("src/lib/payment-service.ts").split("export async function refundPayment")[1].split("let result: PaymentRefundResult")[0];
+  assert.equal((refund.match(/db\.transaction/g) ?? []).length, 1);
+  assert.match(refund, /if \(manual\)[\s\S]*tx\.update\(payments\)[\s\S]*tx\.insert\(paymentStatusHistory\)[\s\S]*payments\.refund_confirmed/);
+  assert.match(refund, /if \(prepared\.idempotent \|\| !prepared\.payment \|\| prepared\.manual\) return prepared/);
 });
 
 test("pagos: ofrece loading state estructural para la navegación al módulo", () => {

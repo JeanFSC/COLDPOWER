@@ -2,10 +2,11 @@ import { and, asc, eq, ilike, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, products, quotes, users } from "@/db/schema";
 import { crmActivities, crmAttachments, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityItems, opportunityStageHistory } from "@/db/crm-schema";
-import { operationsWorkItemHistory, operationsWorkItems } from "@/db/operations-schema";
 import { assertOpportunityTransition, contactActivityTypes, type ActivityType, type CustomerType, type OpportunityCurrency, type OpportunityItemInput, type OpportunityOrigin, type OpportunityStage, type TaskStatus } from "@/lib/crm-validation";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { activeCommercialStages, postSaleOpportunityStages, sellerRoleCodes } from "@/lib/opportunity-stage-config";
+import { refreshOpportunityFollowUpSnapshot } from "@/lib/crm-followup-snapshot";
+import { syncCrmWorkItemStatus } from "@/lib/crm-work-item-status";
 
 type Actor = { userId: string; role: string };
 export class CrmDomainError extends Error {
@@ -54,12 +55,6 @@ function centsToMoney(value: number) {
 function normalizedOpportunityItems(input: { items?: OpportunityItemInput[]; itemIds?: string[] }) {
   if (input.items?.length) return input.items;
   return [...new Set((input.itemIds ?? []).filter((productId) => typeof productId === "string" && productId.trim()))].map((productId) => ({ productId, quantity: 1, unitPrice: null, currency: null } satisfies OpportunityItemInput));
-}
-
-async function refreshOpportunityFollowUpSnapshot(tx: Transaction, opportunityId: string) {
-  const [followup] = await tx.select({ title: opportunityFollowups.title, dueAt: opportunityFollowups.dueAt }).from(opportunityFollowups).where(and(eq(opportunityFollowups.opportunityId, opportunityId), eq(opportunityFollowups.status, "PENDING"))).orderBy(asc(opportunityFollowups.dueAt)).limit(1);
-  await tx.update(opportunities).set({ followUpAt: followup?.dueAt ?? null, nextAction: followup?.title ?? null, updatedAt: new Date() }).where(eq(opportunities.id, opportunityId));
-  return followup ?? null;
 }
 
 async function assertCustomerDuplicate(tx: Transaction, input: { email?: string | null; phone?: string | null; documentNumber?: string | null; ruc?: string | null }, customerId?: string) {
@@ -201,7 +196,7 @@ type StageChangeDetails = { lostReason?: string | null; cancellationReason?: str
 
 export async function changeOpportunityStage(opportunityId: string, nextStage: OpportunityStage, actor: Actor, note?: string, followUpAt?: Date | null, nextAction?: string | null, details: StageChangeDetails = {}) {
   return getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(opportunities).where(eq(opportunities.id, opportunityId)).limit(1);
+    const [before] = await tx.select().from(opportunities).where(eq(opportunities.id, opportunityId)).for("update").limit(1);
     if (!before) throw new CrmDomainError("OPPORTUNITY_NOT_FOUND", "Oportunidad no encontrada.", 404);
     try {
       assertOpportunityTransition(before.stage, nextStage);
@@ -252,12 +247,13 @@ export async function createOpportunityFollowup(input: { opportunityId: string; 
 
 export async function updateOpportunityFollowup(followUpId: string, input: { title?: string; dueAt?: Date; status?: TaskStatus }, actor: Actor) {
   return getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(opportunityFollowups).where(eq(opportunityFollowups.id, followUpId)).limit(1);
+    const [before] = await tx.select().from(opportunityFollowups).where(eq(opportunityFollowups.id, followUpId)).for("update").limit(1);
     if (!before) throw new CrmDomainError("FOLLOW_UP_NOT_FOUND", "Seguimiento no encontrado.", 404);
     if (input.dueAt && Number.isNaN(input.dueAt.getTime())) throw new CrmDomainError("FOLLOW_UP_INVALID", "La fecha de seguimiento no es válida.", 422);
     const status = input.status ?? before.status;
     const [after] = await tx.update(opportunityFollowups).set({ title: input.title?.trim().slice(0, 180) || before.title, dueAt: input.dueAt ?? before.dueAt, status, completedAt: status === "COMPLETED" ? new Date() : status === "PENDING" ? null : before.completedAt }).where(eq(opportunityFollowups.id, followUpId)).returning();
     const snapshot = await refreshOpportunityFollowUpSnapshot(tx, before.opportunityId);
+    await syncCrmWorkItemStatus(tx, followUpId, status, actor);
     await tx.insert(auditLogs).values(audit(actor, "crm.opportunity_followup_updated", "opportunity_followup", followUpId, before, after, { snapshot }));
     return after;
   });
@@ -342,17 +338,10 @@ export async function notifyOverdueFollowUps() {
 }
 export async function updateTaskStatus(taskId: string, status: TaskStatus, actor: Actor) {
   return getDb().transaction(async (tx) => {
-    const [before] = await tx.select().from(crmTasks).where(eq(crmTasks.id, taskId)).limit(1);
+    const [before] = await tx.select().from(crmTasks).where(eq(crmTasks.id, taskId)).for("update").limit(1);
     if (!before) throw new CrmDomainError("CRM_TASK_NOT_FOUND", "Tarea no encontrada.", 404);
     const [after] = await tx.update(crmTasks).set({ status, completedAt: status === "COMPLETED" ? new Date() : null, updatedAt: new Date() }).where(eq(crmTasks.id, taskId)).returning();
-    if (status === "COMPLETED" && before.status !== "COMPLETED") {
-      const [workItem] = await tx.select().from(operationsWorkItems).where(and(eq(operationsWorkItems.sourceType, "FOLLOW_UP"), eq(operationsWorkItems.sourceId, taskId))).for("update").limit(1);
-      if (workItem && workItem.status !== "RESOLVED" && workItem.status !== "STALE") {
-        const [resolved] = await tx.update(operationsWorkItems).set({ status: "RESOLVED", updatedAt: new Date() }).where(eq(operationsWorkItems.id, workItem.id)).returning();
-        await tx.insert(operationsWorkItemHistory).values({ id: id("work-item-history"), workItemId: workItem.id, actorId: actor.userId, action: "RESOLVE", fromAssigneeId: workItem.assigneeId, toAssigneeId: workItem.assigneeId, fromStatus: workItem.status, note: "La tarea CRM se completó." });
-        await tx.insert(auditLogs).values(audit(actor, "operations.work_item_resolved", "operations_work_item", workItem.id, workItem, resolved));
-      }
-    }
+    await syncCrmWorkItemStatus(tx, taskId, status, actor);
     await tx.insert(auditLogs).values(audit(actor, "crm.task_status_changed", "crm_task", taskId, before, after));
     return after;
   });

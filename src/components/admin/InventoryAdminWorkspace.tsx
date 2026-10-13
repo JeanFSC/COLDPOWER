@@ -1,5 +1,9 @@
 "use client";
 
+import { ExportFormatMenu } from "@/components/admin/ExportFormatMenu";
+import { StockImportDialog } from "@/components/admin/StockImportDialog";
+
+import { inventoryReferenceHref } from "@/lib/inventory-reference";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,7 +38,7 @@ import {
   type InventoryAdminFilters,
 } from "@/lib/inventory-admin-contract";
 import { isAdminOperableReservation } from "@/lib/inventory-domain";
-import type { InventoryMovementType } from "@/lib/inventory-types";
+import { inventoryMovementTypes, type InventoryMovementType } from "@/lib/inventory-types";
 import { resolveProductImage } from "@/lib/product-image";
 
 type LocationSummary = {
@@ -319,19 +323,7 @@ const reservationReferenceLabels: Record<string, string> = {
   manual: "Manual",
 };
 
-function referenceHref(referenceType: string | null, referenceId: string | null) {
-  if (!referenceId) return null;
-  const id = encodeURIComponent(referenceId);
-  if (referenceType === "order") return `/admin/pedidos?orderId=${id}`;
-  if (referenceType === "sale") return `/admin/ventas?saleId=${id}`;
-  if (referenceType === "transfer" || referenceType === "transfer_cancel")
-    return `/admin/inventario?tab=transfers&transferId=${id}`;
-  if (referenceType === "reservation" || referenceType === "reservation_expiry")
-    return `/admin/inventario?tab=reservations&reservationId=${id}`;
-  if (referenceType === "purchase" || referenceType === "purchase_receipt")
-    return `/admin/compras?purchaseId=${id}`;
-  return null;
-}
+const referenceHref = inventoryReferenceHref;
 const importStatusLabels: Record<string, string> = {
   DRY_RUN: "Vista previa",
   READY_FOR_TRANSACTION: "Listo para aplicar",
@@ -660,9 +652,9 @@ function GlobalMovementsDrawer({
               className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600"
             >
               <option value="">Todos los tipos</option>
-              {movementTypes.map((entry) => (
-                <option key={entry.value} value={entry.value}>
-                  {entry.label}
+              {inventoryMovementTypes.map((movementType) => (
+                <option key={movementType} value={movementType}>
+                  {inventoryMovementLabels[movementType]}
                 </option>
               ))}
             </select>
@@ -1683,13 +1675,7 @@ function KardexDrawer({ item, onClose }: { item: InventoryItem; onClose: () => v
             </p>
           </div>
           <div className="flex items-center gap-1">
-            <a
-              href={exportHref}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-[11px] font-extrabold text-blue-600 hover:border-blue-300"
-            >
-              <Download className="h-3 w-3" />
-              CSV
-            </a>
+            <ExportFormatMenu href={exportHref} label="Exportar Kardex" formats={["xlsx", "csv"]} />
             <button
               type="button"
               onClick={onClose}
@@ -1896,12 +1882,31 @@ function InventoryOperationsTabs({
         role="tablist"
         aria-label="Operaciones de inventario"
       >
-        {tabs.map((entry) => (
+        {tabs.map((entry, index) => (
           <button
             key={entry.id}
             type="button"
             role="tab"
             aria-selected={tab === entry.id}
+            tabIndex={tab === entry.id ? 0 : -1}
+            onFocus={(event) => {
+              event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+            }}
+            onKeyDown={(event) => {
+              let nextIndex: number;
+              if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+              else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+              else if (event.key === "Home") nextIndex = 0;
+              else if (event.key === "End") nextIndex = tabs.length - 1;
+              else return;
+              event.preventDefault();
+              setTab(tabs[nextIndex].id);
+              setPending(null);
+              setMessage("");
+              event.currentTarget.parentElement
+                ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]
+                ?.focus();
+            }}
             onClick={() => {
               setTab(entry.id);
               setPending(null);
@@ -2387,18 +2392,23 @@ function InventoryOperationsTabs({
         ) : null}
         {tab === "imports" ? (
           <div className="grid gap-2">
+            {searchParams.get("importBatchId") ? (
+              <Link href="/admin/inventario?tab=imports#inventory-operations" className="justify-self-start text-sm font-semibold text-blue-600 underline">
+                Ver últimas importaciones
+              </Link>
+            ) : null}
             {data.operations.imports.map((batch) => (
               <div
                 key={batch.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
               >
-                <div>
-                  <p className="font-mono text-[11px] font-extrabold text-blue-600">{batch.id}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="break-all font-mono text-[11px] font-extrabold text-blue-600">{batch.id}</p>
                   <p className="mt-1 text-[11px] font-extrabold text-slate-700">
                     {batch.filename || batch.source}
                   </p>
                   <p className="mt-1 text-[11px] text-slate-400">
-                    {number(batch.rowsRead)} filas · {number(batch.matched)} coincidentes ·{" "}
+                    {number(batch.rowsRead)} {batch.rowsRead === 1 ? "fila" : "filas"} · {number(batch.matched)} {batch.matched === 1 ? "coincidente" : "coincidentes"} ·{" "}
                     {number(batch.unmatched)} sin SKU · {number(batch.ambiguous)} ambiguas
                   </p>
                 </div>
@@ -2411,7 +2421,7 @@ function InventoryOperationsTabs({
               </div>
             ))}
             {!data.operations.imports.length ? (
-              <OperationEmpty text="Aún no hay lotes de importación. La importación inicial requiere vista previa y confirmación." />
+              <OperationEmpty text={searchParams.get("importBatchId") ? "No se encontró el lote de importación solicitado." : "Aún no hay lotes de importación. La importación inicial requiere vista previa y confirmación."} />
             ) : null}
           </div>
         ) : null}
@@ -2540,6 +2550,10 @@ function Filters({
     (category) => category.id === filters.categoryId,
   );
   const familyLabel = data.facets.families.find((family) => family.id === filters.familyId);
+  const familyDisplayName = (family: { name: string; categoryId: string }) => {
+    const category = data.facets.categories.find((item) => item.id === family.categoryId);
+    return category ? `${family.name} · ${category.name}` : family.name;
+  };
   const brandLabel = data.facets.brands.find((brand) => brand.id === filters.brandId);
   const activeFilters: Array<{ key: string; label: string }> = [
     filters.productId ? { key: "productId", label: "Referencia filtrada" } : null,
@@ -2547,7 +2561,7 @@ function Filters({
     filters.query ? { key: "query", label: "Búsqueda: " + filters.query } : null,
     locationLabel ? { key: "locationId", label: "Local: " + locationLabel.code } : null,
     categoryLabel ? { key: "categoryId", label: "Categoría: " + categoryLabel.name } : null,
-    familyLabel ? { key: "familyId", label: "Familia: " + familyLabel.name } : null,
+    familyLabel ? { key: "familyId", label: "Familia: " + familyDisplayName(familyLabel) } : null,
     brandLabel ? { key: "brandId", label: "Marca: " + brandLabel.name } : null,
     filters.status
       ? { key: "status", label: "Estado: " + inventoryStatusLabels[filters.status] }
@@ -2639,7 +2653,7 @@ function Filters({
             <option value="">Todas las familias</option>
             {data.facets.families.map((family) => (
               <option key={family.id} value={family.id}>
-                {family.name}
+                {familyDisplayName(family)}
               </option>
             ))}
           </select>
@@ -2874,16 +2888,26 @@ export function InventoryAdminWorkspace({
   filters,
   filterNotice,
   permissions,
+  openAdjustment = false,
 }: {
   data: InventoryAdminPageData;
   filters: InventoryAdminFilters;
   filterNotice?: string;
   permissions: PermissionSet;
+  openAdjustment?: boolean;
 }) {
   const router = useRouter();
+  const actionParams = useSearchParams();
+  const clearAdjustmentIntent = () => {
+    if (actionParams.get("action") !== "adjust") return false;
+    const params = new URLSearchParams(actionParams.toString());
+    params.delete("action");
+    router.replace(`/admin/inventario${params.size ? `?${params.toString()}` : ""}`);
+    return true;
+  };
   const [dialog, setDialog] = useState<
     "adjustment" | "transfer" | "reservation" | "minimum" | null
-  >(null);
+  >(openAdjustment && permissions.canAdjust ? "adjustment" : null);
   const [dialogItem, setDialogItem] = useState<InventoryItem | null>(null);
   const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
   const [kardexItem, setKardexItem] = useState<InventoryItem | null>(null);
@@ -2909,6 +2933,7 @@ export function InventoryAdminWorkspace({
   const refresh = () => {
     setDialog(null);
     setDialogItem(null);
+    if (clearAdjustmentIntent()) return;
     startRefresh(() => router.refresh());
   };
   return (
@@ -2945,6 +2970,7 @@ export function InventoryAdminWorkspace({
             <Download className="h-3.5 w-3.5" />
             Exportar
           </a>
+          {permissions.canAdjust ? <StockImportDialog /> : null}
           {permissions.canReserve ? (
             <button
               type="button"
@@ -3127,9 +3153,10 @@ export function InventoryAdminWorkspace({
           <AlertRail alerts={data.alerts} />
         </aside>
       </div>
-      <InventoryOperationsTabs data={data} permissions={permissions} onSuccess={refresh} />
+      <InventoryOperationsTabs key={actionParams.get("tab") || "movements"} data={data} permissions={permissions} onSuccess={refresh} />
       {detailItem ? (
         <InventoryDetailDrawer
+          key={`${detailItem.productId}:${detailItem.locationId}`}
           item={detailItem}
           data={data}
           onClose={() => setDetailItem(null)}
@@ -3146,6 +3173,7 @@ export function InventoryAdminWorkspace({
           onClose={() => {
             setDialog(null);
             setDialogItem(null);
+            clearAdjustmentIntent();
           }}
           onSuccess={refresh}
         />
@@ -3480,7 +3508,6 @@ type DetailTab = "summary" | "kardex" | "reservations" | "transfers" | "configur
 
 function InventoryDetailDrawer({
   item,
-  data,
   onClose,
   onKardex,
 }: {
@@ -3491,12 +3518,65 @@ function InventoryDetailDrawer({
 }) {
   const media = inventoryMedia(item);
   const [tab, setTab] = useState<DetailTab>("summary");
-  const reservations = data.operations.reservations.filter(
-    (entry) => entry.sku === item.sku && entry.locationCode === item.locationCode,
-  );
-  const movements = data.operations.movements.filter(
-    (entry) => entry.sku === item.sku && entry.locationCode === item.locationCode,
-  );
+  const [reservations, setReservations] = useState<Array<Pick<InventoryAdminPageData["operations"]["reservations"][number], "id" | "quantity" | "status" | "referenceType" | "referenceId" | "reason" | "expiresAt">>>([]);
+  const [reservationPage, setReservationPage] = useState(1);
+  const [reservationPages, setReservationPages] = useState(1);
+  const [reservationsLoading, setReservationsLoading] = useState(true);
+  const [reservationsError, setReservationsError] = useState("");
+  const [detailTransfers, setDetailTransfers] = useState<Array<{ id: string; status: string; units: number; sourceCode: string; destinationCode: string }>>([]);
+  const [detailTransferPage, setDetailTransferPage] = useState(1);
+  const [detailTransferPages, setDetailTransferPages] = useState(1);
+  const [transfersLoading, setTransfersLoading] = useState(true);
+  const [transfersError, setTransfersError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ productId: item.productId, locationId: item.locationId, page: String(detailTransferPage) });
+    fetch(`/api/admin/inventario/detalle/transferencias?${params}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("No se pudieron cargar los traslados.");
+        const result = await response.json();
+        if (!Array.isArray(result.items)) throw new Error("No se pudieron cargar los traslados.");
+        setDetailTransfers(result.items);
+        setDetailTransferPages(result.totalPages);
+      })
+      .catch((error) => { if (!controller.signal.aborted) setTransfersError(error instanceof Error ? error.message : "No se pudieron cargar los traslados."); })
+      .finally(() => { if (!controller.signal.aborted) setTransfersLoading(false); });
+    return () => controller.abort();
+  }, [item.productId, item.locationId, detailTransferPage]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ productId: item.productId, locationId: item.locationId, page: String(reservationPage) });
+    fetch(`/api/admin/inventario/reservas?${params}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("No se pudieron cargar las reservas.");
+        const result = await response.json();
+        if (!Array.isArray(result.items)) throw new Error("No se pudieron cargar las reservas.");
+        setReservations(result.items);
+        setReservationPages(result.totalPages);
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setReservationsError(error instanceof Error ? error.message : "No se pudieron cargar las reservas.");
+      })
+      .finally(() => { if (!controller.signal.aborted) setReservationsLoading(false); });
+    return () => controller.abort();
+  }, [item.productId, item.locationId, reservationPage]);
+  const [movements, setMovements] = useState<Array<{ id: string; label: string; entry: number; exit: number; reservedDelta: number; createdAt: string }>>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ productId: item.productId, locationId: item.locationId });
+    fetch(`/api/admin/inventario/detalle/actividad?${params}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("No se pudo cargar la actividad reciente.");
+        const result = await response.json();
+        if (!Array.isArray(result.items)) throw new Error("No se pudo cargar la actividad reciente.");
+        setMovements(result.items);
+      })
+      .catch((error) => { if (!controller.signal.aborted) setActivityError(error instanceof Error ? error.message : "No se pudo cargar la actividad reciente."); })
+      .finally(() => { if (!controller.signal.aborted) setActivityLoading(false); });
+    return () => controller.abort();
+  }, [item.productId, item.locationId]);
   return (
     <div
       className="fixed inset-0 z-[60] bg-slate-900/25"
@@ -3557,12 +3637,29 @@ function InventoryDetailDrawer({
               { id: "transfers", label: "Transferencias" },
               { id: "configuration", label: "Configuración" },
             ] as Array<{ id: DetailTab; label: string }>
-          ).map((entry) => (
+          ).map((entry, index, entries) => (
             <button
               key={entry.id}
               type="button"
               role="tab"
               aria-selected={tab === entry.id}
+              tabIndex={tab === entry.id ? 0 : -1}
+              onFocus={(event) => {
+                event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+              }}
+              onKeyDown={(event) => {
+                let nextIndex: number;
+                if (event.key === "ArrowRight") nextIndex = (index + 1) % entries.length;
+                else if (event.key === "ArrowLeft") nextIndex = (index - 1 + entries.length) % entries.length;
+                else if (event.key === "Home") nextIndex = 0;
+                else if (event.key === "End") nextIndex = entries.length - 1;
+                else return;
+                event.preventDefault();
+                setTab(entries[nextIndex].id);
+                event.currentTarget.parentElement
+                  ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]
+                  ?.focus();
+              }}
               onClick={() => setTab(entry.id)}
               className={`shrink-0 border-b-2 px-2.5 py-2.5 text-[11px] font-extrabold ${tab === entry.id ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400"}`}
             >
@@ -3605,8 +3702,10 @@ function InventoryDetailDrawer({
               </div>
               <div>
                 <p className="text-[11px] font-black text-slate-700">Actividad reciente</p>
+                {activityLoading ? <p role="status" className="mt-2 text-[11px] text-slate-500">Cargando actividad reciente…</p> : null}
+                {activityError ? <p role="alert" className="mt-2 text-[11px] text-red-600">{activityError}</p> : null}
                 {movements.slice(0, 3).map((movement) => (
-                   <p key={movement.id} className="mt-2 max-w-[420px] truncate text-[11px] text-slate-500" title={`${movement.label} · ${movement.productName}`}>
+                   <p key={movement.id} className="mt-2 max-w-[420px] truncate text-[11px] text-slate-500" title={movement.label}>
                     {movement.label} ·{" "}
                     {movement.entry
                       ? `+${number(movement.entry)}`
@@ -3616,7 +3715,7 @@ function InventoryDetailDrawer({
                     · {dateTime(movement.createdAt)}
                   </p>
                 ))}
-                {!movements.length ? (
+                {!activityLoading && !activityError && !movements.length ? (
                   <p className="mt-2 text-[11px] text-slate-400">
                     Sin movimientos recientes en el panel.
                   </p>
@@ -3644,7 +3743,9 @@ function InventoryDetailDrawer({
           ) : null}
           {tab === "reservations" ? (
             <div className="grid gap-2">
-              {reservations.map((reservation) => (
+              {reservationsLoading ? <p role="status">Cargando reservas…</p> : null}
+              {reservationsError ? <p role="alert">{reservationsError}</p> : null}
+              {!reservationsLoading && !reservationsError ? reservations.map((reservation) => (
                 <div
                   key={reservation.id}
                   className="rounded-lg border border-slate-100 bg-slate-50 p-3"
@@ -3675,9 +3776,16 @@ function InventoryDetailDrawer({
                     {reservation.reason ? ` · ${reservation.reason}` : ""}
                   </p>
                 </div>
-              ))}
-              {!reservations.length ? (
+              )) : null}
+              {!reservationsLoading && !reservationsError && !reservations.length ? (
                 <OperationEmpty text="No hay reservas recientes para este producto y local." />
+              ) : null}
+              {!reservationsLoading && !reservationsError && reservationPages > 1 ? (
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <button type="button" disabled={reservationPage === 1} onClick={() => { setReservationsLoading(true); setReservationsError(""); setReservationPage((page) => page - 1); }}>Anterior</button>
+                  <span>Página {reservationPage} de {reservationPages}</span>
+                  <button type="button" disabled={reservationPage >= reservationPages} onClick={() => { setReservationsLoading(true); setReservationsError(""); setReservationPage((page) => page + 1); }}>Siguiente</button>
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -3687,8 +3795,10 @@ function InventoryDetailDrawer({
                 Los traslados se muestran en el panel operativo y se procesan como movimientos
                 atómicos por referencia.
               </p>
-              {data.operations.transfers.length ? (
-                data.operations.transfers.slice(0, 5).map((transfer) => (
+              {transfersLoading ? <p role="status">Cargando traslados…</p> : null}
+              {transfersError ? <p role="alert">{transfersError}</p> : null}
+              {!transfersLoading && !transfersError && detailTransfers.length ? (
+                detailTransfers.map((transfer) => (
                   <div
                     key={transfer.id}
                     className="rounded-lg border border-slate-100 bg-slate-50 p-3"
@@ -3712,9 +3822,16 @@ function InventoryDetailDrawer({
                     </p>
                   </div>
                 ))
-              ) : (
+              ) : !transfersLoading && !transfersError ? (
                 <OperationEmpty text="No hay traslados recientes." />
-              )}
+              ) : null}
+              {!transfersLoading && !transfersError && detailTransferPages > 1 ? (
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <button type="button" disabled={detailTransferPage === 1} onClick={() => { setTransfersLoading(true); setTransfersError(""); setDetailTransferPage((page) => page - 1); }}>Anterior</button>
+                  <span>Página {detailTransferPage} de {detailTransferPages}</span>
+                  <button type="button" disabled={detailTransferPage >= detailTransferPages} onClick={() => { setTransfersLoading(true); setTransfersError(""); setDetailTransferPage((page) => page + 1); }}>Siguiente</button>
+                </div>
+              ) : null}
             </div>
           ) : null}
           {tab === "configuration" ? (

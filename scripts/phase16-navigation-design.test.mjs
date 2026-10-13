@@ -6,7 +6,8 @@ const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 assert.equal(existsSync(join(root, "public/brand/logo-coldpower-lockup.webp")), true);
 const css = read("src/app/globals.css");
-for (const token of ["--brand-primary-900: #0B2239", "--brand-secondary-600: #0F6FAE", "--action-accent-500: #F59E0B", "--warning-dark: #7A4300"]) assert.ok(css.includes(token), token);
+// The September reference/a11y revision darkened blue and amber tokens.
+for (const token of ["--brand-primary-900: #0B2239", "--brand-secondary-600: #0B5F94", "--action-accent-500: #A15C00", "--warning-dark: #7A4300"]) assert.ok(css.includes(token), token);
 const layout = read("src/app/layout.tsx");
 assert.match(layout, /next\/font\/google/);
 assert.match(layout, /IBM_Plex_Sans/);

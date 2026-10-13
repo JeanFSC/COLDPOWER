@@ -5,6 +5,7 @@ import { crmTasks, opportunities, opportunityFollowups } from "@/db/crm-schema";
 import { operationsWorkItemHistory, operationsWorkItems } from "@/db/operations-schema";
 import { orders } from "@/db/sales-schema";
 import { can, type AppRole } from "@/lib/roles";
+import { refreshOpportunityFollowUpSnapshot } from "@/lib/crm-followup-snapshot";
 
 export const workItemSourceTypes = [
   "QUOTE",
@@ -283,11 +284,13 @@ export async function reassignOperationsWorkItem(
       throw new Error("Esta tarea cambió de estado y ya no requiere esta acción.");
     if (assigneeId) {
       const [user] = await tx
-        .select({ id: users.id })
+        .select({ id: users.id, role: users.role, roleCode: users.roleCode })
         .from(users)
         .where(and(eq(users.id, assigneeId), eq(users.status, "ACTIVE")))
         .limit(1);
       if (!user) throw new Error("El responsable no existe o está inactivo.");
+      if (!canActOnOperationsWorkItem(before.team, before.sourceType, user.roleCode ?? user.role))
+        throw new Error("El responsable no tiene permisos compatibles para atender esta tarea.");
     }
     const [after] = await tx
       .update(operationsWorkItems)
@@ -324,6 +327,13 @@ export async function reassignOperationsWorkItem(
 export async function resolveOperationsWorkItem(workItemId: string, actor: Actor) {
   if (!actor.userId) throw new Error("El usuario operativo no está disponible.");
   return getDb().transaction(async (tx) => {
+    const [source] = await tx.select().from(operationsWorkItems).where(eq(operationsWorkItems.id, workItemId)).limit(1);
+    if (!source) throw new Error("Tarea operativa no encontrada.");
+    if (!canActOnOperationsWorkItem(source.team, source.sourceType, actor.role)) throw new Error("No tienes permiso para resolver tareas de este equipo.");
+    if (source.sourceType !== "FOLLOW_UP") throw new Error("Resuelve la tarea desde su dominio de origen.");
+    const [sourceTask] = await tx.select().from(crmTasks).where(eq(crmTasks.id, source.sourceId)).for("update").limit(1);
+    const [sourceFollowup] = sourceTask ? [] : await tx.select().from(opportunityFollowups).where(eq(opportunityFollowups.id, source.sourceId)).for("update").limit(1);
+    if (!sourceTask && !sourceFollowup) throw new Error("La tarea CRM de origen no existe.");
     const [before] = await tx
       .select()
       .from(operationsWorkItems)
@@ -339,12 +349,13 @@ export async function resolveOperationsWorkItem(workItemId: string, actor: Actor
 
     const [task] = await tx
       .update(crmTasks)
-      .set({ status: "COMPLETED", completedAt: new Date() })
+      .set({ status: "COMPLETED", completedAt: new Date(), updatedAt: new Date() })
       .where(eq(crmTasks.id, before.sourceId))
       .returning({ id: crmTasks.id });
     if (!task) {
-      const [followup] = await tx.update(opportunityFollowups).set({ status: "COMPLETED" }).where(eq(opportunityFollowups.id, before.sourceId)).returning({ id: opportunityFollowups.id });
+      const [followup] = await tx.update(opportunityFollowups).set({ status: "COMPLETED", completedAt: new Date() }).where(eq(opportunityFollowups.id, before.sourceId)).returning();
       if (!followup) throw new Error("La tarea CRM de origen no existe.");
+      await refreshOpportunityFollowUpSnapshot(tx, followup.opportunityId);
     }
 
     const [after] = await tx

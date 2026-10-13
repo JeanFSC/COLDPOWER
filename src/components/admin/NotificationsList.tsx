@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Archive, Check, Undo2 } from "lucide-react";
 import { notificationBodyLabel, notificationEventLabel } from "@/lib/notification-display";
+import { publishNotificationConfirmation, useConfirmedNotifications } from "@/components/admin/useConfirmedNotifications";
 
 type NotificationState = "UNREAD" | "READ" | "DISMISSED";
 type NotificationPriority = "Alta" | "Media" | "Baja";
@@ -85,6 +86,7 @@ export function NotificationsList({
   types,
   selectedId,
   loadError = null,
+  filterError = null,
 }: {
   notifications: Notification[];
   pagination: { page: number; totalPages: number; totalItems: number };
@@ -92,7 +94,9 @@ export function NotificationsList({
   types: string[];
   selectedId?: string | null;
   loadError?: string | null;
+  filterError?: string | null;
 }) {
+  const confirmed = useConfirmedNotifications(notifications);
   const [rows, setRows] = useState(notifications);
   // useState(initial) only reads its argument on first mount — a server refresh (e.g. after
   // sending a new notice from the management panel below) delivers a fresh `notifications`
@@ -113,24 +117,15 @@ export function NotificationsList({
   const [messageKind, setMessageKind] = useState<"error" | "success">("success");
   const filters = new URLSearchParams(queryString);
   const retryHref = queryString ? `/admin/notificaciones?${queryString}` : "/admin/notificaciones";
-  const allSelected = rows.length > 0 && rows.every((row) => selected.includes(row.id));
+  const visibleRows = rows.map((row) => ({ ...row,
+    ...confirmed.notifications.find((updated) => updated.id === row.id),
+  })).filter((row) => !filters.get("state") || row.state === filters.get("state"));
+  const visibleTotal = pagination.totalItems - (rows.length - visibleRows.length);
+  const allSelected = visibleRows.length > 0 && visibleRows.every((row) => selected.includes(row.id));
 
   function announce(text: string, kind: "error" | "success") {
     setMessage(text);
     setMessageKind(kind);
-  }
-
-  function applyState(ids: string[], nextState: NotificationState) {
-    const idSet = new Set(ids);
-    setRows((current) => current.map((row) => {
-      if (!idSet.has(row.id)) return row;
-      return {
-        ...row,
-        state: nextState,
-        readAt: nextState === "READ" ? new Date() : null,
-        dismissedAt: nextState === "DISMISSED" ? new Date() : null,
-      };
-    }));
   }
 
   async function update(id: string, state: NotificationState) {
@@ -146,8 +141,9 @@ export function NotificationsList({
         announce(await getErrorMessage(response, "No se pudo actualizar la notificación."), "error");
         return;
       }
-      applyState([id], state);
-      announce("Notificación actualizada.", "success");
+      const result = await response.json();
+      publishNotificationConfirmation(result);
+      announce(typeof result.unreadCount === "number" ? "Notificación actualizada." : "Estado guardado. No se pudieron actualizar los contadores; recarga para consultarlos.", typeof result.unreadCount === "number" ? "success" : "error");
     } catch {
       announce("No se pudo actualizar la notificación. Revisa tu conexión e inténtalo nuevamente.", "error");
     } finally {
@@ -169,9 +165,10 @@ export function NotificationsList({
         announce(await getErrorMessage(response, "No se pudieron actualizar las notificaciones seleccionadas."), "error");
         return;
       }
-      applyState(selected, state);
+      const result = await response.json();
+      publishNotificationConfirmation(result);
       setSelected([]);
-      announce("Notificaciones actualizadas.", "success");
+      announce(typeof result.unreadCount === "number" ? "Notificaciones actualizadas." : "Estados guardados. No se pudieron actualizar los contadores; recarga para consultarlos.", typeof result.unreadCount === "number" ? "success" : "error");
     } catch {
       announce("No se pudieron actualizar las notificaciones. Revisa tu conexión e inténtalo nuevamente.", "error");
     } finally {
@@ -184,7 +181,7 @@ export function NotificationsList({
   }
 
   function toggleAll() {
-    setSelected(allSelected ? [] : rows.map((row) => row.id));
+    setSelected(allSelected ? [] : visibleRows.map((row) => row.id));
   }
 
   function hrefFor(overrides: Record<string, string | undefined>) {
@@ -201,7 +198,7 @@ export function NotificationsList({
       <div className="flex items-center justify-between border-b border-slate-100 p-4">
         <div>
           <h2 className="text-[15px] font-bold leading-tight text-slate-900">Bandeja de notificaciones</h2>
-          <p className="mt-0.5 text-[11px] text-slate-400">{pagination.totalItems.toLocaleString("es-PE")} resultados</p>
+          <p className="mt-0.5 text-[11px] text-slate-400">{filterError ? "Corrige los filtros para consultar la bandeja." : `${visibleTotal.toLocaleString("es-PE")} resultados`}</p>
         </div>
       </div>
 
@@ -212,12 +209,12 @@ export function NotificationsList({
           </span>
           <input name="query" defaultValue={filters.get("query") ?? ""} placeholder="Buscar en notificaciones..." className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" type="text" />
         </div>
-        <div className="flex items-center gap-2">
-          <select aria-label="Filtrar por tipo de notificación" name="type" defaultValue={filters.get("type") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <div className="flex flex-wrap items-center gap-2">
+          <select aria-label="Filtrar por tipo de notificación" name="type" defaultValue={filters.get("type") ?? ""} className="min-w-0 flex-1 basis-40 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
             <option value="">Todos los tipos</option>
             {types.map((type) => <option key={type} value={type}>{notificationEventLabel(type)}</option>)}
           </select>
-          <select aria-label="Filtrar por estado de notificación" name="state" defaultValue={filters.get("state") ?? ""} className="flex-1 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <select aria-label="Filtrar por estado de notificación" name="state" defaultValue={filters.get("state") ?? ""} className="min-w-0 flex-1 basis-40 appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-6 text-[11.5px] text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
             <option value="">Todos los estados</option>
             <option value="UNREAD">No leídas</option>
             <option value="READ">Leídas</option>
@@ -238,6 +235,7 @@ export function NotificationsList({
           <a href={retryHref} className="font-bold underline">Reintentar</a>
         </div>
       ) : null}
+      {filterError ? <p role="alert" className="m-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11.5px] font-medium text-amber-900">{filterError}</p> : null}
       {message ? <p role={messageKind === "error" ? "alert" : "status"} aria-live={messageKind === "error" ? "assertive" : "polite"} className={`px-3 pt-2 text-[11px] font-semibold ${messageKind === "error" ? "text-rose-600" : "text-slate-500"}`}>{message}</p> : null}
 
       {selected.length ? (
@@ -248,9 +246,9 @@ export function NotificationsList({
         </div>
       ) : null}
 
-      {!loadError && rows.length ? (
+      {!loadError && visibleRows.length ? (
         <div className="flex-1 divide-y divide-slate-100">
-          {rows.map((row) => {
+          {visibleRows.map((row) => {
             const isSelected = selectedId === row.id;
             return (
               <div key={row.id} className={isSelected ? "flex items-start gap-3 border-l-4 border-blue-600 bg-blue-50/50 p-3.5 transition-colors hover:bg-blue-50" : "flex items-start gap-3 p-3.5 transition-colors hover:bg-slate-50"}>
@@ -295,10 +293,10 @@ export function NotificationsList({
           </div>
         </div>
       ) : null}
-      {!loadError && !rows.length ? <div className="p-6 text-center text-[11.5px] text-slate-400">No hay notificaciones para este alcance.</div> : null}
+      {!loadError && !filterError && !visibleRows.length ? <div className="p-6 text-center text-[11.5px] text-slate-400">No hay notificaciones para este alcance.</div> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3 text-[11.5px] text-slate-500">
-        <span>Mostrando {rows.length} de {pagination.totalItems}</span>
+        <span>{filterError ? "Consulta pendiente de corregir los filtros" : `Mostrando ${visibleRows.length} de ${visibleTotal}`}</span>
         {pagination.totalPages > 1 ? (
           <nav aria-label="Paginación de notificaciones" className="flex items-center gap-1">
             {pagination.page > 1 ? <a href={hrefFor({ page: String(pagination.page - 1) })} className="rounded p-1 text-slate-400 hover:text-slate-600">Anterior</a> : null}

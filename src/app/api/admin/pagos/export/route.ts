@@ -1,11 +1,11 @@
+import { csvCell as csv } from "@/lib/csv";
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
 import { apiError } from "@/lib/api-errors";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { parsePaymentsFilters, PaymentsInvalidFilterError } from "@/lib/payments-contract";
 import { getPaymentsPage } from "@/lib/payments-repository";
-
-function csv(value: unknown) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
+import { paymentsWorkbook } from "@/lib/payments-export";
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +19,10 @@ export async function GET(request: Request) {
       ...items.map((item) => [item.id, item.orderCode, item.saleCode, item.customerName, item.amount, item.currency, item.method, item.provider, item.providerReference, item.status, item.expectedAmount, item.netReceivedAmount, item.difference, item.reconciliation, item.attempts, item.createdAt.toISOString()].map(csv).join(",")),
     ];
     await getDb().insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "payments.exported", entityType: "payment", entityId: "collection", before: null, after: null, metadata: { filters, count: items.length } });
-    return new Response(`\ufeff${lines.join("\r\n")}`, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="coldpower-pagos.csv"` } });
+    if (new URL(request.url).searchParams.get("format") === "csv") {
+      return new Response(`\ufeffsep=,\r\n${lines.join("\r\n")}`, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="coldpower-pagos.csv"`, "Cache-Control": "no-store" } });
+    }
+    return new Response(Buffer.from(paymentsWorkbook(items)), { headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="coldpower-pagos.xlsx"`, "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("PAYMENTS_EXPORT_FORBIDDEN", "No tienes permiso para exportar pagos.", 403);
     if (error instanceof PaymentsInvalidFilterError) return apiError("PAYMENTS_INVALID_FILTER", "Los filtros de pagos no son válidos.", 400);

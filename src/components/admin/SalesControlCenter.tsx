@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
+import { filterOptionsWithSelection } from "@/lib/filter-options";
 import type { SalesListItem, SalesPageResponse } from "@/lib/sales-contract";
 import { paymentMethodLabel } from "@/lib/payment-display";
+import { parseDashboardSalesScope } from "@/lib/dashboard-sales-navigation";
 
 type CustomerOption = { id: string; name: string; phone: string | null };
 type LocationOption = { id: string; code: string; name: string };
@@ -157,6 +159,11 @@ function salesChannelLabel(value: string | null | undefined) {
     CHECKOUT: "Tienda online",
     WHATSAPP: "WhatsApp",
     PHONE: "Teléfono",
+    TELEFONO: "Teléfono",
+    LOCAL: "Tienda",
+    REFERIDO: "Referido",
+    CLIENTE_RECURRENTE: "Cliente recurrente",
+    OTRO: "Otro",
     STORE: "Tienda",
     IN_STORE: "Tienda",
     DIRECT: "Venta directa",
@@ -206,11 +213,14 @@ export function SalesControlCenter({
   customers: CustomerOption[];
   locations: LocationOption[];
 }) {
+  const dashboardScopeRaw = new URLSearchParams(queryString).get("dashboardScope");
+  const dashboardScope = parseDashboardSalesScope(dashboardScopeRaw);
   const [mode, setMode] = useState<"chooser" | "direct" | null>(null);
   const [detailId, setDetailId] = useState<string | null>(() => {
     const params = new URLSearchParams(queryString);
     const directId = params.get("saleId");
     if (directId) return directId;
+    if (params.has("dashboardScope")) return null;
     const quoteId = params.get("quoteId");
     const orderId = params.get("orderId");
     const customerId = params.get("customerId");
@@ -267,10 +277,10 @@ export function SalesControlCenter({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <Link href={`/api/admin/ventas/export?${queryString}`} className={secondaryButtonClass}>
+          <a href={`/api/admin/ventas/export?${queryString}`} download className={secondaryButtonClass}>
             <Download className="h-3.5 w-3.5 text-slate-500" />
             Exportar
-          </Link>
+          </a>
           {canManage ? (
             <button onClick={() => setMode("chooser")} className={primaryButtonClass}>
               <Plus className="h-3.5 w-3.5" />
@@ -412,10 +422,21 @@ export function SalesControlCenter({
         </div>
       </section>
 
+      {dashboardScope && (
+        <section aria-label="Alcance del Dashboard" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">
+          <div>
+            <p className="font-semibold">Ventas del punto seleccionado en Dashboard</p>
+            <p className="mt-1 text-xs">Desde {limaDateTime(dashboardScope.from)} hasta {limaDateTime(dashboardScope.to)} (fin excluido). Se conservan los filtros del Dashboard al buscar y exportar.</p>
+          </div>
+          <Link href="/admin/ventas" className={secondaryButtonClass}>Ver todas las ventas</Link>
+        </section>
+      )}
+
       <form
         action="/admin/ventas"
         className="flex flex-wrap items-center gap-2.5 rounded-xl border border-slate-200/90 bg-white p-3 shadow-2xs"
       >
+        {dashboardScopeRaw && <input type="hidden" name="dashboardScope" value={dashboardScopeRaw} />}
         <label className="flex h-10 min-w-[230px] flex-1 items-center gap-2 rounded-lg border border-slate-200 px-3">
           <Search className="h-4 w-4 text-slate-400" />
           <input
@@ -578,13 +599,14 @@ export function SalesControlCenter({
 
 function FilterSelect({ name, values, query, label }: { name: string; values: string[]; query: string; label: string }) {
   const current = new URLSearchParams(query).get(name) ?? "";
+  const options = filterOptionsWithSelection(values, current);
   return (
     <AdminSelect
       name={name}
       ariaLabel={label}
       className="w-auto min-w-[10rem]"
       value={current}
-      options={[{ value: "", label }, ...values.map((value) => ({ value, label: labelState(value) }))]}
+      options={[{ value: "", label }, ...options.map((value) => ({ value, label: labelState(value) }))]}
     />
   );
 }

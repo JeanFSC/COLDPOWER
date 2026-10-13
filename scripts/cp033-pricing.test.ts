@@ -1,8 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import { parsePricingFilters, parsePricingHistoryFilters } from "@/lib/pricing-contract";
 import { isPriceWindowOverlapping, validateDiscountRuleStatus } from "@/lib/pricing-service";
 import { toPricingCsv } from "@/lib/pricing-export";
+
+test("precios bloquean la clave antes del replay y comparan el contenido editado", () => {
+  const source = readFileSync("src/lib/pricing-service.ts", "utf8");
+  for (const name of ["createPrice", "updatePrice", "schedulePriceReplacement", "archivePrice"]) {
+    const body = source.split(`export async function ${name}`)[1].split("export async function")[0];
+    assert.ok(body.indexOf("await lockPriceRequest(tx, requestKey)") < body.indexOf("if (requestKey)"));
+  }
+  assert.match(source, /previousRequest.id === id && samePriceRequest/);
+  assert.match(source, /row.wholesaleMinQty === values.wholesaleMinQty/);
+  assert.match(source, /row.minimumAllowed === values.minimumAllowed/);
+});
 
 test("CP-033 parses combined server filters and pagination", () => {
   const filters = parsePricingFilters(new URLSearchParams("query=compresor&sku=CP-1&productId=p1&categoryId=c1&familyId=f1&brandId=b1&priceType=RETAIL&status=ACTIVE&active=true&page=2&pageSize=25"));

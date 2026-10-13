@@ -161,11 +161,15 @@ export type AuditModuleProps = {
   tab: "info" | "cambios" | "relacionado";
   savedFilters: AuditSavedFilter[];
   loadError?: boolean;
+  filterNotice?: string;
+  detailError?: string | null;
+  relatedEventsError?: boolean;
+  savedFiltersError?: boolean;
 };
 
 export function AuditModule({
   metrics, trend, trendPrevious, alerts, rows, pagination, facets, filters, baseQuery, exportHref,
-  selected, relatedEvents, diff, canViewSensitive, tab, savedFilters, loadError,
+  selected, relatedEvents, diff, canViewSensitive, tab, savedFilters, loadError, filterNotice, detailError, relatedEventsError, savedFiltersError,
 }: AuditModuleProps) {
   const hasActiveFilters = Boolean(filters.query || filters.module || filters.severity || filters.dateFrom || filters.dateTo);
   const paginationWindow = Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
@@ -176,10 +180,11 @@ export function AuditModule({
   return (
     <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
       <div className="min-w-0 flex-1 space-y-5">
+        {filterNotice ? <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800">{filterNotice}</p> : null}
         {loadError ? (
-          <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs font-medium text-red-700">
+          <div role="alert" className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs font-medium text-red-700">
             <Icon path={ICON.alertTriangle} className="h-4 w-4 shrink-0" />
-            No se pudo conectar a la base de datos. Los datos mostrados pueden estar incompletos.
+            No se pudo cargar la auditoría. Actualiza la página para volver a intentarlo.
           </div>
         ) : null}
         <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -189,7 +194,7 @@ export function AuditModule({
             </div>
             <div>
               <h1 className="text-xl font-bold leading-snug text-slate-900">Auditoría</h1>
-              <p className="text-xs text-slate-500">Consulta y analiza todas las actividades del sistema, garantizando la seguridad y cumplimiento.</p>
+              <p className="text-xs text-slate-500">Consulta el historial de cambios, accesos y acciones del sistema.</p>
             </div>
           </div>
           <div className="flex items-center gap-2.5">
@@ -213,9 +218,9 @@ export function AuditModule({
                   </span>
                   <span className="text-[11px] font-medium leading-tight text-slate-500">{meta.label}</span>
                 </div>
-                <div className="mb-1 text-xl font-bold leading-none text-slate-900">{kpi.current.toLocaleString("es-PE")}</div>
-                <div className={`mb-2 text-[10px] font-medium leading-tight ${delta.color}`}>{delta.text}</div>
-                <AdminSparkline tone={meta.sparkTone} data={trendSeries(trend, meta.key)} ariaLabel={`Tendencia de ${meta.label.toLowerCase()}`} className="block h-6 w-full" />
+                <div className="mb-1 text-xl font-bold leading-none text-slate-900">{loadError ? "N/D" : kpi.current.toLocaleString("es-PE")}</div>
+                <div className={`mb-2 text-[10px] font-medium leading-tight ${delta.color}`}>{loadError ? "Datos no disponibles" : delta.text}</div>
+                {!loadError ? <AdminSparkline tone={meta.sparkTone} data={trendSeries(trend, meta.key)} ariaLabel={`Tendencia de ${meta.label.toLowerCase()}`} className="block h-6 w-full" /> : null}
               </div>
             );
           })}
@@ -252,7 +257,7 @@ export function AuditModule({
               <input type="date" name="dateTo" aria-label="Hasta, formato DD/MM/AAAA" title="Formato: DD/MM/AAAA" defaultValue={filters.dateTo ?? ""} className="border-0 bg-transparent p-0 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0" />
             </label>
             <button type="submit" className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700">Aplicar</button>
-            <SavedFiltersMenu savedFilters={savedFilters} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50" />
+            <SavedFiltersMenu savedFilters={savedFilters} unavailable={savedFiltersError} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50" />
             {hasActiveFilters ? <Link href="/admin/auditoria" className="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700">Limpiar</Link> : null}
           </div>
         </form>
@@ -266,7 +271,7 @@ export function AuditModule({
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-1 rounded-full border border-dashed border-blue-300" />Período anterior</span>
               </div>
             </div>
-            <AdminLineChart
+            {loadError ? <p className="flex min-h-44 items-center justify-center text-xs text-slate-500">No se pudo cargar el volumen de eventos.</p> : <AdminLineChart
               data={trend.map((point) => point.total)}
               previous={trendPrevious}
               labels={trend.map((point) => dayLabelFormat.format(new Date(`${point.date}T00:00:00-05:00`)).replace(".", ""))}
@@ -275,12 +280,12 @@ export function AuditModule({
               largeLabels
               accent="blue"
               ariaLabel="Volumen de eventos de auditoría, últimos 30 días"
-            />
+            />}
           </div>
           <div className="flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs">
             <h3 className="mb-2 text-xs font-semibold text-slate-800">Alertas y cumplimiento</h3>
             <div className="space-y-2.5">
-              {alerts.map((alert) => {
+              {loadError ? <p className="text-xs text-slate-500">No se pudieron consultar las alertas del período.</p> : alerts.map((alert) => {
                 const meta = alertTone[alert.tone];
                 return (
                   <div key={alert.title} className={`flex items-start gap-2.5 rounded-lg border p-2.5 ${meta.border} ${meta.bg}`}>
@@ -302,26 +307,27 @@ export function AuditModule({
           <div className="flex flex-col flex-wrap justify-between gap-3 border-b border-slate-200 p-3.5 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-xs font-bold text-slate-900">Registro de auditoría</h2>
-              <p className="text-[11px] text-slate-400">{pagination.totalItems.toLocaleString("es-PE")} resultados</p>
+              <p className="text-[11px] text-slate-400">{loadError ? "Resultados no disponibles" : `${pagination.totalItems.toLocaleString("es-PE")} resultados`}</p>
             </div>
             {pagination.totalPages > 1 ? (
-              <div className="flex items-center space-x-1 text-xs text-slate-600">
-                <Link href={`/admin/auditoria?${withParam(baseQuery, { page: String(Math.max(1, pagination.page - 1)) })}`} className="rounded p-1 text-slate-400 hover:text-slate-600" aria-label="Página anterior">
+              <nav aria-label="Paginación de auditoría" className="flex items-center space-x-1 text-xs text-slate-600">
+                {pagination.page <= 1 ? <span aria-label="Página anterior" aria-disabled="true" className="rounded p-1 text-slate-300"><Icon path={ICON.chevronLeft} className="h-3.5 w-3.5" /></span> : <Link href={`/admin/auditoria?${withParam(baseQuery, { page: String(Math.max(1, pagination.page - 1)) })}`} className="rounded p-1 text-slate-400 hover:text-slate-600" aria-label="Página anterior">
                   <Icon path={ICON.chevronLeft} className="h-3.5 w-3.5" />
-                </Link>
+                </Link>}
                 {paginationWindow.map((page) => (
                   <Link
                     key={page}
+                    aria-current={page === pagination.page ? "page" : undefined}
                     href={`/admin/auditoria?${withParam(baseQuery, { page: String(page) })}`}
                     className={page === pagination.page ? "flex h-6 w-6 items-center justify-center rounded border border-blue-200 bg-blue-50 text-xs font-semibold text-blue-600" : "flex h-6 w-6 items-center justify-center rounded text-xs hover:bg-slate-100"}
                   >
                     {page}
                   </Link>
                 ))}
-                <Link href={`/admin/auditoria?${withParam(baseQuery, { page: String(Math.min(pagination.totalPages, pagination.page + 1)) })}`} className="rounded p-1 text-slate-400 hover:text-slate-600" aria-label="Página siguiente">
+                {pagination.page >= pagination.totalPages ? <span aria-label="Página siguiente" aria-disabled="true" className="rounded p-1 text-slate-300"><Icon path={ICON.chevronRight} className="h-3.5 w-3.5" /></span> : <Link href={`/admin/auditoria?${withParam(baseQuery, { page: String(Math.min(pagination.totalPages, pagination.page + 1)) })}`} className="rounded p-1 text-slate-400 hover:text-slate-600" aria-label="Página siguiente">
                   <Icon path={ICON.chevronRight} className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+                </Link>}
+              </nav>
             ) : null}
           </div>
           <div className="overflow-x-auto">
@@ -380,7 +386,7 @@ export function AuditModule({
                     </tr>
                   );
                 }) : (
-                  <tr><td colSpan={8} className="px-3 py-10 text-center text-xs text-slate-400">No hay eventos de auditoría para estos filtros.</td></tr>
+                  <tr><td colSpan={8} className="px-3 py-10 text-center text-xs text-slate-400">{loadError ? "El registro de auditoría no está disponible." : "No hay eventos de auditoría para estos filtros."}</td></tr>
                 )}
               </tbody>
             </table>
@@ -418,7 +424,7 @@ export function AuditModule({
                   <Link href={`/admin/auditoria?${withParam(baseQuery, { eventId: selected.id, tab: undefined })}`} className={tab === "info" ? "border-b-2 border-blue-600 pb-2 font-semibold text-blue-600" : "pb-2 text-slate-500 hover:text-slate-700"}>Información</Link>
                   <Link href={`/admin/auditoria?${withParam(baseQuery, { eventId: selected.id, tab: "cambios" })}`} className={tab === "cambios" ? "border-b-2 border-blue-600 pb-2 font-semibold text-blue-600" : "pb-2 text-slate-500 hover:text-slate-700"}>Cambios</Link>
                   <Link href={`/admin/auditoria?${withParam(baseQuery, { eventId: selected.id, tab: "relacionado" })}`} className={tab === "relacionado" ? "border-b-2 border-blue-600 pb-2 font-semibold text-blue-600" : "pb-2 text-slate-500 hover:text-slate-700"}>
-                    Relacionado {relatedEvents.length ? <span className="text-slate-400">({relatedEvents.length})</span> : null}
+                    Relacionado {relatedEventsError ? <span className="text-slate-400">(N/D)</span> : relatedEvents.length ? <span className="text-slate-400">({relatedEvents.length})</span> : null}
                   </Link>
                 </nav>
               </div>
@@ -512,7 +518,7 @@ export function AuditModule({
               ) : null}
 
               {tab === "relacionado" ? (
-                relatedEvents.length ? (
+                relatedEventsError ? <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">No se pudieron cargar los eventos relacionados. Actualiza la página para volver a intentarlo.</p> : relatedEvents.length ? (
                   <div className="space-y-2">
                     {relatedEvents.map((event) => (
                       <Link key={event.id} href={`/admin/auditoria?${withParam(baseQuery, { eventId: event.id, tab: undefined })}`} className="block rounded-lg border border-slate-200 p-2.5 hover:border-blue-300 hover:bg-blue-50/30">
@@ -533,8 +539,13 @@ export function AuditModule({
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 p-10 text-center">
             <Icon path={ICON.shield} className="h-8 w-8 text-slate-300" />
-            <p className="text-xs font-semibold text-slate-500">Selecciona un evento</p>
-            <p className="text-[11px] text-slate-400">Elige una fila del registro para ver su detalle completo.</p>
+            {detailError ? <>
+              <p role="alert" className="text-xs font-semibold text-amber-800">{detailError}</p>
+              <Link href={`/admin/auditoria${baseQuery ? `?${baseQuery}` : ""}`} className="text-xs font-semibold text-blue-600 hover:underline">Volver al registro</Link>
+            </> : <>
+              <p className="text-xs font-semibold text-slate-500">Selecciona un evento</p>
+              <p className="text-[11px] text-slate-400">Elige una fila del registro para ver su detalle completo.</p>
+            </>}
           </div>
         )}
       </aside>

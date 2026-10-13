@@ -6,6 +6,12 @@ import { parseNotificationFilters } from "../src/lib/notifications-service";
 const root = process.cwd();
 const read = (file: string) => readFileSync(`${root}/${file}`, "utf8");
 
+test("notificaciones: creación programada serializa la clave antes de consultar replay", () => {
+  const create = read("src/lib/notification-rules-service.ts").split("export async function createNotificationSchedule")[1].split("export async function createManualNotification")[0];
+  assert.match(create, /pg_advisory_xact_lock/);
+  assert.ok(create.indexOf("pg_advisory_xact_lock") < create.indexOf("const [existing]"));
+});
+
 test("notificaciones: filtros, estados y paginación", () => {
   const filters = parseNotificationFilters(new URLSearchParams("state=UNREAD&type=QUOTE_CREATED&query=quote&page=2&pageSize=50&dateFrom=2026-01-01&dateTo=2026-01-31"));
   assert.equal(filters.state, "UNREAD"); assert.equal(filters.type, "QUOTE_CREATED"); assert.equal(filters.page, 2); assert.equal(filters.pageSize, 50);

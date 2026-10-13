@@ -2070,6 +2070,22 @@ export function AdminProductCatalog({
   permissions,
 }: AdminProductCatalogProps) {
   const router = useRouter();
+  const createIntent = new URLSearchParams(queryString).get("new") === "1";
+  const restoreCreateFocus = useRef(false);
+  useEffect(() => {
+    if (createIntent || !restoreCreateFocus.current) return;
+    restoreCreateFocus.current = false;
+    document.querySelector<HTMLElement>('[data-product-create-trigger]')?.focus();
+  }, [createIntent]);
+  function clearCreateIntent(restoreFocus = false) {
+    if (!createIntent) return false;
+    restoreCreateFocus.current = restoreFocus;
+    const remainingParams = new URLSearchParams(queryString);
+    remainingParams.delete("new");
+    const remainingQuery = remainingParams.toString();
+    router.replace(`/admin/catalogo${remainingQuery ? `?${remainingQuery}` : ""}`, { scroll: false });
+    return true;
+  }
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [opened, setOpened] = useState<AdminCatalogItem | null>(null);
   const [preflight, setPreflight] = useState<PublicationPreflightProps["data"] | null>(null);
@@ -2287,11 +2303,14 @@ export function AdminProductCatalog({
         </div>
         <div className="relative flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <ProductCreateForm
+            key={createIntent ? "create-product" : "catalog-product"}
+            initialOpen={createIntent}
+            onClose={() => clearCreateIntent(true)}
             categories={productOptions.categories}
             families={productOptions.families}
             brands={productOptions.brands}
             onCreated={async (id, sku) => {
-              router.refresh();
+              if (!clearCreateIntent()) router.refresh();
               try {
                 const response = await fetch(
                   `/api/admin/catalogo?query=${encodeURIComponent(sku)}&page=1&pageSize=1`,

@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, GripVertical, RotateCcw, Save, Settings2, Star } fr
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 export type HomePersonalizationOption = {
   id: string;
@@ -99,9 +100,7 @@ export function AdminHomePersonalizer({
       const payload = (await response.json().catch(() => ({}))) as { error?: unknown };
       if (!response.ok) {
         throw new Error(
-          typeof payload.error === "string"
-            ? payload.error
-            : "No se pudieron guardar las preferencias.",
+          apiErrorMessage(payload.error, "No se pudieron guardar las preferencias."),
         );
       }
       setOpen(false);

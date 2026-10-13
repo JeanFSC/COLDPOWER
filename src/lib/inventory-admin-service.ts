@@ -1,3 +1,4 @@
+import { inventoryReferenceHref } from "@/lib/inventory-reference";
 import {
   and,
   asc,
@@ -26,9 +27,11 @@ import {
   mediaAssets,
   products,
   transfers,
+  transferItems,
   users,
 } from "@/db/schema";
 import { deriveInventoryStatus } from "@/lib/inventory-domain";
+import { transferSummaryFields } from "@/lib/inventory-transfer-summary";
 import {
   inventoryMovementLabels,
   inventoryStatuses,
@@ -42,6 +45,61 @@ const defaultPageSize = 25;
 const maxPageSize = 100;
 const operationPageSize = 10;
 const alertWindowMs = 48 * 60 * 60 * 1000;
+
+export async function getInventoryDetailActivity(productId: string, locationId: string) {
+  const db = getDb();
+  const rows = await db.select({
+    id: inventoryMovements.id, type: inventoryMovements.type, quantity: inventoryMovements.quantity,
+    previousOnHand: inventoryMovements.previousOnHand, resultingOnHand: inventoryMovements.resultingOnHand,
+    previousReserved: inventoryMovements.previousReserved, resultingReserved: inventoryMovements.resultingReserved,
+    createdAt: inventoryMovements.createdAt,
+  }).from(inventoryMovements)
+    .where(and(eq(inventoryMovements.productId, productId), eq(inventoryMovements.locationId, locationId)))
+    .orderBy(desc(inventoryMovements.createdAt), desc(inventoryMovements.id)).limit(3);
+  return { items: rows.map((row) => ({
+    id: row.id, label: inventoryMovementLabels[row.type],
+    entry: row.resultingOnHand > row.previousOnHand ? row.quantity : 0,
+    exit: row.resultingOnHand < row.previousOnHand ? row.quantity : 0,
+    reservedDelta: row.resultingReserved - row.previousReserved,
+    createdAt: row.createdAt.toISOString(),
+  })) };
+}
+
+export async function getInventoryDetailTransfers(productId: string, locationId: string, page = 1) {
+  const db = getDb();
+  const condition = and(eq(transferItems.productId, productId), or(eq(transfers.sourceLocationId, locationId), eq(transfers.destinationLocationId, locationId)));
+  const [totalRow] = await db.select({ total: count() }).from(transfers)
+    .innerJoin(transferItems, eq(transferItems.transferId, transfers.id)).where(condition);
+  const totalItems = Number(totalRow.total);
+  const totalPages = Math.max(1, Math.ceil(totalItems / 10));
+  const currentPage = Math.min(page, totalPages);
+  const items = await db.select({
+    id: transfers.id, status: transfers.status, units: transferItems.quantity,
+    sourceCode: sql<string>`(select l.code from locations l where l.id = ${transfers.sourceLocationId})`,
+    destinationCode: sql<string>`(select l.code from locations l where l.id = ${transfers.destinationLocationId})`,
+  }).from(transfers).innerJoin(transferItems, eq(transferItems.transferId, transfers.id))
+    .where(condition).orderBy(desc(transfers.updatedAt), desc(transfers.id))
+    .limit(10).offset((currentPage - 1) * 10);
+  return { items, page: currentPage, totalItems, totalPages };
+}
+
+export async function getInventoryDetailReservations(productId: string, locationId: string, page = 1) {
+  const db = getDb();
+  const condition = and(eq(inventoryReservations.productId, productId), eq(inventoryReservations.locationId, locationId));
+  const [totalRow] = await db.select({ total: count() }).from(inventoryReservations).where(condition);
+  const totalItems = Number(totalRow.total);
+  const totalPages = Math.max(1, Math.ceil(totalItems / 10));
+  const currentPage = Math.min(page, totalPages);
+  const items = await db.select({
+    id: inventoryReservations.id, quantity: inventoryReservations.quantity,
+    status: inventoryReservations.status, referenceType: inventoryReservations.referenceType,
+    referenceId: inventoryReservations.referenceId, reason: inventoryReservations.reason,
+    expiresAt: inventoryReservations.expiresAt,
+  }).from(inventoryReservations).where(condition)
+    .orderBy(desc(inventoryReservations.createdAt), desc(inventoryReservations.id))
+    .limit(10).offset((currentPage - 1) * 10);
+  return { items, page: currentPage, totalItems, totalPages };
+}
 
 function effectiveCategoryJoin() {
   return or(
@@ -198,19 +256,7 @@ function movementReference(referenceType: string | null, referenceId: string | n
   return label ? `${label} ${referenceId}` : referenceId;
 }
 
-function movementReferenceHref(referenceType: string | null, referenceId: string | null) {
-  if (!referenceId) return null;
-  const id = encodeURIComponent(referenceId);
-  if (referenceType === "order") return `/admin/pedidos?orderId=${id}`;
-  if (referenceType === "sale") return `/admin/ventas?saleId=${id}`;
-  if (referenceType === "transfer" || referenceType === "transfer_cancel")
-    return `/admin/inventario?tab=transfers&transferId=${id}`;
-  if (referenceType === "reservation" || referenceType === "reservation_expiry")
-    return `/admin/inventario?tab=reservations&reservationId=${id}`;
-  if (referenceType === "purchase" || referenceType === "purchase_receipt")
-    return `/admin/compras?purchaseId=${id}`;
-  return null;
-}
+const movementReferenceHref = inventoryReferenceHref;
 
 function itemSelect() {
   return {
@@ -257,7 +303,7 @@ async function getUnknownProductCount(
   return Math.max(0, toNumber(row?.totalProducts) - toNumber(row?.productsWithBalance));
 }
 
-export async function getInventoryAdminPage(filters: InventoryAdminFilters = {}) {
+export async function getInventoryAdminPage(filters: InventoryAdminFilters = {}, importBatchId?: string) {
   const db = getDb();
   const requestedPage = Math.max(1, Math.floor(filters.page ?? 1));
   const pageSize = Math.min(
@@ -474,6 +520,7 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
         completedAt: inventoryImportBatches.completedAt,
       })
       .from(inventoryImportBatches)
+      .where(importBatchId ? eq(inventoryImportBatches.id, importBatchId) : undefined)
       .orderBy(desc(inventoryImportBatches.createdAt), desc(inventoryImportBatches.id))
       .limit(8),
     db
@@ -505,8 +552,7 @@ export async function getInventoryAdminPage(filters: InventoryAdminFilters = {})
         destinationCode: sql<string>`(select l.code from locations l where l.id = ${transfers.destinationLocationId})`,
         destinationName: sql<string>`(select l.name from locations l where l.id = ${transfers.destinationLocationId})`,
         requestedByName: sql<string | null>`(select coalesce(u.name, u.email) from users u where u.id = ${transfers.requestedBy})`,
-        itemCount: sql<string>`(select count(*) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
-        units: sql<string>`(select coalesce(sum(ti.quantity), 0) from transfer_items ti where ti.transfer_id = ${transfers.id})`,
+        ...transferSummaryFields(),
         notes: transfers.notes,
         updatedAt: transfers.updatedAt,
       })

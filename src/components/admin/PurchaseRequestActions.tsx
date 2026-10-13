@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { validatePurchaseRequestConversionItems } from "@/lib/purchases-validation";
+import { apiErrorMessage } from "@/lib/api-error-message";
 
 export function PurchaseRequestActions({
   requestId,
@@ -16,12 +16,12 @@ export function PurchaseRequestActions({
   requestId: string;
   status: string;
   locationId?: string | null;
-  items?: Array<{ productId: string; quantityRequested: number }>;
+  items?: Array<{ productId: string; quantityRequested: number; skuSnapshot: string; productNameSnapshot: string }>;
   suppliers?: Array<{ id: string; name: string; currency: string; status: string }>;
   canApprove?: boolean;
   canManage?: boolean;
 }) {
-  const router = useRouter();
+  const running = useRef(false);
   const [busy, setBusy] = useState(false);
   const [reason, setReason] = useState("");
   const [supplierId, setSupplierId] = useState("");
@@ -30,6 +30,8 @@ export function PurchaseRequestActions({
   const [message, setMessage] = useState<string | null>(null);
 
   async function transition(nextStatus: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED") {
+    if (running.current) return;
+    running.current = true;
     setBusy(true);
     setMessage(null);
     try {
@@ -43,18 +45,20 @@ export function PurchaseRequestActions({
       );
       const result = (await response.json().catch(() => ({}))) as { error?: unknown };
       if (!response.ok) {
-        throw new Error(typeof result.error === "string" ? result.error : "No se pudo actualizar.");
+        throw new Error(apiErrorMessage(result.error, "No se pudo actualizar."));
       }
       setReason("");
-      router.refresh();
+      window.location.reload();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo actualizar.");
     } finally {
+      running.current = false;
       setBusy(false);
     }
   }
 
   async function convert() {
+    if (running.current) return;
     const supplier = suppliers.find((item) => item.id === supplierId);
     if (!supplier || !locationId || !items.length) {
       setMessage("Selecciona proveedor e ingresa un costo unitario válido.");
@@ -67,6 +71,7 @@ export function PurchaseRequestActions({
       setMessage(error instanceof Error ? error.message : "Ingresa un costo válido para cada línea.");
       return;
     }
+    running.current = true;
     setBusy(true);
     setMessage(null);
     try {
@@ -86,12 +91,13 @@ export function PurchaseRequestActions({
       );
       const result = (await response.json().catch(() => ({}))) as { error?: unknown };
       if (!response.ok)
-        throw new Error(typeof result.error === "string" ? result.error : "No se pudo convertir.");
+        throw new Error(apiErrorMessage(result.error, "No se pudo convertir."));
       setMessage("Solicitud convertida en OC pendiente.");
-      router.refresh();
+      window.location.reload();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo convertir.");
     } finally {
+      running.current = false;
       setBusy(false);
     }
   }
@@ -175,7 +181,7 @@ export function PurchaseRequestActions({
           <div className="grid gap-2 sm:col-span-2">
             {items.map((item) => (
               <label key={item.productId} className="grid gap-1 text-[11px] font-semibold text-slate-600">
-                <span>{item.productId} · {item.quantityRequested} unidades</span>
+                <span>{item.skuSnapshot} · {item.productNameSnapshot} · {item.quantityRequested} {item.quantityRequested === 1 ? "unidad" : "unidades"}</span>
                 <input
                   value={unitCosts[item.productId] ?? ""}
                   onChange={(event) => {
@@ -186,7 +192,7 @@ export function PurchaseRequestActions({
                   min="0.01"
                   step="0.01"
                   placeholder="Costo unitario"
-                  aria-label={`Costo unitario para ${item.productId}`}
+                  aria-label={`Costo unitario para ${item.skuSnapshot}`}
                   className="h-9 rounded-lg border border-slate-200 px-3 text-[11px]"
                 />
               </label>

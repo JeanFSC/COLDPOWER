@@ -6,6 +6,7 @@ import { promotionCategories, promotionProducts, promotions } from "@/db/operati
 import { assertPromotionApproval, assertPromotionConflict, promotionRequiresApproval, PromotionDomainError, validatePromotionAssociations } from "@/lib/promotion-service";
 import { getPromotionPage, parsePromotionFilters, PromotionInvalidFilterError } from "@/lib/promotion-repository";
 import { validatePromotionInput } from "@/lib/operations-validation";
+import { lockPromotionMutation } from "@/lib/promotion-mutation-lock";
 
 export async function GET(request: Request) {
   try {
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
     const input = validatePromotionInput(body);
     await validatePromotionAssociations(input);
     const result = await getDb().transaction(async (tx) => {
+      await lockPromotionMutation(tx);
       const approvalRequired = await promotionRequiresApproval(tx, input);
       const approvalStatus = approvalRequired ? "PENDING" : "NOT_REQUIRED";
       if (input.status === "ACTIVE") { await assertPromotionApproval(tx, input, approvalStatus); await assertPromotionConflict(tx, input); }

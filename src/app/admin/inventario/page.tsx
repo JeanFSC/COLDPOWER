@@ -33,9 +33,11 @@ export default async function AdminInventarioPage({ searchParams }: PageProps) {
     filters = parseInventoryFilters(new URLSearchParams());
     filterNotice = "Algunos filtros no eran válidos y se restablecieron a una vista segura.";
   }
-  const data = await getInventoryAdminPage(filters);
+  const data = await getInventoryAdminPage(filters, incomingParams.get("importBatchId") || undefined);
   return (
     <InventoryAdminWorkspace
+      key={incomingParams.get("action") === "adjust" ? "adjust-inventory" : "inventory-list"}
+      openAdjustment={incomingParams.get("action") === "adjust" && can(actor.role, "inventory.adjust")}
       data={data}
       filters={filters}
       filterNotice={filterNotice}

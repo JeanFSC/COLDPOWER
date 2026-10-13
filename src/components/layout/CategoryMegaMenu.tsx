@@ -212,7 +212,7 @@ export function CategoryMegaMenu({ categories, families, productTypes }: Categor
                               {familyProductTypes.map((productType) => (
                                 <li key={`${productType.familyId}-${productType.name}`}>
                                   <Link
-                                    href={`/catalogo?tipo=${encodeURIComponent(productType.name)}`}
+                                    href={`/catalogo?familia=${encodeURIComponent(family.slug)}&tipo=${encodeURIComponent(productType.name)}`}
                                     className="category-menu-product-type"
                                     onClick={closeMenu}
                                   >

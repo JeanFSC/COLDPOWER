@@ -1,4 +1,5 @@
 import { ApiAuthorizationError, requireApiPermission } from "@/lib/auth";
+import { DrizzleQueryError } from "drizzle-orm";
 import { apiError, apiSuccess } from "@/lib/api-errors";
 import { QuoteInvalidFilterError, parseQuoteFilters } from "@/lib/quote-contract";
 import { createAdminQuote, parseAdminQuoteInput } from "@/lib/quote-service";
@@ -25,6 +26,10 @@ export async function POST(request: Request) {
     return apiSuccess({ success: true, quote }, 201);
   } catch (error) {
     if (error instanceof ApiAuthorizationError) return apiError("QUOTES_FORBIDDEN", "No tienes permiso para crear cotizaciones.", 403);
+    if (error instanceof DrizzleQueryError) {
+      console.error("ColdPower: quote creation database failure", error);
+      return apiError("QUOTE_NOT_CREATED", "No se pudo guardar la cotización. Intenta nuevamente en unos momentos.", 503);
+    }
     return apiError("QUOTE_NOT_CREATED", error instanceof Error ? error.message : "No se pudo crear la cotización.", 400);
   }
 }

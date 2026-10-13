@@ -1,4 +1,5 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, priceHistory, productPrices, products } from "@/db/schema";
 import { type PricingPriceType } from "@/lib/pricing-contract";
@@ -19,9 +20,11 @@ export type BulkPriceInput = {
   minimumAllowed?: unknown;
   reason?: unknown;
   idempotencyKey?: unknown;
+  preflightFingerprint?: unknown;
 };
 
 type BulkRow = {
+  found: boolean;
   productId: string;
   sku: string;
   productName: string;
@@ -41,7 +44,7 @@ export type BulkPreviewRow = {
   message: string;
 };
 
-export type BulkPreview = { selected: number; valid: number; blocked: number; newPrices: number; changes: number; archives: number; rows: BulkPreviewRow[] };
+export type BulkPreview = { selected: number; valid: number; blocked: number; newPrices: number; changes: number; archives: number; rows: BulkPreviewRow[]; fingerprint: string };
 
 const editableTypes: PricingPriceType[] = ["RETAIL", "WHOLESALE", "MINIMUM", "SPECIAL", "COST"];
 const operations: BulkPriceOperation[] = ["SET", "INCREASE_PERCENT", "DECREASE_PERCENT", "ARCHIVE"];
@@ -102,22 +105,22 @@ function normalizeInput(input: BulkPriceInput, actor: PricingActor) {
   return { ...input, productIds, priceType, operation, reason, currency: currency || undefined };
 }
 
-async function loadRows(input: ReturnType<typeof normalizeInput>) {
-  const db = getDb();
+async function loadRows(input: ReturnType<typeof normalizeInput>, db: Pick<ReturnType<typeof getDb>, "select"> = getDb()) {
   const productRows = await db.select({ id: products.id, sku: products.sku, productName: products.normalizedName }).from(products).where(inArray(products.id, input.productIds));
   const priceRows = productRows.length ? await db.select().from(productPrices).where(and(inArray(productPrices.productId, productRows.map((row) => row.id)), eq(productPrices.priceType, input.priceType))).orderBy(desc(productPrices.validFrom), desc(productPrices.createdAt)) : [];
   const now = Date.now();
   return input.productIds.map((productId): BulkRow => {
     const product = productRows.find((row) => row.id === productId);
-    if (!product) return { productId, sku: productId, productName: "Producto no encontrado", current: null };
+    if (!product) return { found: false, productId, sku: productId, productName: "Producto no encontrado", current: null };
     const current = priceRows.find((row) => row.productId === productId && row.active && row.status === "ACTIVE" && row.validFrom.getTime() <= now && (!row.validUntil || row.validUntil.getTime() > now)) ?? null;
-    return { productId, sku: product.sku, productName: product.productName, current };
+    return { found: true, productId, sku: product.sku, productName: product.productName, current };
   });
 }
 
 function makePreviewRow(row: BulkRow, input: ReturnType<typeof normalizeInput>): BulkPreviewRow {
   const currentAmount = row.current ? String(row.current.amount) : null;
   const currentCurrency = row.current?.currency ?? null;
+  if (!row.found) return { productId: row.productId, sku: row.sku, productName: row.productName, currentPriceId: null, currentAmount: null, currentCurrency: null, newAmount: null, newCurrency: null, result: "blocked", message: "El producto ya no está disponible. Actualiza la selección." };
   if (input.operation === "ARCHIVE") {
     return row.current
       ? { productId: row.productId, sku: row.sku, productName: row.productName, currentPriceId: row.current.id, currentAmount, currentCurrency, newAmount: null, newCurrency: currentCurrency, result: "archive", message: "Se archivará el registro vigente." }
@@ -140,25 +143,43 @@ function summary(rows: BulkPreviewRow[]) {
 
 export async function previewBulkPrice(input: BulkPriceInput, actor: PricingActor): Promise<BulkPreview> {
   const normalized = normalizeInput(input, actor);
-  const rows = (await loadRows(normalized)).map((row) => makePreviewRow(row, normalized));
-  return { ...summary(rows), rows };
+  return buildPreview(await loadRows(normalized), normalized);
+}
+
+function buildPreview(source: BulkRow[], input: ReturnType<typeof normalizeInput>): BulkPreview {
+  const rows = source.map(row => makePreviewRow(row, input));
+  const fingerprint = createHash("sha256").update(JSON.stringify({ operation: input.operation, priceType: input.priceType, amount: input.amount, percentage: input.percentage, currency: input.currency, wholesaleMinQty: input.wholesaleMinQty, minimumAllowed: input.minimumAllowed, rows: source.map((row, index) => ({ productId: row.productId, current: row.current, result: rows[index] })).sort((a, b) => a.productId.localeCompare(b.productId)) })).digest("hex");
+  return { ...summary(rows), rows, fingerprint };
 }
 
 export async function applyBulkPrice(input: BulkPriceInput, actor: PricingActor) {
   const normalized = normalizeInput(input, actor);
-  const preview = await previewBulkPrice(normalized, actor);
-  if (preview.blocked) throw new Error(`BULK_PREFLIGHT_FAILED:${preview.blocked}`);
+  const requestKey = text(normalized.idempotencyKey);
+  const requestSignature = JSON.stringify({ ...normalized, productIds: [...normalized.productIds].sort(), idempotencyKey: undefined });
+  const requestId = requestKey ? `bulk-${createHash("sha256").update(`${actor.userId}:${requestKey}`).digest("hex")}` : `bulk-${crypto.randomUUID()}`;
   const db = getDb();
   return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${requestId}, 0))`);
+    if (requestKey) {
+      const [previous] = await tx.select().from(auditLogs).where(and(eq(auditLogs.entityId, requestId), eq(auditLogs.action, "pricing.bulk_applied"))).limit(1);
+      if (previous) {
+        const metadata = previous.metadata as { requestSignature?: string; result?: ReturnType<typeof summary> & { applied: number } } | null;
+        if (metadata?.requestSignature !== requestSignature || !metadata.result) throw new Error("BULK_IDEMPOTENCY_CONFLICT");
+        return { ...metadata.result, idempotent: true };
+      }
+    }
+    // Serialize all bulk changes touching the same product, including creation of its first price.
+    for (const productId of [...normalized.productIds].sort()) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${productId}), hashtext(${normalized.priceType}))`);
+    }
+    const preview = buildPreview(await loadRows(normalized, tx), normalized);
+    if (normalized.preflightFingerprint !== undefined && normalized.preflightFingerprint !== preview.fingerprint) throw new Error("BULK_STALE_PREFLIGHT");
+    if (preview.blocked) throw new Error(`BULK_PREFLIGHT_FAILED:${preview.blocked}`);
     let applied = 0;
     for (const row of preview.rows) {
       const idempotencyKey = text(normalized.idempotencyKey) ? `${text(normalized.idempotencyKey)}:${row.productId}` : null;
-      if (idempotencyKey) {
-        const [previous] = await tx.select().from(productPrices).where(eq(productPrices.idempotencyKey, idempotencyKey)).limit(1);
-        if (previous) { applied += 1; continue; }
-      }
       if (row.currentPriceId && row.result !== "new") {
-        const [current] = await tx.select().from(productPrices).where(eq(productPrices.id, row.currentPriceId)).limit(1);
+        const [current] = await tx.select().from(productPrices).where(eq(productPrices.id, row.currentPriceId)).limit(1).for("update");
         if (!current || String(current.amount) !== row.currentAmount || current.currency !== row.currentCurrency) throw new Error("BULK_STALE_PREFLIGHT");
         if (row.result === "archive") {
           const [archived] = await tx.update(productPrices).set({ active: false, status: "ARCHIVED", idempotencyKey, updatedAt: new Date() }).where(eq(productPrices.id, current.id)).returning();
@@ -174,7 +195,8 @@ export async function applyBulkPrice(input: BulkPriceInput, actor: PricingActor)
       }
       applied += 1;
     }
-    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "pricing.bulk_applied", entityType: "pricing_bulk", entityId: `bulk-${crypto.randomUUID()}`, before: null, after: { priceType: normalized.priceType, operation: normalized.operation, selected: preview.selected, applied }, metadata: { reason: normalized.reason } });
-    return { ...summary(preview.rows), applied, idempotent: applied === preview.selected };
+    const result = { ...summary(preview.rows), applied };
+    await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "pricing.bulk_applied", entityType: "pricing_bulk", entityId: requestId, before: null, after: { priceType: normalized.priceType, operation: normalized.operation, selected: preview.selected, applied }, metadata: { reason: normalized.reason, requestSignature, result } });
+    return { ...result, idempotent: false };
   });
 }

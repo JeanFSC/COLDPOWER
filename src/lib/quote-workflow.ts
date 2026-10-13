@@ -43,6 +43,17 @@ export const quoteStatusLabels: Record<QuoteDisplayStatus, string> = {
   LEGACY_CLOSED: "Cierre histórico",
 };
 
+export function quoteHistoryStatusLabel(status: string) {
+  const historicalLabels: Record<string, string> = {
+    borrador: "Borrador", enviada: "Enviada", nuevo: "Nuevo",
+    contactado: "Contactado", evaluacion: "En evaluación",
+    requiere_info: "Requiere información", cotizada: "Cotizada",
+    aprobada: "Aprobada", convertida: "Convertida",
+    cerrada: "Cerrada (histórico)", cerrado: "Cerrado (histórico)",
+  };
+  return quoteStatusLabels[status as QuoteDisplayStatus] ?? historicalLabels[status] ?? "Estado no clasificado";
+}
+
 export function normalizeQuoteStatus(status: string, workflowStatus: string | null | undefined): QuoteDisplayStatus {
   if (workflowStatus && (quoteWorkflowStatuses as readonly string[]).includes(workflowStatus)) return workflowStatus as QuoteWorkflowStatus;
   return legacyQuoteStatus(status) ?? (["cerrada", "cerrado"].includes(status) ? "LEGACY_CLOSED" : "DRAFT");

@@ -1,6 +1,6 @@
 ﻿import { and, desc, eq, inArray, lte, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { count, sum } from "drizzle-orm";
+import { count, isNull, notExists, sql, sum } from "drizzle-orm";
 import { auditLogs, inventoryBalances, inventoryReservations, locations, products } from "@/db/schema";
 import { publicConditions } from "@/lib/catalog-repository";
 import { customers, opportunities, opportunityStageHistory } from "@/db/crm-schema";
@@ -13,6 +13,7 @@ import { consumeInventoryReservationInTransaction, notifyInventoryState, release
 export { convertQuoteToSale } from "@/lib/quote-conversion-service";
 import { canTransitionOrderForDelivery, type CheckoutInput, type ManualPaymentMethod, type OrderStatus } from "@/lib/sales-validation";
 import { summarizePaymentLedger } from "@/lib/payments-contract";
+import { isPendingProviderPayment } from "@/lib/payment-display";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { recordPromotionalApplicationsInTransaction } from "@/lib/promotion-service";
 import { getCompanyTaxConfiguration } from "@/lib/company-settings-runtime";
@@ -309,6 +310,8 @@ export async function cancelSale(saleId: string, actor: Actor, reason: string) {
 }
 export async function registerManualPayment(input: { orderId: string; method: ManualPaymentMethod; amount: string; currency: string; reference: string | null; reason: string; idempotencyKey?: string }, actor: Actor) {
   const result = await getDb().transaction(async (tx) => {
+    // Serialize with createProviderPayment, including its external provider call.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${input.orderId}))`);
     const idempotencyKey = input.idempotencyKey ?? `manual-${input.orderId}-${input.reference ?? input.amount}`;
     const [existingPaymentByKey] = await tx.select().from(payments).where(eq(payments.idempotencyKey, idempotencyKey)).limit(1);
     const [existingAttempt] = existingPaymentByKey ? [] : await tx.select().from(paymentAttempts).where(eq(paymentAttempts.idempotencyKey, idempotencyKey)).limit(1);
@@ -322,6 +325,22 @@ export async function registerManualPayment(input: { orderId: string; method: Ma
     if (!order) throw new Error("Pedido no encontrado.");
     if (order.currency !== input.currency) throw new Error("La moneda del pago no coincide con la moneda del pedido.");
     if (["CANCELLED", "DELIVERED"].includes(order.status)) throw new Error("El pedido no admite pagos en su estado actual.");
+    const pendingProviderPayments = await tx.select().from(payments).where(and(
+      eq(payments.orderId, order.id), eq(payments.methodType, "PROVIDER"),
+      inArray(payments.status, ["PENDING", "UNDER_REVIEW"]),
+    ));
+    const pendingProviderAttempts = pendingProviderPayments.length ? await tx.select({ id: paymentAttempts.id }).from(paymentAttempts).where(
+      inArray(paymentAttempts.paymentId, pendingProviderPayments.map(payment => payment.id)),
+    ).limit(1) : [];
+    if (pendingProviderPayments.some(isPendingProviderPayment) || pendingProviderAttempts.length) throw new Error("PAYMENT_PROVIDER_PENDING");
+    const [existingPayments, existingRefunds] = await Promise.all([
+      tx.select({ amount: payments.amount, status: payments.status }).from(payments).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency))),
+      tx.select({ amount: paymentRefunds.amount, status: paymentRefunds.status }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
+    ]);
+    const remainingBalance = summarizePaymentLedger(order.total, existingPayments, existingRefunds).balance;
+    const requestedAmount = Number(input.amount);
+    if (!Number.isFinite(requestedAmount) || requestedAmount <= 0 || requestedAmount !== money(requestedAmount)) throw new Error("PAYMENT_AMOUNT_INVALID");
+    if (requestedAmount > remainingBalance + 0.005) throw new Error("PAYMENT_AMOUNT_EXCEEDS_BALANCE");
     const [payment] = await tx.insert(payments).values({ id: id("payment"), orderId: order.id, methodType: "MANUAL", method: input.method, provider: null, providerReference: input.reference, idempotencyKey, amount: input.amount, currency: input.currency, status: "CONFIRMED", metadata: input.reference ? { reference: input.reference, reason: input.reason } : { reason: input.reason }, createdBy: actor.userId }).returning();
     await tx.insert(paymentAttempts).values({ id: id("payment-attempt"), paymentId: payment.id, provider: null, providerReference: input.reference, status: "CONFIRMED", amount: input.amount, currency: input.currency, idempotencyKey });
     await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: payment.id, fromStatus: null, toStatus: "CONFIRMED", changedBy: actor.userId, actorRole: actor.role ?? null, reason: input.reason });
@@ -330,6 +349,20 @@ export async function registerManualPayment(input: { orderId: string; method: Ma
       tx.select({ total: sum(paymentRefunds.amount) }).from(paymentRefunds).innerJoin(payments, eq(paymentRefunds.paymentId, payments.id)).where(and(eq(payments.orderId, order.id), eq(payments.currency, order.currency), eq(paymentRefunds.currency, order.currency), eq(paymentRefunds.status, "SUCCEEDED"))),
     ]);
     const netReceived = summarizePaymentLedger(order.total, paymentRows, [{ amount: refundedRows[0]?.total ?? 0, status: "SUCCEEDED" }]).net;
+    if (netReceived + 0.005 >= money(order.total)) {
+      // These rows are placeholders, never submitted to a provider. Preserve real attempts.
+      const placeholders = await tx.update(payments).set({ status: "CANCELLED", updatedAt: new Date() }).where(and(
+        eq(payments.orderId, order.id), eq(payments.currency, order.currency),
+        eq(payments.methodType, "PROVIDER"), eq(payments.method, "UNCONFIGURED"),
+        eq(payments.status, "PENDING"), isNull(payments.provider), isNull(payments.providerReference),
+        notExists(tx.select({ id: paymentAttempts.id }).from(paymentAttempts).where(eq(paymentAttempts.paymentId, payments.id))),
+      )).returning();
+      for (const placeholder of placeholders) {
+        const reason = "Placeholder sin proveedor cerrado: saldo cubierto por pagos confirmados.";
+        await tx.insert(paymentStatusHistory).values({ id: id("payment-status"), paymentId: placeholder.id, fromStatus: "PENDING", toStatus: "CANCELLED", changedBy: actor.userId, actorRole: actor.role ?? null, reason });
+        await tx.insert(auditLogs).values(audit(actor, "payments.placeholder_closed", "payment", placeholder.id, { status: "PENDING" }, { status: "CANCELLED" }, { orderId: order.id, reason, confirmedPaymentId: payment.id }));
+      }
+    }
     const shouldAdvance = netReceived + 0.005 >= money(order.total) && order.status === "PAYMENT_PENDING";
     const [updated] = shouldAdvance ? await tx.update(orders).set({ status: "PAID", version: order.version + 1, updatedAt: new Date() }).where(eq(orders.id, order.id)).returning() : [order];
     if (shouldAdvance) {

@@ -23,7 +23,16 @@ function whereAudit(filters: AuditFilters) {
   const conditions: SQL[] = [];
   if (filters.query) {
     const pattern = `%${filters.query}%`;
-    conditions.push(or(ilike(auditLogs.id, pattern), ilike(auditLogs.action, pattern), ilike(auditLogs.entityType, pattern), ilike(auditLogs.entityId, pattern), ilike(auditLogs.actorId, pattern), ilike(auditLogs.module, pattern), ilike(auditLogs.origin, pattern))!);
+    conditions.push(or(
+      ilike(auditLogs.id, pattern), ilike(auditLogs.action, pattern),
+      ilike(auditLogs.entityType, pattern), ilike(auditLogs.entityId, pattern),
+      ilike(auditLogs.actorId, pattern), ilike(auditLogs.module, pattern), ilike(auditLogs.origin, pattern),
+      ilike(auditLogs.correlationId, pattern), ilike(auditLogs.requestId, pattern),
+      sql`${auditLogs.metadata} ->> 'ip' ilike ${pattern}`,
+      sql`${auditLogs.metadata} ->> 'correlationId' ilike ${pattern}`,
+      sql`exists (select 1 from ${users} where ${users.id} = ${auditLogs.actorId}
+        and (${users.name} ilike ${pattern} or ${users.email} ilike ${pattern}))`,
+    )!);
   }
   if (filters.module) conditions.push(eq(auditLogs.module, filters.module));
   if (filters.action) conditions.push(eq(auditLogs.action, filters.action));
@@ -182,7 +191,7 @@ function dedupeModuleFacets(facets: Array<{ value: string; label: string }>): Ar
 }
 
 export async function getAuditPage(filters: AuditFilters = {}): Promise<AuditPageResponse> {
-  const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const requestedPage = Math.max(1, Math.floor(filters.page ?? 1));
   const pageSize = Math.min(maxPageSize, Math.max(1, Math.floor(filters.pageSize ?? defaultPageSize)));
   const db = getDb();
   const where = whereAudit(filters);
@@ -191,8 +200,7 @@ export async function getAuditPage(filters: AuditFilters = {}): Promise<AuditPag
   // Module facet is intentionally NOT scoped to `where` — it lists every module that
   // ever appears in the table so the dropdown (and whatever the user just picked)
   // never disappears just because the current filter combination matches zero rows.
-  const [rows, totalRows, moduleFacets, events, critical, sensitive, logins, integrationErrors, failed, trend, trendPrevious] = await Promise.all([
-    db.select().from(auditLogs).where(where).orderBy(desc(auditLogs.createdAt), asc(auditLogs.id)).limit(pageSize).offset((page - 1) * pageSize),
+  const [totalRows, moduleFacets, events, critical, sensitive, logins, integrationErrors, failed, trend, trendPrevious] = await Promise.all([
     db.select({ total: count(auditLogs.id) }).from(auditLogs).where(where),
     db.selectDistinct({ value: auditLogs.module }).from(auditLogs).orderBy(auditLogs.module),
     kpi(where, alwaysTrue, period),
@@ -206,14 +214,18 @@ export async function getAuditPage(filters: AuditFilters = {}): Promise<AuditPag
   ]);
 
   const totalItems = n(totalRows[0]?.total);
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const page = Math.min(requestedPage, totalPages);
+  const rows = await db.select().from(auditLogs).where(where).orderBy(desc(auditLogs.createdAt), asc(auditLogs.id))
+    .limit(pageSize).offset((page - 1) * pageSize);
   const items = await hydrateActors(rows.map(map));
   const metrics = { events, critical, sensitive, logins, integrationErrors, failed };
   return {
     items,
-    page: Math.min(page, Math.max(1, Math.ceil(totalItems / pageSize))),
+    page,
     pageSize,
     totalItems,
-    totalPages: Math.max(1, Math.ceil(totalItems / pageSize)),
+    totalPages,
     metrics,
     facets: {
       modules: dedupeModuleFacets(moduleFacets.flatMap((row) => row.value ? [{ value: row.value, label: moduleLabel(row.value, row.value, "") }] : [])),

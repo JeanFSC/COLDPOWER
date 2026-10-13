@@ -59,7 +59,7 @@ export function validateCustomerInput(input: Record<string, unknown>, partial = 
   const phoneNumber = phone(input.phone);
   const customerType = input.customerType;
   const status = input.status;
-  if (!partial && !name) throw new Error("El nombre del cliente es obligatorio.");
+  if ((!partial || input.name !== undefined) && !name) throw new Error("El nombre del cliente es obligatorio.");
   if (name.length > 160 || email.length > 180 || phoneNumber.length > 40) throw new Error("Los datos del cliente superan el límite permitido.");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("El correo electrónico no es válido.");
   if (phoneNumber && phoneNumber.length < 7) throw new Error("El teléfono no es válido.");
@@ -71,7 +71,7 @@ export function validateCustomerInput(input: Record<string, unknown>, partial = 
   if (ruc && !unchangedRuc && !isValidPeruvianRuc(ruc)) throw new Error("El RUC no es válido: revisa prefijo SUNAT y dígito verificador.");
   if (!partial && (normalizedType === "COMPANY" || normalizedType === "EMPRESA") && !ruc) throw new Error("El RUC es obligatorio para empresas.");
   return {
-    ...(partial || name ? { name } : {}),
+    ...(input.name !== undefined ? { name } : {}),
     ...(input.legalName !== undefined ? { legalName: clean(input.legalName, 180) || null } : {}),
     ...(input.documentNumber !== undefined ? { documentNumber: clean(input.documentNumber, 40) || null } : {}),
     ...(input.ruc !== undefined ? { ruc: ruc || null } : {}),

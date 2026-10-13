@@ -30,7 +30,8 @@ test("CP-034 protege duplicados, referencias, motivo y datos vinculados", () => 
   assert.match(service, /lastActivityAt/);
   assert.match(service, /idempotencyKey/);
   assert.match(validation, /correo electrónico no es válido/);
-  assert.match(validation, /RUC debe contener 11 dígitos/);
+  assert.match(validation, /!isValidPeruvianRuc\(ruc\)/);
+  assert.match(validation, /prefijo SUNAT y dígito verificador/);
   assert.match(schema, /customers_user_id_unique|userUnique/);
   assert.match(schema, /crm_activities_idempotency_unique/);
   assert.match(schema, /crm_tasks_idempotency_unique/);

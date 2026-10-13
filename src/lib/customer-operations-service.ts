@@ -134,7 +134,7 @@ export async function mergeCustomers(input: { primaryId: string; secondaryId: st
 export async function addCustomerContact(customerId: string, input: { name: string; role?: string | null; email?: string | null; phone?: string | null; whatsapp?: string | null; isPrimary?: boolean }, actor: Actor) {
   if (!input.name.trim()) throw new CustomerOperationsError("CUSTOMER_CONTACT_NAME_REQUIRED", "El nombre del contacto es obligatorio.", 422);
   return getDb().transaction(async (tx) => {
-    const [customer] = await tx.select({ id: customers.id }).from(customers).where(eq(customers.id, customerId)).limit(1); if (!customer) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
+    const [customer] = await tx.select({ id: customers.id }).from(customers).where(eq(customers.id, customerId)).for("update").limit(1); if (!customer) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
     if (input.isPrimary) await tx.update(customerContacts).set({ isPrimary: false }).where(eq(customerContacts.customerId, customerId));
     const [contact] = await tx.insert(customerContacts).values({ id: id("customer-contact"), customerId, name: input.name.trim().slice(0, 160), role: input.role?.trim().slice(0, 120) || null, email: input.email?.trim().toLowerCase().slice(0, 180) || null, phone: input.phone?.trim().slice(0, 40) || null, whatsapp: input.whatsapp?.trim().slice(0, 40) || null, isPrimary: input.isPrimary ?? false }).returning();
     await tx.insert(auditLogs).values(audit(actor, "customer.contact_added", customerId, null, contact)); return contact;
@@ -144,7 +144,7 @@ export async function addCustomerContact(customerId: string, input: { name: stri
 export async function addCustomerAddress(customerId: string, input: { label: string; address: string; country?: string | null; department?: string | null; province?: string | null; district?: string | null; isPrimary?: boolean }, actor: Actor) {
   if (!input.label.trim() || !input.address.trim()) throw new CustomerOperationsError("CUSTOMER_ADDRESS_REQUIRED", "Tipo y dirección son obligatorios.", 422);
   return getDb().transaction(async (tx) => {
-    const [customer] = await tx.select({ id: customers.id }).from(customers).where(eq(customers.id, customerId)).limit(1); if (!customer) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
+    const [customer] = await tx.select({ id: customers.id }).from(customers).where(eq(customers.id, customerId)).for("update").limit(1); if (!customer) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
     if (input.isPrimary) await tx.update(customerAddresses).set({ isPrimary: false }).where(eq(customerAddresses.customerId, customerId));
     const [address] = await tx.insert(customerAddresses).values({ id: id("customer-address"), customerId, label: input.label.trim().slice(0, 80), address: input.address.trim().slice(0, 300), country: input.country?.trim().slice(0, 80) || null, department: input.department?.trim().slice(0, 80) || null, province: input.province?.trim().slice(0, 80) || null, district: input.district?.trim().slice(0, 80) || null, isPrimary: input.isPrimary ?? false }).returning();
     await tx.insert(auditLogs).values(audit(actor, "customer.address_added", customerId, null, address)); return address;

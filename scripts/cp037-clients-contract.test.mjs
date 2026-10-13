@@ -6,6 +6,21 @@ import test from "node:test";
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
+test("Pipeline bloquea la oportunidad antes de validar su transición", () => {
+  const body = read("src/lib/crm-service.ts").split("export async function changeOpportunityStage")[1].split("export async function")[0];
+  assert.match(body, /from\(opportunities\)[\s\S]*?\.for\("update"\)/);
+  assert.ok(body.indexOf('.for("update")') < body.indexOf("assertOpportunityTransition"));
+});
+
+test("contactos y direcciones bloquean el cliente antes de reemplazar el principal", () => {
+  const service = read("src/lib/customer-operations-service.ts");
+  for (const method of ["addCustomerContact", "addCustomerAddress"]) {
+    const body = service.split(`export async function ${method}`)[1].split("export async function")[0];
+    assert.match(body, /from\(customers\)[\s\S]*?\.for\("update"\)/);
+    assert.ok(body.indexOf('.for("update")') < body.indexOf("if (input.isPrimary)"));
+  }
+});
+
 test("CP-037 clientes expone Customer 360 y filtros server-side", () => {
   const contract = read("src/lib/customer-contract.ts");
   const repository = read("src/lib/customer-repository.ts");

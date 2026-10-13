@@ -4,6 +4,18 @@ const PAYMENT_PROVIDER_LABELS: Record<string, string> = {
   development_fixture: "Pasarela de prueba",
 };
 
+/** A placeholder created before choosing a payment method has no external charge to await. */
+export function isPendingProviderPayment(payment: {
+  methodType?: unknown; method?: unknown; status?: unknown;
+  provider?: unknown; providerReference?: unknown;
+} | null | undefined): boolean {
+  if (!payment || payment.methodType !== "PROVIDER" ||
+      !["PENDING", "UNDER_REVIEW"].includes(String(payment.status))) return false;
+  const unconfigured = payment.status === "PENDING" && payment.method === "UNCONFIGURED" &&
+    !String(payment.provider ?? "").trim() && !String(payment.providerReference ?? "").trim();
+  return !unconfigured;
+}
+
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   TRANSFER: "Transferencia",
   CARD: "Tarjeta",

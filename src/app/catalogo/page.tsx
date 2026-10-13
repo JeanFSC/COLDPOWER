@@ -57,7 +57,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             <CatalogFilters filters={filters} categories={publicCategories} families={publicFamilies} brands={publicBrands} />
           </div>
           <div>
-            <AppliedFilters filters={filters} />
+            <AppliedFilters filters={filters} categories={categories} families={families} brands={brands} />
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="hidden font-mono text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary-600 lg:block">

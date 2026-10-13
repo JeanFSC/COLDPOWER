@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 
 type Option = { id: string; name: string; categoryId?: string };
@@ -10,6 +10,8 @@ type ProductCreateFormProps = {
   families: Option[];
   brands: Option[];
   canCreate?: boolean;
+  initialOpen?: boolean;
+  onClose?: () => void;
   onCreated?: (productId: string, sku: string) => void;
 };
 
@@ -18,8 +20,8 @@ type CreateResponse = {
   error?: { message?: string };
 };
 
-export function ProductCreateForm({ categories, families, brands, canCreate = true, onCreated }: ProductCreateFormProps) {
-  const [open, setOpen] = useState(false);
+export function ProductCreateForm({ categories, families, brands, canCreate = true, initialOpen = false, onClose, onCreated }: ProductCreateFormProps) {
+  const [open, setOpen] = useState(initialOpen && canCreate);
   const [sku, setSku] = useState("");
   const [commercialName, setCommercialName] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -28,6 +30,51 @@ export function ProductCreateForm({ categories, families, brands, canCreate = tr
   const [productType, setProductType] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const skuRef = useRef<HTMLInputElement>(null);
+  const notifyClose = useEffectEvent(() => onClose?.());
+
+  useEffect(() => {
+    if (!open) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    skuRef.current?.focus();
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        notifyClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]',
+      ) ?? []).filter((element) => element.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first || !last) return;
+      const active = document.activeElement;
+      if (!dialogRef.current?.contains(active) || (event.shiftKey ? active === first : active === last)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      requestAnimationFrame(() => {
+        if (document.querySelector('[role="dialog"]')) return;
+        const target = previousFocus?.isConnected && previousFocus !== document.body
+          ? previousFocus
+          : document.querySelector<HTMLElement>('[data-product-create-trigger]');
+        target?.focus();
+      });
+    };
+  }, [open]);
+
+  function closeForm() {
+    setOpen(false);
+    onClose?.();
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,24 +109,24 @@ export function ProductCreateForm({ categories, families, brands, canCreate = tr
   return (
     <>
       {!canCreate ? null : (
-      <button type="button" onClick={() => { setMessage(""); setOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(37,99,235,0.16)] transition hover:bg-blue-700">
+      <button data-product-create-trigger type="button" onClick={() => { setMessage(""); setOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[10px] font-extrabold text-white shadow-[0_5px_12px_rgba(37,99,235,0.16)] transition hover:bg-blue-700">
         Nuevo producto
       </button>)}
       {open ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#102a43]/35 px-4 py-10" role="presentation">
-          <section className="w-full max-w-2xl rounded-xl border border-[#dce6ee] bg-white p-5 shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-labelledby="new-product-title">
+          <section ref={dialogRef} className="w-full max-w-2xl rounded-xl border border-[#dce6ee] bg-white p-5 shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-labelledby="new-product-title">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#2277ee]">Catálogo</p>
                 <h2 id="new-product-title" className="mt-1 text-[18px] font-black text-[#102a43]">Crear producto manual</h2>
                 <p className="mt-1 text-[11px] font-semibold leading-5 text-[#8195aa]">Registra una referencia editorial sin modificar la identidad de productos importados.</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="rounded-full p-2 text-[#71869c] hover:bg-[#f3f7fa]" aria-label="Cerrar creación de producto"><X className="h-4 w-4" aria-hidden="true" /></button>
+              <button type="button" onClick={closeForm} className="rounded-full p-2 text-[#71869c] hover:bg-[#f3f7fa]" aria-label="Cerrar creación de producto"><X className="h-4 w-4" aria-hidden="true" /></button>
             </div>
             <form className="mt-5 grid gap-4" onSubmit={submit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-[11px] font-extrabold text-[#304b66]">SKU
-                  <input required value={sku} onChange={(event) => setSku(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] px-3 text-sm font-semibold outline-none focus:border-[#2277ee]" placeholder="CP-000001" autoComplete="off" />
+                  <input ref={skuRef} required value={sku} onChange={(event) => setSku(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] px-3 text-sm font-semibold outline-none focus:border-[#2277ee]" placeholder="CP-000001" autoComplete="off" />
                 </label>
                 <label className="grid gap-1.5 text-[11px] font-extrabold text-[#304b66]">Nombre comercial
                   <input required value={commercialName} onChange={(event) => setCommercialName(event.target.value)} className="h-10 rounded-lg border border-[#dce6ee] px-3 text-sm font-semibold outline-none focus:border-[#2277ee]" placeholder="Nombre visible del producto" />
@@ -103,7 +150,7 @@ export function ProductCreateForm({ categories, families, brands, canCreate = tr
               </div>
               {message ? <p className="rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-[11px] font-semibold text-danger" role={message.includes("creado") ? "status" : "alert"} aria-live="polite">{message}</p> : null}
               <div className="flex flex-wrap justify-end gap-2 border-t border-[#edf2f6] pt-4">
-                <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[11px] font-extrabold text-[#526b84]">Cancelar</button>
+                <button type="button" onClick={closeForm} className="h-10 rounded-lg border border-[#dce6ee] px-4 text-[11px] font-extrabold text-[#526b84]">Cancelar</button>
                 <button type="submit" disabled={busy} className="h-10 rounded-lg bg-[#102a43] px-4 text-[11px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Creando…" : "Crear producto"}</button>
               </div>
             </form>

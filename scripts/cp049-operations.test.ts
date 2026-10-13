@@ -8,6 +8,24 @@ import { can } from "@/lib/roles";
 const root = process.cwd();
 const read = (file: string) => readFileSync(join(root, file), "utf8");
 
+test("la reasignación valida el permiso del responsable antes de escribir", () => {
+  const body = read("src/lib/operations-work-items-service.ts").split("export async function reassignOperationsWorkItem")[1].split("export async function")[0];
+  assert.match(body, /canActOnOperationsWorkItem\(before.team, before.sourceType, user.roleCode \?\? user.role\)/);
+  assert.ok(body.indexOf("user.roleCode ?? user.role") < body.indexOf(".update(operationsWorkItems)"));
+});
+
+test("CRM sincroniza cierre y reapertura operativos y usa el mismo orden de bloqueos", () => {
+  const crm = read("src/lib/crm-service.ts");
+  const sync = read("src/lib/crm-work-item-status.ts");
+  const operations = read("src/lib/operations-work-items-service.ts").split("export async function resolveOperationsWorkItem")[1];
+  assert.match(crm, /syncCrmWorkItemStatus\(tx, taskId, status, actor\)/);
+  assert.match(crm, /syncCrmWorkItemStatus\(tx, followUpId, status, actor\)/);
+  for (const value of ["REOPEN", "CANCEL", "resolvedAt", "operations.work_item_reopened"]) assert.ok(sync.includes(value));
+  assert.ok(operations.indexOf('from(crmTasks)') < operations.indexOf('const [before]'));
+  assert.match(operations, /refreshOpportunityFollowUpSnapshot\(tx, followup.opportunityId\)/);
+  assert.match(operations, /status: "COMPLETED", completedAt: new Date\(\)/);
+});
+
 test("operaciones aceptan rango, Lima, local, vendedor, estado, cola y paginación", () => {
   const filters = parseOperationsFilters(new URLSearchParams("range=week&from=2026-08-01&to=2026-08-14&locationId=loc-1&sellerId=user-1&status=PREPARING&queue=orders&page=2&pageSize=50"));
   assert.equal(filters.range, "week");

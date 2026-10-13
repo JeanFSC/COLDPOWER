@@ -26,10 +26,11 @@ import {
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Fragment, useEffect, useState, useTransition, type ReactNode } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { roleLabel, type AppRole } from "@/lib/roles";
+import { useConfirmedNotifications } from "@/components/admin/useConfirmedNotifications";
 
 export type AdminNavIcon =
   | "home"
@@ -117,8 +118,9 @@ export function AdminShell({
   unreadNotificationsCount = 0,
   showNotifications = true,
 }: AdminShellProps) {
+  const confirmedNotifications = useConfirmedNotifications(unreadNotificationsCount);
+  unreadNotificationsCount = confirmedNotifications.unreadCount ?? unreadNotificationsCount;
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -126,7 +128,6 @@ export function AdminShell({
   const [searchGroups, setSearchGroups] = useState<AdminSearchGroup[]>([]);
   const [searchResultQuery, setSearchResultQuery] = useState("");
   const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
-  const [isNavigating, startNavigation] = useTransition();
   const profile = profileByRole[role] ?? {
     name: roleLabel(role),
     title: roleLabel(role),
@@ -236,7 +237,7 @@ export function AdminShell({
                       {link.section}
                     </p>
                   ) : null}
-                  <Link
+                  <Link prefetch={false}
                     href={link.href}
                     onClick={() => { setIsMenuOpen(false); recordRecent(link.label, link.href); }}
                     className={`flex min-h-9 items-center gap-3 rounded-lg px-2.5 text-[12px] font-semibold transition ${active ? "bg-[#102f51] text-white shadow-[0_4px_10px_rgba(16,47,81,0.16)]" : "text-[#49627d] hover:bg-[#f5f8fb] hover:text-[#102f51]"}`}
@@ -268,7 +269,7 @@ export function AdminShell({
               <p className="text-[10px] leading-4 text-[#d7e5f1]">
                 Soporte disponible para incidencias del panel.
               </p>
-              <Link
+              <Link prefetch={false}
                 href="/contacto"
                 className="mt-2 inline-flex h-8 w-full items-center justify-center gap-2 rounded-lg bg-white/10 text-[10px] font-bold text-white transition hover:bg-white/15"
               >
@@ -321,31 +322,21 @@ export function AdminShell({
                 }
                 const query = event.currentTarget.value.trim();
                 if (event.key === "Enter" && query) {
-                  // startTransition keeps the input responsive (marks the
-                  // navigation as non-urgent) and exposes isNavigating so we
-                  // can show immediate feedback while the RSC payload streams.
-                  startNavigation(() => {
-                    router.push(`/admin/catalogo?query=${encodeURIComponent(query)}`);
-                  });
+                  event.preventDefault();
+                  setIsCommandOpen(true);
                 }
               }}
             />
             <span
-              className={`pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#5f7489] sm:flex ${isNavigating ? "opacity-0" : ""}`}
+              className="pointer-events-none absolute right-2.5 hidden items-center gap-1 text-[10px] font-bold text-[#5f7489] sm:flex"
             >
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">Ctrl</kbd>
               <kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5">K</kbd>
             </span>
-            {isNavigating ? (
-              <span
-                className="absolute right-3.5 h-4 w-4 animate-spin rounded-full border-2 border-[#dce6ee] border-t-[#2277ee]"
-                aria-hidden="true"
-              />
-            ) : null}
           </label>
           <div className="ml-auto flex shrink-0 items-center gap-3">
             {showNotifications ? (
-              <Link
+              <Link prefetch={false}
                 href="/admin/notificaciones"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#173654] transition hover:bg-[#f4f7fa]"
                 aria-label="Ver notificaciones"
@@ -382,10 +373,10 @@ export function AdminShell({
             <section className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce6ee] bg-white shadow-[0_22px_60px_rgba(16,42,67,0.22)]" role="dialog" aria-modal="true" aria-label="Paleta de comandos" onMouseDown={(event) => event.stopPropagation()}>
               <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setIsCommandOpen(false); }} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#5f7489]">Esc</kbd></div>
               <nav className="max-h-[55vh] overflow-y-auto p-2" aria-label="Resultados y módulos disponibles">
-                {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-semibold text-[#91a3b3]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
+                {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link prefetch={false} key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-semibold text-[#91a3b3]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
                 {isSearchPending ? <p className="px-3 py-3 text-[11px] font-semibold text-[#607894]">Buscando entidades…</p> : null}
                 {searchState === "unavailable" ? <p className="px-3 py-3 text-[11px] font-semibold text-[#b45309]">Búsqueda de entidades no disponible.</p> : null}
-                {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[10px] font-semibold text-[#91a3b3]">{link.href}</span></Link>; })}</div> : null}
+                {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link prefetch={false} key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[10px] font-semibold text-[#91a3b3]">{link.href}</span></Link>; })}</div> : null}
                 {!visibleSearchGroups.length && !isSearchPending && searchState === "ready" && !commandLinks.length ? <p className="px-3 py-5 text-center text-[11px] font-semibold text-[#607894]">No hay coincidencias con permisos disponibles.</p> : null}
               </nav>
             </section>

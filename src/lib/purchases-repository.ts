@@ -209,6 +209,15 @@ export async function getPurchasesPage(
     },
   };
 }
+export async function getPurchaseDetailForReceipt(receiptId: string) {
+  const [receipt] = await getDb()
+    .select({ purchaseId: purchaseReceipts.purchaseId })
+    .from(purchaseReceipts)
+    .where(eq(purchaseReceipts.id, receiptId))
+    .limit(1);
+  return receipt ? getPurchaseDetail(receipt.purchaseId) : null;
+}
+
 export async function getPurchaseDetail(purchaseId: string) {
   const db = getDb();
   const [row] = await db
@@ -378,113 +387,85 @@ export async function getPurchaseRequestDetail(requestId: string) {
   return { request, items };
 }
 
-export async function getSupplierDetail(supplierId: string) {
+async function getSupplierPerformance(supplierId: string, status: string) {
+  const db = getDb();
+  const latestReceipts = db.select({ purchaseId: purchaseReceipts.purchaseId, receivedAt: max(purchaseReceipts.receivedAt).as("last_received_at") }).from(purchaseReceipts).where(eq(purchaseReceipts.status, "POSTED")).groupBy(purchaseReceipts.purchaseId).as("supplier_latest_receipts");
+  const [orderMetrics, itemMetrics, openAmounts] = await Promise.all([
+    db.select({
+      totalOrders: count(purchases.id),
+      latestOrderAt: max(purchases.createdAt),
+      openOrders: sql<number>`count(*) filter (where ${purchases.status} in ('DRAFT','PENDING','PARTIAL_RECEIVED'))`,
+      completedOrders: sql<number>`count(*) filter (where ${purchases.status} = 'RECEIVED')`,
+      evaluatedOrders: sql<number>`count(*) filter (where ${purchases.status} = 'RECEIVED' and ${purchases.expectedDeliveryAt} is not null and ${latestReceipts.receivedAt} is not null)`,
+      onTimeOrders: sql<number>`count(*) filter (where ${purchases.status} = 'RECEIVED' and ${latestReceipts.receivedAt} <= ${purchases.expectedDeliveryAt})`,
+      leadTimeDays: sql<string | null>`avg(extract(epoch from (${latestReceipts.receivedAt} - ${purchases.issuedAt})) / 86400) filter (where ${purchases.status} = 'RECEIVED')`,
+    }).from(purchases).leftJoin(latestReceipts, eq(latestReceipts.purchaseId, purchases.id)).where(eq(purchases.supplierId, supplierId)),
+    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems).innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId)).where(eq(purchases.supplierId, supplierId)),
+    db.select({ currency: purchases.currency, amount: sum(purchases.subtotal) }).from(purchases).where(and(eq(purchases.supplierId, supplierId), inArray(purchases.status, ["DRAFT", "PENDING", "PARTIAL_RECEIVED"]))).groupBy(purchases.currency).orderBy(asc(purchases.currency)),
+  ]);
+  const orders = orderMetrics[0];
+  const ordered = Number(itemMetrics[0]?.ordered ?? 0);
+  const received = Number(itemMetrics[0]?.received ?? 0);
+  const completedOrders = Number(orders.completedOrders);
+  const evaluatedOrders = Number(orders.evaluatedOrders);
+  return {
+    openOrders: Number(orders.openOrders), completedOrders, evaluatedOrders, totalOrders: Number(orders.totalOrders), latestOrderAt: orders.latestOrderAt,
+    openAmounts: openAmounts.map(row => ({ currency: row.currency, amount: row.amount ?? "0.00" })),
+    onTimeRate: evaluatedOrders ? Number((Number(orders.onTimeOrders) / evaluatedOrders * 100).toFixed(1)) : null,
+    fillRate: ordered ? Number((received / ordered * 100).toFixed(1)) : null,
+    leadTimeDays: orders.leadTimeDays === null ? null : Number(Number(orders.leadTimeDays).toFixed(1)),
+    incidents: status === "INACTIVE" ? Number(orders.openOrders) : 0,
+  };
+}
+
+export async function getSupplierDetail(supplierId: string, pages: { receiptsPage?: number; documentsPage?: number; ordersPage?: number; productsPage?: number } = {}) {
   const db = getDb();
   const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, supplierId)).limit(1);
   if (!supplier) return null;
+  const [[receiptCount], [documentCount], [orderCount], [productCount]] = await Promise.all([
+    db.select({ total: count() }).from(purchaseReceipts).innerJoin(purchases, eq(purchases.id, purchaseReceipts.purchaseId)).where(eq(purchases.supplierId, supplierId)),
+    db.select({ total: count() }).from(importDocuments).where(eq(importDocuments.supplierId, supplierId)),
+    db.select({ total: count() }).from(purchases).where(and(eq(purchases.supplierId, supplierId), inArray(purchases.status, ["DRAFT", "PENDING", "PARTIAL_RECEIVED"]))),
+    db.select({ total: sql<number>`count(distinct ${purchaseItems.skuSnapshot})::int` }).from(purchaseItems).innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId)).where(eq(purchases.supplierId, supplierId)),
+  ]);
+  const boundedPage = (value: number | undefined, total: number, size: number) => Math.min(Math.max(1, Number.isSafeInteger(value) ? value! : 1), Math.max(1, Math.ceil(total / size)));
+  const receiptsPage = boundedPage(pages.receiptsPage, receiptCount.total, 5);
+  const documentsPage = boundedPage(pages.documentsPage, documentCount.total, 4);
+  const ordersPage = boundedPage(pages.ordersPage, orderCount.total, 20);
+  const productsPage = boundedPage(pages.productsPage, productCount.total, 20);
   const [purchaseRows, receiptRows, productRows, documents] = await Promise.all([
     db
       .select({ purchase: purchases, locationName: locations.name })
       .from(purchases)
       .innerJoin(locations, eq(locations.id, purchases.locationId))
-      .where(eq(purchases.supplierId, supplierId))
-      .orderBy(desc(purchases.createdAt))
-      .limit(200),
+      .where(and(eq(purchases.supplierId, supplierId), inArray(purchases.status, ["DRAFT", "PENDING", "PARTIAL_RECEIVED"])))
+      .orderBy(desc(purchases.createdAt), desc(purchases.id))
+      .limit(20).offset((ordersPage - 1) * 20),
     db
       .select({ receipt: purchaseReceipts, purchaseCode: purchases.code })
       .from(purchaseReceipts)
       .innerJoin(purchases, eq(purchases.id, purchaseReceipts.purchaseId))
       .where(eq(purchases.supplierId, supplierId))
-      .orderBy(desc(purchaseReceipts.receivedAt))
-      .limit(200),
+      .orderBy(desc(purchaseReceipts.receivedAt), desc(purchaseReceipts.id))
+      .limit(5).offset((receiptsPage - 1) * 5),
     db
-      .selectDistinct({ sku: purchaseItems.skuSnapshot, name: purchaseItems.productNameSnapshot })
+      .select({ sku: purchaseItems.skuSnapshot, name: sql<string>`max(${purchaseItems.productNameSnapshot})` })
       .from(purchaseItems)
       .innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId))
       .where(eq(purchases.supplierId, supplierId))
+      .groupBy(purchaseItems.skuSnapshot)
       .orderBy(asc(purchaseItems.skuSnapshot))
-      .limit(200),
+      .limit(20).offset((productsPage - 1) * 20),
     db
       .select()
       .from(importDocuments)
       .where(eq(importDocuments.supplierId, supplierId))
-      .orderBy(desc(importDocuments.createdAt))
-      .limit(100),
+      .orderBy(desc(importDocuments.createdAt), desc(importDocuments.id))
+      .limit(4).offset((documentsPage - 1) * 4),
   ]);
-  const purchaseItemsByPurchase = new Map<string, { ordered: number; received: number }>();
-  const itemRows = purchaseRows.length
-    ? await db
-        .select({
-          purchaseId: purchaseItems.purchaseId,
-          ordered: sum(purchaseItems.quantityOrdered),
-          received: sum(purchaseItems.quantityReceived),
-        })
-        .from(purchaseItems)
-        .where(
-          inArray(
-            purchaseItems.purchaseId,
-            purchaseRows.map(({ purchase }) => purchase.id),
-          ),
-        )
-        .groupBy(purchaseItems.purchaseId)
-    : [];
-  for (const row of itemRows)
-    purchaseItemsByPurchase.set(row.purchaseId, {
-      ordered: Number(row.ordered ?? 0),
-      received: Number(row.received ?? 0),
-    });
-  const receiptsByPurchase = new Map<string, Date>();
-  for (const row of receiptRows) {
-    const date = row.receipt.receivedAt;
-    const current = receiptsByPurchase.get(row.receipt.purchaseId);
-    if (!current || date > current) receiptsByPurchase.set(row.receipt.purchaseId, date);
-  }
-  const completed = purchaseRows.filter(({ purchase }) => purchase.status === "RECEIVED");
-  const onTime = completed.filter(({ purchase }) => {
-    const expected = purchase.expectedDeliveryAt;
-    const receivedAt = receiptsByPurchase.get(purchase.id);
-    return Boolean(expected && receivedAt && receivedAt <= expected);
-  });
-  const leadTimes = completed.flatMap(({ purchase }) => {
-    const receivedAt = receiptsByPurchase.get(purchase.id);
-    return purchase.issuedAt && receivedAt
-      ? [(receivedAt.getTime() - purchase.issuedAt.getTime()) / 86_400_000]
-      : [];
-  });
-  const ordered = [...purchaseItemsByPurchase.values()].reduce(
-    (total, value) => total + value.ordered,
-    0,
-  );
-  const received = [...purchaseItemsByPurchase.values()].reduce(
-    (total, value) => total + value.received,
-    0,
-  );
-  return {
-    supplier,
-    purchases: purchaseRows,
-    receipts: receiptRows,
-    products: productRows,
-    documents,
-    performance: {
-      openOrders: purchaseRows.filter(({ purchase }) =>
-        ["DRAFT", "PENDING", "PARTIAL_RECEIVED"].includes(purchase.status),
-      ).length,
-      onTimeRate: completed.length
-        ? Number(((onTime.length / completed.length) * 100).toFixed(1))
-        : null,
-      fillRate: ordered ? Number(((received / ordered) * 100).toFixed(1)) : null,
-      leadTimeDays: leadTimes.length
-        ? Number((leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length).toFixed(1))
-        : null,
-      incidents: purchaseRows.filter(
-        ({ purchase }) =>
-          supplier.status === "INACTIVE" &&
-          ["DRAFT", "PENDING", "PARTIAL_RECEIVED"].includes(purchase.status),
-      ).length,
-    },
-  };
+  const performance = await getSupplierPerformance(supplierId, supplier.status);
+  return { supplier, purchases: purchaseRows, receipts: receiptRows, products: productRows, documents, performance, pagination: { orders: { page: ordersPage, pages: Math.max(1, Math.ceil(orderCount.total / 20)), total: orderCount.total }, products: { page: productsPage, pages: Math.max(1, Math.ceil(productCount.total / 20)), total: productCount.total }, receipts: { page: receiptsPage, pages: Math.max(1, Math.ceil(receiptCount.total / 5)), total: receiptCount.total }, documents: { page: documentsPage, pages: Math.max(1, Math.ceil(documentCount.total / 4)), total: documentCount.total } } };
 }
-
 export type SupplierDetail = NonNullable<Awaited<ReturnType<typeof getSupplierDetail>>>;
 
 const openPurchaseStatuses = ["DRAFT", "PENDING", "PARTIAL_RECEIVED"] as const;
@@ -539,6 +520,7 @@ export async function getSupplierScorecard() {
       receivedAt: max(purchaseReceipts.receivedAt).as("receivedAt"),
     })
     .from(purchaseReceipts)
+    .where(eq(purchaseReceipts.status, "POSTED"))
     .groupBy(purchaseReceipts.purchaseId)
     .as("latest_purchase_receipt");
   const [supplierStatusRows, completedRows, itemTotals, incidentRows] = await Promise.all([
@@ -546,6 +528,7 @@ export async function getSupplierScorecard() {
     db
       .select({
         completed: count(purchases.id),
+        evaluated: sql<string>`count(*) filter (where ${purchases.expectedDeliveryAt} is not null and ${latestReceipt.receivedAt} is not null)`,
         onTime: sql<string>`count(*) filter (where ${purchases.expectedDeliveryAt} is not null and ${latestReceipt.receivedAt} is not null and ${latestReceipt.receivedAt} <= ${purchases.expectedDeliveryAt})`,
       })
       .from(purchases)
@@ -560,12 +543,14 @@ export async function getSupplierScorecard() {
   ]);
   const ordered = num(itemTotals[0]?.ordered);
   const received = num(itemTotals[0]?.received);
-  const completed = num(completedRows[0]?.completed);
+  const evaluated = num(completedRows[0]?.evaluated);
   const onTime = num(completedRows[0]?.onTime);
   const statusMap = new Map(supplierStatusRows.map((row) => [row.status, num(row.total)]));
   const totalSuppliers = supplierStatusRows.reduce((sum, row) => sum + num(row.total), 0);
   return {
-    onTimeRate: completed ? Number(((onTime / completed) * 100).toFixed(1)) : null,
+    onTimeRate: evaluated ? Number(((onTime / evaluated) * 100).toFixed(1)) : null,
+    evaluatedOrders: evaluated,
+    completedOrders: num(completedRows[0]?.completed),
     fillRate: ordered ? Number(((received / ordered) * 100).toFixed(1)) : null,
     incidents: num(incidentRows[0]?.total),
     activeSuppliers: statusMap.get("ACTIVE") ?? 0,
@@ -627,21 +612,20 @@ export async function getPurchasesKpiSeries(filters: PurchasesFilters = {}) {
   // ending today, so any row older than that simply won't match a key and is dropped as before.
   const from = new Date(to.getTime() - (trendDays + 1) * 86_400_000);
   const keys = Array.from({ length: trendDays }, (_, index) => limaDayKey(new Date(to.getTime() - (trendDays - 1 - index) * 86_400_000)));
-  const where = wherePurchases({ ...filters, createdFrom: undefined, createdTo: undefined });
+  const where = wherePurchases(filters);
   const bucketCreated = sql<string>`to_char((${purchases.createdAt} - interval '5 hours'), 'YYYY-MM-DD')`;
-  const bucketReceived = sql<string>`to_char((${purchaseReceipts.receivedAt} - interval '5 hours'), 'YYYY-MM-DD')`;
   const bucketRequested = sql<string>`to_char((${purchaseRequests.createdAt} - interval '5 hours'), 'YYYY-MM-DD')`;
   const [openRows, spendRows, incidentRows, receptionRows, requestRows] = await Promise.all([
-    db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to), inArray(purchases.status, [...openPurchaseStatuses]))).groupBy(sql`1`).orderBy(sql`1`),
     db.select({ date: bucketCreated, currency: purchases.currency, total: sum(purchases.subtotal) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to))).groupBy(sql`1`, purchases.currency).orderBy(sql`1`),
     db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to), eq(suppliers.status, "INACTIVE"))).groupBy(sql`1`).orderBy(sql`1`),
-    db.select({ date: bucketReceived, total: count(purchaseReceipts.id) }).from(purchaseReceipts).where(and(gte(purchaseReceipts.receivedAt, from), lt(purchaseReceipts.receivedAt, to))).groupBy(sql`1`).orderBy(sql`1`),
-    db.select({ date: bucketRequested, total: count(purchaseRequests.id) }).from(purchaseRequests).where(and(gte(purchaseRequests.createdAt, from), lt(purchaseRequests.createdAt, to))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketCreated, total: count(purchases.id) }).from(purchases).innerJoin(suppliers, eq(purchases.supplierId, suppliers.id)).where(and(where, gte(purchases.createdAt, from), lt(purchases.createdAt, to), inArray(purchases.status, ["PENDING", "PARTIAL_RECEIVED"]))).groupBy(sql`1`).orderBy(sql`1`),
+    db.select({ date: bucketRequested, total: count(purchaseRequests.id) }).from(purchaseRequests).where(and(gte(purchaseRequests.createdAt, from), lt(purchaseRequests.createdAt, to), eq(purchaseRequests.status, "SUBMITTED"))).groupBy(sql`1`).orderBy(sql`1`),
   ]);
   const spendCurrencies = [...new Set(spendRows.map((row) => row.currency))];
   return {
     openPurchases: fillTrend(openRows, keys),
-    spend: spendCurrencies.length === 1 ? fillTrend(spendRows, keys) : null,
+    spend: spendCurrencies.length <= 1 ? fillTrend(spendRows, keys) : null,
     incidentPurchases: fillTrend(incidentRows, keys),
     receptions: fillTrend(receptionRows, keys),
     requests: fillTrend(requestRows, keys),
