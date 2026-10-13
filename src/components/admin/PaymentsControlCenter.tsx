@@ -506,6 +506,12 @@ export function PaymentsControlCenter({
         canRefund={canRefund}
         canManual={canManual}
         onClose={() => setDetailId(null)}
+        onConfirmed={(confirmedPaymentId) => {
+          setDetailId(confirmedPaymentId);
+          const params = new URLSearchParams(window.location.search);
+          params.set("paymentId", confirmedPaymentId);
+          window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}${window.location.hash}`);
+        }}
       />
     </div>
   );
@@ -734,12 +740,14 @@ function PaymentDrawer({
   canRefund,
   canManual,
   onClose,
+  onConfirmed,
 }: {
   paymentId: string | null;
   canManage: boolean;
   canRefund: boolean;
   canManual: boolean;
   onClose: () => void;
+  onConfirmed: (paymentId: string) => void;
 }) {
   const router = useRouter();
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -970,7 +978,14 @@ function PaymentDrawer({
                   orderId={String(detail.order.id)}
                   amount={amountPending}
                   currency={currency}
-                  onConfirmed={() => load()}
+                  onConfirmed={async (confirmedPaymentId) => {
+                    if (confirmedPaymentId && confirmedPaymentId !== paymentId) {
+                      onConfirmed(confirmedPaymentId);
+                      router.refresh();
+                    } else {
+                      await load();
+                    }
+                  }}
                 />
               ) : null}
               {canManual && detail && Number(amountPending) > 0 && manualPaymentBlockedReason ? (

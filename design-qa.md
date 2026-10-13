@@ -2566,3 +2566,43 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave en pedido entregado ORD-20261013-B49BD2: Entrega muestra «Recojo completado en el local. Consulta el historial para ver el registro de entrega»; Preparación muestra reserva Consumida y «1 unidad». Cotizaciones muestra Enviadas «1 registro» y mantiene plural para 2/6/9/11.
 - TypeScript, ESLint y tres contratos dirigidos aprobados; no nueva regresión integral en este cambio de textos (última integral F241). Vista previa de ajuste modificada, aún sin comprobación visual específica posterior al build; ramas cancelado/listo de nuevo mensaje solo revisadas estáticamente.
 - Se publica corrección de textos y evidencia F242–F246 conforme a autorización. Auditoría operativa integral sigue abierta; CMS excluido, móvil detenido F127 y Guardar nativo pendiente.
+## F247 — Navegación tras confirmar pago manual
+- Hallazgo F244 confirmado en código: API manual devuelve result.payment, pero ManualPaymentControl descartaba ese ID y PaymentsControlCenter recargaba el provisional. Tras cobro total este queda Cancelado, confundiendo el resultado visible.
+- Corrección local: callback recibe ID del pago devuelto; drawer selecciona el confirmado y refresca bandeja. Si falta ID o coincide conserva recarga del detalle. No cambia registro financiero ni idempotencia del backend.
+- TypeScript y ESLint dirigidos sesión 81681 exit 0. CP040 18 pruebas y dos contratos de panel (3 pruebas) aprobados; contrato actualizado para nueva navegación. Build, prueba real en Brave, revisión y publicación pendientes. No se hizo otro cobro QA en esta fase.
+- CMS excluido, móvil detenido F127, Guardar nativo y cobertura restante pendientes. Stock restaurado F245 no debe ajustarse de nuevo.
+### F247 — Revisión y regresión en curso
+- Revisor independiente aprobó de forma limitada: cambiar detailId y key carga pago nuevo; refresco conserva estado. Sin defectos accionables; contrato no prueba navegación real.
+- Regresión integral sesión 36234 verificada activa: TAP suma 595 ejecuciones, 563 aprobadas, 32 omitidas, 0 fallidas; TypeScript finalizado y ESLint en curso. Build aún no iniciado en el último log. No editar fuentes durante ejecución.
+- Lectura Neon para cliente QA principal encontró 0 pedidos PAYMENT_PENDING con pagos PENDING. No reutilizar pedido entregado/pagado para confirmar otro cobro. Validación real requerirá fixture QA nuevo, saldo verificado y cierre compensatorio.
+- Servidor 70217 detenido de forma controlada para reconstruir; levantar al finalizar regresión. Cambios F247 locales aún sin publicación. CMS excluido, móvil detenido F127 y Guardar nativo pendiente.
+## F248 — Validación real de navegación de pago
+- Regresión integral F247 sesión 36234 exit 0: 595 ejecuciones TAP, 563 aprobadas, 32 omitidas, 0 fallidas; contratos, TypeScript, ESLint y build correctos. Local sesión 11644 Ready 211 ms.
+- Fixture de venta directa por servicio con actor QA autorizado, clave qa-f248-manual-navigation-20261013, cliente/producto QA y saldo Chiclayo verificado 1/0. Pedido order-8752425b-c322-4cb2-8928-08e218eafc64, ORD-20261013-006CEC; venta sale-10117c55-3f9a-4a83-a2a0-04913c9d8f1e. Provisional payment-85f31d4b-3a10-4efd-97ab-a5f581e05120.
+- Brave tab nuevo 375936322 (paymentCheck248), mismo browser3. Confirmó pago manual simulado 11 PEN Efectivo, referencia QA-F248-NAVEGACION-SIMULADA, motivo explícito sin dinero real. Drawer cambió automáticamente a PAGO-1A8F0DBB Confirmado y referencia correcta; flujo principal de corrección comprobado.
+- Hallazgo restante: URL conserva paymentId del provisional, así que recarga puede perder selección del confirmado. Corregir enlace/URL antes de publicar. No declarar navegación persistente completa.
+- QA nueva retenida pagada pendiente de reembolso/cancelación compensatoria. Stock Chiclayo físico 1/reservado 1, Cusco 7/1. No repetir creación ni cobro; cerrar desde pago confirmado y liberar reserva por cancelación del pedido. No entrega adicional.
+- Cambios F247 aún locales. CMS excluido, móvil detenido F127 y Guardar nativo pendiente.
+## F249 — Persistencia de selección y cierre QA
+- Corrección local adicional de F247: al recibir pago confirmado cambia paymentId en URL usando replaceState y conserva filtros, estado de navegación y hash. TypeScript/ESLint dirigidos pasaron antes del ajuste final de conservación state/hash; rebuild y verificación de recarga pendientes.
+- Brave reembolsó íntegramente cobro simulado F248; pago payment-91f875ca-ad61-4565-b30c-22101a8f0dbb mostró Reembolsado. Pedido PAID no mostró Cancelar pedido en resumen; se usó Ver venta → motivo QA F249 → Cancelar venta.
+- Venta sale-10117c55-3f9a-4a83-a2a0-04913c9d8f1e mostró Cancelada. Saldo Neon Chiclayo volvió a físico 1/reservado 0; Cusco sigue 7/1. No repetir reembolso ni restauración. Registros preservados para trazabilidad, sin dinero real.
+- Observación para evaluar: pedido reembolsado en estado PAID solo habilita Iniciar preparación y obliga ir a venta para cancelar; no se afirma defecto de backend sin revisar transición.
+- Cambio de URL todavía local, no publicado. Servidor11644 sirve build anterior a esta corrección adicional. CMS excluido, móvil detenido F127, Guardar nativo y cobertura integral abiertos.
+## F250 — Validación del estado de navegación Next
+- TypeScript, ESLint y CP040 18 pruebas sesión4279 exit0. Build12641 iniciado pero detenido con Ctrl-C después de detectar problema real en revisión; no se declara build aprobado.
+- Evidencia local Next app-router.js:268–278: data.__NA evita applyUrlFromHistoryPushReplace. Pasar window.history.state a replaceState conserva URL interna antigua y refresh puede revertir el ID.
+- Corrección posterior a detener build: replaceState(null,...) permite al parche Next copiar el estado interno y sincronizar URL. Conserva construcción de filtros/hash. Rebuild, revalidación y prueba real de recarga todavía pendientes. Servidor detenido.
+- Caso QA F248 ya reembolsado y venta cancelada según F249; stock Chiclayo1/0 restaurado, no repetir restauración. CMS excluido, móvil detenido F127, Guardar nativo pendiente.
+### F250 — Revalidación de URL y build en curso
+- Revisor revalidó replaceState(null,...) contra el parche local Next: sincroniza URL y copia estado interno; filtros/hash conservados, sin defectos adicionales.
+- Build sesión51608 verificada activa: compilación9.5s aprobada, etapa TypeScript en curso. No nuevo servidor ni mutaciones QA mientras se reconstruye.
+- Script fixture F251 preparado en TEMP con clave propia para prueba de URL/recarga; aún no ejecutado ni creado otro pedido. F248 permanece cerrado/reembolsado, saldo QA restaurado.
+- F247–F250 aún locales sin publicar. Próximo paso esperar salida terminal51608, levantar local y probar confirmación con URL nueva y recarga, luego cerrar QA y publicar.
+## F251 — Cierre de navegación persistente de pago
+- Build final51608 exit0, servidor28104 Ready202ms. Revisor aprobó replaceState(null) y sincronización Next. Última integral F247 563 aprobadas/32 omitidas/0 fallidas; CP040 dirigido18 aprobadas y TypeScript/ESLint finales correctos antes build.
+- Fixture QA nuevo por servicio: pedido order-656f8bb9-8f3d-48dc-a5aa-a9aa34e5ca21 (ORD-20261013-74BD35), venta sale-0e965445-a762-403c-945b-f03c2ed2f047. Confirmación en Brave cambió automáticamente provisional payment-27ae012d-f0de-4603-932f-0b4b43eca8b0 a payment-b49706a6-25a6-4889-9e23-7740a631b8bf, Confirmado, referencia QA-F251-URL-SIMULADA.
+- URL cambió al ID nuevo conservando orderId. Recarga real de Brave mantuvo mismo pago Confirmado y referencia correcta. Corrección de navegación y persistencia comprobada; no mock de respuesta ni dinero real.
+- Cierre QA en Brave: devolución total mostró Reembolsado; cancelar venta con motivo QA mostró Cancelada. Neon confirma Chiclayo físico1/reservado0, Cusco7/1. No repetir restauración ni reembolso. Historial preservado.
+- Publicación autorizada de F247–F251 y auditoría. Observación pendiente aparte: enlace Gestionar cobros de algunas ventas puede seleccionar provisional al mostrar historial reembolsado; revisar criterio de selección sin confundir con corrección del formulario manual.
+- Auditoría integral sigue abierta. CMS excluido, móvil detenidoF127, Guardar nativo pendiente.

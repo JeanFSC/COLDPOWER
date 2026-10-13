@@ -114,7 +114,9 @@ test("pagos: exportación usa descarga nativa y conserva los filtros", () => {
 test("pagos: mutaciones refrescan detalle y bandeja persistida", () => {
   const control = read("src/components/admin/PaymentsControlCenter.tsx");
   assert.match(control, /async function load\(\)\s*\{\s*await loadDetail\(\);\s*router\.refresh\(\);/);
-  assert.match(control, /onConfirmed=\{\(\) => load\(\)\}/);
+  assert.match(control, /onConfirmed\(confirmedPaymentId\)/);
+  assert.match(control, /confirmedPaymentId !== paymentId/);
+  assert.match(control, /await load\(\)/);
 });
 
 test("pagos: servidor serializa con pasarela y bloquea cobro manual externo pendiente", () => {

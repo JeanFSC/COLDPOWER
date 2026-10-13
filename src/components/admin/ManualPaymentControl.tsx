@@ -40,7 +40,7 @@ export function ManualPaymentControl({
   orderId: string;
   amount: string;
   currency: string;
-  onConfirmed?: () => void | Promise<void>;
+  onConfirmed?: (paymentId?: string) => void | Promise<void>;
 }) {
   const [enteredAmount, setEnteredAmount] = useState(amount);
   const [method, setMethod] = useState<ManualPaymentMethod>("TRANSFER");
@@ -81,7 +81,10 @@ export function ManualPaymentControl({
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(readApiError(payload, "No se pudo confirmar el pago."));
       setMessage("Pago confirmado");
-      await onConfirmed?.();
+      const confirmedPaymentId = typeof payload?.result?.payment?.id === "string"
+        ? payload.result.payment.id
+        : undefined;
+      await onConfirmed?.(confirmedPaymentId);
     } catch (error) {
       setMessageKind("error");
       setMessage(error instanceof Error ? error.message : "No se pudo confirmar el pago.");
