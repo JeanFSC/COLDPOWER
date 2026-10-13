@@ -2499,3 +2499,25 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Observación pendiente: Pipeline sigue indicando Aging/Sin contacto y Contacto más reciente/Sin fecha pese a actividad de presentación registrada; se investigará el contrato de contacto antes de afirmar un defecto o actualizar fechas. No se hizo contacto externo.
 - QA conservada en Enviada con versión actual2 para continuar respuesta/aceptación y flujo comercial. No se generó venta ni movió stock. PDF real/descarga no certificados.
 - Revisión estática final del pequeño cambio UI en curso antes de publicar. CMS excluido y móvil detenido en F127. Resto de cobertura permanece abierto.
+## F241 — Coherencia de contacto y bloqueo de Guardar
+- Publicación F240 confirmada: commit 8b77882 en main y origin/main; árbol limpio al iniciar esta revisión. Regresión F240: 562 aprobadas, 31 omitidas, 0 fallidas.
+- Nuevo intento de Computer Use: Brave encontrado como ventana 327748. get_window_state detuvo el control porque no pudo verificar la URL con suficiente confianza. No se pulsó Guardar y no se certificó ninguna descarga. No se usaron mecanismos alternativos para eludir el bloqueo.
+- Hallazgo confirmado por contrato: crm-validation define CALL, WHATSAPP, EMAIL y MEETING como contacto. createActivity actualiza customers.lastActivityAt y opportunities.lastContactAt para esos tipos. sendQuote inserta los mismos tipos directamente, pero no actualiza ninguna de esas fechas; syncOpportunityStage solo actualiza etapa y updatedAt. Pipeline presenta lastContactAt y puede mostrar Sin contacto después de registrar una presentación.
+- Corrección y regresión del hallazgo de contacto pendientes. No se modificaron fechas históricas ni se atribuyó contacto externo a la presentación QA simulada.
+- Auditoría del sistema sigue abierta. CMS excluido. QA móvil detenida en F127 hasta orden de Jean. Guardar nativo y cobertura manual restante pendientes.
+### F241 — Corrección de contacto aplicada
+- Nuevo helper recordCrmContact compartido por createActivity y sendQuote, dentro de sus transacciones. Actualiza contacto de cliente y oportunidad con greatest en SQL, evitando retroceder por actividades anteriores y conservando atomicidad.
+- Integración real autorizada en Neon aprobada: cliente/oportunidad QA, fechas inicialmente nulas, contacto reciente y luego anterior, ambas conservan la fecha reciente con milisegundos. Transacción revertida deliberadamente; sin modificación persistente de fixtures.
+- Tres pruebas de contrato aprobadas. TypeScript inicial aprobado. ESLint/TypeScript finales, regresión integral y verificación del flujo en Brave pendientes de cierre; no se declara corrección desplegada todavía.
+- Sin reconstrucción histórica de contactos. CMS excluido y móvil detenido en F127. Guardar nativo continúa pendiente.
+### F241 — Regresión y revisión independiente
+- Regresión integral sesión 98950 verificada activa: pruebas TAP suman 595 ejecuciones, 563 aprobadas, 32 omitidas, 0 fallidas; algunas agrupaciones repiten casos. La integración nueva se ejecutó por separado con QA_CRM_CONTACT=1 y pasó; el runner normal la omite deliberadamente.
+- TypeScript y ESLint terminaron correctamente en la regresión. Next build compiló y sigue en su etapa de TypeScript; no se declara build final aprobado hasta salida terminal.
+- Revisor independiente aprobó el parche de forma limitada sin defectos accionables. Confirma semántica SQL para NULL/contacto anterior y atomicidad. La prueba no ejecuta dos transacciones concurrentes ni sendQuote completo; verificación real en Brave pendiente después del build.
+- Servidor local anterior detenido de forma controlada para reconstruir. No reiniciar mientras sesión 98950 siga activa. Código no publicado todavía.
+### F241 — Cierre de validación de contacto
+- Regresión integral sesión 98950 exit 0: 595 ejecuciones TAP, 563 aprobadas, 32 omitidas, 0 fallidas; contratos, TypeScript, ESLint y Next build correctos. Integración real QA de contacto aprobada aparte. Servidor 88551 Ready 221 ms.
+- Brave creó revisión v3 de COT-2026-C87EED y registró presentación Presencial simulada con nota QA F241 explícita sin envío/contacto externo. Estado Enviada, PDF v3, total 11 PEN; no venta/pago/movimiento de stock.
+- Desde la cotización se abrió OP-20261010-81F33B: Aging 0 días y Contacto más reciente 13 oct. 2026, 1:22 p. m. Captura visual inspeccionada; consola sin errores. Hallazgo de contacto resuelto para nuevos registros; no reconstrucción histórica.
+- Revisor independiente sin defectos accionables. Publicación de esta corrección autorizada por Jean. Sigue pendiente la cobertura integral del sistema, las descargas reales y Guardar nativo. CMS excluido y móvil detenido en F127.
+- Observación visual adicional para seguimiento: Ruta de una cotización muestra «1 registros» cuando el conteo es uno. No impide operar; corrección pendiente.

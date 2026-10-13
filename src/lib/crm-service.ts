@@ -2,6 +2,7 @@ import { and, asc, eq, ilike, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditLogs, products, quotes, users } from "@/db/schema";
 import { crmActivities, crmAttachments, crmTasks, customerAddresses, customerContacts, customerNotes, customerQuoteLinks, customers, opportunities, opportunityFollowups, opportunityItems, opportunityStageHistory } from "@/db/crm-schema";
+import { recordCrmContact } from "@/lib/crm-contact";
 import { assertOpportunityTransition, contactActivityTypes, type ActivityType, type CustomerType, type OpportunityCurrency, type OpportunityItemInput, type OpportunityOrigin, type OpportunityStage, type TaskStatus } from "@/lib/crm-validation";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { activeCommercialStages, postSaleOpportunityStages, sellerRoleCodes } from "@/lib/opportunity-stage-config";
@@ -306,8 +307,7 @@ export async function createActivity(input: { customerId?: string | null; opport
     }
     if ((contactActivityTypes as readonly string[]).includes(input.type)) {
       const activityAt = input.occurredAt ?? created.createdAt;
-      if (customerId) await tx.update(customers).set({ lastActivityAt: activityAt, updatedAt: new Date() }).where(eq(customers.id, customerId));
-      if (input.opportunityId) await tx.update(opportunities).set({ lastContactAt: activityAt, updatedAt: new Date() }).where(eq(opportunities.id, input.opportunityId));
+      await recordCrmContact(tx, customerId, input.opportunityId ?? null, activityAt);
     }
     await tx.insert(auditLogs).values(audit(actor, "crm.activity_created", "crm_activity", created.id, null, created));
     return { activity: created, followUp, idempotent: false };

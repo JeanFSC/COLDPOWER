@@ -9,6 +9,7 @@ import { canTransitionQuote, effectiveQuoteStatus, normalizeQuoteStatus, type Qu
 import type { QuoteResponseChannel, QuoteTaxMode } from "@/lib/quote-contract";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { parseQuoteValidity } from "@/lib/quote-validity";
+import { recordCrmContact } from "@/lib/crm-contact";
 
 type Actor = { userId: string | null; role: AppRole | string | null };
 type Transaction = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
@@ -205,6 +206,7 @@ export async function sendQuote(quoteId: string, actor: Actor, channel: string, 
     if (!updated) throw new Error("Esta cotización fue actualizada por otro usuario. Recarga los cambios.");
     await tx.insert(quoteStatusHistory).values({ id: id("quote-status"), quoteId, fromStatus: data.quote.status, toStatus: "enviada", changedBy: actor.userId ?? "system", note: `Versión v${version.versionNumber} enviada por ${text(channel, 30) || "canal no indicado"}` });
     await syncOpportunityStage(tx, data.opportunityId, "QUOTE_SENT", actor, "Cotización enviada al cliente.");
+    await recordCrmContact(tx, data.customer?.id ?? null, data.opportunityId, now);
     await tx.insert(crmActivities).values({ id: id("activity"), customerId: data.customer?.id ?? null, opportunityId: data.opportunityId, quoteId, type: channel === "EMAIL" ? "EMAIL" : channel === "PHONE" ? "CALL" : channel === "IN_PERSON" ? "MEETING" : "WHATSAPP", subject: `Cotización v${version.versionNumber} enviada`, body: recipient ? `Destinatario: ${recipient}` : null, performedBy: actor.userId });
     await tx.insert(auditLogs).values(audit(actor, "quote.sent", "quote", quoteId, { workflowStatus: data.quote.workflowStatus, version: data.quote.currentVersionNumber }, { workflowStatus: "SENT", version: version.versionNumber, channel, recipient: recipient ?? null }));
     return { quote: updated, version, idempotent: false };

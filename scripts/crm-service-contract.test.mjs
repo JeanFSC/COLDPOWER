@@ -23,3 +23,8 @@ test("pipeline exige transición y conserva historial", () => {
   assert.match(service, /opportunityStageHistory/);
   assert.match(service, /crm\.opportunity_stage_changed/);
 });
+
+test("envío de cotización y actividad CRM registran el contacto en su transacción", () => {
+  assert.match(read("src/lib/quote-service.ts"), /await recordCrmContact\(tx, data\.customer\?\.id \?\? null, data\.opportunityId, now\)/);
+  assert.match(read("src/lib/crm-service.ts"), /await recordCrmContact\(tx, customerId, input\.opportunityId \?\? null, activityAt\)/);
+});
