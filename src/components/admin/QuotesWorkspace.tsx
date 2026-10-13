@@ -1,5 +1,6 @@
 "use client";
 import { quoteValidityDateInput } from "@/lib/quote-validity";
+import { quotePdfVersionNumber, quoteRevisionLabel, quoteVersionStatusLabel } from "@/lib/quote-version-display";
 import { QuoteLookupStatus, useQuoteLookup } from "@/components/admin/QuoteLookup";
 
 import Link from "next/link";
@@ -1226,7 +1227,7 @@ function DetailDrawer({
   ] as const;
   return (
     <DrawerShell
-      eyebrow={`${quote.trackingCode} · v${quote.currentVersionNumber || 1}`}
+      eyebrow={`${quote.trackingCode} · ${quoteRevisionLabel(status, quote.currentVersionNumber)}`}
       title={quote.name}
       close={close}
       wide
@@ -1241,8 +1242,9 @@ function DetailDrawer({
             {detail.versions.length ? <a
               href={`/api/admin/cotizaciones/${encodeURIComponent(quote.id)}/pdf`}
               className="inline-flex items-center gap-2 rounded-lg border border-[#dfe9f1] px-3 py-2 text-xs font-bold text-slate-900 hover:border-blue-600"
+              title={status === "DRAFT" ? "Documento de la versión registrada. El borrador actual todavía no tiene PDF." : "Documento de la versión aceptada o de la última registrada."}
             >
-              <Download size={14} /> PDF
+              <Download size={14} /> PDF v{quotePdfVersionNumber(detail.versions, quote.acceptedVersionId)}
             </a> : <span className="grid gap-1 text-xs text-[#526578]">
               <span className="inline-flex items-center gap-2 font-bold"><Download size={14} /> PDF</span>
               <span>Disponible después de registrar el envío</span>
@@ -1467,7 +1469,7 @@ function SummaryTab({ detail }: { detail: Detail }) {
       <div className="rounded-xl border border-[#e0eaf2] bg-[#fbfdff] p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-900">Productos cotizados</h3>
-          <span className="text-xs font-bold text-[#526578]">{detail.items.length} líneas</span>
+          <span className="text-xs font-bold text-[#526578]">{detail.items.length} {detail.items.length === 1 ? "línea" : "líneas"}</span>
         </div>
         <div className="mt-3 grid gap-2">
           {detail.items.length ? (
@@ -1681,16 +1683,12 @@ function VersionsTab({ detail }: { detail: Detail }) {
               <span
                 className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${version.status === "ACCEPTED" ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-700" : "border-[#dbe8f3] bg-[#f5f9fc] text-[#536f87]"}`}
               >
-                {version.status === "ACCEPTED"
-                  ? "Aceptada"
-                  : version.status === "SENT"
-                    ? "Enviada"
-                    : version.status}
+                {quoteVersionStatusLabel(version.status)}
               </span>
             </div>
             <div className="mt-3 flex justify-between text-xs">
               <span className="text-[#526578]">
-                {version.items?.length || 0} productos · {version.currency || "Moneda pendiente"}
+                {version.items?.length || 0} {version.items?.length === 1 ? "producto" : "productos"} · {version.currency || "Moneda pendiente"}
               </span>
               <strong className="text-slate-900">{amount(version.currency, version.total)}</strong>
             </div>

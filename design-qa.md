@@ -2480,3 +2480,22 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Regresión integral F239:559aprobadas,31omitidas,0fallidas; TypeScript, ESLint, contratos y build correctos. Integraciones adicionales de precios/promociones QA aprobadas y hallazgos estáticos revalidados. Corrección final posterior al build únicamente elimina una línea vacía al final de purchases-navigation; lógica intacta.
 - Servidor local51531 levantado, Ready234ms. Commit/push previamente solicitados por Jean cumplidos para este conjunto.
 - La publicación no declara finalizada la auditoría operativa. Guardar nativo/archivos descargados abiertos, roles reales y acciones/estados restantes, cobertura visual de escritorio y condiciones externas pendientes siguen en la matriz. CMS excluido; móvil detenido en F127 y retomable solo por orden de Jean.
+## F240 — Cotizaciones: presentación y nueva revisión QA
+- Brave buscó COT-2026-C87EED, ligada a OP-20261010-81F33B y cliente/producto QA. Borrador original:1unidad,11PEN, vigencia16/10/2026. Versiones sin snapshot indicaba que se generan al registrar envío.
+- Se registró presentación interna simulada con canal Presencial y nota explícita QA F240 sin envío/contacto externo. sendQuote solo registra versión/estado/actividad en esta ruta; no envía correo automáticamente. Estado pasó a Enviada y Versiones mostró v1/11PEN.
+- Nueva versión volvió a Borrador para revisar propuesta. Hallazgo visual: encabezado seguía v1 y PDF sin número, aunque el PDF es el snapshot anterior y la próxima revisión será v2.
+- Corrección: encabezado «Borrador de v2», PDF numerado según última versión registrada y texto aclaratorio de que el borrador todavía no tiene PDF. Primer borrador se presenta como Borrador de v1; sin snapshot en otros estados no se inventa una versión.
+- Dos pruebas de etiquetas y ESLint aprobados; build y comprobación visual en curso. Registro QA retenido en borrador para continuar edición/reenvío; no hay venta, pago ni movimiento de stock nuevo.
+- CMS excluido y móvil detenido en F127. Guardar nativo y demás cobertura manual pendientes; main publicado hasta276c04d, cambios F240 todavía locales.
+### F240 — Ampliación de versiones y etiquetas
+- Build inicial28375 exit0; servidor30123 Ready196ms. Brave confirmó «Borrador de v2», PDF v1 y aclaración de que el borrador no tiene PDF.
+- Segunda presentación interna simulada QA: estado Enviada, versión v2, PDF v2 y dos snapshots de11PEN. v1 anterior se conservó. Sin envío/contacto externo, venta, pago o movimiento de inventario.
+- Hallazgos visuales adicionales comprobados: SUPERSEDED sin traducción y «1 productos»/«1 líneas». Corrección: Reemplazada y singular de producto/línea. Tres pruebas y ESLint pasaron; build intermedio98271 exit0.
+- Revisión de ruta PDF: prioriza acceptedVersionId sobre la última versión registrada. Etiqueta ahora usa la misma prioridad, con prueba para aceptada anterior/última/ausencia de versión. No cambió la generación ni se certificó descarga real.
+- Regresión integral F240 sesión41706 en curso con los cambios finales; verificación visual final y commit/push de F240 pendientes. Main remoto hasta276c04d.
+### F240 — Cierre de validación
+- Regresión integral sesión41706 exit0:593 ejecuciones TAP,562aprobadas,31omitidas,0fallidas; contratos, TypeScript, ESLint y build correctos. Grupos repetidos no son casos únicos.
+- Servidor41327 Ready229ms. Brave: v2 Enviada, PDF v2; v1 Reemplazada; ambas1producto y11PEN. Singular de líneas corregido. Se abrió la oportunidad enlazada: OP-20261010-81F33B en Cotización enviada; vínculo de regreso conserva quote-6721e246-9f72-4cbd-b6b4-9d1135270400. Consola sin errores.
+- Observación pendiente: Pipeline sigue indicando Aging/Sin contacto y Contacto más reciente/Sin fecha pese a actividad de presentación registrada; se investigará el contrato de contacto antes de afirmar un defecto o actualizar fechas. No se hizo contacto externo.
+- QA conservada en Enviada con versión actual2 para continuar respuesta/aceptación y flujo comercial. No se generó venta ni movió stock. PDF real/descarga no certificados.
+- Revisión estática final del pequeño cambio UI en curso antes de publicar. CMS excluido y móvil detenido en F127. Resto de cobertura permanece abierto.
