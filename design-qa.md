@@ -2620,3 +2620,25 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Build29153 exit0, servidor77227 Ready235ms. Brave abrió Venta QA F251 y usó Gestionar cobros: URL /admin/pagos?saleId=sale-0e965445-a762-403c-945b-f03c2ed2f047; tabla muestra exactamente el pago Reembolsado y provisional Cancelado del mismo pedido ORD-20261013-74BD35.
 - Sin nuevo cobro, reserva ni cambio de saldo. Revisión y pruebas dirigidas aprobadas. Se publica corrección de enlace y auditoría conforme a autorización de Jean.
 - Auditoría integral abierta. CMS excluido, móvil detenidoF127, Guardar nativo y demás cobertura pendientes.
+## F253 — Eliminar filtros guardados de Auditoría
+- Hallazgo confirmado: SavedFiltersMenu dependía de window.confirm; fetch DELETE sin catch ni error visible, HTTP fallido ignorado. El usuario podía no saber si la eliminación ocurrió.
+- Corrección local: confirmación visible identifica filtro y aclara que registros de auditoría se conservan; Cancelar y Confirmar eliminación; errores API/red visibles, bloqueo inmediato por ref y controles deshabilitados durante envío. Sin reintento automático ante resultado incierto.
+- TypeScript y ESLint sesión7998 exit0. CP043 11 pruebas aprobadas, incluida nueva guardia estructural. Build, revisión y comprobación en Brave pendientes; no se eliminó ningún filtro durante esta fase. CMS excluido, móvil detenidoF127, Guardar nativo pendiente.
+### F253 — Revisión de confirmación y build en curso
+- Revisor sin defectos bloqueantes: confirma guard de duplicados, errores HTTP/red preservan confirmación, éxito limpia y refresca. Señaló mejora de accesibilidad: foco en Cancelar y Escape para cerrar; pendiente después del build.
+- Build97368 verificada activa: compilación9.9s aprobada, TypeScript en curso. No editar fuentes mientras sigue activo. Servidor77227 detenido de forma controlada.
+- Comprobación Brave pendiente: apertura y Cancelar sin borrar filtro QA existente. No se ha confirmado eliminación real. CMS excluido, móvil detenidoF127 y Guardar nativo pendiente.
+- F253 build inicial97368 exit0. Después se añadió autoFocus en Cancelar y Escape para cerrar únicamente sin envío pendiente. ESLint/TypeScript finales sesión16876 verificados; nuevo build y prueba de teclado en Brave todavía pendientes. Local sigue detenido durante esta reconstrucción.
+
+### F253 — Regresión integral y revisión de propietario
+- Revisor revalidó foco Cancelar/Escape sin envío activo y no encontró defectos adicionales. Lectura backend confirma DELETE exige propietario e ID; no elimina auditLogs.
+- Regresión sesión25789 verificada activa: 597 ejecuciones TAP,565 aprobadas,32 omitidas,0 fallidas (agrupaciones repiten casos). TypeScript terminó; ESLint en curso antes del build. No declarar resultado integral aprobado hasta salida terminal.
+- No fuentes modificadas durante regresión. Local sigue detenido; levantar solo al terminar. Verificación Brave de abrir/cancelar/Escape pendiente, sin borrado real ejecutado.
+- Main hastaa4b5e3a; corrección F253 local. Auditoría integral abierta, CMS excluido, móvil detenidoF127 y Guardar nativo pendiente.
+- F253 continuación: sesión25789 sigue activa; pruebas, TypeScript y ESLint correctos; Next compiló10s y sigue validando tipos. Resumen vigente de cobertura actualizado hastaF253/maina4b5e3a para eliminar cabecera obsoleta. No reiniciar build ni levantar servidor antes de salida terminal.
+
+### F253 — Cierre de validación de confirmación
+- Regresión25789 exit0:597 ejecuciones TAP,565 aprobadas,32 omitidas,0 fallidas; contratos,TypeScript,ESLint y build correctos. Local63450 Ready236ms.
+- Brave tab375936331 auditCheck253: Más filtros → Eliminar filtro QA AUDITORÍA — Jean F235 abre confirmación visible e identifica nombre. document.activeElement confirma foco Cancelar. Escape cerró región; segunda apertura y Cancelar también cerró; link QA permanece exactamente1. Consola sin errores.
+- No DELETE real ejecutado ni errores de red provocados; esas ramas están implementadas/revisadas estáticamente, no afirmar prueba manual completa de eliminación. No se borraron eventos de auditoría.
+- Se publica mejora de confirmación/errores/teclado y evidencia conforme a autorización. Auditoría integral sigue abierta, CMS excluido,móvil detenidoF127,Guardar nativo pendiente.

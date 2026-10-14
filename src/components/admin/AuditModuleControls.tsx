@@ -179,6 +179,9 @@ export function SavedFiltersMenu({ savedFilters, className, unavailable = false 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AuditSavedFilter | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const deleting = useRef(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -191,7 +194,9 @@ export function SavedFiltersMenu({ savedFilters, className, unavailable = false 
   }, [open]);
 
   async function removeFilter(filter: AuditSavedFilter) {
-    if (!window.confirm(`Eliminar el filtro guardado "${filter.name}"?`)) return;
+    if (deleting.current) return;
+    deleting.current = true;
+    setDeleteError(null);
     setBusyId(filter.id);
     try {
       const response = await fetch("/api/admin/auditoria/filtros", {
@@ -199,8 +204,17 @@ export function SavedFiltersMenu({ savedFilters, className, unavailable = false 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: filter.id }),
       });
-      if (response.ok) router.refresh();
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        setDeleteError(apiErrorMessage(payload?.error, "No se pudo eliminar el filtro."));
+        return;
+      }
+      setPendingDelete(null);
+      router.refresh();
+    } catch {
+      setDeleteError("No se pudo confirmar la eliminación. Actualiza los filtros antes de volver a intentarlo.");
     } finally {
+      deleting.current = false;
       setBusyId(null);
     }
   }
@@ -223,7 +237,7 @@ export function SavedFiltersMenu({ savedFilters, className, unavailable = false 
                 >
                   {filter.name}
                 </a>
-                <button type="button" onClick={() => void removeFilter(filter)} disabled={busyId === filter.id} className="mr-1 rounded px-1.5 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50" aria-label={`Eliminar filtro ${filter.name}`}>
+                <button type="button" onClick={() => { setPendingDelete(filter); setDeleteError(null); }} disabled={busyId !== null} className="mr-1 rounded px-1.5 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50" aria-label={`Eliminar filtro ${filter.name}`}>
                   Eliminar
                 </button>
               </div>
@@ -231,6 +245,14 @@ export function SavedFiltersMenu({ savedFilters, className, unavailable = false 
           ) : (
             <p className="px-2 py-2 text-[11px] text-slate-400">Aún no guardaste ningún filtro.</p>
           )}
+          {pendingDelete ? <section aria-label="Confirmar eliminación del filtro" onKeyDown={event => { if (event.key === "Escape" && !deleting.current) { event.preventDefault(); event.stopPropagation(); setPendingDelete(null); setDeleteError(null); } }} className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-3">
+            <p className="break-words text-xs text-slate-700">¿Eliminar el filtro «{pendingDelete.name}»? Los registros de auditoría se conservan.</p>
+            {deleteError ? <p role="alert" className="mt-2 text-xs text-rose-700">{deleteError}</p> : null}
+            <div className="mt-3 flex justify-end gap-2">
+              <button autoFocus type="button" disabled={busyId !== null} onClick={() => { setPendingDelete(null); setDeleteError(null); }} className="rounded border border-slate-300 px-2 py-1 text-xs">Cancelar</button>
+              <button type="button" disabled={busyId !== null} onClick={() => void removeFilter(pendingDelete)} className="rounded bg-rose-700 px-2 py-1 text-xs text-white disabled:opacity-50">{busyId ? "Eliminando…" : "Confirmar eliminación"}</button>
+            </div>
+          </section> : null}
         </div>
       ) : null}
     </div>

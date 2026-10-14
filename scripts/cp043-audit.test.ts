@@ -1,6 +1,16 @@
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
+
+test("eliminar filtro usa confirmación visible y comunica errores", () => {
+  const controls = readFileSync("src/components/admin/AuditModuleControls.tsx", "utf8");
+  const menu = controls.slice(controls.indexOf("export function SavedFiltersMenu("));
+  assert.doesNotMatch(menu, /window\.confirm/);
+  assert.match(menu, /Confirmar eliminación del filtro/);
+  assert.match(menu, /apiErrorMessage\(payload\?\.error/);
+  assert.match(menu, /No se pudo confirmar la eliminación/);
+  assert.match(menu, /if \(deleting\.current\) return/);
+});
 import { actionLabel, entityLabel, auditSeverity, AuditInvalidFilterError, parseAuditFilters } from "../src/lib/audit-contract";
 import { auditExportSnapshot } from "../src/lib/audit-export";
 import { resolveAuditPageFilters } from "../src/lib/audit-page-filters";
