@@ -2691,3 +2691,24 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Build en curso (sesión 85613); comprobación manual en Brave y publicación pendientes. Sin cambios de datos. CMS excluido y móvil detenido en F127.
 
 - Cierre F258/F259: builds 85613 y 40472 aprobados. Cinco contratos dirigidos aprobados. Brave verificó Refrigeración (35 marcas), Capacitores (9 marcas), navegación padre/hija y panel editorial. Singular de marcas corregido y comprobado. Sin errores de consola; advertencias de Clerk por claves de desarrollo. QA sin mutaciones de catálogo.
+
+## F260 — Clientes: alta, desactivación y previsualización de fusión
+- Brave: alta de «QA AUDITORÍA F260 — estado recuperable», correo qa.f260.estado@example.test, tras revisión de duplicados. Identificador customer-59514bd5-ab40-4110-8de1-450866489aef. Sin documentos, contactos, pedidos ni oportunidades.
+- Ficha 360° abrió correctamente. Desactivación con motivo persistió INACTIVE; historial conservado. Este registro QA permanece inactivo para verificar la recuperación al corregirla.
+- Hallazgo confirmado: no hay acción Reactivar; edición no incluye estado y API de estado solo acepta INACTIVE. Pendiente implementar recuperación con motivo, permiso customers.manage y prohibición para clientes fusionados.
+- Previsualización de fusión QA AUDITORÍA 2026-10-06 ← QA Contacto ColdPower aprobada: una oportunidad y una actividad, demás contadores cero. Cancelada, sin ejecutar fusión.
+- Otros hallazgos visuales/de alcance: «1 resultados» y «1 clientes»; tarjetas de métricas llevan enlaces que eliminan la búsqueda actual, aunque sus cifras pertenecen al alcance filtrado. Pendiente corregir y verificar.
+- Búsqueda F260 devolvió solo el cliente QA inactivo; consola sin errores. No se enviaron mensajes ni cambiaron clientes reales. CMS excluido; móvil detenido en F127.
+
+## F261 — Datos empresariales proporcionados y alcance de métricas de Clientes
+- Jean proporcionó RUC 20604067422, dirección JIRON PARURO 1280, TIENDA 111 e IGV 18%. Pendientes razón social, series y modalidad de inclusión del IGV. Correo de ventas pendiente; solicitado momento del recordatorio. No guardados todavía para evitar una configuración parcial sin modalidad aprobada.
+- Corrección local de Clientes: enlaces de métricas conservan filtros y reinician página; singular de resultados y paginación. Validación pendiente. Recuperación de clientes F260 sigue pendiente.
+
+- Aclaración de Jean: precios incluyen IGV 18%; correo de ventas sigue pendiente. 20604067422 es RUC, no nombre legal; razón social aún sin confirmar.
+- Revisión F261 detectó conflicto de filtros status INACTIVE / opportunity NONE frente a tarjetas ACTIVE / OPEN; ajuste local impide navegación cuando contradicen el alcance. Build 72064 descartado; nueva validación pendiente.
+
+### F261 — Corrección de tarjetas incompatibles
+- Revisión adicional mostró que aria-disabled sobre Link no impedía abrir otra pestaña. Tarjetas incompatibles ahora son contenedores div sin href; enlaces habilitados conservan alcance.
+- TypeScript, ESLint y siete contratos dirigidos aprobados. Revisión final sin defectos adicionales. Build 43291 cancelado antes del ajuste; nuevo build 11048 en curso. Verificación Brave y publicación pendientes.
+
+- Cierre F261: build11048 exit0, servidor31830 activo. Brave verificó 1 resultado/1 cliente, tarjeta Clientes activos sin enlace bajo status INACTIVE y clic Por atender preserva búsqueda F260 y estado; consola sin errores. Se publica corrección. F260 recuperación pendiente y QA continúa inactivo.

@@ -259,6 +259,12 @@ export function CustomersControlCenter({
       cancelled = true;
     };
   }, [operationsRevision, operationsTab]);
+  function metricHref(filter?: { name: string; value: string }) {
+    const params = new URLSearchParams(queryString);
+    for (const key of ["customerId", "new", "page"]) params.delete(key);
+    if (filter) params.set(filter.name, filter.value);
+    return `/admin/clientes${params.size ? `?${params.toString()}` : ""}`;
+  }
   const metricCards = [
     {
       label: "Clientes registrados",
@@ -266,7 +272,7 @@ export function CustomersControlCenter({
       note: "Total filtrado",
       icon: UsersRound,
       color: "blue",
-      href: "/admin/clientes",
+      href: metricHref(),
     },
     {
       label: "Clientes activos",
@@ -274,7 +280,8 @@ export function CustomersControlCenter({
       note: "Estado activo",
       icon: CheckCircle2,
       color: "green",
-      href: "/admin/clientes?status=ACTIVE",
+      href: metricHref({ name: "status", value: "ACTIVE" }),
+      disabled: Boolean(new URLSearchParams(queryString).get("status") && new URLSearchParams(queryString).get("status") !== "ACTIVE"),
     },
     {
       label: "Por atender",
@@ -282,7 +289,7 @@ export function CustomersControlCenter({
       note: "Acción comercial pendiente",
       icon: Clock3,
       color: "orange",
-      href: "/admin/clientes?needsAttention=true",
+      href: metricHref({ name: "needsAttention", value: "true" }),
     },
     {
       label: "Oportunidades activas",
@@ -290,7 +297,8 @@ export function CustomersControlCenter({
       note: "En pipeline",
       icon: Building2,
       color: "purple",
-      href: "/admin/clientes?opportunity=OPEN",
+      href: metricHref({ name: "opportunity", value: "OPEN" }),
+      disabled: Boolean(new URLSearchParams(queryString).get("opportunity") && new URLSearchParams(queryString).get("opportunity") !== "OPEN"),
     },
   ];
   const close = () => {
@@ -554,12 +562,7 @@ export function CustomersControlCenter({
                 : metric.color === "purple"
                   ? "bg-[#eee9ff] text-[#8057e8]"
                   : "bg-[#e8f1ff] text-[#2277ee]";
-          return (
-            <Link
-              key={metric.label}
-              href={metric.href}
-              className="min-h-[116px] rounded-xl border border-[#e2eaf1] bg-white p-3.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]"
-            >
+          const content = (
               <div className="flex gap-2.5">
                 <span
                   className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${tint}`}
@@ -574,7 +577,12 @@ export function CustomersControlCenter({
                   <p className="mt-1 text-[9px] font-extrabold text-[#159263]">{metric.note}</p>
                 </div>
               </div>
-            </Link>
+          );
+          const cardClass = "min-h-[116px] rounded-xl border border-[#e2eaf1] bg-white p-3.5 shadow-[0_1px_3px_rgba(16,42,67,0.035)]";
+          return metric.disabled ? (
+            <div key={metric.label} aria-disabled="true" className={cardClass} title="Sin coincidencias con los filtros actuales">{content}</div>
+          ) : (
+            <Link key={metric.label} href={metric.href} className={cardClass}>{content}</Link>
           );
         })}
       </div>
@@ -703,7 +711,7 @@ export function CustomersControlCenter({
           <div className="border-b border-[#edf2f6] px-4 py-3.5">
             <h2 className="text-[13px] font-extrabold text-[#102a43]">Clientes</h2>
             <p className="mt-1 text-[10px] font-semibold text-[#8296a9]">
-              {page.totalItems} resultados
+              {page.totalItems} {page.totalItems === 1 ? "resultado" : "resultados"}
             </p>
           </div>
           <div className="hidden overflow-x-auto md:block">
@@ -1432,7 +1440,7 @@ function Pager({
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf2f6] px-4 py-3 text-[10px] font-semibold text-[#71869c]">
       <span>
         Mostrando {totalItems ? (page - 1) * pageSize + 1 : 0} a{" "}
-        {Math.min(page * pageSize, totalItems)} de {totalItems} clientes
+        {Math.min(page * pageSize, totalItems)} de {totalItems} {totalItems === 1 ? "cliente" : "clientes"}
       </span>
       <div className="flex items-center gap-1">
         <Link
