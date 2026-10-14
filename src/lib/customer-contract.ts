@@ -150,6 +150,7 @@ export function parseCustomerRelationFilters(params: URLSearchParams): CustomerR
 }
 
 export type CustomerListItem = {
+  canonicalCustomerId?: string | null;
   id: string;
   userId: string | null;
   name: string;

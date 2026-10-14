@@ -2712,3 +2712,14 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - TypeScript, ESLint y siete contratos dirigidos aprobados. Revisión final sin defectos adicionales. Build 43291 cancelado antes del ajuste; nuevo build 11048 en curso. Verificación Brave y publicación pendientes.
 
 - Cierre F261: build11048 exit0, servidor31830 activo. Brave verificó 1 resultado/1 cliente, tarjeta Clientes activos sin enlace bajo status INACTIVE y clic Por atender preserva búsqueda F260 y estado; consola sin errores. Se publica corrección. F260 recuperación pendiente y QA continúa inactivo.
+
+
+## F262 — Recuperación de clientes inactivos
+- Implementación local: acción Reactivar muestra destino Activo y solicita motivo. API exige customers.manage; transacción bloquea cliente, rechaza fusionados y prospectos, permite INACTIVE→ACTIVE e idempotencia ACTIVE. Cambio y auditoría se guardan juntos.
+- CustomerListItem expone canonicalCustomerId ya enviado por el repositorio para ocultar acción en fusionados.
+- TypeScript, ESLint, siete contratos existentes y dos pruebas nuevas de guardas aprobados; revisión estática sin defectos. Build29091 en curso. Prueba real UI del cliente QA F260 y publicación pendientes.
+- Ninguna reactivación persistida todavía; QA F260 sigue INACTIVE. CMS excluido, móvil F127 detenido.
+
+- Cierre F262: build29091 exit0; servidor56420 activo. Brave ejecutó reactivación QA con motivo obligatorio, el cliente salió del alcance INACTIVE y persistió ACTIVE tras recarga. Consola sin errores.
+- Lectura de DB confirmó audit-2474b3df-88c4-4bcf-a836-4df8793fc52e, customer.status_changed, INACTIVE→ACTIVE y motivo F262. Registro QA retenido activo para trazabilidad. No clientes reales modificados.
+- Dos pruebas de guardas incorporadas al runner general; runner comprobado sintácticamente. Se publica corrección y evidencia. No equivale a cierre de auditoría integral.

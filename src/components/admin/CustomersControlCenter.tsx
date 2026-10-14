@@ -486,7 +486,7 @@ export function CustomersControlCenter({
         {
           method: "PATCH",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ status: "INACTIVE", reason, force }),
+          body: JSON.stringify({ status: selected.status === "INACTIVE" ? "ACTIVE" : "INACTIVE", reason, force }),
         },
       );
       const data = await payload(response);
@@ -499,13 +499,13 @@ export function CustomersControlCenter({
           setNotice(
             `${failure(data, "El cliente tiene operaciones abiertas.")} Oportunidades comerciales y de posventa: ${String((details as { opportunities?: unknown }).opportunities ?? 0)}, cotizaciones: ${String((details as { quotes?: unknown }).quotes ?? 0)}, pedidos: ${String((details as { orders?: unknown }).orders ?? 0)}.`,
           );
-        else throw new Error(failure(data, "No se pudo desactivar el cliente."));
+        else throw new Error(failure(data, "No se pudo cambiar el estado del cliente."));
         return;
       }
       close();
       router.refresh();
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "No se pudo desactivar el cliente.");
+      setNotice(error instanceof Error ? error.message : "No se pudo cambiar el estado del cliente.");
     } finally {
       setBusy(false);
     }
@@ -1112,7 +1112,7 @@ export function CustomersControlCenter({
       <AdminDrawer
         open={drawer === "deactivate"}
         onClose={close}
-        title="Desactivar cliente"
+        title={selected?.status === "INACTIVE" ? "Reactivar cliente" : "Desactivar cliente"}
         footer={
           <div className="flex justify-end gap-2">
             <button
@@ -1126,14 +1126,14 @@ export function CustomersControlCenter({
               onClick={() => void deactivate()}
               className="h-10 rounded-lg bg-[#ef5350] px-4 text-[10px] font-extrabold text-white disabled:opacity-50"
             >
-              Desactivar
+              {selected?.status === "INACTIVE" ? "Reactivar" : "Desactivar"}
             </button>
           </div>
         }
       >
         <div className="space-y-4">
           <p className="text-sm font-semibold text-[#526b84]">
-            Desactivarás a <strong>{selected?.name}</strong>. No se eliminará su historial ni sus
+            {selected?.status === "INACTIVE" ? "Reactivarás como activo a" : "Desactivarás a"} <strong>{selected?.name}</strong>. No se eliminará su historial ni sus
             relaciones.
           </p>
           {notice ? <Notice text={notice} /> : null}
@@ -1143,7 +1143,7 @@ export function CustomersControlCenter({
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               className="min-h-24 rounded-lg border border-[#dce6ee] p-3 text-xs font-medium outline-none focus:border-[#2277ee]"
-              placeholder="Indica por qué se desactiva este cliente."
+              placeholder="Indica el motivo del cambio de estado."
             />
           </label>
           {notice?.includes("operaciones abiertas") ? (
@@ -1246,7 +1246,7 @@ function CustomerTableRow({
   onDeactivate: () => void;
   onMerge: () => void;
 }) {
-  const canDeactivate = row.status !== "INACTIVE";
+  const canChangeStatus = !row.canonicalCustomerId;
   const statusLabel = statusLabels[row.status] ?? row.status;
   const statusTone = row.status === "ACTIVE"
     ? "bg-[#e4f7ef] text-[#159263]"
@@ -1375,13 +1375,13 @@ function CustomerTableRow({
                     >
                       Fusionar
                     </button>
-                    {canDeactivate ? (
+                    {canChangeStatus ? (
                       <button
                         type="button"
                         onClick={onDeactivate}
                         className="block w-full rounded px-2.5 py-2 text-left text-[10px] font-bold text-[#d94848] hover:bg-red-50"
                       >
-                        Desactivar
+                        {row.status === "INACTIVE" ? "Reactivar" : "Desactivar"}
                       </button>
                     ) : null}
                   </>

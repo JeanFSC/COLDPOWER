@@ -72,6 +72,24 @@ export async function deactivateCustomer(customerId: string, input: { reason: st
   });
 }
 
+export function assertCustomerReactivatable(customer: { status: string; canonicalCustomerId?: string | null }) {
+  if (customer.canonicalCustomerId) throw new CustomerOperationsError("CUSTOMER_MERGED", "El cliente fue fusionado. Utiliza su cliente principal.", 409);
+  if (customer.status !== "INACTIVE" && customer.status !== "ACTIVE") throw new CustomerOperationsError("CUSTOMER_STATUS_CONFLICT", "Solo se puede reactivar un cliente inactivo.", 409);
+}
+
+export async function reactivateCustomer(customerId: string, input: { reason: string }, actor: Actor) {
+  if (!input.reason.trim()) throw new CustomerOperationsError("CUSTOMER_STATUS_REASON_REQUIRED", "Indica el motivo del cambio.", 422);
+  return getDb().transaction(async (tx) => {
+    const [before] = await tx.select().from(customers).where(eq(customers.id, customerId)).for("update").limit(1);
+    if (!before) throw new CustomerOperationsError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.", 404);
+    assertCustomerReactivatable(before);
+    if (before.status === "ACTIVE") return { customer: before, idempotent: true };
+    const [customer] = await tx.update(customers).set({ status: "ACTIVE", updatedAt: new Date() }).where(eq(customers.id, customerId)).returning();
+    await tx.insert(auditLogs).values(audit(actor, "customer.status_changed", customerId, before, customer, { reason: input.reason.trim().slice(0, 500) }));
+    return { customer, idempotent: false };
+  });
+}
+
 export async function previewCustomerMerge(primaryId: string, secondaryId: string) {
   if (!primaryId || !secondaryId || primaryId === secondaryId) throw new CustomerOperationsError("CUSTOMER_MERGE_INVALID", "Selecciona dos clientes diferentes.", 422);
   const db = getDb();
