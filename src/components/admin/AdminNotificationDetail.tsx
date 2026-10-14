@@ -141,7 +141,7 @@ export function NotificationDetail({ detail }: { detail: Detail | null }) {
               <Icon path={ICON.clock} className="h-3.5 w-3.5 text-blue-600" />
               Trazabilidad del evento
             </h4>
-            <span className="text-[10px] font-medium text-slate-400">{events.length} registros</span>
+            <span className="text-[10px] font-medium text-slate-400">{events.length} {events.length === 1 ? "registro" : "registros"}</span>
           </div>
           <div className="relative space-y-3 pl-5 before:absolute before:bottom-2 before:left-2 before:top-2 before:w-0.5 before:bg-slate-200">
             {events.map((event, index) => (

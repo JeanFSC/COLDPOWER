@@ -198,7 +198,7 @@ export function NotificationsList({
       <div className="flex items-center justify-between border-b border-slate-100 p-4">
         <div>
           <h2 className="text-[15px] font-bold leading-tight text-slate-900">Bandeja de notificaciones</h2>
-          <p className="mt-0.5 text-[11px] text-slate-400">{filterError ? "Corrige los filtros para consultar la bandeja." : `${visibleTotal.toLocaleString("es-PE")} resultados`}</p>
+          <p className="mt-0.5 text-[11px] text-slate-400">{filterError ? "Corrige los filtros para consultar la bandeja." : `${visibleTotal.toLocaleString("es-PE")} ${visibleTotal === 1 ? "resultado" : "resultados"}`}</p>
         </div>
       </div>
 

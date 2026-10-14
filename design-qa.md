@@ -2642,3 +2642,14 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave tab375936331 auditCheck253: Más filtros → Eliminar filtro QA AUDITORÍA — Jean F235 abre confirmación visible e identifica nombre. document.activeElement confirma foco Cancelar. Escape cerró región; segunda apertura y Cancelar también cerró; link QA permanece exactamente1. Consola sin errores.
 - No DELETE real ejecutado ni errores de red provocados; esas ramas están implementadas/revisadas estáticamente, no afirmar prueba manual completa de eliminación. No se borraron eventos de auditoría.
 - Se publica mejora de confirmación/errores/teclado y evidencia conforme a autorización. Auditoría integral sigue abierta, CMS excluido,móvil detenidoF127,Guardar nativo pendiente.
+## F254 — Bandeja de Notificaciones usada en Brave
+- Browser3,tab375936333 notificationsCheck254. Búsqueda ORD-20261013-74BD35 devuelve2 avisos QA (pedido y pago). Detalle automático de pago conserva origen payment-b49706a6-25a6-4889-9e23-7740a631b8bf.
+- Marcar como leída actualizó lista y detalle; restaurar como no leída confirmó ambos en estado original. Filtro Pago aprobado junto con búsqueda devuelve exactamente1 aviso y conserva query/type al detalle. No envío manual, activación de reglas ni cambios de preferencias.
+- Hallazgos visuales comprobados: «1 resultados» y trazabilidad «1 registros». Corrección local singular resultado/registro en NotificationsList y AdminNotificationDetail. ESLint/TypeScript sesión85157 verificados; build y comprobación visual posterior pendientes. No publicado aún.
+- Automatizaciones, programaciones y preferencias requieren cobertura restante; no se enviaron mensajes a otros usuarios. CMS excluido,móvil detenidoF127,Guardar nativo pendiente.
+### F254 — Pruebas dirigidas y revisión
+- CP046 cuatro pruebas y contratos UI dos pruebas aprobados. Revisor confirma conteos numéricos y singular solo para1, sin cambios de filtros/datos/navegación.
+- Build42277 verificada activa: compilación9.5s correcta, TypeScript en curso. Servidor63450 detenido. No modificar fuentes ni iniciar otro build; esperar salida terminal y levantar local.
+- Prueba visual posterior a build pendiente para «1 resultado» y «1 registro». Estado de lectura QA restaurado a No leída según F254; no repetir mutaciones ni enviar avisos.
+- Corrección local aún no publicada. CMS excluido,móvil detenidoF127,Guardar nativo pendiente.
+- F254 cierre: build42277 exit0, local35818 Ready214ms. Brave recarga filtro QA y muestra1resultado/1registro; consola sin errores. Pruebas dirigidas y revisión aprobadas. Se publica corrección de textos; auditoría integral continúa abierta.
