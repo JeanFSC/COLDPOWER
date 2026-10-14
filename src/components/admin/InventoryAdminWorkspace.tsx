@@ -1,6 +1,7 @@
 "use client";
 
 import { ExportFormatMenu } from "@/components/admin/ExportFormatMenu";
+import { InventoryTransferDetail, inventoryTransferHref } from "@/components/admin/InventoryTransferDetail";
 import { StockImportDialog } from "@/components/admin/StockImportDialog";
 
 import { inventoryReferenceHref } from "@/lib/inventory-reference";
@@ -2081,7 +2082,7 @@ function InventoryOperationsTabs({
                 <div>
                   <p className="font-mono text-[11px] font-extrabold text-blue-600">
                     <Link
-                      href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
+                      href={inventoryTransferHref(searchParams.toString(), transfer.id)}
                       className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                     >
                       {transfer.id}
@@ -2096,7 +2097,7 @@ function InventoryOperationsTabs({
                 </div>
                 <div className="text-[11px] text-slate-500">
                   <p>
-                    {number(transfer.itemCount)} referencias · {number(transfer.units)} unidades
+                    {number(transfer.itemCount)} {transfer.itemCount === 1 ? "referencia" : "referencias"} · {number(transfer.units)} {transfer.units === 1 ? "unidad" : "unidades"}
                   </p>
                   <p className="mt-1">
                     Solicitado por: {transfer.requestedByName || "Sin asignar"}
@@ -2196,7 +2197,7 @@ function InventoryOperationsTabs({
               </div>
             ))}
             {!data.operations.transfers.length ? (
-              <OperationEmpty text="No hay traslados registrados." />
+              <OperationEmpty text={searchParams.get("transferStatus") ? "No hay traslados con el estado seleccionado." : "No hay traslados registrados."} />
             ) : null}
             <OperationPagination {...data.operations.transfersPagination} parameter="transferPage" />
           </div>
@@ -2459,7 +2460,7 @@ function OperationPagination({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500">
       <span>
-        Página {page} de {totalPages} · {number(totalItems)} registros
+        Página {page} de {totalPages} · {number(totalItems)} {totalItems === 1 ? "registro" : "registros"}
       </span>
       <div className="flex gap-1">
         <button
@@ -3153,8 +3154,9 @@ export function InventoryAdminWorkspace({
           <AlertRail alerts={data.alerts} />
         </aside>
       </div>
+      <InventoryTransferDetail />
       <InventoryOperationsTabs key={actionParams.get("tab") || "movements"} data={data} permissions={permissions} onSuccess={refresh} />
-      {detailItem ? (
+      {detailItem && !actionParams.get("transferId") ? (
         <InventoryDetailDrawer
           key={`${detailItem.productId}:${detailItem.locationId}`}
           item={detailItem}
@@ -3516,6 +3518,7 @@ function InventoryDetailDrawer({
   onClose: () => void;
   onKardex?: () => void;
 }) {
+  const searchParams = useSearchParams();
   const media = inventoryMedia(item);
   const [tab, setTab] = useState<DetailTab>("summary");
   const [reservations, setReservations] = useState<Array<Pick<InventoryAdminPageData["operations"]["reservations"][number], "id" | "quantity" | "status" | "referenceType" | "referenceId" | "reason" | "expiresAt">>>([]);
@@ -3805,7 +3808,7 @@ function InventoryDetailDrawer({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <Link
-                        href={`/admin/inventario?tab=transfers&transferId=${encodeURIComponent(transfer.id)}`}
+                        href={inventoryTransferHref(searchParams.toString(), transfer.id)}
                         className="font-mono text-[11px] font-extrabold text-blue-600 underline"
                       >
                         {transfer.id}

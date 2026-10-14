@@ -2723,3 +2723,23 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Cierre F262: build29091 exit0; servidor56420 activo. Brave ejecutó reactivación QA con motivo obligatorio, el cliente salió del alcance INACTIVE y persistió ACTIVE tras recarga. Consola sin errores.
 - Lectura de DB confirmó audit-2474b3df-88c4-4bcf-a836-4df8793fc52e, customer.status_changed, INACTIVE→ACTIVE y motivo F262. Registro QA retenido activo para trazabilidad. No clientes reales modificados.
 - Dos pruebas de guardas incorporadas al runner general; runner comprobado sintácticamente. Se publica corrección y evidencia. No equivale a cierre de auditoría integral.
+
+
+## F263 — Transferencias: filtros y enlace sin detalle
+- Brave Inventario: filtro En tránsito devuelve cero traslados y URL transferStatus=IN_TRANSIT. Recibido devuelve traslado QA transfer-ab6e8487-6d55-4442-99c1-04f2215b9c7d, Chiclayo→Cusco, una referencia y una unidad, recibido 6 octubre.
+- Hallazgos: plural incorrecto con1 en referencias/unidades/registros; vacío filtrado afirma ausencia global. Corrección local de textos pendiente validar.
+- Hallazgo funcional confirmado: enlace añade transferId pero no hay consumidor de selección ni detalle, y elimina transferStatus. API /transferencias/[id] solo PATCH. Pendiente implementar consulta de detalle y panel manteniendo filtros; no sustituirlo por navegación sin funcionalidad.
+- QA solo lectura, sin nuevos traslados ni cambios de stock. CMS excluido; móvil detenido F127.
+
+
+## F264 — Detalle real de transferencias
+- GET protegido por inventory.view consulta traslado, productos asociados y locales reales; 404/403/503 explícitos. Panel muestra estado, origen/destino, fechas, notas y SKU/cantidades; carga, error y reintento.
+- Enlaces de lista y ficha conservan query al seleccionar transferId; cerrar elimina solo transferId. No mutaciones de stock.
+- TypeScript y ESLint aprobados tras corregir hook de searchParams en ficha. Revisión, build y QA Brave pendientes; no publicado todavía.
+
+### F264 — Revisión y corrección de superposición
+- Revisor detectó conflicto de foco/Escape al abrir traslado desde ficha de producto: dos drawers. Ficha ahora se desmonta mientras transferId existe y se recupera al cerrar, conservando selección.
+- Revisión final sin defectos adicionales. ESLint limpio y dos contratos de inventario aprobados. Build23696 en curso. No cambios de stock ni publicación aún.
+
+- F263/F264 validación: build23696 exit0; servidor59331 activo. Brave confirmó GET/detalle de traslado QA con producto QA-AUD-20261006, una unidad, locales y fechas reales. Abrir/cerrar Escape conserva transferStatus RECEIVED y página1. Vacío IN_TRANSIT muestra ausencia solo en estado seleccionado. Consola sin errores.
+- Se publica detalle y textos validados. Pendiente ampliar QA de apertura desde ficha producto, 404/reintento y roles de menor acceso; revisión estática cubrió superposición y permiso inventory.view. Sin cambios de inventario.
