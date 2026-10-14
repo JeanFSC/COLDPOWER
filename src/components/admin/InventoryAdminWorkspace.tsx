@@ -3821,7 +3821,7 @@ function InventoryDetailDrawer({
                     </div>
                     <p className="mt-1 text-[11px] text-slate-500">
                       {transfer.sourceCode} → {transfer.destinationCode} · {number(transfer.units)}{" "}
-                      unidades
+                      {transfer.units === 1 ? "unidad" : "unidades"}
                     </p>
                   </div>
                 ))

@@ -2743,3 +2743,16 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 
 - F263/F264 validación: build23696 exit0; servidor59331 activo. Brave confirmó GET/detalle de traslado QA con producto QA-AUD-20261006, una unidad, locales y fechas reales. Abrir/cerrar Escape conserva transferStatus RECEIVED y página1. Vacío IN_TRANSIT muestra ausencia solo en estado seleccionado. Consola sin errores.
 - Se publica detalle y textos validados. Pendiente ampliar QA de apertura desde ficha producto, 404/reintento y roles de menor acceso; revisión estática cubrió superposición y permiso inventory.view. Sin cambios de inventario.
+
+
+## F265 — Transferencia desde producto y error 404
+- Brave ficha producto QA-AUD-20261006, Chiclayo: Transferencias abre traslado QA con exactamente un dialog activo; cerrar Escape recupera ficha del producto y conserva búsqueda. La pestaña interna vuelve a Resumen al remontar (comportamiento actual), selección del producto preservada.
+- Caso QA-F265-NO-EXISTE: muestra Traslado no encontrado, Reintentar carga y vuelve al error sin datos viejos; Cerrar permite continuar. No mutaciones.
+- Hallazgo visual adicional: ficha producto aún muestra 1 unidades en traslado reciente. Corregido localmente; validación/build posterior pendientes. Roles de menor acceso aún pendientes de prueba manual.
+
+### F265 — Regresión general en curso
+- Runner test-all sesión57418 activo; log TEMP coldpower-tests-f265.log. Conteos TAP observados:599 ejecuciones,567 aprobadas,32 omitidas,0 fallidas; incluye grupos repetidos, no pruebas únicas. Contratos completos aprobados hasta fase31; TypeScript final pasó y ESLint general en curso. Build final y comprobación Brave posteriores pendientes.
+- Revisión independiente aprobó singular en ficha. No editar fuentes ni iniciar otro build mientras57418 esté activo.
+
+- F265 cierre: regresión57418 exit0,567 aprobaciones32 omisiones0fallos (599 ejecuciones TAP con grupos repetidos), contratos/TypeScript/ESLint/build correctos. Servidor37443 activo. Brave ficha producto QA→Transferencias muestra1 unidad; sin cambios de stock. Se publica corrección y evidencia.
+- Auditoría integral sigue abierta: Guardar/exportaciones, Kardex/importaciones/roles y recorridos restantes. CMS excluido,móvil detenidoF127. Configuración pendiente nombre legal/series/correo; precios incluyen IGV18% aprobado por Jean.
