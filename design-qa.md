@@ -2780,3 +2780,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 
 - F266 cierre: build5971exit0,servidor99521activo. Brave historial global→SKU QA abrió ficha real /admin/catalogo/product-ea613220-8707-42c0-abdb-80b6c2d639d3, heading ySKU QA visibles, consola sin errores. Pruebas render con/sin permiso y revisión aprobadas; no roles cambiados.
 - Se publica productId en DTO y navegación protegida a ficha. Fechas del historial global continúan pendientes de prueba concluyente. Catálogo observado sin guardar/publicar; CMS excluido,móvilF127 detenido.
+
+
+## F267 — Fechas, paginación y vacío de Kardex global
+- Brave: edición de fecha por teclado activa onChange. Desde21/10/2026,Hasta02/10/2026 devuelve alerta Los filtros de movimientos no son válidos. La duda F266 provenía del fill del controlador sin evento React; no defecto confirmado de fechas.
+- Recuperación Desde01/10/2026,Hasta21/10/2026 devuelve34 movimientos. Primera página1–25, Siguiente26–34 y página2de2 con siguiente deshabilitado. Filtros conservados.
+- Buscar actor QA-F267-NO-EXISTE reinicia página1 y devuelve vacío claro,0–0de0, ambos controles deshabilitados. Consola sin errores. Sin mutaciones ni código cambiado en F267.
+- Quedan exportGuardar, roles manuales/importaciones/recorridos restantes. CMS excluido,móvilF127detenido; objetivo integral continúa abierto.
