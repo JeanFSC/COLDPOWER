@@ -1,3 +1,4 @@
+import { InventoryCatalogAccess } from "@/components/admin/InventoryCatalogLink";
 import type { Metadata } from "next";
 import { InventoryAdminWorkspace } from "@/components/admin/InventoryAdminWorkspace";
 import { requirePermission } from "@/lib/auth";
@@ -35,6 +36,7 @@ export default async function AdminInventarioPage({ searchParams }: PageProps) {
   }
   const data = await getInventoryAdminPage(filters, incomingParams.get("importBatchId") || undefined);
   return (
+    <InventoryCatalogAccess canOpen={can(actor.role, "catalog.product.edit")}>
     <InventoryAdminWorkspace
       key={incomingParams.get("action") === "adjust" ? "adjust-inventory" : "inventory-list"}
       openAdjustment={incomingParams.get("action") === "adjust" && can(actor.role, "inventory.adjust")}
@@ -48,5 +50,6 @@ export default async function AdminInventarioPage({ searchParams }: PageProps) {
         canKardex: can(actor.role, "inventory.kardex.view"),
       }}
     />
+    </InventoryCatalogAccess>
   );
 }

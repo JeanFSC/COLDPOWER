@@ -957,6 +957,7 @@ export async function getInventoryMovementsPage(filters: InventoryMovementsFilte
   const rows = await db
     .select({
       id: inventoryMovements.id,
+      productId: inventoryMovements.productId,
       type: inventoryMovements.type,
       quantity: inventoryMovements.quantity,
       previousOnHand: inventoryMovements.previousOnHand,

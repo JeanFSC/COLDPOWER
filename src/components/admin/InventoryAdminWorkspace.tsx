@@ -1,4 +1,5 @@
 "use client";
+import { InventoryCatalogLink } from "@/components/admin/InventoryCatalogLink";
 
 import { ExportFormatMenu } from "@/components/admin/ExportFormatMenu";
 import { InventoryTransferDetail, inventoryTransferHref } from "@/components/admin/InventoryTransferDetail";
@@ -722,12 +723,9 @@ function GlobalMovementsDrawer({
                     <span className="rounded-md bg-blue-50 px-1.5 py-1 text-[11px] font-extrabold text-blue-600">
                       {movement.label}
                     </span>
-                    <Link
-                      href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                      className="font-mono text-[11px] font-extrabold text-blue-600 underline"
-                    >
+                    <InventoryCatalogLink productId={movement.productId} className="font-mono text-[11px] font-extrabold text-blue-600 underline">
                       {movement.sku}
-                    </Link>
+                    </InventoryCatalogLink>
                   </div>
                    <p className="mt-1 max-w-[320px] truncate text-[11px] font-extrabold text-slate-700" title={movement.productName}>
                     {movement.productName}
@@ -1997,12 +1995,9 @@ function InventoryOperationsTabs({
                       <span className="text-[11px] font-extrabold text-slate-700">
                         {movement.label}
                       </span>
-                      <Link
-                        href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                        className="font-mono text-[11px] font-extrabold text-blue-600 underline"
-                      >
+                      <InventoryCatalogLink productId={movement.productId} className="font-mono text-[11px] font-extrabold text-blue-600 underline">
                         {movement.sku}
-                      </Link>
+                      </InventoryCatalogLink>
                     </div>
                      <p className="mt-0.5 max-w-[360px] truncate text-[11px] font-extrabold text-slate-700" title={movement.productName}>
                       {movement.productName}
@@ -2251,12 +2246,9 @@ function InventoryOperationsTabs({
               >
                 <div>
                   <p className="font-mono text-[11px] font-extrabold text-blue-600">
-                    <Link
-                      href={`/admin/catalogo?productId=${encodeURIComponent(reservation.productId)}`}
-                      className="font-mono text-[11px] font-extrabold text-blue-600 underline"
-                    >
+                    <InventoryCatalogLink productId={reservation.productId} className="font-mono text-[11px] font-extrabold text-blue-600 underline">
                       {reservation.sku}
-                    </Link>
+                    </InventoryCatalogLink>
                   </p>
                   <p className="mt-1 truncate text-[11px] font-extrabold text-slate-700">
                     {reservation.productName}
@@ -4013,12 +4005,9 @@ function MovementsRail({
               <div className="min-w-0 flex-1">
                 <p className="max-w-[250px] truncate text-[11px] font-bold text-slate-700" title={movement.label}>{movement.label}</p>
                 <p className="mt-0.5 max-w-[320px] truncate text-[11px] text-slate-400" title={`${movement.sku} · ${movement.productName}`}>
-                  <Link
-                    href={`/admin/catalogo?productId=${encodeURIComponent(movement.productId)}`}
-                    className="font-mono font-extrabold text-blue-600 underline"
-                  >
+                  <InventoryCatalogLink productId={movement.productId} className="font-mono font-extrabold text-blue-600 underline">
                     {movement.sku}
-                  </Link>
+                  </InventoryCatalogLink>
                   {" "}· {movement.productName}
                 </p>
                 <p className="mt-0.5 text-[11px] text-slate-400">{dateTime(movement.createdAt)}</p>

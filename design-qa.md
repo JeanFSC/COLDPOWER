@@ -2756,3 +2756,27 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 
 - F265 cierre: regresión57418 exit0,567 aprobaciones32 omisiones0fallos (599 ejecuciones TAP con grupos repetidos), contratos/TypeScript/ESLint/build correctos. Servidor37443 activo. Brave ficha producto QA→Transferencias muestra1 unidad; sin cambios de stock. Se publica corrección y evidencia.
 - Auditoría integral sigue abierta: Guardar/exportaciones, Kardex/importaciones/roles y recorridos restantes. CMS excluido,móvil detenidoF127. Configuración pendiente nombre legal/series/correo; precios incluyen IGV18% aprobado por Jean.
+
+
+## F266 — Kardex de producto y filtros globales
+- Brave QA-AUD-20261006/Chiclayo: Kardex completo muestra11 movimientos; reservas alteran comprometido sin cambiar físico, venta0 y reposición1 coherentes con saldo1/reservado0 actual.
+- Movimientos globales: selección productoQA,localChiclayo y tipoReserva devuelve4movimientos, actores/referencias y disponible antes/después correctos; consola sin errores.
+- Hallazgo confirmado: enlaces SKU del historial global apuntan productId=undefined. getInventoryMovementsPage omitía productId; añadido a selección local. Validación pendiente.
+- Rango invertido de fechas: campos DOM reflejan20/10→01/10 pero resultados anteriores siguieron visibles. No declarado defecto confirmado hasta distinguir eventos del controlador de estado React; parser backend ya rechaza rangos invertidos. Continuar verificación.
+- Sin mutaciones de inventario. CMS excluido,móvil detenidoF127,exportGuardar pendiente.
+
+### F266 — Identificador validado y nueva dependencia de navegación
+- Build83125exit0,servidor43714 activo. Brave enlace SKU ahora contiene ID real del producto. Al pulsarlo, catálogo permanece en listado y no abre ficha: parámetro productId no es consumido allí.
+- Ruta existente /admin/catalogo/[id] es ficha real protegida por catalog.product.edit. Corrección local de enlaces de Inventario y detalle transferencia hacia esa ruta; guardas existentes intactas. Validación/build/navegación pendientes antes publicar.
+- No declarar navegación completa por URL correcta sin ficha visible. Fechas UI siguen pendientes de aclarar eventos del controlador; parser ya rechaza rango invertido.
+
+### F266 — Enlaces según permiso de ficha
+- Revisión detectó que roles operativos sin catalog.product.edit no pueden abrir ficha editorial. Componente InventoryCatalogLink muestra texto para ellos y enlace real solo con permiso indicado por servidor. Provider en página inventario usa can(actor.role,catalog.product.edit); no se cambian guardas ni roles.
+- TypeScript aprobado; limpiado import Link sobrante. Build70340 cancelado antes del ajuste. Nueva revisión/pruebas/build/Brave pendientes. Sin publicación todavía.
+
+### F266 — Pruebas de permisos del enlace
+- Dos pruebas reales de renderizado: con permiso genera ruta ficha codificada; sin permiso/proveedor o sinID genera texto sin href. Incorporadas al runner general. TypeScript/lint limpios; revisión final aprobada.
+- Build5971 activo; no editar fuentes hasta terminar. Prueba Brave ficha visible y publicación pendientes.
+
+- F266 cierre: build5971exit0,servidor99521activo. Brave historial global→SKU QA abrió ficha real /admin/catalogo/product-ea613220-8707-42c0-abdb-80b6c2d639d3, heading ySKU QA visibles, consola sin errores. Pruebas render con/sin permiso y revisión aprobadas; no roles cambiados.
+- Se publica productId en DTO y navegación protegida a ficha. Fechas del historial global continúan pendientes de prueba concluyente. Catálogo observado sin guardar/publicar; CMS excluido,móvilF127 detenido.

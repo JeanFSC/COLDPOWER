@@ -1,7 +1,7 @@
 "use client";
+import { InventoryCatalogLink } from "@/components/admin/InventoryCatalogLink";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 
 type Detail = {
@@ -41,7 +41,7 @@ export function InventoryTransferDetail() {
    <dl className="grid gap-3 sm:grid-cols-2"><div><dt className="text-sm text-slate-500">Origen</dt><dd>{current.data.source?.name??"Local no disponible"} · {current.data.source?.code}</dd></div><div><dt className="text-sm text-slate-500">Destino</dt><dd>{current.data.destination?.name??"Local no disponible"} · {current.data.destination?.code}</dd></div><div><dt className="text-sm text-slate-500">Creado</dt><dd>{date(current.data.transfer.createdAt)}</dd></div><div><dt className="text-sm text-slate-500">Recibido</dt><dd>{current.data.transfer.receivedAt?date(current.data.transfer.receivedAt):"Sin recepción registrada"}</dd></div></dl>
    {current.data.transfer.notes?<p className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm">{current.data.transfer.notes}</p>:null}
    <h3 className="font-semibold">Productos trasladados</h3>
-   {current.data.items.length?<ul className="space-y-2">{current.data.items.map(item=><li key={item.id} className="rounded-lg border p-3"><Link href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="text-blue-600 underline">{item.sku}</Link><p>{item.name??"Sin nombre"}</p><p>{item.quantity} {item.quantity===1?"unidad":"unidades"}</p></li>)}</ul>:<p>Sin productos asociados.</p>}
+   {current.data.items.length?<ul className="space-y-2">{current.data.items.map(item=><li key={item.id} className="rounded-lg border p-3"><InventoryCatalogLink productId={item.productId} className="text-blue-600 underline">{item.sku}</InventoryCatalogLink><p>{item.name??"Sin nombre"}</p><p>{item.quantity} {item.quantity===1?"unidad":"unidades"}</p></li>)}</ul>:<p>Sin productos asociados.</p>}
   </div>:null}
  </AdminDrawer>;
 }
