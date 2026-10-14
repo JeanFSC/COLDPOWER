@@ -2653,3 +2653,21 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Prueba visual posterior a build pendiente para «1 resultado» y «1 registro». Estado de lectura QA restaurado a No leída según F254; no repetir mutaciones ni enviar avisos.
 - Corrección local aún no publicada. CMS excluido,móvil detenidoF127,Guardar nativo pendiente.
 - F254 cierre: build42277 exit0, local35818 Ready214ms. Brave recarga filtro QA y muestra1resultado/1registro; consola sin errores. Pruebas dirigidas y revisión aprobadas. Se publica corrección de textos; auditoría integral continúa abierta.
+
+## F255 — Estados vacíos y filtros inválidos de Notificaciones
+- Brave browser3/tab375936335 notificationErrors255. Búsqueda QA-F255-SIN-RESULTADOS-8CCB mostró0resultados, aviso «No hay notificaciones para este alcance», Mostrando0de0 y detalle sin selección.
+- Rango Desde20/10/2026/Hasta01/10/2026 mostró «Corrige los filtros» y alerta explícita Desde anterior/igual a Hasta. No se presentó como ausencia real. Campos input type=date requieren valores ISO en controlador; primer intento DD/MM falló en herramienta, corregido sin defecto del sistema.
+- Limpiar recuperó50resultados, búsqueda vacía/tipos por defecto y consola sin errores. Sin mutaciones de lectura, preferencias, reglas ni envíos en esta fase.
+- No nuevos defectos confirmados en estas rutas. Queda cobertura de acciones/programaciones/preferencias y visual integral. CMS excluido,móvil detenidoF127,Guardar nativo pendiente. Main87f77d7,local35818.
+## F256 — Configuración empresarial y faltantes reales
+- Brave browser3/tab375936337 configurationCheck256 recorrió Empresa,Locales,Series y documentos,Precios e IGV,Integraciones,Historial,Branding y Legal. Solo lectura: no guardar/restaurar/publicar ni probar servicios externos.
+- Datos visibles: Empresa0/6,6locales activos,0series activas,IGV sin configurar,0/5integraciones. API externa,SMTP,pasarela,SUNAT yWhatsApp señalan variables necesarias ausentes. No inventar datos empresariales/tributarios/credenciales para aparentar completitud.
+- Historial cargó versiones2/3 y diff de logoMediaId; branding sin assets asociados y legal sin enlaces. Son faltantes de configuración que requieren datos aprobados y conexiones reales, no errores automáticamente del software.
+- Defecto visual confirmado: tipos de local STORE/WAREHOUSE sin traducción. Corrección local muestra Tienda,Almacén,Tienda y almacén para enum conocido y fallback Tipo no clasificado. TypeScript/ESLint sesión12793 verificados; pruebas/build/validación visual pendientes antes publicar.
+- Sin tocar CMS; Legal/Branding de Configuración solo inspeccionados. Móvil detenidoF127,Guardar nativo y cobertura integral pendientes.
+### F256 — Pruebas, revisión y datos faltantes
+- Ocho pruebas dirigidas CP045/restauración aprobadas. Revisor confirma etiquetas de los tres valores del enum y fallback, sin cambio de persistencia/reglas.
+- Build95751 verificada activa: compilación9.7s correcta,TypeScript en curso. Servidor35818 detenido. No editar fuente mientras está activo; prueba Brave/publicación pendientes.
+- Se solicitó información faltante a Jean: razón social,RUC,dirección fiscal,correo de ventas,series y modalidad deIGV aprobadas o documento de referencia. Respuesta pendiente; no completar datos reales por suposición. El resto de auditoría continúa independiente.
+- CMS excluido,móvil detenidoF127,Guardar nativo pendiente. Main87f77d7,correcciónF256 local.
+- F256 cierrevisual: build95751 exit0,local84046 Ready224ms. Brave recargó Configuración y Locales muestra5Tiendas/1Almacén en español. No se cambiaron datos. Se publica corrección; datos empresariales aprobados siguen pendientes de Jean.
