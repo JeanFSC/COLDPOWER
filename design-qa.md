@@ -2671,3 +2671,23 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Se solicitó información faltante a Jean: razón social,RUC,dirección fiscal,correo de ventas,series y modalidad deIGV aprobadas o documento de referencia. Respuesta pendiente; no completar datos reales por suposición. El resto de auditoría continúa independiente.
 - CMS excluido,móvil detenidoF127,Guardar nativo pendiente. Main87f77d7,correcciónF256 local.
 - F256 cierrevisual: build95751 exit0,local84046 Ready224ms. Brave recargó Configuración y Locales muestra5Tiendas/1Almacén en español. No se cambiaron datos. Se publica corrección; datos empresariales aprobados siguen pendientes de Jean.
+
+## F257 — Taxonomía: árbol, familia y cancelación
+- Brave browser3/tab375936339 taxonomyCheck257. Datos visibles27categorías activas,171familias,61marcas,745productos sin marca y1332en revisión. Refrigeración seleccionada y45familias visibles; Capacitores118productos,1publicado,115en revisión, padre Refrigeración.
+- Se usó selección de familia y Ver relación editorial. Este último solo muestra mensaje «Mover familia se ejecuta desde la ficha con validación de categoría padre»; no abre relación. Revisar coherencia entre acción y resultado, aún sin corrección.
+- Desactivar abrió diálogo de impacto con nombre/cantidad; Cancelar cerró sin modificar familia. No se confirmó desactivación de catálogo real. Búsqueda inexistente mostró «No hay coincidencias en la taxonomía actual» y conservó selección previa.
+- Defecto visual confirmado:1productos en aviso y confirmación de desactivación. Cobertura de marcas del panel usa marcas globales (Alfa,Bosch,etc. y60), no se verifica relación específica con familia seleccionada; revisar alcance antes de corregir.
+- Sin mutaciones de catálogo. Auditoría integral abierta,CMS excluido,móvil detenidoF127,Guardar nativo pendiente. Configuración real pendiente de respuesta de Jean.
+## F258 — Relación editorial real y singular de impacto
+- Contrato inspeccionado: TaxonomyItem conserva categoryId/categoryName y árboles de categorías/familias. Acción anterior Ver relación editorial solo generaba instrucción genérica; reemplazada por AdminDrawer de relación con nombre,padre o familias vinculadas,estado y conteo asociado. Permite seleccionar padre/hija sin mutación.
+- Aviso y confirmación de desactivación muestran singular «producto publicado relacionado» cuando conteo1. Primer apply_patch de inserción falló por línea compacta, luego inserción por marcador exacto; no parche incompleto declarado final.
+- TypeScript/ESLint sesión17863 verificados. Tests/revisión/build y Brave pendientes antes publicar. Cobertura de marcas global bajo nodo sigue pendiente de corregir con relaciones reales; no se cambió a un texto que aparente cobertura específica.
+- Sin modificación de taxonomía persistida. CMS excluido,móvil detenidoF127,Guardar nativo pendiente y datos empresariales esperando respuesta de Jean.
+
+## F259 — Cobertura de marcas por nodo
+- Hallazgo: el detalle mostraba tres marcas globales ajenas al nodo seleccionado.
+- Corrección local: agrupación de todos los productos por nodo y marca efectivos, respetando prioridad editorial; todas las marcas relacionadas visibles con sus cantidades.
+- TypeScript, ESLint, dos contratos dirigidos y revisión independiente aprobados.
+- Build en curso (sesión 85613); comprobación manual en Brave y publicación pendientes. Sin cambios de datos. CMS excluido y móvil detenido en F127.
+
+- Cierre F258/F259: builds 85613 y 40472 aprobados. Cinco contratos dirigidos aprobados. Brave verificó Refrigeración (35 marcas), Capacitores (9 marcas), navegación padre/hija y panel editorial. Singular de marcas corregido y comprobado. Sin errores de consola; advertencias de Clerk por claves de desarrollo. QA sin mutaciones de catálogo.

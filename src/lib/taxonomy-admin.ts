@@ -8,6 +8,8 @@ export type TaxonomyEntity = (typeof taxonomyEntities)[number];
 export type TaxonomyFilters = { entity: TaxonomyEntity; query?: string; active?: boolean; categoryId?: string; page?: number; pageSize?: number };
 export type TaxonomyItem = { id: string; name: string; slug: string; active: boolean; categoryId: string | null; categoryName: string | null; productCount: number; publishedProductCount: number; reviewProductCount: number; createdAt: Date; updatedAt: Date };
 export type TaxonomyPage = { entity: TaxonomyEntity; items: TaxonomyItem[]; page: number; pageSize: number; totalItems: number; totalPages: number; metrics: { total: number; active: number; inactive: number; used: number; unused: number; productsWithoutBrand: number } };
+export type TaxonomyBrandCoverage = { id: string; name: string; productCount: number };
+export type TaxonomyTree = TaxonomyPage & { brandCoverage: Record<string, TaxonomyBrandCoverage[]> };
 export class TaxonomyInvalidFilterError extends Error { constructor() { super("TAXONOMY_INVALID_FILTER"); this.name = "TaxonomyInvalidFilterError"; } }
 
 export function isTaxonomyEntity(value: string | null | undefined): value is TaxonomyEntity { return Boolean(value && taxonomyEntities.includes(value as TaxonomyEntity)); }
@@ -81,7 +83,7 @@ export async function getTaxonomyPage(filters: TaxonomyFilters): Promise<Taxonom
 }
 
 /** The management tree needs every entity; the public API remains paginated. */
-export async function getTaxonomyTree(entity: TaxonomyEntity): Promise<TaxonomyPage> {
+export async function getTaxonomyTree(entity: TaxonomyEntity): Promise<TaxonomyTree> {
   const first = await getTaxonomyPage({ entity, page: 1, pageSize: 100 });
   const remaining = await Promise.all(
     Array.from({ length: first.totalPages - 1 }, (_, index) =>
@@ -89,7 +91,20 @@ export async function getTaxonomyTree(entity: TaxonomyEntity): Promise<TaxonomyP
     ),
   );
   const items = [...first.items, ...remaining.flatMap((page) => page.items)];
-  return { ...first, items, page: 1, pageSize: Math.max(1, items.length), totalPages: 1 };
+  const nodeId = entity === "categories"
+    ? sql<string>`coalesce(${products.editorialCategoryId}, ${products.categoryId})`
+    : entity === "families"
+      ? sql<string>`coalesce(${products.editorialFamilyId}, ${products.familyId})`
+      : sql<string>`coalesce(${products.editorialBrandId}, ${products.brandId})`;
+  const coverageRows = await getDb().select({ nodeId, id: brands.id, name: brands.name, productCount: countDistinct(products.id) })
+    .from(products).innerJoin(brands, effectiveBrandJoin())
+    .groupBy(nodeId, brands.id, brands.name).orderBy(asc(brands.name));
+  const brandCoverage: Record<string, TaxonomyBrandCoverage[]> = {};
+  for (const row of coverageRows) {
+    if (!row.nodeId) continue;
+    (brandCoverage[row.nodeId] ??= []).push({ id: row.id, name: row.name, productCount: normalizeCount(row.productCount) });
+  }
+  return { ...first, items, brandCoverage, page: 1, pageSize: Math.max(1, items.length), totalPages: 1 };
 }
 
 export async function getTaxonomyDetail(entity: TaxonomyEntity, id: string, page = 1, pageSize = 25) {
