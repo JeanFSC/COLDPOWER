@@ -2787,3 +2787,11 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Recuperación Desde01/10/2026,Hasta21/10/2026 devuelve34 movimientos. Primera página1–25, Siguiente26–34 y página2de2 con siguiente deshabilitado. Filtros conservados.
 - Buscar actor QA-F267-NO-EXISTE reinicia página1 y devuelve vacío claro,0–0de0, ambos controles deshabilitados. Consola sin errores. Sin mutaciones ni código cambiado en F267.
 - Quedan exportGuardar, roles manuales/importaciones/recorridos restantes. CMS excluido,móvilF127detenido; objetivo integral continúa abierto.
+
+
+## F268 — Importador de stock: interfaz y permiso de archivos
+- Brave importador abre con Enter en Importar stock; explica SKU/local/cantidad, primera hoja, límites y uso exclusivo de saldos iniciales. Validar archivo deshabilitado sin archivo.
+- Preparado CSV sintético TEMP coldpower-qa-f268-stock-invalido.csv (SKU inexistente y cantidad-1). Carga por filechooser bloqueada por extensión: requiere Permitir acceso a URL de archivo. No archivo enviado ni stock modificado.
+- Solicitada autorización específica de Jean para ampliar permiso local de extensión; pendiente. No cambiar permiso ni saltar bloqueo hasta recibir respuesta.
+- Trece pruebas parser/validación aprobadas (XLS,XLSX,fórmulas,booleanos,columnas,filas,SKU exacto/cantidades). Esto no prueba carga/aplicación desde Brave; UI previsualización y aplicación siguen pendientes.
+- CMS excluido,móvilF127detenido,Guardar nativo pendiente.
