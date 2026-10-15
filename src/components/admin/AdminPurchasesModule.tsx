@@ -188,7 +188,9 @@ export function AdminPurchasesModule({
       supplierRanking.filter((row) => row.currency === currency).reduce((sum, row) => sum + row.amount, 0),
     ]),
   );
-  const topSuppliers = supplierRanking.slice(0, 5);
+  const topSuppliers = supplierCurrencies.flatMap((currency) =>
+    supplierRanking.filter((row) => row.currency === currency).slice(0, 5),
+  );
   const supplierRows = topSuppliers;
 
   const activeQuery = new URLSearchParams(queryString);
@@ -310,7 +312,7 @@ export function AdminPurchasesModule({
         </div>
 
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-5">
-          <h2 className="text-sm font-bold tracking-tight text-slate-900">Top 5 proveedores por subtotal</h2>
+          <h2 className="text-sm font-bold tracking-tight text-slate-900">Top 5 proveedores por moneda</h2>
           <p className="pt-1 text-[10.5px] font-medium text-slate-400">Participación sobre el total de OC de la misma moneda.</p>
           {supplierRows.length ? (
             <div className="flex-1 space-y-2.5 pt-3">

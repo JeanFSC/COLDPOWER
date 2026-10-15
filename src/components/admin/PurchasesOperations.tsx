@@ -856,7 +856,13 @@ function PurchaseReceptionForm() {
   const items = lines
     .map((line) => ({ productId: line.productId, quantity: Number(quantities[line.id] ?? 0) }))
     .filter((line) => Number.isInteger(line.quantity) && line.quantity > 0);
-  const ready = Boolean(selected && items.length);
+  const hasInvalidQuantity = lines.some((line) => {
+    const value = quantities[line.id];
+    if (value == null || value === "") return false;
+    const quantity = Number(value);
+    return !Number.isInteger(quantity) || quantity < 0 || quantity > line.quantityPending;
+  });
+  const ready = Boolean(selected && items.length && !hasInvalidQuantity);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -947,6 +953,7 @@ function PurchaseReceptionForm() {
           <DependencyNote>{options.length ? "Selecciona una OC para ver sus líneas pendientes." : "No hay órdenes pendientes de recepción para esta búsqueda."}</DependencyNote>
         </div>
       )}
+      {hasInvalidQuantity ? <p role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-700">Cada cantidad debe ser un entero entre 0 y las unidades pendientes de su línea.</p> : null}
       {message ? <p role="status" className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-600">{message}</p> : null}
       <div className="mt-3 flex justify-end">
         <button disabled={busy || !ready} className={primaryButtonClass}>
