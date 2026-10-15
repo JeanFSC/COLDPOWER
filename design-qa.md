@@ -2959,3 +2959,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Enlace inválido muestra Revisa los filtros de promociones y acción Restablecer filtros en vez de reintento sin solución. Brave usado con scope=products: mensaje visible y enlace devuelve a /admin/promociones con listado cargado.
 - Catorce pruebas CP048, ESLint, revisión independiente y build correctos. Captura visual revisada en sesión, sin archivo persistido. Sin cambios de campañas ni permisos.
 - Auditoría integral sigue abierta; CMS excluido y móvil detenido en F127.
+## F295 — Taxonomía: navegación y búsquedas usadas (2026-10-15)
+- Brave: árbol cargado con27categorías y171familias; inspección visual de escritorio realizada en sesión.
+- Búsqueda inexistente muestra No hay coincidencias en la taxonomía actual. Búsqueda Capacitores localiza Refrigeración, seleccionada familia118productos; relación editorial confirma padre y118asociados. Usado Ver categoría padre y retorna Refrigeración.
+- Buscar marca QA AUDITORÍA localiza marca existente con0productos; detalle confirma0publicados/sin revisión. Cerrar funciona. Búsqueda inexistente muestra No hay marcas que coincidan. Ambas búsquedas restauradas vacías. Sin mutaciones editoriales.
+- Mejora abierta: buscar Capacitores mantiene visibles45familias hermanas bajo Refrigeración; filtrar hijos por coincidencia conservando el padre para reducir ruido. Pendiente inspeccionar implementación y verificar ajuste.
+- En este módulo la interfaz declara categoría→familia y familia sin hijos; no se afirma una gestión de tercer nivel/tipos a partir de esta prueba. Resto de acciones editoriales, exportaciones y permisos no queda cubierto por esta revisión. CMS excluido, móvilF127pausado.
