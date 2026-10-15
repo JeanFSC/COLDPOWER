@@ -452,15 +452,15 @@ export function AdminReportsStitch({
                   ) : data.topProducts.slice(0, 5).map((product, index) => (
                     <div
                       key={product.id}
-                      className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 py-3 text-[10px]"
+                      className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-start gap-2 py-3 text-[11px]"
                     >
                       <span className="font-semibold text-slate-400">{index + 1}</span>
                       {canViewCatalog ? (
-                        <Link href={`/admin/catalogo/${product.id}`} className="truncate font-medium text-slate-800 hover:text-blue-600" title={product.name}>
+                        <Link href={`/admin/catalogo/${product.id}`} className="line-clamp-2 min-w-0 font-medium leading-4 text-slate-800 hover:text-blue-600" title={product.name}>
                           {product.name}
                         </Link>
                       ) : (
-                        <span className="truncate font-medium text-slate-800" title={product.name}>{product.name}</span>
+                        <span className="line-clamp-2 min-w-0 font-medium leading-4 text-slate-800" title={product.name}>{product.name}</span>
                       )}
                       <span className="font-semibold text-slate-800">
                         {money(product.revenue, currency)}
