@@ -427,8 +427,10 @@ function FilterChips({ data, currentQuery }: { data: PromotionPage; currentQuery
     ["Con conflicto", null, data.facets.conflict, "conflict=1", false],
   ] as const;
   return <div className="flex flex-wrap gap-1.5">{chips.map(([label, status, countValue, extra, mobileHidden]) => {
-    const href = extra ? `/admin/promociones?${extra}` : makeQuery(currentQuery, { status, approval: null, conflict: null, page: null });
-    const active = (status === "ACTIVE" && new URLSearchParams(currentQuery).get("status") === "ACTIVE") || (extra && new URLSearchParams(currentQuery).toString().includes(extra));
+    const extraParams = new URLSearchParams(extra);
+    const href = makeQuery(currentQuery, { status, approval: extraParams.get("approval"), conflict: extraParams.get("conflict"), page: null });
+    const params = new URLSearchParams(currentQuery);
+    const active = (params.get("status") || null) === status && (params.get("approval") || null) === extraParams.get("approval") && (params.get("conflict") || null) === extraParams.get("conflict");
     return <Link key={label} href={href} className={`${mobileHidden ? "hidden lg:inline-flex" : "inline-flex"} min-h-7 items-center gap-1 rounded-lg border px-2.5 text-[10px] font-bold transition ${active ? "border-blue-200 bg-blue-50 text-blue-700" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-200 hover:text-blue-700"}`}>{label} <span className="text-[9px] opacity-70">{countValue}</span></Link>;
   })}</div>;
 }

@@ -2949,3 +2949,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Nueva promoción: Guardar borrador vacío bloquea por nombre obligatorio; nombre QA con alcance vacío muestra Define al menos un producto o una categoría antes de guardar. Selector encuentra QA-AUD-20261006; con ese alcance y descuento 101 rechaza El descuento no es válido. Cancelar cierra formulario. No se creó ni activó campaña.
 - Hallazgo abierto: enlaces Por aprobar y Con conflicto de la cola usan rutas sin query/tipo/alcance, descartando la búsqueda actual; los chips de estado sí conservan query. Pendiente corrección y comprobación en Brave.
 - No se afirma validación manual de todas las reglas, fechas, aprobaciones o descarga. CMS excluido, móvil en F127 y Guardar nativo pendiente.
+## F293 — Filtros corregidos y verificados (2026-10-15)
+- Todos los chips de cola conservan búsqueda, tipo y alcance, reinician página y sustituyen estado/aprobación/conflicto coherentemente. Resaltado compara los tres ejes, incluyendo Todas y estados antes no resaltados.
+- Brave: búsqueda QA-F293-SIN-CAMPANA, Porcentaje, Con productos; usados Por aprobar y Con conflicto. Ambas URL conservan query/type/scope, activan el eje correcto y resaltan el chip; tabla vacía coherente.
+- Trece pruebas CP048, ESLint, revisión independiente y build correctos. Sin cambios de campañas. Captura revisada en sesión.
+- Intento inicial con scope manual en minúsculas fue rechazado por validación y mostró error genérico. La interfaz usa PRODUCTS y funciona; queda pendiente mejorar recuperación de parámetros inválidos en URL. No confundir ese caso con el defecto de chips corregido.

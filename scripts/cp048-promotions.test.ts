@@ -128,3 +128,11 @@ test("promotion KPIs keep readable columns and wrapping legends with detail open
   const kpis = source.slice(source.indexOf("function PromotionKpis"), source.indexOf("function PromotionTimeline"));
   assert.doesNotMatch(kpis, /truncate|whitespace-nowrap/);
 });
+
+
+test("promotion queue chips preserve filters and match their complete selection", () => {
+  const source = read("src/components/admin/PromotionsWorkspace.tsx");
+  assert.match(source, /const href = makeQuery\(currentQuery, \{ status, approval: extraParams.get\("approval"\), conflict: extraParams.get\("conflict"\), page: null \}\)/);
+  assert.doesNotMatch(source, /extra \? `\/admin\/promociones\?\$\{extra\}`/);
+  assert.match(source, /params.get\("status"\) \|\| null\) === status/);
+});
