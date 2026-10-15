@@ -2970,3 +2970,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave: Capacitores muestra Refrigeración + Capacitores118 sin45hermanas; reles muestra Relés2enLavadoras yRelés6enRefrigeración; Refrigeracion conserva45familias (47botonesincluyendopadre/expansión). Búsqueda restaurada vacía.
 - Cuatro pruebas CP047 con casos de familia/categoría/vacío/sin coincidencia/tildes, ESLint, revisión independiente y build correctos. Captura visual revisada en sesión. No se modificó taxonomía persistida.
 - Objetivo integral abierto, CMS excluido y móvilF127detenido; no se declara cobertura completa por esta corrección.
+## F296 — Regresión completa posterior a F290–F295 (2026-10-15)
+- Ejecutado node scripts/test-all.mjs hasta terminar con código 0. Resumen TAP acumulado: 617 ejecuciones, 585 correctas, 32 omitidas, 0 fallos. Algunos grupos se repiten; no representa 617 casos únicos.
+- Contratos de fases, TypeScript, ESLint y build Next completados sin errores. Las pruebas condicionales omitidas no prueban integraciones ni flujos manuales completos. Log: %TEMP%/coldpower-tests-f296.log.
+- Tras confirmación de Jean sobre el bloqueo, Brave abrió /admin/usuarios y terminó de cargar el listado de 22 usuarios, matriz de permisos e invitaciones. No se modificaron usuarios ni permisos.
+- La auditoría integral permanece abierta. CMS excluido; móvil detenido en F127 hasta nueva orden; Guardar nativo y restantes escenarios manuales pendientes. Esta regresión no equivale a cierre del objetivo.
