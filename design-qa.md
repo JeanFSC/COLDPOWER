@@ -2853,3 +2853,11 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Readcheck real getSaleDetail QA:1pedido,2pagos,1línea; respuesta restringida sinpayments. Brave posterior: Pedido muestra una vez ORD-20261013-B49BD2; Cobros conserva confirmado ycancelado,saldo0,diferencia0. Sin mutaciones de negocio.
 - Pedidos: se usaron Preparación (1/1,reserva consumida),Entrega (recojo completado,sin acción repetida),Pago eHistorial (cadena completa). Hallazgo F278 pendiente: Gestionar pago→ en pestañaPago apunta listado genérico mientras pie sí conserva orderId. ConfiguraciónIGV aún pendiente; no se inventan datos empresariales.
 - CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.
+
+## F278 — Enlace de pedido a Pagos conserva contexto
+- Pestaña Pago de OrdersControlCenter enlaza con orderId codificado,igual que el pie. Dos pruebas de payments-filter-context y lint aprobados,revisión readonly aprobada;build48410 exit0,servidor95228 activo.
+- Brave: Gestionar pago→ desde ORD-20261013-B49BD2 abre /admin/pagos?orderId=order-2c326391-365e-466f-ad47-ce0a31211d3d y lista exactamente dos intentos (cancelado/confirmado). Sin mutaciones de pagos.
+## F279 — IGV confirmado persistido y límites de Empresa
+- Usuario confirmó18% incluido. En Configuración/Precios eIGV se guardó18 eINCLUDED; UI mostró Configuración guardada y auditada. Recarga confirma18.00 yPrecios conIGV incluido. No se recalcularon manualmente pedidos históricos.
+- Intento inicial desde Empresa conRUC20604067422/dirección JIRON PARURO1280,TIENDA111 no guardó: requeridos razón social/correo faltantes. Recarga confirma campos aún sin persistir. No afirmar guardados ni inventarlos. IGV se guardó después desde su sección independiente, sin esos cambios.
+- Pendiente completar razón social,correo deventas (recordatorio solicitado sin fecha),series e integraciones reales. Revisar UX de borradores empresariales parciales y campos requeridos entre pestañas. CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.

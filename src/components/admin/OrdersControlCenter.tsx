@@ -926,7 +926,7 @@ function OrderDrawer({
                   <p className="mt-1 text-xs font-bold text-slate-900">{money(currency, String(value))}</p>
                 </div>
               ))}
-              <Link href="/admin/pagos" className="text-xs font-semibold text-blue-600 hover:underline">
+              <Link href={`/admin/pagos?orderId=${encodeURIComponent(String(detail.order.id))}`} className="text-xs font-semibold text-blue-600 hover:underline">
                 Gestionar pago →
               </Link>
             </div>
