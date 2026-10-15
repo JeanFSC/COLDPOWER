@@ -3011,7 +3011,7 @@ export function InventoryAdminWorkspace({
           {filterNotice}
         </p>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard
           icon={Boxes}
           label="Referencias con saldo"
@@ -3073,12 +3073,12 @@ export function InventoryAdminWorkspace({
             </div>
           </div>
           <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full min-w-[980px] text-left">
+            <table className="w-full min-w-[1080px] text-left">
               <thead className="border-b border-slate-100 bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.07em] text-slate-400">
                 <tr>
-                  <th className="px-4 py-3">SKU</th>
+                  <th className="min-w-[116px] whitespace-nowrap px-4 py-3">SKU</th>
                   <th className="px-3 py-3">Producto</th>
-                  <th className="px-3 py-3">Local</th>
+                  <th className="min-w-[116px] whitespace-nowrap px-3 py-3">Local</th>
                   <th className="px-3 py-3 text-right">Físico</th>
                   <th className="px-3 py-3 text-right">Reservado</th>
                   <th className="px-3 py-3 text-right">Disponible</th>
@@ -3140,7 +3140,7 @@ export function InventoryAdminWorkspace({
           </div>
           <Pagination data={data} filters={filters} />
         </section>
-        <aside className="grid content-start gap-4">
+        <aside className="grid content-start gap-4 xl:sticky xl:top-16 xl:max-h-[calc(100vh-5rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
           <MovementsRail movements={data.operations.movements} />
           <LocationRail locations={activeLocations} />
           <AlertRail alerts={data.alerts} />
@@ -3244,13 +3244,13 @@ function MetricCard({
         <Icon className="h-[17px] w-[17px]" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
+        <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[0.08em] text-slate-400">
           {label}
         </p>
         <strong className="mt-1 block text-[22px] font-black tracking-[-0.04em] text-slate-900">
           {value}
         </strong>
-        <p className="mt-1 truncate text-[11px] text-slate-400">{note}</p>
+        <p className="mt-1 text-[11px] leading-4 text-slate-400">{note}</p>
       </div>
     </div>
   );
@@ -3331,11 +3331,11 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
   const media = inventoryMedia(item);
   return (
     <tr className="border-b border-slate-100 text-[11px] transition hover:bg-slate-50">
-      <td className="px-4 py-3 align-middle">
+      <td className="min-w-[116px] whitespace-nowrap px-4 py-3 align-middle">
         <button
           type="button"
           onClick={actions.onOpen}
-          className="font-mono text-[11px] font-extrabold text-blue-600"
+          className="whitespace-nowrap font-mono text-[11px] font-extrabold text-blue-600"
         >
           {item.sku}
         </button>
@@ -3365,7 +3365,7 @@ function InventoryRow({ item, actions }: { item: InventoryItem; actions: RowActi
           </span>
         </button>
       </td>
-      <td className="px-3 py-3">
+      <td className="min-w-[116px] whitespace-nowrap px-3 py-3">
         <button type="button" onClick={actions.onOpen} className="text-left">
           <span className="block text-[11px] font-extrabold text-slate-700">
             {item.locationCode}
