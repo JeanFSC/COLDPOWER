@@ -2897,3 +2897,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Doce pruebasCP043 aprobadas (incluyepermitido/denegado/IDcodificado/tipodesconocido),lintyrevisiónreadonlyaprobados,build52240exit0,servidor66869activo. BravefiltroporIDproductoQA devuelve5eventos;enlaceabre fichacorrectaQAAUDITORÍA.
 - Captura escritorio1536:documentWidth1521,sindesbordamientoglobal. HallazgoF286pendiente: gráficoVolumeneventos conmáximo3repiteetiqueta2 enejeYporredondeo;requiereescalaenterapara conteos. Entidadinventory_balance aúncrudaeninglés. No afirmarrolesmanualmenteusados;permisosprobadosporhelper.
 - CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos.
+
+## F286 — Eje de conteos sin redondeos duplicados
+- AdminLineChart incorpora countAxis opcional,activadoenAuditoría. Máximo múltiplo4mínimo4 garantiza5marcasenterasdistintas; puntosusanmismamáxima. Monedas yrestoconsumidores sin cambios. inventory_balance se presentaSaldo de inventario.
+- Quince pruebas ejes/CP043 ylintaprobados,revisiónreadonlysin hallazgos. Build14972exit0,servidor88533activo. Brave gráficoQA confirmaeje4,3,2,1,0 ypico3;capturaactualinspeccionadainline. Sin cambios de eventos.
+- Restan otrosmódulos/roles/exportGuardar/regresión integral. CMSexcluido,móvilF127detenido. No declararfinalizado.

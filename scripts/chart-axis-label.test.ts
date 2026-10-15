@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatSalesAxisValue } from "../src/lib/chart-axis-label";
+import { countAxisMaximum, formatSalesAxisValue } from "../src/lib/chart-axis-label";
+
+test("count axes keep five distinct integer ticks and contain the real peak", () => {
+  for (const peak of [0, 1, 2, 3, 4, 5, 7, 1001]) {
+    const max = countAxisMaximum(peak);
+    const ticks = [max, max * .75, max * .5, max * .25, 0];
+    assert.ok(max >= peak);
+    assert.ok(ticks.every(Number.isInteger));
+    assert.equal(new Set(ticks).size, 5);
+  }
+  assert.equal(countAxisMaximum(3), 4);
+  assert.equal(countAxisMaximum(NaN), 4);
+});
 
 test("empty chart axis has five distinct monetary labels", () => {
   assert.deepEqual([1, 0.75, 0.5, 0.25, 0].map(value => formatSalesAxisValue(value, "PEN")),

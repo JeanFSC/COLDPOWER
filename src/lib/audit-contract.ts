@@ -69,7 +69,7 @@ const ENTITY_LABELS: Record<string, string> = {
   promotion_application: "Aplicación de promoción", pricing_import: "Importación de precios",
   inventory_reservation: "Reserva de inventario", inventory_movement: "Movimiento de almacén",
   product_price: "Precio", quote_discount_approval: "Descuento de cotización", purchase_request: "Solicitud de compra",
-  inventory_import_batch: "Importación de stock", purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
+  inventory_balance: "Saldo de inventario", inventory_import_batch: "Importación de stock", purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
 };
 export function entityLabel(entityType: string): string {
   return ENTITY_LABELS[entityType.toLowerCase()] ?? humanize(entityType);

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { boundedSmoothPath, marginDomain } from "@/lib/chart-geometry";
 import { formatAdminMoney as formatMoney } from "@/lib/admin-money-display";
-import { formatSalesAxisValue } from "@/lib/chart-axis-label";
+import { countAxisMaximum, formatSalesAxisValue } from "@/lib/chart-axis-label";
 
 export type AdminChartPoint = {
   date: string;
@@ -32,6 +32,7 @@ type AdminChartProps = {
   largeLabels?: boolean;
   labels?: string[];
   currencyAxis?: boolean;
+  countAxis?: boolean;
   currency?: string | null;
   pointDetails?: AdminChartPoint[];
   ariaLabel?: string;
@@ -131,6 +132,7 @@ export function AdminLineChart({
   largeLabels = false,
   labels,
   currencyAxis = false,
+  countAxis = false,
   currency,
   pointDetails,
   ariaLabel = "Gráfico de tendencia",
@@ -156,7 +158,8 @@ export function AdminLineChart({
   };
   const chartWidth = viewBox.width - pad.left - pad.right;
   const chartHeight = viewBox.height - pad.top - pad.bottom;
-  const max = Math.max(...current, ...prior, 1);
+  const peak = Math.max(...current, ...prior, 1);
+  const max = countAxis && !currencyAxis ? countAxisMaximum(peak) : peak;
   const line = accent === "orange" ? "#f58b20" : "#2277ee";
   const point = (value: number, index: number, length: number) => ({
     x: pad.left + (length <= 1 ? chartWidth / 2 : (index / (length - 1)) * chartWidth),

@@ -248,6 +248,7 @@ export function AuditModule({
               previous={trendPrevious}
               labels={trend.map((point) => dayLabelFormat.format(new Date(`${point.date}T00:00:00-05:00`)).replace(".", ""))}
               comparison
+              countAxis
               filled
               largeLabels
               accent="blue"

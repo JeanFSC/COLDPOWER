@@ -1,4 +1,9 @@
-/** Compact chart axes retain cents below one thousand, including the empty 0–1 domain. */
+/** Four equal intervals stay integral even for sparse event counts. */
+export function countAxisMaximum(peak: number) {
+  return Number.isFinite(peak) ? Math.max(4, Math.ceil(peak / 4) * 4) : 4;
+}
+
+/** Compact currency axes retain cents below one thousand, including the empty 0–1 domain. */
 export function formatSalesAxisValue(value: number, currency: string | null | undefined) {
   if (!Number.isFinite(value) || !currency) return "N/D";
   const symbol = currency === "USD" ? "US$" : currency === "PEN" ? "S/" : currency;
