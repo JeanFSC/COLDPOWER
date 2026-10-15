@@ -3158,3 +3158,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - La inspección de procesos confirmó que no hay `ops/cron-worker.mjs` ni PM2 corriendo en esta PC. El repo sí define ambos trabajos programados cada cinco minutos y documenta el despliegue en Hetzner; no puedo afirmar que estén activos en producción porque no inspeccioné ese servidor.
 - No inicié el barrido: Inventario aún muestra reservas de pedido vencidas y la ejecución puede cancelar pedidos/alterar reservas fuera de los registros QA identificados. Esta comprobación operativa queda pendiente de una ventana segura o confirmación del entorno y los registros a afectar.
 - La última etapa de exportaciones se mantiene aplazada; las rutas con archivo nativo Guardar se probarán después de terminar los demás módulos. CMS excluido; QA móvil continúa pausado en F127.
+
+## F326 — Inventario: selector de archivo QA y límite de control nativo (2026-10-15)
+- Reabrí el importador en la pestaña de Inventario existente de Brave. La captura confirma «Sin archivos seleccionados» y «Validar archivo» deshabilitado; el clic accesible del campo no abrió el selector nativo. No cargué ni apliqué el CSV de prueba; la base no cambió y retiré el archivo temporal.
+- El controlador nativo de Windows se detuvo automáticamente porque no pudo verificar con suficiente confianza la URL de Brave. No eludí el control ni abrí otra instancia del navegador. El flujo con archivo real sigue pendiente, igual que las exportaciones que abren «Guardar», reservadas para la etapa final.
+- CMS excluido; QA móvil continúa pausado en F127; auditoría integral abierta.
