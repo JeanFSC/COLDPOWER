@@ -3152,3 +3152,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - El traslado QA en Borrador `transfer-87941387-3da2-42bb-95a8-d6673c0e2839` se canceló desde la UI. La confirmación terminó en «Cancelada» y no produjo movimientos de stock. Así quedó recorrido el control de cancelación.
 - Reservas sigue mostrando operaciones activas con fechas anteriores al día actual y un botón «Liberar vencidas». No lo ejecuté: el lote incluiría reservas ligadas a pedidos y no está confirmado que todas sean desechables; ese barrido podría cambiar stock comprometido. La expiración automática debe comprobarse en el entorno operativo al final.
 - Abrí y cerré «Configurar mínimo» sin guardar; la acción requiere local, valor y producto con saldo. No intenté abrir un selector nativo ni inicié importación; esa prueba de archivo real continúa abierta. CMS excluido; QA móvil detenido en F127; exportaciones con Guardar aplazadas para el cierre.
+
+## F325 — Runtime local y ciclos programados (2026-10-15)
+- El runtime de la aplicación local sigue disponible: `GET /api/health` devuelve `{ ok: true, service: "coldpower" }`.
+- La inspección de procesos confirmó que no hay `ops/cron-worker.mjs` ni PM2 corriendo en esta PC. El repo sí define ambos trabajos programados cada cinco minutos y documenta el despliegue en Hetzner; no puedo afirmar que estén activos en producción porque no inspeccioné ese servidor.
+- No inicié el barrido: Inventario aún muestra reservas de pedido vencidas y la ejecución puede cancelar pedidos/alterar reservas fuera de los registros QA identificados. Esta comprobación operativa queda pendiente de una ventana segura o confirmación del entorno y los registros a afectar.
+- La última etapa de exportaciones se mantiene aplazada; las rutas con archivo nativo Guardar se probarán después de terminar los demás módulos. CMS excluido; QA móvil continúa pausado en F127.
