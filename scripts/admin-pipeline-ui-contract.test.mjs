@@ -49,3 +49,16 @@ test("pipeline: los deeplinks globales abren la oportunidad y resuelven la tarea
   assert.match(taskRoute, /export async function GET/);
   assert.match(taskRoute, /crmTasks\.opportunityId/);
 });
+
+test("pipeline: las oportunidades cerradas muestran el motivo, nunca la próxima acción", async () => {
+  const contract = await read("src/lib/pipeline-contract.ts");
+  const repository = await read("src/lib/pipeline-repository.ts");
+  const workspace = await read("src/components/admin/PipelineWorkspace.tsx");
+  const closedView = workspace.slice(workspace.indexOf("function ClosedView"));
+
+  assert.match(contract, /closeReason: string \| null/);
+  assert.match(repository, /closeReason: row\.opportunity\.lostReason/);
+  assert.match(closedView, /card\.closeReason/);
+  assert.match(closedView, /card\.stage === "LOST" \|\| card\.stage === "CANCELLED"/);
+  assert.doesNotMatch(closedView, /card\.nextAction \?\? "Sin motivo registrado"/);
+});

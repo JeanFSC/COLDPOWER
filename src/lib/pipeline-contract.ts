@@ -198,6 +198,7 @@ export type PipelineCard = {
   totalAmount: string | null;
   currency: string | null;
   nextAction: string | null;
+  closeReason: string | null;
   followUpAt: Date | null;
   lastContactAt: Date | null;
   agingDays: number | null;

@@ -335,6 +335,7 @@ async function loadCards(db: Db, where: SQL | undefined, now: Date, limit: numbe
       customerEmail: row.customerEmail,
       customerPhone: row.customerPhone,
       assignedSellerName: row.sellerName,
+      closeReason: row.opportunity.lostReason,
       followUpAt,
       agingDays: ageInDays(row.opportunity.lastContactAt, now),
       overdue: Boolean(followup && followup.dueAt < now),

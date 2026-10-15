@@ -2993,3 +2993,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Clic en Exportar no generó un evento de descarga verificable con el controlador y no apareció un archivo `usuarios-*.xlsx` en Descargas. No se abrió ni inspeccionó el contenido de ningún archivo de personas.
 - La política del navegador rechazó abrir `brave://downloads`; el controlador disponible solo accede a páginas HTTP/HTTPS y no maneja el diálogo nativo de Windows Guardar. No se intentó eludir esa barrera. Se pidió a Jean revisar el resultado en Brave y, si aparece, guardar manualmente.
 - Pendiente comprobar el Guardar nativo/estado final. La ruta del servidor estática es coherente, pero esto no demuestra que la organización permita descargar. No se modifica la configuración de Brave ni se prueban descargas por otra superficie.
+
+## F300 — Pipeline: distinguir motivo de cierre de próxima acción (2026-10-15)
+- En Brave se usaron el tablero, filtros por etapa, búsqueda sin resultados y vistas activas/cerradas. Las métricas y el estado vacío respondieron a los filtros; se inspeccionaron las pestañas Resumen, Productos, Actividad, Seguimientos, Cotizaciones e Historial de una oportunidad QA, sin cambios persistidos.
+- Hallazgo corregido: las tarjetas de oportunidades ganadas mostraban la próxima acción como si fuera «Sin motivo registrado». Ahora las cerradas ganadas no muestran motivo; Perdida/Cancelada muestran el motivo real o el fallback explícito, y Sin respuesta muestra su propio fallback.
+- Brave, con el build nuevo, confirma tarjetas ganadas sin esa etiqueta falsa y tarjetas perdidas/canceladas con `Motivo:` asociado al registro. Formulario de actividad vacío fue detenido por validación requerida antes de enviar.
+- Contrato dirigido 4/4, ESLint, TypeScript y `npm run build` completados sin errores. Servidor local reiniciado con esta compilación. No se crearon actividades ni se mutaron oportunidades.
+- Esto cubre los escenarios descritos, no toda la matriz de CRM/Pipeline. CMS sigue excluido, móvil detenido en F127 y la verificación de descarga con el botón Guardar nativo permanece pendiente; auditoría integral abierta.

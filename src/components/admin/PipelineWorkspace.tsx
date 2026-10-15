@@ -2424,6 +2424,12 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
           label: pipelineStageLabels[card.stage],
           className: "bg-slate-50 text-slate-500",
         };
+        const closeReason =
+          card.stage === "LOST" || card.stage === "CANCELLED"
+            ? card.closeReason ?? "Sin motivo registrado"
+            : card.stage === "NO_RESPONSE"
+              ? card.closeReason ?? "Sin respuesta registrada"
+              : null;
         return (
         <button
           type="button"
@@ -2443,9 +2449,14 @@ function ClosedView({ cards, onOpen }: { cards: PipelineCard[]; onOpen: (id: str
           <p className="mt-3 text-sm font-black text-slate-700">
             {money(card.totalAmount, card.currency)}
           </p>
-          <p className="mt-2 text-[11px] font-semibold text-rose-700">
-            {card.nextAction ?? "Sin motivo registrado"}
-          </p>
+          {closeReason ? (
+            <p
+              className={`mt-2 text-[11px] font-semibold ${card.stage === "LOST" || card.stage === "CANCELLED" ? "text-rose-700" : "text-slate-500"}`}
+            >
+              {card.stage === "LOST" || card.stage === "CANCELLED" ? "Motivo: " : ""}
+              {closeReason}
+            </p>
+          ) : null}
         </button>
         );
       })}
