@@ -2944,3 +2944,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave confirma dos columnas de 357px y cuatro de 311px al cerrar, sin desbordamiento horizontal de textos en los indicadores. Captura visual revisada en sesión, sin afirmar archivo persistido.
 - Doce pruebas CP048 correctas, ESLint, revisión independiente y build correctos. El primer contrato nuevo delimitaba mal la función; se corrigió y volvió a pasar. No hubo mutaciones de campañas.
 - CMS sigue excluido; QA móvil permanece detenido en F127. Las restantes coberturas de la auditoría siguen pendientes.
+## F293 — Promociones: filtros y validación usados en Brave (2026-10-15)
+- Búsqueda QA-F293-SIN-CAMPANA mediante Filtrar produce tabla vacía y mensaje No hay campañas con estos filtros. Calendario e indicadores permanecen globales.
+- Nueva promoción: Guardar borrador vacío bloquea por nombre obligatorio; nombre QA con alcance vacío muestra Define al menos un producto o una categoría antes de guardar. Selector encuentra QA-AUD-20261006; con ese alcance y descuento 101 rechaza El descuento no es válido. Cancelar cierra formulario. No se creó ni activó campaña.
+- Hallazgo abierto: enlaces Por aprobar y Con conflicto de la cola usan rutas sin query/tipo/alcance, descartando la búsqueda actual; los chips de estado sí conservan query. Pendiente corrección y comprobación en Brave.
+- No se afirma validación manual de todas las reglas, fechas, aprobaciones o descarga. CMS excluido, móvil en F127 y Guardar nativo pendiente.
