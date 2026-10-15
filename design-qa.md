@@ -2867,3 +2867,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Dos pruebas render del enlace y lint aprobados,revisión readonly sin hallazgos,build94528 exit0,servidor1376 activo. Brave desde recepción histórica abre ficha QA-AUD-20261006 correcta en borrador. Sin edición/publicación.
 - QA Compras: orden cancelada conserva motivo ysin acciones recepción. ProveedorQA muestra0órdenes abiertas,2productos,7recepciones; se usó página2 (2restantes) yREC-20261007-674603: entrega1unidad frenteacumuladoOC3/3. No se registraron recepciones nuevas.
 - Captura escritorio1536 inspeccionada; documentWidth1521 sin desbordamiento global yconsola sin errores capturados. No equivale a comprobar todosroles/exportaciones/formatos. CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.
+
+## F281 — Vigencia efectiva en precios del producto
+- ProductoQA/Precios exponía ARCHIVED yusaba active&&ACTIVE paraVigente sin fechas. Etiquetas ycolores reutilizan getPriceEffectiveStatus/pricingStatusLabels con normalización de fechas. priceRecord de edición conserva lógica original: revisión detectó yse revirtió cambio accidental antespublicar.
+- Cuatro pruebas CP034 ylint aprobados,revisión readonly final sin hallazgos. Build32586 cancelado antescorregir;build92428 exit0,servidor85395 activo. Brave posterior confirma Archivado en históricos yMinorista11PEN Vigente. No se modificaron precios.
+- Inventario producto: Chiclayo1/0,Cusco7/1,Piura0/0 coherentes. HallazgoF282 pendiente: etiqueta Sobre mínimo aparece con mínimoSin definir,inclusoPiura0. Corregir estado para noafirmar comparación sin umbral. PublicaciónQA siguebloqueada por imageneditorial faltante.
+- Estimación comunicada80–85% escritorio,orientativa no medición. CMSexcluido,móvilF127detenido,exportGuardar yresto auditoríaintegral abiertos.
