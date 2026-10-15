@@ -2,6 +2,39 @@ import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { parseNotificationFilters } from "../src/lib/notifications-service";
+import { notificationEventContext, notificationEventEntityId, notificationRuleEventTypes } from "../src/lib/notification-event-context";
+import { conditionMatches } from "../src/lib/notification-rules-service";
+
+test("reglas: stock llega al ámbito inventory y evalúa umbrales reales", () => {
+  const context = notificationEventContext("PRODUCT_OUT_OF_STOCK", { productId: "qa", locationId: "local", available: 0 });
+  assert.equal(context.eventType, "INVENTORY_CRITICAL");
+  assert.ok(conditionMatches({ field: "inventory.available", operator: "lte", value: 0 }, context));
+  assert.equal(conditionMatches({ field: "inventory.available", operator: "gt", value: 0 }, context), false);
+  assert.equal(context.entity?.productId, "qa");
+  assert.notEqual(
+    notificationEventEntityId(context),
+    notificationEventEntityId(notificationEventContext("PRODUCT_OUT_OF_STOCK", { productId: "qa", locationId: "local-2", available: 0 })),
+  );
+});
+
+test("reglas: pagos y pedidos exponen sus datos sin inventar campos ausentes", () => {
+  const payment = notificationEventContext("PAYMENT_FAILED", { status: "FAILED", difference: 5 });
+  assert.ok(conditionMatches({ field: "payment.difference", operator: "gt", value: "2" }, payment));
+  assert.equal(notificationEventContext("PAYMENT_APPROVED", { paymentId: "qa" }).payment?.difference, undefined);
+  assert.equal(conditionMatches({ field: "payment.difference", operator: "neq", value: 0 }, notificationEventContext("PAYMENT_APPROVED", { paymentId: "qa" })), false);
+  assert.ok(conditionMatches({ field: "order.status", operator: "eq", value: "READY" }, notificationEventContext("ORDER_READY", { status: "READY" })));
+  assert.equal(notificationEventContext("MANUAL", { available: 0 }).inventory, undefined);
+});
+
+test("reglas: eventos canónicos encuentran también las reglas con alias existentes", () => {
+  assert.deepEqual(notificationRuleEventTypes("TRANSFER_APPROVAL_PENDING"), ["TRANSFER_UPDATED", "TRANSFER_APPROVAL_PENDING"]);
+  assert.deepEqual(notificationRuleEventTypes("STOCK_MINIMUM"), ["INVENTORY_LOW", "STOCK_MINIMUM"]);
+  assert.deepEqual(notificationRuleEventTypes("QA_AUDITORIA"), ["QA_AUDITORIA"]);
+  const service = read("src/lib/notification-rules-service.ts");
+  assert.match(service, /inArray\(notificationRules.eventType, notificationRuleEventTypes\(eventType\)\)/);
+  const ui = read("src/components/admin/NotificationAdminControls.tsx");
+  for (const event of ["INVENTORY_CRITICAL", "INVENTORY_LOW", "PAYMENT_FAILED", "TRANSFER_UPDATED"]) assert.ok(ui.includes(`["${event}",`));
+});
 
 const root = process.cwd();
 const read = (file: string) => readFileSync(`${root}/${file}`, "utf8");

@@ -22,7 +22,10 @@ const eventTypes = [
   ["ORDER_CREATED", "Pedido creado"],
   ["ORDER_READY", "Pedido listo"],
   ["PAYMENT_APPROVED", "Pago aprobado"],
-  ["TRANSFER_APPROVAL_PENDING", "Transferencia pendiente de aprobación"],
+  ["PAYMENT_FAILED", "Pago fallido"],
+  ["INVENTORY_CRITICAL", "Stock crítico"],
+  ["INVENTORY_LOW", "Stock bajo"],
+  ["TRANSFER_UPDATED", "Transferencia actualizada"],
 ] as const;
 
 type Template = {

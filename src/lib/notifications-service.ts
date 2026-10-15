@@ -10,14 +10,14 @@ import { notificationPermissionForType } from "@/lib/notification-permissions";
 import { allOperationalRoles, can, type AppRole } from "@/lib/roles";
 import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
 import { notificationPriority } from "@/lib/notification-display";
+import { normalizeNotificationEventType, notificationEventContext } from "@/lib/notification-event-context";
 
 export type NotificationFilters = { state?: NotificationState; type?: string; query?: string; dateFrom?: string; dateTo?: string; page?: number; pageSize?: number };
 export class NotificationInvalidFilterError extends Error { constructor() { super("NOTIFICATION_INVALID_FILTER"); this.name = "NotificationInvalidFilterError"; } }
 type Actor = { userId: string | null; role?: string | null };
 export type NotificationInput = { type: string; title: string; body: string; link?: string | null; metadata?: Record<string, unknown> | null; recipientIds?: string[] };
 
-const typeAliases: Record<string, string> = { PRODUCT_OUT_OF_STOCK: "INVENTORY_CRITICAL", STOCK_MINIMUM: "INVENTORY_LOW", TRANSFER_APPROVAL_PENDING: "TRANSFER_UPDATED" };
-function normalizeType(value: string) { const candidate = typeAliases[value.trim().toUpperCase()] ?? value.trim().toUpperCase(); return candidate.slice(0, 80); }
+const normalizeType = normalizeNotificationEventType;
 function safeLink(value?: string | null) { const link = value?.trim(); return link && link.startsWith("/") && !link.startsWith("//") ? link.slice(0, 500) : null; }
 function safeMetadata(value?: Record<string, unknown> | null) { const sanitized = sanitizeAuditValue(value ?? null); return sanitized && typeof sanitized === "object" && !Array.isArray(sanitized) ? sanitized as Record<string, unknown> : null; }
 function normalizeInput(input: NotificationInput & { dedupeKey?: string | null }) { const type = normalizeType(input.type); const metadata = { ...(safeMetadata(input.metadata) ?? {}), ...(input.dedupeKey ? { dedupeKey: input.dedupeKey.slice(0, 240) } : {}) }; return { type, title: input.title.trim().slice(0, 180), body: input.body.trim().slice(0, 1000), link: safeLink(input.link), metadata: Object.keys(metadata).length ? metadata : null, dedupeKey: input.dedupeKey?.trim().slice(0, 240) || null }; }
@@ -95,9 +95,7 @@ async function dispatchConfiguredRule(input: NotificationInput, normalized: Retu
   try {
     const metadata = safeMetadata(input.metadata);
     await dispatchNotificationEvent({
-      eventType: normalized.type,
-      entity: metadata,
-      assigneeId: typeof metadata?.assigneeId === "string" ? metadata.assigneeId : null,
+      ...notificationEventContext(normalized.type, metadata),
       link: normalized.link,
       fallbackTitle: normalized.title,
       fallbackBody: normalized.body,

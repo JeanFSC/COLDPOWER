@@ -15,6 +15,7 @@ import { isNotificationTypeEnabled } from "@/lib/notification-preferences";
 import { notificationPermissionForType } from "@/lib/notification-permissions";
 import { can, type AppRole, type Permission } from "@/lib/roles";
 import { deltaPct, type PeriodKpi } from "@/lib/period-metrics";
+import { notificationEventEntityId, notificationRuleEventTypes, normalizeNotificationEventType } from "@/lib/notification-event-context";
 
 export const notificationSeverities = ["INFO", "WARNING", "CRITICAL"] as const;
 export type NotificationSeverity = (typeof notificationSeverities)[number];
@@ -271,7 +272,7 @@ function contextValue(context: NotificationEventContext, field: string) {
   return source && key ? source[key] : undefined;
 }
 
-function conditionMatches(
+export function conditionMatches(
   condition: NotificationCondition,
   context: NotificationEventContext,
 ): boolean {
@@ -279,6 +280,7 @@ function conditionMatches(
   if ("any" in condition) return condition.any.some((child) => conditionMatches(child, context));
   const actual = contextValue(context, condition.field);
   const expected = condition.value;
+  if (actual === undefined || actual === null) return false;
   if (condition.operator === "in")
     return Array.isArray(expected) && expected.some((value) => String(value) === String(actual));
   if (condition.operator === "eq")
@@ -307,13 +309,13 @@ function renderTemplate(value: string, context: NotificationEventContext) {
 }
 
 export async function dispatchNotificationEvent(context: NotificationEventContext) {
-  const eventType = context.eventType.trim().toUpperCase();
+  const eventType = normalizeNotificationEventType(context.eventType);
   if (!eventType) return [];
   const db = getDb();
   const rules = await db
     .select()
     .from(notificationRules)
-    .where(and(eq(notificationRules.eventType, eventType), eq(notificationRules.status, "ACTIVE")))
+    .where(and(inArray(notificationRules.eventType, notificationRuleEventTypes(eventType)), eq(notificationRules.status, "ACTIVE")))
     .limit(100);
   const delivered: Array<{ ruleId: string; notificationIds: string[] }> = [];
   for (const rule of rules) {
@@ -333,7 +335,7 @@ export async function dispatchNotificationEvent(context: NotificationEventContex
             .limit(1)
         )[0]
       : null;
-    const entityId = String(context.entity?.id ?? context.entity?.code ?? eventType);
+    const entityId = notificationEventEntityId(context);
     const bucket =
       rule.cooldownSeconds > 0 ? Math.floor(Date.now() / (rule.cooldownSeconds * 1000)) : 0;
     const dedupeKey = `rule:${rule.id}:${entityId}:${bucket}`;
