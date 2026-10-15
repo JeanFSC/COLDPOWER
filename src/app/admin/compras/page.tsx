@@ -22,6 +22,7 @@ import { getInventoryProductOptions } from "@/lib/inventory-admin-service";
 import { PurchasesOperations } from "@/components/admin/PurchasesOperations";
 import { AdminPurchasesModule } from "@/components/admin/AdminPurchasesModule";
 import { purchaseReceiptViews } from "@/lib/purchase-receipt-view";
+import { InventoryCatalogAccess } from "@/components/admin/InventoryCatalogLink";
 
 export const metadata: Metadata = {
   title: "Compras | Panel admin ColdPower",
@@ -124,6 +125,7 @@ export default async function AdminComprasPage({
       }
     : null;
   return (
+    <InventoryCatalogAccess canOpen={can(actor.role, "catalog.product.edit")}>
     <AdminPurchasesModule
       suppliers={supplierOptions}
       locations={activeLocations}
@@ -160,5 +162,6 @@ export default async function AdminComprasPage({
         />
       }
     />
+    </InventoryCatalogAccess>
   );
 }

@@ -1,5 +1,6 @@
 import { formatPurchaseMoney as money } from "@/lib/purchase-money-display";
 import Link from "next/link";
+import { InventoryCatalogLink } from "@/components/admin/InventoryCatalogLink";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
@@ -459,8 +460,8 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedRequest.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-mono text-slate-500"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="text-blue-600 hover:underline">{item.skuSnapshot}</Link></td>
-                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-mono text-slate-500"><InventoryCatalogLink productId={item.productId} className="text-blue-600 hover:underline">{item.skuSnapshot}</InventoryCatalogLink></td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><InventoryCatalogLink productId={item.productId} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</InventoryCatalogLink></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityRequested}</td>
                         </tr>
                       ))}
@@ -508,7 +509,7 @@ export function AdminPurchasesModule({
                     <tbody>
                       {selectedPurchase.items.map((item) => (
                         <tr key={item.id} className="border-b border-slate-50 last:border-0">
-                          <td className="px-2 py-1.5 font-semibold text-slate-800"><Link prefetch={false} href={`/admin/catalogo?productId=${encodeURIComponent(item.productId)}`} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</Link></td>
+                          <td className="px-2 py-1.5 font-semibold text-slate-800"><InventoryCatalogLink productId={item.productId} className="hover:text-blue-600 hover:underline">{item.productNameSnapshot}</InventoryCatalogLink></td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityOrdered}</td>
                           <td className="px-2 py-1.5 text-slate-600">{item.quantityReceived}</td>
                         </tr>

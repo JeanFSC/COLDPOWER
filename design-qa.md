@@ -2861,3 +2861,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Usuario confirmó18% incluido. En Configuración/Precios eIGV se guardó18 eINCLUDED; UI mostró Configuración guardada y auditada. Recarga confirma18.00 yPrecios conIGV incluido. No se recalcularon manualmente pedidos históricos.
 - Intento inicial desde Empresa conRUC20604067422/dirección JIRON PARURO1280,TIENDA111 no guardó: requeridos razón social/correo faltantes. Recarga confirma campos aún sin persistir. No afirmar guardados ni inventarlos. IGV se guardó después desde su sección independiente, sin esos cambios.
 - Pendiente completar razón social,correo deventas (recordatorio solicitado sin fecha),series e integraciones reales. Revisar UX de borradores empresariales parciales y campos requeridos entre pestañas. CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.
+
+## F280 — Compras: navegación a ficha real y revisión de proveedor
+- Tres vínculos de productos en solicitud/orden usaban /admin/catalogo?productId ignorado. Reutilizan InventoryCatalogLink hacia ficha /admin/catalogo/[id], con provider compras/page validando catalog.product.edit; sin permiso, texto sin enlace. No otorga acceso.
+- Dos pruebas render del enlace y lint aprobados,revisión readonly sin hallazgos,build94528 exit0,servidor1376 activo. Brave desde recepción histórica abre ficha QA-AUD-20261006 correcta en borrador. Sin edición/publicación.
+- QA Compras: orden cancelada conserva motivo ysin acciones recepción. ProveedorQA muestra0órdenes abiertas,2productos,7recepciones; se usó página2 (2restantes) yREC-20261007-674603: entrega1unidad frenteacumuladoOC3/3. No se registraron recepciones nuevas.
+- Captura escritorio1536 inspeccionada; documentWidth1521 sin desbordamiento global yconsola sin errores capturados. No equivale a comprobar todosroles/exportaciones/formatos. CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.
