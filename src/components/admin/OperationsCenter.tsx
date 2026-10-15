@@ -590,11 +590,9 @@ function OperationsInspector({
   );
   const assignee = detail.assigneeName
     ? String(detail.assigneeName)
-    : detail.seller
-      ? String(detail.seller)
-      : detail.workItemAssigneeId
-        ? "Responsable asignado"
-        : "Sin asignar";
+    : detail.workItemAssigneeId
+      ? "Responsable asignado"
+      : "Sin asignar";
   const reference = str(detail.code ?? detail.opportunity ?? detail.id);
   const title = str(detail.title ?? detail.product, presentation.label);
   const formatDate = (value: unknown) => {

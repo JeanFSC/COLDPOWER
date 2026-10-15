@@ -2795,3 +2795,14 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Solicitada autorización específica de Jean para ampliar permiso local de extensión; pendiente. No cambiar permiso ni saltar bloqueo hasta recibir respuesta.
 - Trece pruebas parser/validación aprobadas (XLS,XLSX,fórmulas,booleanos,columnas,filas,SKU exacto/cantidades). Esto no prueba carga/aplicación desde Brave; UI previsualización y aplicación siguen pendientes.
 - CMS excluido,móvilF127detenido,Guardar nativo pendiente.
+
+
+## F269/F270 — Responsable operativo y permiso de carga
+- Brave Operaciones inspector QA COT-2026-C5C7EF: fila Sin asignar, inspector mostrabaJean. PestañasResumen/Flujo comercial/Actividad usadas. Confirmado fallback detail.seller confundía vendedor de origen con responsable operativo; eliminado localmente. No asignaciones ni cambios de tareas.
+- Jean autorizó acceso de extensión a URLs de archivo. Navegar brave://extensions fue rechazado por política del controlador (soloHTTP/HTTPS); no usar atajos/CDP/u otras superficies para saltarlo. Solicitado habilitar manualmente y avisar. Importación UI sigue pendiente; autorización concedida, habilitación aún no comprobada.
+- Corrección de responsable pendiente de tests/revisión/build/Brave antes publicar. CMS excluido,móvilF127detenido.
+
+- F270: Jean confirmó permiso habilitado. Brave reconectó mismo extensionInstanceId ahora browser4. Filechooser cargó CSV QA inválido correctamente; preview muestra0filas1error por cantidadpositiva/SKU/local, Confirmar importación deshabilitado. No aplicar ni cambio de saldo.
+- F269: TypeScript/lint y siete pruebas CP049 aprobados, revisión aprobada. Build82458 en curso al iniciar QAimportación; verificar salida antes reiniciar/publicar. Corrección responsable aún sin prueba Brave posterior.
+
+- F269 cierre: build82458exit0, servidor3405activo. Brave inspectorCOT-2026-C5C7EF muestraSin asignar enResumen yResponsable pendiente enActividad, coherente con fila. Consola sin errores. Sin cambios de asignaciones ni estado. Se publica corrección de presentación y evidenciaF270.
