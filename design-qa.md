@@ -2873,3 +2873,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Cuatro pruebas CP034 ylint aprobados,revisión readonly final sin hallazgos. Build32586 cancelado antescorregir;build92428 exit0,servidor85395 activo. Brave posterior confirma Archivado en históricos yMinorista11PEN Vigente. No se modificaron precios.
 - Inventario producto: Chiclayo1/0,Cusco7/1,Piura0/0 coherentes. HallazgoF282 pendiente: etiqueta Sobre mínimo aparece con mínimoSin definir,inclusoPiura0. Corregir estado para noafirmar comparación sin umbral. PublicaciónQA siguebloqueada por imageneditorial faltante.
 - Estimación comunicada80–85% escritorio,orientativa no medición. CMSexcluido,móvilF127detenido,exportGuardar yresto auditoríaintegral abiertos.
+
+## F282 — Estado de inventario sin mínimo y archivo de imagen inválido
+- ProductDetailWorkspace/Ficha eInventario: mínimo nulo muestra Sin mínimo neutral; no afirma Sobre mínimo ni usa verde. Mínimo configurado conserva Revisar/Sobre mínimo. Cuatro pruebasCP033,lint,revisión readonly aprobados;build51659 exit0,servidor80517activo.
+- Brave posterior: Chiclayo1disponible yPiura0 muestranSin mínimo;Cusco6disponibles/mínimo2 mantieneSobre mínimo. No cambios desaldos.
+- Imágenes: archivo sintético TEMP/coldpower-qa-f282-invalid.png concontenido texto. Primer intento noejecutado por reconexión; selectorvisible Seleccionar imagen sícargó. UIrechaza La firma del archivo no coincide con su tipo. Sigue Imagen pendiente yPublicar bloqueado; no se asoció imagen. Carga válida/galería aún pendiente.
+- Brave reconectado ID3 mismoextensionInstanceId23b9205c-32e5-495f-8952-f2dcf95bca51;ID4 dejó disponible. CMSexcluido,móvilF127detenido,exportGuardar yresto auditoríaintegral abiertos.
