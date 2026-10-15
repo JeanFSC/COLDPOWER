@@ -337,7 +337,7 @@ export function PromotionsWorkspace({
         </div>
       </header>
 
-      <PromotionKpis metrics={data.metrics} />
+      <PromotionKpis metrics={data.metrics} detailOpen={Boolean(selectedDetail && !formOpen)} />
 
       <div className="mt-3 xl:hidden">
          <SoonToExpireList items={data.items} metrics={data.metrics} onOpen={openDetail} />
@@ -370,7 +370,7 @@ export function PromotionsWorkspace({
   );
 }
 
-function PromotionKpis({ metrics }: { metrics: PromotionPage["metrics"] }) {
+function PromotionKpis({ metrics, detailOpen }: { metrics: PromotionPage["metrics"]; detailOpen: boolean }) {
   const discountDelta = formatPeriodDelta(Number(metrics.discount30), Number(metrics.discountPrevious30));
   const totalApplications = metrics.applications30;
   const otherApplications = Math.max(0, totalApplications - metrics.checkoutApplications30 - metrics.quoteApplications30);
@@ -381,13 +381,13 @@ function PromotionKpis({ metrics }: { metrics: PromotionPage["metrics"] }) {
     { label: "Aplicaciones · 30 d", value: metrics.applications30.toLocaleString("es-PE"), note: totalApplications ? `${checkoutShare}% checkout · ${quoteShare}% cotización${otherApplications ? ` · ${otherShare}% otros` : ""}` : "Sin aplicaciones en la ventana", icon: WalletCards, iconClass: "bg-violet-100 text-violet-600", split: true },
     { label: "Por aprobar", value: metrics.pendingApproval.toLocaleString("es-PE"), note: metrics.oldestPendingAt ? `más antigua: ${formatRelativeDays(metrics.oldestPendingAt, "en", "hace")}` : "Todo al día", icon: Clock3, iconClass: "bg-orange-100 text-orange-600", noteClass: metrics.pendingApproval ? "text-orange-700" : "text-emerald-700" },
   ];
-  return <section className="mt-3 grid items-start grid-cols-2 gap-2 xl:grid-cols-4 xl:gap-3" aria-label="Indicadores de promociones">
+  return <section className={`mt-3 grid items-stretch grid-cols-2 gap-2 xl:gap-3 ${detailOpen ? "xl:grid-cols-2" : "xl:grid-cols-4"}`} aria-label="Indicadores de promociones">
     {cards.map((card) => <article key={card.label} className="relative min-w-0 overflow-hidden rounded-xl border border-slate-200/90 bg-white p-2 shadow-2xs lg:p-3.5">
-      <div className="flex items-center justify-between gap-2"><span className="truncate text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400"><span className="hidden lg:inline">{card.label}</span><span className="lg:hidden">{card.mobileLabel ?? card.label}</span></span><span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[9px] lg:h-7 lg:w-7 ${card.iconClass}`}><card.icon className="h-3 w-3 lg:h-3.5 lg:w-3.5" aria-hidden="true" /></span></div>
+      <div className="flex items-center justify-between gap-2"><span className="min-w-0 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500"><span className="hidden lg:inline">{card.label}</span><span className="lg:hidden">{card.mobileLabel ?? card.label}</span></span><span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[9px] lg:h-7 lg:w-7 ${card.iconClass}`}><card.icon className="h-3 w-3 lg:h-3.5 lg:w-3.5" aria-hidden="true" /></span></div>
       <p className="mt-0.5 text-[20px] font-bold leading-none tracking-[-0.035em] text-slate-900 lg:mt-2 lg:text-[22px] xl:text-2xl">{card.value}</p>
-      <p className={`${card.split ? "hidden lg:block" : "block"} mt-0 truncate text-[9px] leading-3 lg:mt-1.5 lg:text-[10px] lg:leading-4 ${card.noteClass ?? "text-slate-500"}`}>{card.note}</p>
+      <p className={`${card.split ? "hidden lg:block" : "block"} mt-0 text-[9px] leading-3 lg:mt-1.5 lg:text-[10px] lg:leading-4 ${card.noteClass ?? "text-slate-500"}`}>{card.note}</p>
       {card.spark ? <AdminSparkline tone="blue" data={metrics.dailyDiscount30} className="mt-1.5 block h-5 w-[100px] max-w-full lg:absolute lg:bottom-2 lg:right-3 lg:mt-0 lg:h-7 lg:w-[92px]" ariaLabel="Tendencia diaria del descuento entregado en los últimos 30 días" /> : null}
-      {card.split ? <div className="mt-1.5 lg:mt-2.5"><div role="img" className="flex h-1.5 overflow-hidden rounded-full bg-slate-100" aria-label={totalApplications ? `${checkoutShare}% checkout, ${quoteShare}% cotización y ${otherShare}% otros` : "Sin aplicaciones"}><span className="bg-blue-600" style={{ width: `${checkoutShare}%` }} /><span className="bg-violet-500" style={{ width: `${quoteShare}%` }} /><span className="bg-slate-500" style={{ width: `${otherShare}%` }} /></div><div className="mt-1 flex gap-2 whitespace-nowrap text-[8px] text-slate-500"><span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-blue-600" aria-hidden="true" />Checkout {checkoutShare}%</span><span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-violet-500" aria-hidden="true" />Cotización {quoteShare}%</span>{otherApplications ? <span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-slate-500" aria-hidden="true" />Otros {otherShare}%</span> : null}</div></div> : null}
+      {card.split ? <div className="mt-1.5 lg:mt-2.5"><div role="img" className="flex h-1.5 overflow-hidden rounded-full bg-slate-100" aria-label={totalApplications ? `${checkoutShare}% checkout, ${quoteShare}% cotización y ${otherShare}% otros` : "Sin aplicaciones"}><span className="bg-blue-600" style={{ width: `${checkoutShare}%` }} /><span className="bg-violet-500" style={{ width: `${quoteShare}%` }} /><span className="bg-slate-500" style={{ width: `${otherShare}%` }} /></div><div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[8px] text-slate-500"><span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-blue-600" aria-hidden="true" />Checkout {checkoutShare}%</span><span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-violet-500" aria-hidden="true" />Cotización {quoteShare}%</span>{otherApplications ? <span><i className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-slate-500" aria-hidden="true" />Otros {otherShare}%</span> : null}</div></div> : null}
     </article>)}
   </section>;
 }

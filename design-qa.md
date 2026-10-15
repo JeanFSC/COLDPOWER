@@ -2939,3 +2939,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Detalle identifica explícitamente cada contexto adicional; Brave confirma Otro: QA_AUDITORIA, 24 aplicaciones, S/26.40 y 100%; resumen confirma Otros 100% y ya no indica ausencia de aplicaciones.
 - Once pruebas CP048, ESLint, revisión independiente y build completados sin errores. Servidor reiniciado con la versión nueva. No se modificaron registros históricos ni se activó la campaña.
 - Captura revisada en sesión. Al abrir el panel lateral, las tarjetas de indicadores se comprimen y truncan notas/leyendas; queda pendiente mejorar ese comportamiento visual, separado de la exactitud corregida aquí.
+## F292 — Indicadores de Promociones legibles con detalle abierto (2026-10-15)
+- Con el panel lateral abierto los indicadores usan dos columnas; al cerrarlo recuperan cuatro. Etiquetas y notas permiten salto de línea, leyendas se ajustan en varias filas y las tarjetas igualan altura por fila.
+- Brave confirma dos columnas de 357px y cuatro de 311px al cerrar, sin desbordamiento horizontal de textos en los indicadores. Captura visual revisada en sesión, sin afirmar archivo persistido.
+- Doce pruebas CP048 correctas, ESLint, revisión independiente y build correctos. El primer contrato nuevo delimitaba mal la función; se corrigió y volvió a pasar. No hubo mutaciones de campañas.
+- CMS sigue excluido; QA móvil permanece detenido en F127. Las restantes coberturas de la auditoría siguen pendientes.

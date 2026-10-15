@@ -118,3 +118,13 @@ test("promotion channel shares sum to 100 with consistent rounding", () => {
   assert.deepEqual(promotionChannelShares([0, 0, 24]), [0, 0, 100]);
   assert.deepEqual(promotionChannelShares([0, 0, 0]), [0, 0, 0]);
 });
+
+
+test("promotion KPIs keep readable columns and wrapping legends with detail open", () => {
+  const source = read("src/components/admin/PromotionsWorkspace.tsx");
+  assert.match(source, /detailOpen=\{Boolean\(selectedDetail && !formOpen\)\}/);
+  assert.match(source, /detailOpen \? "xl:grid-cols-2" : "xl:grid-cols-4"/);
+  assert.match(source, /flex flex-wrap gap-x-2 gap-y-1/);
+  const kpis = source.slice(source.indexOf("function PromotionKpis"), source.indexOf("function PromotionTimeline"));
+  assert.doesNotMatch(kpis, /truncate|whitespace-nowrap/);
+});
