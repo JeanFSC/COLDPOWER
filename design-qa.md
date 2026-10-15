@@ -3109,3 +3109,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Detuve únicamente ese proceso del runtime local y volví a iniciarlo con `pnpm start`. En la misma pestaña de Brave recargué Clientes: regresaron IBM Plex Sans, el shell, las tarjetas, la tabla y los estilos; el diálogo de fusión volvió a abrir y su búsqueda autorizada presentó opciones. También probé búsqueda y selección QA en venta directa, sin guardar.
 - `/api/health` respondió 200 después del reinicio. Las entradas de consola sobre chunks son anteriores al reinicio; no se observó un error nuevo durante la búsqueda, aunque el panel conserva esos logs históricos.
 - El riesgo del runtime servido durante una reconstrucción queda identificado: tras `next build` con `next start` vivo, reiniciar el proceso para recargar el manifiesto. No cambié datos de negocio en esta prueba. CMS excluido, QA móvil pausado en F127 y auditoría integral abierta.
+
+## F318 — Exportación de Usuarios y continuidad de Brave (2026-10-15)
+- La pestaña existente de Brave está identificada en `/admin/usuarios` y su DOM inicial cargó en esta sesión. No se abrió otro navegador ni otra pestaña.
+- El endpoint de exportación declara el MIME de XLSX, `Content-Disposition: attachment`, nombre `coldpower-usuarios.xlsx` y control `users.export`. El enlace de la página apunta a esa ruta; la inspección de código no demuestra que el archivo se descargue correctamente.
+- El intento de observar el evento de descarga se agotó y el conector dejó de poder interactuar con esa misma pestaña. El historial aportado por el usuario muestra «Bloqueado por tu organización». No intenté cambiar ni eludir esa política y no se guardó un archivo nuevo.
+- Descarga real con Guardar y apertura en Excel siguen pendientes hasta recuperar el control de la pestaña existente. CMS excluido; QA móvil continúa pausado en F127; auditoría integral abierta.
