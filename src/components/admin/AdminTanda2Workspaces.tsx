@@ -3411,7 +3411,7 @@ export function Tanda2Home({
       return `${number(data?.openQuotes)} cotizaciones abiertas`;
     }
     if (href === "/admin/clientes") {
-      return recentCustomerEvents ? `${number(recentCustomerEvents)} cambios recientes` : "Sin cambios recientes";
+      return recentCustomerEvents ? `${number(recentCustomerEvents)} ${recentCustomerEvents === 1 ? "cambio reciente" : "cambios recientes"}` : "Sin cambios recientes";
     }
     if (href === "/admin/operaciones") return `${number(taskCount)} tareas en cola`;
     if (href === "/admin/auditoria") return `${number(data?.recentActivity.length)} eventos recientes`;

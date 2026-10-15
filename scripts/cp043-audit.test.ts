@@ -88,6 +88,9 @@ test("auditoria: búsqueda consulta el actor visible, IP y correlación anunciad
 test("auditoria: entidades de precios y promoción y fixture QA se presentan en español", () => {
   assert.equal(entityLabel("promotion_application"), "Aplicación de promoción");
   assert.equal(entityLabel("pricing_import"), "Importación de precios");
+  assert.equal(entityLabel("inventory_import_batch"), "Importación de stock");
+  assert.equal(actionLabel("inventory.import_applied"), "Aplicó una importación de stock");
+  assert.equal(actionLabel("customer.status_changed"), "Cambió el estado del cliente");
   assert.equal(actionLabel("qa.promotion_replay_fixture"), "Registró una prueba QA de reintento de promoción");
 });
 

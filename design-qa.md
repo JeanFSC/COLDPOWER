@@ -2820,3 +2820,12 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Cambiar al CSVinválidoF268 elimina preview y botónConfirmar; soloValidar archivo permanece. Escape cierra diálogo. Sin aplicar archivo ni mutaciones.
 - Cobertura importador UI: archivo inválido,preview válido,aplicar,restauración,segunda apertura y resetporcambioarchivo comprobados. Límites/formatos tienen13pruebasparser; no se consideran todas manualmente usadas.
 - Auditoría integral abierta: exportGuardar y módulos/roles/visual restantes. CMS excluido,móvilF127detenido.
+
+
+## F273 — Revisión visual Inicio/Dashboard en escritorio amplio
+- Skill product-design:audit leída,preflight sin contexto guardado. Brave viewport1920×1080: capturas actuales Inicio yDashboard inspeccionadas inline; documentWidth1905 sin desbordamiento global. Viewportrestaurado al terminar. Capturas no persistidas como archivo local (limitación del mecanismo utilizado); no afirmar entrega de reporte visual completo.
+- Inicio: etiquetas crudas import applied/status changed/Inventory Import Batch y1cambios recientes. Corrección local mapea acciones/entidad en audit-contract y singular enInicio; sin cambios de datos.
+- Dashboard: distribución superior y gráfico visibles; no constituye verificación de toda página/teclado/contraste ni todos módulos. Resto escritorio pendiente, móvilF127detenido,CMSexcluido.
+- TypeScript envalidación; revisión/tests/build/Braveposterior pendientes antespublicar.
+
+- F273 cierre: 11 pruebas CP043 aprobadas con tres aserciones nuevas para las etiquetas; TypeScript/lint aprobados y build34818 exit0. Servidor89504 reiniciado. Brave en Inicio muestra 1 cambio reciente, aplicó una importación de stock, Importación de stock y cambió el estado del cliente. Revisión estática aprobada. Auditoría integral permanece abierta.

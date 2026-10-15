@@ -69,7 +69,7 @@ const ENTITY_LABELS: Record<string, string> = {
   promotion_application: "Aplicación de promoción", pricing_import: "Importación de precios",
   inventory_reservation: "Reserva de inventario", inventory_movement: "Movimiento de almacén",
   product_price: "Precio", quote_discount_approval: "Descuento de cotización", purchase_request: "Solicitud de compra",
-  purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
+  inventory_import_batch: "Importación de stock", purchase_receipt: "Recepción de compra", supplier: "Proveedor", cms_page: "Página CMS", familie: "Familia",
 };
 export function entityLabel(entityType: string): string {
   return ENTITY_LABELS[entityType.toLowerCase()] ?? humanize(entityType);
@@ -79,6 +79,8 @@ export function entityLabel(entityType: string): string {
 // humanized read of the action's last segment for anything not explicitly mapped
 // (new actions still render as readable text, never a blank cell).
 const ACTION_LABELS: Record<string, string> = {
+  "inventory.import_applied": "Aplicó una importación de stock",
+  "customer.status_changed": "Cambió el estado del cliente",
   "purchases.purchase_created": "Creó una orden de compra",
   "purchases.purchase_issued": "Emitió una orden de compra",
   "purchases.purchase_cancelled": "Canceló una orden de compra",
