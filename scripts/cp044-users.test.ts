@@ -3,6 +3,18 @@ import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { assertUserChangeAllowed, canInviteRole, UserAdministrationError, parseUserFilters } from "../src/lib/user-administration";
 import { resolveUsersPageFilters } from "../src/lib/users-page-filters";
+import { userStatusLabel, userSyncLabel } from "../src/lib/user-display";
+
+test("usuarios: estado y sincronización legibles y actividad vacía según selección", () => {
+  assert.equal(userStatusLabel("ACTIVE"), "Activo");
+  assert.equal(userStatusLabel("SUSPENDED"), "Suspendido");
+  assert.equal(userSyncLabel("SYNCED"), "Sincronizado");
+  assert.equal(userSyncLabel("PENDING"), "Pendiente de sincronización");
+  assert.equal(userSyncLabel("DELETED"), "Eliminado en Clerk");
+  assert.equal(userSyncLabel("UNKNOWN"), "Sincronización desconocida");
+  const view = readFileSync("src/components/admin/AdminUsersStitch.tsx", "utf8");
+  assert.match(view, /detail \? "Este usuario no tiene actividad registrada\."/);
+});
 
 const root = process.cwd();
 const read = (file: string) => readFileSync(`${root}/${file}`, "utf8");

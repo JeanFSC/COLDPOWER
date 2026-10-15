@@ -2922,3 +2922,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - BraveUsuarios: listadocargado,filtroQA-F289-SIN-USUARIO produce0usuarios/0a0,siguienteanteriorinactivos,exportHrefconservafiltro;limpiarbúsqueda recuperalista. Matrizsoloconsulta. Seabriódeta lleColaborador02Almacén,sincambiarrol/estado niinvitar.
 - F290pendienteconfirmado: detalleexponeACTIVE/SYNCED;actividadvacía diceSeleccionaunusuariopeseaselecciónactual. Actividadaction/entityType tambiéncrudosensource. Corregiretiquetasyestadovacío sinmodificaraccesos.
 - CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos. Regresiónaprobada no pruebaobjetivocompleto.
+
+## F290 — Usuarios: estados y actividad comprensibles (2026-10-15)
+- Corregido el detalle que exponía ACTIVE/SYNCED: ahora muestra Activo/Sincronizado, con etiquetas seguras para valores desconocidos.
+- La actividad vacía distingue usuario seleccionado sin registros de ausencia de selección; acciones y entidades usan las traducciones de Auditoría.
+- Validación: seis pruebas CP044, lint, revisión independiente y build correctos. Comprobación posterior en Brave sobre Colaborador 02 confirma Activo, Sincronizado y «Este usuario no tiene actividad registrada». Sin cambios de roles, estados o invitaciones.
+- Servidor local reiniciado tras detectar ausencia de listener en 3000. La página autenticada carga correctamente. Captura revisada en sesión; no se afirma archivo de evidencia persistido.
+- Continúan pendientes las demás coberturas consignadas. CMS excluido, móvil detenido en F127 y Guardar nativo de exportaciones pendiente; no se declara el sistema completo.

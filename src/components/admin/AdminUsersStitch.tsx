@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { userStatusLabel, userSyncLabel } from "@/lib/user-display";
+import { actionLabel, entityLabel } from "@/lib/audit-contract";
 import {
   ArrowRight,
   CalendarDays,
@@ -556,9 +558,9 @@ export function AdminUsersStitch({
                     <ShieldCheck className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-slate-800">{event.action}</p>
+                    <p className="truncate text-xs font-semibold text-slate-800">{actionLabel(event.action)}</p>
                     <p className="truncate text-[10px] text-slate-500">
-                      Entidad: {event.entityType}
+                      Entidad: {entityLabel(event.entityType)}
                     </p>
                   </div>
                   <span className="shrink-0 text-[10px] text-slate-400">
@@ -571,7 +573,7 @@ export function AdminUsersStitch({
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 p-6 text-center">
               <Clock3 className="mb-2 h-5 w-5 text-slate-300" />
               <p className="text-[11px] text-slate-400">
-                Selecciona un usuario para consultar su actividad real.
+                {detail ? "Este usuario no tiene actividad registrada." : "Selecciona un usuario para consultar su actividad real."}
               </p>
             </div>
           )}
@@ -609,7 +611,7 @@ export function AdminUsersStitch({
                   <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
                     <dt className="text-[10px] uppercase tracking-wide text-slate-400">Estado</dt>
                     <dd className="mt-1 text-xs font-semibold text-slate-800">
-                      {detail.user.status}
+                      {userStatusLabel(detail.user.status)}
                     </dd>
                   </div>
                   <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
@@ -625,7 +627,7 @@ export function AdminUsersStitch({
                       Sincronización
                     </dt>
                     <dd className="mt-1 text-xs font-semibold text-slate-800">
-                      {detail.user.clerkSyncStatus}
+                      {userSyncLabel(detail.user.clerkSyncStatus)}
                     </dd>
                   </div>
                 </dl>
