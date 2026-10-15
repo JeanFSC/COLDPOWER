@@ -3141,3 +3141,14 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Al pulsar «Limpiar», la URL y el resultado volvían al listado general, pero los inputs no controlados retenían los valores anteriores. Hice que el formulario se remonte al cambiar el objeto de filtros, para que coincidan campos, URL y resultados.
 - Verificación visual en la misma pestaña de Brave: query vacía, «Todos los estados», URL sin filtros y 25 balances en la página. Contrato de UI e inventario 2/2; ESLint y TypeScript sin errores; `pnpm build` pasó y localhost se reinició con la compilación nueva.
 - No se modificó ningún registro. Las exportaciones continúan aplazadas para el último paso; CMS excluido; QA móvil pausado en F127; auditoría integral abierta.
+
+## F323 — Inventario: tamaño de página y navegación (2026-10-15)
+- En la sesión de Brave existente, comprobé el listado con 50 por página: muestra las filas 1–50 de 1,350, ofrece páginas 1–27 y habilita «Página siguiente». El selector conserva «50 por página» en la URL (`page=1&pageSize=50`); las métricas superiores mantienen 1,350 balances y 25 reservas activas.
+- No cambié registros ni ejecuté la limpieza de reservas: la auditoría previa ya identificó que el barrido puede alterar pedidos/reservas existentes y el scheduler de producción aún no está verificado. La paginación observada funciona; quedan revisar siguiente/anterior en otras páginas y el comportamiento con filtros combinados.
+- Exportaciones con diálogo Guardar quedan reservadas como último paso de la auditoría, según instrucción del usuario. CMS excluido; QA móvil detenido en F127; auditoría integral abierta.
+
+## F324 — Inventario: estados de traslado, reservas, mínimos e importaciones (2026-10-15)
+- Revisé las pestañas en la sesión personal de Brave: Transferencias lista estados y filtros; Reservas presenta estado, referencia, vencimiento, actor y cuatro páginas; Mínimos explica que no cambia físico/reservado; Importaciones conserva el resultado y conteos de tres lotes QA aplicados.
+- El traslado QA en Borrador `transfer-87941387-3da2-42bb-95a8-d6673c0e2839` se canceló desde la UI. La confirmación terminó en «Cancelada» y no produjo movimientos de stock. Así quedó recorrido el control de cancelación.
+- Reservas sigue mostrando operaciones activas con fechas anteriores al día actual y un botón «Liberar vencidas». No lo ejecuté: el lote incluiría reservas ligadas a pedidos y no está confirmado que todas sean desechables; ese barrido podría cambiar stock comprometido. La expiración automática debe comprobarse en el entorno operativo al final.
+- Abrí y cerré «Configurar mínimo» sin guardar; la acción requiere local, valor y producto con saldo. No intenté abrir un selector nativo ni inicié importación; esa prueba de archivo real continúa abierta. CMS excluido; QA móvil detenido en F127; exportaciones con Guardar aplazadas para el cierre.
