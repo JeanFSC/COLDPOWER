@@ -3000,3 +3000,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave, con el build nuevo, confirma tarjetas ganadas sin esa etiqueta falsa y tarjetas perdidas/canceladas con `Motivo:` asociado al registro. Formulario de actividad vacío fue detenido por validación requerida antes de enviar.
 - Contrato dirigido 4/4, ESLint, TypeScript y `npm run build` completados sin errores. Servidor local reiniciado con esta compilación. No se crearon actividades ni se mutaron oportunidades.
 - Esto cubre los escenarios descritos, no toda la matriz de CRM/Pipeline. CMS sigue excluido, móvil detenido en F127 y la verificación de descarga con el botón Guardar nativo permanece pendiente; auditoría integral abierta.
+
+## F301 — Ventas: listado, indicadores y ficha QA (2026-10-15)
+- Brave: listado carga 174 ventas en páginas de 25; exportación conserva los parámetros activos. Busqué `QA-REFUND-UI-20261010`: devuelve 1 venta, indicadores filtrados coherentes (S/11 vendido, S/0 neto cobrado, S/11 pendiente, 1 confirmada) y centro de operaciones señala el registro en cobros/facturación.
+- Inspeccioné Resumen, Productos y Cobros de la ficha. El snapshot sin productos es intencional: `scripts/qa-refund-ui-fixture.ts` documenta venta/pedido/cobro sintéticos de S/11 sin productos, stock, entrega ni dinero real. Cobro original S/11, reembolso S/11, neto S/0 y saldo S/11 coinciden para esa fixture.
+- Registrar venta abre selector entre Venta directa y Desde cotización aceptada. Venta directa anuncia cálculo/precio y disponibilidad en servidor; Confirmar venta directa permanece deshabilitado sin cliente, local y producto. No se creó otra venta ni se ejecutó una operación.
+- No se validó todavía la descarga XLSX/Guardar nativo ni el resto de pestañas, reglas, roles, cancelación y errores de red del módulo. CMS excluido, móvil detenido en F127; auditoría integral sigue abierta.
