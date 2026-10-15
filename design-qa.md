@@ -3163,3 +3163,14 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Reabrí el importador en la pestaña de Inventario existente de Brave. La captura confirma «Sin archivos seleccionados» y «Validar archivo» deshabilitado; el clic accesible del campo no abrió el selector nativo. No cargué ni apliqué el CSV de prueba; la base no cambió y retiré el archivo temporal.
 - El controlador nativo de Windows se detuvo automáticamente porque no pudo verificar con suficiente confianza la URL de Brave. No eludí el control ni abrí otra instancia del navegador. El flujo con archivo real sigue pendiente, igual que las exportaciones que abren «Guardar», reservadas para la etapa final.
 - CMS excluido; QA móvil continúa pausado en F127; auditoría integral abierta.
+
+## F327 — Reportes: conciliación de ventas vs. familias (2026-10-15)
+- Revalidé desde la sesión autenticada de Brave el período visible y comparé el resumen de Reportes con la consulta de solo lectura de Ventas. Las ventas confirmadas suman S/ 9,818; las líneas asociadas a productos/familias suman S/ 9,807.
+- La diferencia de S/ 11 corresponde a la venta `QA-REFUND-UI-20261010`: está CONFIRMED por S/ 11, pero tiene 0 líneas de producto, y su pago está reembolsado. El listado general suma `sales.total`, mientras la familia suma `sale_items.line_total`; por ello el producto no aparece en el gráfico familiar. No es un error de agregación SQL, pero el dato QA sin productos hace que las visualizaciones parezcan no cuadrar. Se conserva como hallazgo de calidad/claridad de datos; no alteré la venta ni el reembolso.
+- Exportaciones no se probaron en este paso: los clics que puedan mostrar «Guardar» continúan aplazados para la etapa final solicitada por el usuario. CMS excluido y QA móvil pausado en F127.
+
+## F328 — Pagos: KPIs recortados a ancho intermedio (2026-10-15)
+- La vista autenticada en Brave mostraba cinco KPIs en una sola fila a 1055 px: el importe «S/ 87,799.00» aparecía como «S/ 87,7…» y «Órdenes conciliadas» se truncaba.
+- Ajusté la cuadrícula para pasar a tres columnas en ancho intermedio y cinco sólo en pantallas 2xl; quité el truncado de títulos, importes y descripciones cortas, y usé números tabulares.
+- Comprobación visual en la misma pestaña personal de Brave: el importe completo, las cinco tarjetas y sus descripciones se leen sin corte; el layout queda en dos filas y conserva su ancho completo. ESLint dirigido, TypeScript y `pnpm build` pasaron; reinicié `next start` para servir el build nuevo y `/api/health` respondió 200.
+- Exportaciones con diálogo «Guardar» siguen pendientes hasta el cierre de los demás módulos; CMS excluido y QA móvil pausado en F127.

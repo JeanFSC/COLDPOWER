@@ -249,7 +249,7 @@ export function PaymentsControlCenter({
         </a>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {kpis.map((item) => {
           const Icon = item.icon;
           return (
@@ -259,8 +259,8 @@ export function PaymentsControlCenter({
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="block truncate text-[11.5px] font-medium text-slate-500">{item.label}</span>
-                  <span className="block truncate text-xl font-bold leading-snug text-slate-900">{item.value}</span>
+                  <span className="block text-[11.5px] font-medium leading-snug text-slate-500">{item.label}</span>
+                  <span className="block text-lg font-bold leading-snug tabular-nums text-slate-900 sm:text-xl">{item.value}</span>
                 </div>
               </div>
               <AdminSparkline
@@ -268,7 +268,7 @@ export function PaymentsControlCenter({
                 data={item.sparkline}
                 ariaLabel={item.sparkline.some((value) => value > 0) ? `Tendencia real de ${item.label.toLowerCase()} (últimos 14 días)` : `${item.note}; sin serie histórica comparable`}
               />
-              <p className="mt-1.5 truncate text-[10.5px] font-semibold text-slate-400">{item.note}</p>
+              <p className="mt-1.5 text-[10.5px] font-semibold leading-snug text-slate-400">{item.note}</p>
             </div>
           );
         })}
