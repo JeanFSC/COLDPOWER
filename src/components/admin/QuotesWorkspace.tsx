@@ -1,5 +1,6 @@
 "use client";
 import { quoteValidityDateInput } from "@/lib/quote-validity";
+import { crmActivityLabel, crmFollowupStatusLabel } from "@/lib/crm-activity-label";
 import { quotePdfVersionNumber, quoteRevisionLabel, quoteVersionStatusLabel } from "@/lib/quote-version-display";
 import { QuoteLookupStatus, useQuoteLookup } from "@/components/admin/QuoteLookup";
 
@@ -1640,7 +1641,7 @@ function ActivityTab({ detail }: { detail: Detail }) {
               icon={<CalendarDays size={15} />}
               title={item.title}
               meta={`Seguimiento · ${dateLabel(item.dueAt, true)}`}
-              body={`Estado: ${item.status}`}
+              body={`Estado: ${crmFollowupStatusLabel(item.status)}`}
             />
           ))}
           {detail.activities.map((item) => (
@@ -1656,7 +1657,7 @@ function ActivityTab({ detail }: { detail: Detail }) {
                 )
               }
               title={item.subject}
-              meta={`${item.type} · ${dateLabel(item.createdAt, true)}`}
+              meta={`${crmActivityLabel(item.type)} · ${dateLabel(item.createdAt, true)}`}
               body={item.body}
             />
           ))}

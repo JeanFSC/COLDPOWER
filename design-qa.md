@@ -2840,3 +2840,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Lint aprobado, dos pruebas admin-customers-ui-contract aprobadas; revisión estática readonly sin hallazgos. Build75325 exit0; servidor29617 reiniciado. Brave posterior confirma una sola etiqueta en Jean y cliente QA F260.
 - Búsqueda QA-F275-SIN-RESULTADOS: 0 resultados, 0 a 0, distribuciones vacías y Limpiar filtros visibles; limpieza recupera lista. Pipeline usado en tablero, Seguimientos (57) y Cerradas; vistas cargan sus registros. No se mutaron oportunidades ni clientes.
 - Capturas inspeccionadas inline, sin archivo persistido. No equivale a cobertura total de roles/errores/contraste. CMS excluido,móvil F127 detenido,export Guardar pendiente.
+
+## F276 — Cotizaciones y trazabilidad comercial en escritorio
+- Brave: búsqueda COT-2026-C87EED devuelve cotización convertida v3 por11PEN. Se usaron Resumen, Precios (impuesto incluido), Actividad, Versiones (v3 aceptada,v2/v1 reemplazadas) e Historial. No se reenviaron ni modificaron versiones.
+- Actividad mostraba COMPLETED,CANCELLED yMEETING. Reutiliza crmFollowupStatusLabel/crmActivityLabel existentes. Dos pruebas de etiquetas y lint aprobados, revisión readonly aprobada,build21613 exit0,servidor2171 activo. Brave posterior confirma Completado,Cancelado,Reunión.
+- Vínculo Ver venta abre VTA-21091B84-E. Cobros: esperado11,recibido11,saldo0; pedido entregado por recojo. Hallazgo pendiente F277: pestaña Pedido repite mismo ORD-20261013-B49BD2 dos veces. No cancelaciones ni pagos ejecutados.
+- Historial conserva texto histórico IN_PERSON; no se reescribió evidencia de auditoría. Capturas inline inspeccionadas,sin archivo persistido. Resto visual/roles/exportGuardar pendiente;CMS excluido,móvilF127detenido.
