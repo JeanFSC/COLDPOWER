@@ -1,4 +1,5 @@
 import { alias } from "drizzle-orm/pg-core";
+import { groupSaleOrderPayments } from "@/lib/sale-order-payments";
 import { salesConditions as dashboardSalesConditions } from "@/lib/dashboard-sales-scope";
 import {
   and,
@@ -564,7 +565,8 @@ export async function getSaleDetail(
       .where(eq(orders.saleId, saleId))
       .orderBy(desc(orders.createdAt)),
   ]);
-  const orderIds = orderRows.map((entry) => entry.order.id);
+  const groupedOrders = groupSaleOrderPayments(orderRows);
+  const orderIds = groupedOrders.map((entry) => entry.order.id);
   const auditScope = [
     and(eq(auditLogs.entityType, "sale"), eq(auditLogs.entityId, saleId)),
     ...(orderIds.length
@@ -588,13 +590,11 @@ export async function getSaleDetail(
     quote: row.quote,
     opportunity: row.opportunity,
     items,
-    orders: orderRows.map((entry) => ({
+    orders: groupedOrders.map((entry) => ({
       ...entry.order,
       ...(includeFinancial
         ? {
-            payments: entry.payment
-              ? [{ ...entry.payment, refundedAmount: entry.refundedAmount }]
-              : [],
+            payments: entry.payments,
           }
         : {}),
       items: orderLineRows.filter((item) => item.orderId === entry.order.id),

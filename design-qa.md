@@ -2846,3 +2846,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Actividad mostraba COMPLETED,CANCELLED yMEETING. Reutiliza crmFollowupStatusLabel/crmActivityLabel existentes. Dos pruebas de etiquetas y lint aprobados, revisión readonly aprobada,build21613 exit0,servidor2171 activo. Brave posterior confirma Completado,Cancelado,Reunión.
 - Vínculo Ver venta abre VTA-21091B84-E. Cobros: esperado11,recibido11,saldo0; pedido entregado por recojo. Hallazgo pendiente F277: pestaña Pedido repite mismo ORD-20261013-B49BD2 dos veces. No cancelaciones ni pagos ejecutados.
 - Historial conserva texto histórico IN_PERSON; no se reescribió evidencia de auditoría. Capturas inline inspeccionadas,sin archivo persistido. Resto visual/roles/exportGuardar pendiente;CMS excluido,móvilF127detenido.
+
+## F277 — Pedidos únicos en detalle de Ventas
+- Causa confirmada: getSaleDetail mapeaba cada fila del join pedido/pago como pedido separado. Ahora groupSaleOrderPayments agrupa por order.id conservando todos los pagos y refundedAmount; items se muestran una vez. includeFinancial:false sigue omitiendo pagos.
+- Dos pruebas nuevas integradas a test-all cubren múltiples pagos/reembolsos, pedidos distintos sin pago,orden y vacío; lint/revisión readonly aprobados. Build19338 exit0,servidor17171 activo.
+- Readcheck real getSaleDetail QA:1pedido,2pagos,1línea; respuesta restringida sinpayments. Brave posterior: Pedido muestra una vez ORD-20261013-B49BD2; Cobros conserva confirmado ycancelado,saldo0,diferencia0. Sin mutaciones de negocio.
+- Pedidos: se usaron Preparación (1/1,reserva consumida),Entrega (recojo completado,sin acción repetida),Pago eHistorial (cadena completa). Hallazgo F278 pendiente: Gestionar pago→ en pestañaPago apunta listado genérico mientras pie sí conserva orderId. ConfiguraciónIGV aún pendiente; no se inventan datos empresariales.
+- CMS excluido,móvilF127detenido,exportGuardar y auditoría integral abiertos.

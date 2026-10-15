@@ -14,6 +14,7 @@ const run = (command, args) => {
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 const node = process.execPath;
+run(node, [moduleBin("tsx/dist/cli.mjs"), "--test", "scripts/sale-order-payments.test.ts"]);
 run(node, [moduleBin("tsx/dist/cli.mjs"), "--test", "scripts/crm-contact.integration.test.ts"]);
 run(node, [moduleBin("tsx/dist/cli.mjs"), "--test", "scripts/cp034-pricing-domain.test.ts"]);
 run(node, [moduleBin("tsx/dist/cli.mjs"), "--test", "scripts/chart-axis-label.test.ts"]);
