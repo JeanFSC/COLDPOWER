@@ -2829,3 +2829,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - TypeScript envalidación; revisión/tests/build/Braveposterior pendientes antespublicar.
 
 - F273 cierre: 11 pruebas CP043 aprobadas con tres aserciones nuevas para las etiquetas; TypeScript/lint aprobados y build34818 exit0. Servidor89504 reiniciado. Brave en Inicio muestra 1 cambio reciente, aplicó una importación de stock, Importación de stock y cambió el estado del cliente. Revisión estática aprobada. Auditoría integral permanece abierta.
+
+## F274 — Personalización de Inicio por UI
+- Brave: Bajar Pendientes, Guardar cambios y recarga confirmó Módulos frecuentes antes de Pendientes. Se reabrió el panel, Subir Pendientes, guardar y recargar restauró Pendientes / Módulos frecuentes / Accesos rápidos. Preferencias previas conservadas; no Restablecer global.
+- Captura posterior a carga inspeccionada inline: etiquetas F273 correctas, distribución de escritorio sin superposición observada. Captura inicial de skeleton no se usa como evidencia final. Sin cambios de código; prueba de guardado y recuperación real completada.
+- Sigue pendiente revisión integral de escritorio/roles/export Guardar. CMS excluido y móvil detenido en F127.
