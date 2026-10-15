@@ -26,6 +26,7 @@ test("inventario: la vista vigente recibe datos persistentes y expone controles 
   assert.match(workspace, /transfersPagination/);
   assert.match(workspace, /reservationsPagination/);
   assert.match(workspace, /status=CRITICO/);
+  assert.match(workspace, /<form key=\{JSON\.stringify\(filters\)\} onSubmit=\{submit\}/);
   assert.match(workspace, /Crear solicitud de compra/);
   assert.match(workspace, /reservas\/expirar/);
   assert.match(workspace, /grid gap-3 sm:grid-cols-2 xl:grid-cols-3/);

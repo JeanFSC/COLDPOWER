@@ -2587,7 +2587,7 @@ function Filters({
     startTransition(() => router.push("/admin/inventario?" + params.toString()));
   };
   return (
-    <form onSubmit={submit} className={panel + " p-3"}>
+    <form key={JSON.stringify(filters)} onSubmit={submit} className={panel + " p-3"}>
       {filters.productId ? <input type="hidden" name="productId" value={filters.productId} /> : null}
       {filters.critical ? <input type="hidden" name="critical" value="true" /> : null}
       <div className="flex flex-wrap items-end gap-2">
