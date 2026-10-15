@@ -2915,3 +2915,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Dospruebasunitariasnuevasintegradasrunner cubren0,mínimoigual,sinmínimo,porencima,fallback,encodingydedupe. ContratoCP027actualizadoparahelperyserviciowiringaprobado;lintyrevisiónreadonlysin hallazgos. Build54991exit0,servidor78248activo.
 - Brave URLdestinoconproductoQA+Piura devuelveunafilaQA-AUD-20261006/CP-PIU-DEV,saldos0/0. No seprobómanualmenteemisiónnuevodesdemovimiento ni se enviaronavisossintéticos;no afirmarpruebaendtoenddeentreganueva. Históricosconservados,sinmovimientosnireservasnuevas.
 - CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos.
+
+## F289 — Regresión acumulada y QA Usuarios en consulta
+- Runnerreal node scripts/test-all.mjs sesión73550 exit0. Log TEMP/coldpower-tests-f289.log:611ejecucionesTAP,579pass,32skip,0fail; incluyerepeticiones,noson611casosúnicos. Contratosfases,TypeScript,eslintyNextbuild completadossinerror. Integracionesomitidas no equivalenaQAmanual ni entregaprobada.
+- Skillworkflow-regression-runner revisada;repo no tiene scripts/run-regression.mjs,seusó runnerexistente test:all. Sin ediciones de código duranteejecución;CMSsinuso/ediciónmanual. Servidor87535 reiniciadoconbuildfinal.
+- BraveUsuarios: listadocargado,filtroQA-F289-SIN-USUARIO produce0usuarios/0a0,siguienteanteriorinactivos,exportHrefconservafiltro;limpiarbúsqueda recuperalista. Matrizsoloconsulta. Seabriódeta lleColaborador02Almacén,sincambiarrol/estado niinvitar.
+- F290pendienteconfirmado: detalleexponeACTIVE/SYNCED;actividadvacía diceSeleccionaunusuariopeseaselecciónactual. Actividadaction/entityType tambiéncrudosensource. Corregiretiquetasyestadovacío sinmodificaraccesos.
+- CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos. Regresiónaprobada no pruebaobjetivocompleto.
