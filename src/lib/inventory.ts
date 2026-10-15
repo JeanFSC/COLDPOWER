@@ -86,8 +86,16 @@ export async function reserveInventoryBatchInTransaction(tx: Transaction, inputs
     if (seen.has(key)) throw new Error("No se puede repetir un producto en la misma reserva.");
     seen.add(key);
     if (input.idempotencyKey) {
-      const [existing] = await tx.select({ id: inventoryReservations.id, productId: inventoryReservations.productId, locationId: inventoryReservations.locationId, quantity: inventoryReservations.quantity }).from(inventoryReservations).where(eq(inventoryReservations.idempotencyKey, input.idempotencyKey)).limit(1);
-      if (existing) { reservations.push({ reservationId: existing.id, productId: existing.productId, locationId: existing.locationId, quantity: existing.quantity }); continue; }
+      const [existing] = await tx.select({ id: inventoryReservations.id, productId: inventoryReservations.productId, locationId: inventoryReservations.locationId, quantity: inventoryReservations.quantity, referenceType: inventoryReservations.referenceType, referenceId: inventoryReservations.referenceId, reason: inventoryReservations.reason, expiresAt: inventoryReservations.expiresAt }).from(inventoryReservations).where(eq(inventoryReservations.idempotencyKey, input.idempotencyKey)).limit(1);
+      if (existing) {
+        const reason = typeof input.reason === "string" ? input.reason.trim().slice(0, 240) : null;
+        const sameExpiry = (existing.expiresAt?.getTime() ?? null) === (input.expiresAt?.getTime() ?? null);
+        if (existing.productId !== input.productId || existing.locationId !== input.locationId || existing.quantity !== input.quantity || existing.referenceType !== (input.referenceType ?? null) || existing.referenceId !== (input.referenceId ?? null) || existing.reason !== (reason || null) || !sameExpiry) {
+          throw new Error("La clave de idempotencia ya fue usada para otra reserva.");
+        }
+        reservations.push({ reservationId: existing.id, productId: existing.productId, locationId: existing.locationId, quantity: existing.quantity });
+        continue;
+      }
     }
     const [registeredBalance] = await tx.select({ id: inventoryBalances.id }).from(inventoryBalances).where(and(eq(inventoryBalances.productId, input.productId), eq(inventoryBalances.locationId, input.locationId))).for("update").limit(1);
     if (!registeredBalance) throw new Error("El producto no tiene saldo registrado en el local. Registra primero un saldo inicial.");

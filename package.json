@@ -73,7 +73,7 @@
     "test:cp038": "node --test scripts/cp037-sales.test.mjs",
     "test:cp037-038:runtime": "dotenv -e .env.local -- tsx --test scripts/cp037-038-runtime-data.test.ts",
     "test:cp039": "node --test scripts/cp038-orders.test.mjs && tsx --test scripts/cp039-fulfillment-domain.test.ts",
-    "test:cp039-purchases": "node --test scripts/cp039-purchases.test.mjs",
+    "test:cp039-purchases": "node --test scripts/cp039-purchases.test.mjs scripts/cp051-purchase-cost-permissions.test.mjs",
     "test:cp039:runtime": "dotenv -e .env.local -- tsx --test scripts/cp039-runtime-data.test.ts",
     "test:cp040": "dotenv -e .env.local -- tsx --test scripts/cp040-payments.test.ts",
     "test:cp040:runtime": "dotenv -e .env.local -- tsx --test scripts/cp040-runtime-data.test.ts",

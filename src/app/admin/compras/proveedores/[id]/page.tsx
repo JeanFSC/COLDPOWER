@@ -13,5 +13,14 @@ export default async function SupplierDetailPage({ params, searchParams }: { par
   const query = await searchParams;
   const detail = await getSupplierDetail(id, { receiptsPage: Number(query.receiptsPage), documentsPage: Number(query.documentsPage), ordersPage: Number(query.ordersPage), productsPage: Number(query.productsPage) });
   if (!detail) notFound();
-  return <SupplierDetailWorkspace detail={detail} canManage={can(actor.role, "purchases.manage")} />;
+  const canViewCosts = can(actor.role, "purchases.cost.view");
+  const safeDetail = canViewCosts ? detail : {
+    ...detail,
+    purchases: detail.purchases.map((row) => ({
+      ...row,
+      purchase: { ...row.purchase, subtotal: "" },
+    })),
+    performance: { ...detail.performance, openAmounts: [] },
+  };
+  return <SupplierDetailWorkspace detail={safeDetail} canManage={can(actor.role, "purchases.manage")} canViewCosts={canViewCosts} />;
 }

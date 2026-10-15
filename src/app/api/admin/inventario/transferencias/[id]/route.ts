@@ -45,7 +45,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (nextStatus === "RECEIVED") throw new Error("La recepción debe registrarse mediante el endpoint de recepción para evitar duplicar la entrada.");
       if (nextStatus === "CANCELLED" && before.status === "IN_TRANSIT") for (const item of items) await adjustInventoryInTransaction(tx, { productId: item.productId, locationId: before.sourceLocationId, quantity: item.quantity, type: "TRANSFER_IN", reason: "Transferencia cancelada", notes: `Contramovimiento de la transferencia ${id}`, performedBy: actor.userId, performedByRole: actor.role, referenceType: "transfer_cancel", referenceId: id });
       const now = new Date();
-      const [after] = await tx.update(transfers).set({ status: nextStatus as typeof before.status, requestedBy: nextStatus === "REQUESTED" ? actor.userId : before.requestedBy, receivedBy: before.receivedBy, receivedAt: before.receivedAt, updatedAt: now }).where(eq(transfers.id, id)).returning();
+      const [after] = await tx.update(transfers).set({ status: nextStatus as typeof before.status, requestedBy: nextStatus === "REQUESTED" ? actor.userId : before.requestedBy, approvedBy: nextStatus === "IN_TRANSIT" ? actor.userId : before.approvedBy, receivedBy: before.receivedBy, receivedAt: before.receivedAt, updatedAt: now }).where(eq(transfers.id, id)).returning();
       await tx.insert(auditLogs).values({ id: `audit-${crypto.randomUUID()}`, actorId: actor.userId, actorRole: actor.role, action: "inventory.transfer_status_changed", entityType: "transfer", entityId: id, before: { status: before.status }, after: { status: after.status }, metadata: null });
       return after;
     });

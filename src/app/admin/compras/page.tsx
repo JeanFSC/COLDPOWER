@@ -34,6 +34,7 @@ export default async function AdminComprasPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const actor = await requirePermission("purchases.view");
+  const canViewCosts = can(actor.role, "purchases.cost.view");
   const params = (await searchParams) ?? {};
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -49,7 +50,7 @@ export default async function AdminComprasPage({
   const [
     suppliers,
     activeLocations,
-    purchasePage,
+    purchasePageData,
     requestPageData,
     selectedRequest,
     selectedPurchase,
@@ -73,12 +74,18 @@ export default async function AdminComprasPage({
     }),
     query.get("requestId") ? getPurchaseRequestDetail(query.get("requestId")!) : Promise.resolve(null),
     query.get("receiptId") ? getPurchaseDetailForReceipt(query.get("receiptId")!) : query.get("purchaseId") ? getPurchaseDetail(query.get("purchaseId")!) : Promise.resolve(null),
-    getCategorySpend(purchaseFilters),
-    getSupplierSpendRanking(purchaseFilters),
+    canViewCosts ? getCategorySpend(purchaseFilters) : Promise.resolve([]),
+    canViewCosts ? getSupplierSpendRanking(purchaseFilters) : Promise.resolve([]),
     getSupplierScorecard(),
     getPurchaseAlerts(),
     getPurchasesKpiSeries(purchaseFilters),
   ]);
+  const purchasePage = canViewCosts ? purchasePageData : {
+    ...purchasePageData,
+    items: purchasePageData.items.map((purchase) => ({ ...purchase, subtotal: "" })),
+    metrics: { ...purchasePageData.metrics, totalAmount: 0, amountsByCurrency: [] },
+  };
+  const safeSeries = canViewCosts ? series : { ...series, spend: null };
   if (query.get("receiptId") && !selectedPurchase) {
     filterNotice = [filterNotice, "No se encontró la recepción solicitada. Revisa el código y vuelve a seleccionar una recepción."].filter(Boolean).join(" ");
   }
@@ -102,7 +109,7 @@ export default async function AdminComprasPage({
           code: selectedPurchase.purchase.code,
           status: selectedPurchase.purchase.status,
           currency: selectedPurchase.purchase.currency,
-          subtotal: selectedPurchase.purchase.subtotal,
+          subtotal: canViewCosts ? selectedPurchase.purchase.subtotal : "",
           createdAt: selectedPurchase.purchase.createdAt,
           issuedAt: selectedPurchase.purchase.issuedAt,
           expectedDeliveryAt: selectedPurchase.purchase.expectedDeliveryAt,
@@ -118,7 +125,7 @@ export default async function AdminComprasPage({
           productNameSnapshot: item.productNameSnapshot,
           quantityOrdered: item.quantityOrdered,
           quantityReceived: item.quantityReceived,
-          unitCost: item.unitCost,
+          unitCost: canViewCosts ? item.unitCost : "",
           currency: item.currency,
         })),
         receipts: purchaseReceiptViews(selectedPurchase.receipts, selectedPurchase.items),
@@ -135,7 +142,7 @@ export default async function AdminComprasPage({
       supplierRanking={supplierRanking}
       scorecard={scorecard}
       alerts={alerts}
-      series={series}
+      series={safeSeries}
       selectedRequest={selectedRequest}
       selectedPurchase={purchaseDetail}
       selectedReceiptId={query.get("receiptId") ?? undefined}
@@ -146,7 +153,7 @@ export default async function AdminComprasPage({
       canManage={can(actor.role, "purchases.manage")}
       canReceive={can(actor.role, "purchases.receive")}
       canApprove={can(actor.role, "purchases.approve")}
-      canViewCosts={can(actor.role, "purchases.cost.view")}
+      canViewCosts={canViewCosts}
       controls={
         <PurchasesOperations
           suppliers={supplierOptions}

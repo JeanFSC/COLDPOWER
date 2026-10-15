@@ -33,8 +33,13 @@ test("CP-050 persiste y reintenta operaciones de inventario, CRM y compras", asy
 
     const reservation = await reserveInventory({ productId: product.id, locationId, quantity: 1, reason: "CP-050 reserva", performedBy: actor.id, performedByRole: actorContext.role, idempotencyKey: `cp050-reservation-${suffix}` });
     reservationId = reservation.reservationId;
+    await assert.rejects(
+      reserveInventory({ productId: product.id, locationId, quantity: 2, reason: "CP-050 reserva", performedBy: actor.id, performedByRole: actorContext.role, idempotencyKey: `cp050-reservation-${suffix}` }),
+      /clave de idempotencia.*otra reserva/i,
+    );
     const reservationRetry = await reserveInventory({ productId: product.id, locationId, quantity: 1, reason: "CP-050 reserva", performedBy: actor.id, performedByRole: actorContext.role, idempotencyKey: `cp050-reservation-${suffix}` });
     assert.equal(reservationRetry.reservationId, reservationId);
+    assert.deepEqual({ onHand: reservationRetry.onHand, reserved: reservationRetry.reserved }, { onHand: 3, reserved: 1 });
     await releaseInventoryReservation(reservationId, actor.id, actorContext.role);
 
     const customer = await createCustomer({ name: "CP-050 QA customer", email: `cp050-${suffix}@example.invalid`, phone: `+51999${suffix.replaceAll("-", "").slice(0, 7)}` }, actorContext);

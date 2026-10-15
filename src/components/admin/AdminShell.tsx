@@ -27,7 +27,7 @@ import {
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Fragment, useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { roleLabel, type AppRole } from "@/lib/roles";
 import { useConfirmedNotifications } from "@/components/admin/useConfirmedNotifications";
@@ -128,6 +128,9 @@ export function AdminShell({
   const [searchGroups, setSearchGroups] = useState<AdminSearchGroup[]>([]);
   const [searchResultQuery, setSearchResultQuery] = useState("");
   const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
+  const commandTriggerRef = useRef<HTMLInputElement>(null);
+  const commandDialogInputRef = useRef<HTMLInputElement>(null);
+  const commandWasOpen = useRef(false);
   const profile = profileByRole[role] ?? {
     name: roleLabel(role),
     title: roleLabel(role),
@@ -157,6 +160,17 @@ export function AdminShell({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+  useEffect(() => {
+    if (isCommandOpen) {
+      commandWasOpen.current = true;
+      commandDialogInputRef.current?.focus();
+      return;
+    }
+    if (commandWasOpen.current) {
+      commandWasOpen.current = false;
+      commandTriggerRef.current?.focus();
+    }
+  }, [isCommandOpen]);
   useEffect(() => {
     const query = commandQuery.trim();
     if (!isCommandOpen || query.length < 2) {
@@ -309,6 +323,7 @@ export function AdminShell({
               aria-hidden="true"
             />
             <input
+              ref={commandTriggerRef}
               value={commandQuery}
               onChange={(event) => setCommandQuery(event.currentTarget.value)}
               className="h-11 w-full rounded-lg border border-[#dce6ee] bg-white pl-10 pr-12 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489] focus:border-[#3986c0] focus:ring-2 focus:ring-[#3986c0]/10"
@@ -370,13 +385,22 @@ export function AdminShell({
         </header>
         {isCommandOpen ? (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-[#102a43]/25 px-4 pt-[12vh]" role="presentation" onMouseDown={() => setIsCommandOpen(false)}>
-            <section className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce6ee] bg-white shadow-[0_22px_60px_rgba(16,42,67,0.22)]" role="dialog" aria-modal="true" aria-label="Paleta de comandos" onMouseDown={(event) => event.stopPropagation()}>
-              <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setIsCommandOpen(false); }} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#5f7489]">Esc</kbd></div>
+            <section className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce6ee] bg-white shadow-[0_22px_60px_rgba(16,42,67,0.22)]" role="dialog" aria-modal="true" aria-label="Paleta de comandos" onMouseDown={(event) => event.stopPropagation()} onKeyDown={(event) => {
+              if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); setIsCommandOpen(false); return; }
+              if (event.key !== "Tab") return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((element) => element.getAttribute("aria-hidden") !== "true");
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && (document.activeElement === first || !event.currentTarget.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && (document.activeElement === last || !event.currentTarget.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+            }}>
+              <div className="flex items-center gap-3 border-b border-[#edf2f6] px-4 py-3"><Search className="h-4 w-4 text-[#7890a8]" aria-hidden="true" /><input ref={commandDialogInputRef} value={commandQuery} onChange={(event) => setCommandQuery(event.currentTarget.value)} placeholder="Ir a un módulo..." className="min-w-0 flex-1 text-[12px] font-semibold text-[#173654] outline-none placeholder:text-[#5f7489]" aria-label="Buscar módulo" /><kbd className="rounded border border-[#dce6ee] px-1.5 py-0.5 text-[10px] font-bold text-[#5f7489]">Esc</kbd></div>
               <nav className="max-h-[55vh] overflow-y-auto p-2" aria-label="Resultados y módulos disponibles">
-                {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link prefetch={false} key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-semibold text-[#91a3b3]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
+                {visibleSearchGroups.map((searchGroup) => <div key={searchGroup.key} className="mb-2 last:mb-0"><p className="px-3 pb-1 pt-2 text-[11px] font-black uppercase tracking-[0.14em] text-[#526578]">{searchGroup.label}</p>{searchGroup.items.map((item) => <Link prefetch={false} key={`${searchGroup.key}-${item.id}`} href={item.href} onClick={() => { setIsCommandOpen(false); recordRecent(searchGroup.label, item.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Search className="h-4 w-4 shrink-0 text-[#2277ee]" aria-hidden="true" /><span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="mt-0.5 block truncate text-[11px] font-semibold text-[#526578]">{item.detail || "Resultado"}</span></span></Link>)}</div>)}
                 {isSearchPending ? <p className="px-3 py-3 text-[11px] font-semibold text-[#607894]">Buscando entidades…</p> : null}
                 {searchState === "unavailable" ? <p className="px-3 py-3 text-[11px] font-semibold text-[#b45309]">Búsqueda de entidades no disponible.</p> : null}
-                {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#91a3b3]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link prefetch={false} key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[10px] font-semibold text-[#91a3b3]">{link.href}</span></Link>; })}</div> : null}
+                {commandLinks.length ? <div className="border-t border-[#edf2f6] pt-2"><p className="px-3 pb-1 pt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[#526578]">Módulos</p>{commandLinks.map((link) => { const Icon = iconMap[link.icon]; return <Link prefetch={false} key={`command-${link.href}`} href={link.href} onClick={() => { setIsCommandOpen(false); recordRecent(link.label, link.href); }} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-bold text-[#304b66] hover:bg-[#f4f8fc]"><Icon className="h-4 w-4 text-[#2277ee]" aria-hidden="true" /><span className="flex-1">{link.label}</span><span className="text-[11px] font-semibold text-[#526578]">{link.href}</span></Link>; })}</div> : null}
                 {!visibleSearchGroups.length && !isSearchPending && searchState === "ready" && !commandLinks.length ? <p className="px-3 py-5 text-center text-[11px] font-semibold text-[#607894]">No hay coincidencias con permisos disponibles.</p> : null}
               </nav>
             </section>
