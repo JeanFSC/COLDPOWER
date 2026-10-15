@@ -103,7 +103,7 @@ export function CustomerOptionPicker({
             }
             setQuery(next);
             setItems([]);
-            setLoading(false);
+            setLoading(next.trim().length >= 2);
             setNotice(null);
             setOpen(true);
           }}

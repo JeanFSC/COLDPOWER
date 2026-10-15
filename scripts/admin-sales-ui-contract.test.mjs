@@ -54,3 +54,10 @@ test("ventas: las acciones rápidas navegan a operaciones reales", async () => {
   assert.match(workspace, /Ver por facturar|Facturación/);
   assert.match(workspace, /api\/admin\/ventas/);
 });
+
+test("selector de cliente: muestra carga durante el debounce de búsqueda", async () => {
+  const picker = await read("src/components/admin/CustomerOptionPicker.tsx");
+  assert.match(picker, /setLoading\(next\.trim\(\)\.length >= 2\)/);
+  assert.match(picker, /Buscando clientes/);
+  assert.match(picker, /No se encontraron clientes activos o prospectos/);
+});
