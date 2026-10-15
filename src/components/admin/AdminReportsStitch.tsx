@@ -234,6 +234,7 @@ export function AdminReportsStitch({
                 : item.label.includes("Stock")
                   ? stockDelta
                   : null;
+          const hasDirectionalDelta = delta?.direction === "up" || delta?.direction === "down";
           const deltaIsGood = delta?.direction === (item.label.includes("Stock") ? "down" : "up");
           return (
             <article
@@ -250,7 +251,8 @@ export function AdminReportsStitch({
                 </div>
               </div>
               <div className="mt-3">
-                {!delta || delta.value === null ? <p className="text-[10px] font-normal text-slate-400">{delta?.label ?? item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${deltaIsGood ? "text-emerald-600" : "text-rose-600"}`}><span>{delta.label}</span></p>}
+                {item.label === "Stock crítico" ? <p className="mb-1 text-[10px] text-slate-400">Estado actual de inventario</p> : null}
+                {!delta || !hasDirectionalDelta ? <p className="text-[10px] font-normal text-slate-400">{delta?.label ?? item.note ?? "Sin datos previos"}</p> : <p className={`flex items-center gap-1 text-[11px] font-semibold ${deltaIsGood ? "text-emerald-600" : "text-rose-600"}`}><span>{delta.label}</span></p>}
                 {item.label === "Ventas hoy" || item.label === "Pedidos activos" ? null : <MetricSparkline tone={metricTone} values={trend} />}
               </div>
             </article>

@@ -2902,3 +2902,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - AdminLineChart incorpora countAxis opcional,activadoenAuditoría. Máximo múltiplo4mínimo4 garantiza5marcasenterasdistintas; puntosusanmismamáxima. Monedas yrestoconsumidores sin cambios. inventory_balance se presentaSaldo de inventario.
 - Quince pruebas ejes/CP043 ylintaprobados,revisiónreadonlysin hallazgos. Build14972exit0,servidor88533activo. Brave gráficoQA confirmaeje4,3,2,1,0 ypico3;capturaactualinspeccionadainline. Sin cambios de eventos.
 - Restan otrosmódulos/roles/exportGuardar/regresión integral. CMSexcluido,móvilF127detenido. No declararfinalizado.
+
+## F287 — Reportes sin ventas y comparaciones neutrales
+- Brave filtrosavanzados/ClienteQAF260: ventas0,ticketN/D,pedidos0,familiasSinventas. Stockcrítico4esestadodeinventario noaventacliente.
+- Fallovisualconfirmado: delta directionunavailableconvalue0renderizabarojo. Ahora soloup/downsecolorean;new/unavailable/flatneutrales. StockcríticoañadeEstadoactualdeinventario. Cuatropruebasreports-metric-scope,lintyrevisiónreadonlyaprobados;primerpruebatestdetectónotafaltanteyse corrigió. Build59866exit0,servidor43172activo.
+- Braveposterior confirmaSinbasecomparablecolorneutralrgb82,107,132en3tarjetas,notastockvisible,exportHrefconservacliente. Sinprogramarreportesnienviaravisos.
+- Notificacionesvistainicialsindesbordamiento1536/1521. HallazgoF288pendiente: inventory.ts notifyStockState avisaProductoagotadosinlocaly hrefinventariogenéricoaunque disponibilidadlocal. QA Piura0/Chiclayo1/Cusco6requierecontextolocal. No mutarnotificacioneshistóricasnirepetirmovimientosstock.
+- CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos.

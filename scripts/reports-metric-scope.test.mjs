@@ -5,6 +5,12 @@ import test from "node:test";
 const page = readFileSync(new URL("../src/app/admin/reportes/page.tsx", import.meta.url), "utf8");
 const view = readFileSync(new URL("../src/components/admin/AdminReportsStitch.tsx", import.meta.url), "utf8");
 
+test("Reportes: solo variaciones direccionales se colorean y stock aclara su alcance", () => {
+  assert.match(view, /const hasDirectionalDelta = delta\?\.direction === "up" \|\| delta\?\.direction === "down"/);
+  assert.match(view, /!delta \|\| !hasDirectionalDelta/);
+  assert.match(view, /Estado actual de inventario/);
+});
+
 test("Reportes: ventas del período usa el mismo rango que la comparación", () => {
   assert.match(page, /label: "Ventas del período",\s*value: data \? formatMoney\(data.salesRange.total, data.currency\)/);
   assert.match(view, /const delta = item.label === "Ventas del período"\s*\? salesDelta/);
