@@ -1014,7 +1014,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="grid gap-2 sm:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
               ["Código", sale.code],
               ["Estado", labelState(String(sale.status))],
@@ -1023,7 +1023,7 @@ function SaleDetailDrawer({ saleId, canManage, canCancel, canPaymentsView, onClo
             ].map(([label, itemValue]) => (
               <div key={String(label)} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-                <p className="mt-1 truncate text-xs font-bold text-slate-900">{String(itemValue)}</p>
+                <p className="mt-1 whitespace-normal break-words text-xs font-bold text-slate-900">{String(itemValue)}</p>
               </div>
             ))}
           </div>
