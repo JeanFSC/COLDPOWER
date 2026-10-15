@@ -106,6 +106,13 @@ test("pagos: exportación incluye conciliación financiera completa", () => {
   }
 });
 
+test("pagos: CSV incluye el separador que Excel usa para dividir las columnas", () => {
+  const route = read("src/app/api/admin/pagos/export/route.ts");
+  assert.match(route, /\\ufeffsep=,/);
+  assert.match(route, /"Content-Type":\s*"text\/csv; charset=utf-8"/);
+  assert.match(route, /filename="coldpower-pagos\.csv"/);
+});
+
 test("pagos: exportación usa descarga nativa y conserva los filtros", () => {
   const control = read("src/components/admin/PaymentsControlCenter.tsx");
   assert.match(control, /<a\s+href=\{"\/api\/admin\/pagos\/export\?" \+ queryString\}\s+download="coldpower-pagos\.xlsx"/);

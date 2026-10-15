@@ -158,7 +158,7 @@ export function AdminPurchasesModule({
     { key: "open", label: "Órdenes abiertas", value: String(openPurchases), note: "Sin recibir ni cancelar", icon: FileText, iconBg: "bg-blue-50", iconInk: "text-blue-600", tone: "blue", sparkline: series.openPurchases },
     { key: "requests", label: "Solicitudes pendientes", value: String(requestPage.metrics.pending), note: "En revisión", icon: Boxes, iconBg: "bg-indigo-50", iconInk: "text-indigo-600", tone: "purple", sparkline: series.requests },
     { key: "receptions", label: "Recepciones pendientes", value: String(metrics.pending + metrics.partialReceived), note: "OC pendientes o parciales", icon: PackageCheck, iconBg: "bg-orange-50", iconInk: "text-orange-600", tone: "orange", sparkline: series.receptions },
-    { key: "spend", label: "Gasto del período", value: amountLabel, note: series.spend ? "Subtotal de OC filtradas" : "Multimoneda: tendencia separada por moneda", icon: Truck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.spend },
+    { key: "spend", label: "Subtotal de órdenes", value: amountLabel, note: series.spend ? "OC del alcance filtrado · tendencia 14 días" : "Importes separados por moneda", icon: Truck, iconBg: "bg-emerald-50", iconInk: "text-emerald-600", tone: "green", sparkline: series.spend },
     { key: "leadTime", label: "Lead time promedio", value: metrics.leadTimeDays == null ? "N/D" : `${metrics.leadTimeDays} días`, note: metrics.leadTimeDays == null ? "Sin OC emitida y recibida con fechas" : "Emisión a recepción final", icon: Clock, iconBg: "bg-purple-50", iconInk: "text-purple-600", tone: "purple", sparkline: null },
     { key: "incidents", label: "OC con proveedor inactivo", value: String(metrics.incidents), note: "Todos los estados del alcance", icon: AlertTriangle, iconBg: "bg-rose-50", iconInk: "text-rose-600", tone: "red", sparkline: series.incidentPurchases },
   ];
@@ -267,7 +267,7 @@ export function AdminPurchasesModule({
 
       {canViewCosts ? <section className="grid gap-4 xl:grid-cols-12">
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-4">
-          <h2 className="text-sm font-bold tracking-tight text-slate-900">Gasto por categoría</h2>
+          <h2 className="text-sm font-bold tracking-tight text-slate-900">Subtotal de OC por categoría</h2>
           {categoryRows.length ? (
             <div className="flex flex-1 items-center gap-4 pt-3">
               {categoryCurrencies.length === 1 ? (
@@ -310,12 +310,12 @@ export function AdminPurchasesModule({
         </div>
 
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-5">
-          <h2 className="text-sm font-bold tracking-tight text-slate-900">Rendimiento por proveedor</h2>
+          <h2 className="text-sm font-bold tracking-tight text-slate-900">Subtotal de OC por proveedor</h2>
           {supplierRows.length ? (
             <div className="flex-1 space-y-2.5 pt-3">
               <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(88px,0.8fr)_minmax(0,1fr)_42px] items-center gap-3 px-0.5 text-[10.5px] font-medium text-slate-400">
                 <span>Proveedor</span>
-                <span>Monto</span>
+                <span>Subtotal</span>
                 <span>Participación</span>
                 <span className="text-right">%</span>
               </div>
@@ -339,9 +339,10 @@ export function AdminPurchasesModule({
 
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold tracking-tight text-slate-900">Scorecard de proveedores</h2>
+            <h2 className="text-sm font-bold tracking-tight text-slate-900">Indicadores globales</h2>
             <a href="#suppliers-panel" className="text-xs font-medium text-blue-600 hover:underline">Ver todos</a>
           </div>
+          <p className="pt-1 text-[10.5px] font-medium text-slate-400">Histórico de todos los proveedores; no cambia con los filtros.</p>
           <div className="grid flex-1 grid-cols-2 gap-2.5 pt-3">
             <ScoreTile icon={Clock} tone="emerald" label="Puntualidad" value={scorecard.onTimeRate == null ? "Sin fechas" : `${scorecard.onTimeRate}%`} note={`${scorecard.evaluatedOrders} con fechas · ${scorecard.completedOrders} recibidas`} />
             <ScoreTile icon={PackageCheck} tone="emerald" label="Fill rate" value={scorecard.fillRate == null ? "N/D" : `${scorecard.fillRate}%`} />

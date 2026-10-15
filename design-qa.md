@@ -3042,3 +3042,17 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - El proceso PM2 ahora usa `ops/cron-worker.mjs` para llamar ambos endpoints protegidos cada cinco minutos; un fallo en uno no evita intentar el otro. Registra solo conteos y estado, no el contenido de notificaciones/reporte, códigos ni IDs. El nuevo contrato queda añadido a `test:all`.
 - Regresión dirigida 4/4, ESLint, `node --check` y `git diff --check` aprobados. `pnpm test:all` terminó con exit 0: 626 ejecuciones TAP (594 aprobadas, 32 omitidas, 0 fallidas), TypeScript y ESLint limpios, `next build` completado.
 - No desplegué ni inspeccioné PM2 de producción, ni generé ejecuciones/avisos QA; falta verificar el proceso remoto con `CRON_SECRET` configurado.
+
+## F308 — Exportación: validar el XLSX guardado y reconciliar el CSV antiguo (2026-10-15)
+- Revisé el historial de la auditoría anterior y reabrí Usuarios en una pestaña adicional autenticada de Brave: la página presenta 22 usuarios y el enlace Exportar apunta a `/api/admin/usuarios/export`.
+- El archivo existente `Descargas/coldpower-usuarios.xlsx` tiene firma ZIP de XLSX, una hoja `Usuarios`, rango `A1:J23`, 10 encabezados y 22 filas de datos. No imprimí ni registré valores personales. El archivo es legible estructuralmente; esto no verifica por sí solo el diálogo Guardar de una descarga nueva.
+- El `coldpower-pagos.csv` aportado por el usuario es del 6 oct. y empieza por encabezados CSV con coma, sin la directiva `sep=,`; eso concuerda con la captura de Excel que muestra cada fila completa en la columna A. El código actual entrega XLSX por defecto y añade BOM + `sep=,` al CSV explícito.
+- Añadí un contrato dirigido para que el CSV de Pagos conserve la instrucción de separador, MIME y nombre de archivo compatibles con Excel. Falta probar una descarga actual guardada desde Brave y abrirla en Excel. Al intentar inspeccionar la ventana nativa, Computer Use detuvo el control porque no pudo verificar la URL activa de Windows; no cambié permisos ni configuración.
+- La auditoría general sigue abierta. CMS continúa excluido y el QA móvil permanece pausado en F127.
+
+## F309 — Compras: métricas de órdenes y fill rate global (2026-10-15)
+- En Brave con el filtro Pendiente, los tres subtotales de las OC suman S/ 1,540. Las categorías (S/ 900 + S/ 400 + S/ 240) y proveedores muestran la misma base; la lista/export conserva `status=PENDING`.
+- Corregí nombres engañosos: el KPI y los gráficos ahora dicen «Subtotal de órdenes», «Subtotal de OC por categoría» y «Subtotal de OC por proveedor». El scorecard indica que sus cifras son globales y no obedecen a los filtros; en la captura verificada las tarjetas y notas se leen sin recorte.
+- La auditoría del cálculo encontró que fill rate sumaba cantidades de borradores y órdenes canceladas. El numerador/denominador ahora considera órdenes emitidas (pendientes, parcialmente recibidas y recibidas) en el scorecard general y en la ficha de proveedor. Con la misma base QA, el global pasó de 32.3% a 48.3%; no se crearon ni modificaron órdenes.
+- `pnpm test:cp039-purchases` (7/7), `pnpm test:cp040-payments` (19/19), ESLint dirigido, `git diff --check` y `pnpm build` pasaron. Reabrí localhost en Brave tras reconstruir el build y verifiqué los textos y valores renderizados.
+- La auditoría funcional restante de Compras (guardados de solicitud, aprobación, emisión, recepción persistida, permisos por rol y Guardar en descargas) sigue pendiente. CMS fuera de alcance; QA móvil pausado en F127.

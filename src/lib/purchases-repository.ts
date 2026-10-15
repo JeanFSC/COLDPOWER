@@ -35,6 +35,7 @@ import type {
 } from "@/lib/purchases-contract";
 const defaultPageSize = 25,
   maxPageSize = 100;
+const fillRatePurchaseStatuses = ["PENDING", "PARTIAL_RECEIVED", "RECEIVED"] as const;
 function pageValues(page?: number, pageSize?: number) {
   return {
     page: Math.max(1, Math.floor(page ?? 1)),
@@ -400,7 +401,7 @@ async function getSupplierPerformance(supplierId: string, status: string) {
       onTimeOrders: sql<number>`count(*) filter (where ${purchases.status} = 'RECEIVED' and ${latestReceipts.receivedAt} <= ${purchases.expectedDeliveryAt})`,
       leadTimeDays: sql<string | null>`avg(extract(epoch from (${latestReceipts.receivedAt} - ${purchases.issuedAt})) / 86400) filter (where ${purchases.status} = 'RECEIVED')`,
     }).from(purchases).leftJoin(latestReceipts, eq(latestReceipts.purchaseId, purchases.id)).where(eq(purchases.supplierId, supplierId)),
-    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems).innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId)).where(eq(purchases.supplierId, supplierId)),
+    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems).innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId)).where(and(eq(purchases.supplierId, supplierId), inArray(purchases.status, [...fillRatePurchaseStatuses]))),
     db.select({ currency: purchases.currency, amount: sum(purchases.subtotal) }).from(purchases).where(and(eq(purchases.supplierId, supplierId), inArray(purchases.status, ["DRAFT", "PENDING", "PARTIAL_RECEIVED"]))).groupBy(purchases.currency).orderBy(asc(purchases.currency)),
   ]);
   const orders = orderMetrics[0];
@@ -470,7 +471,7 @@ export type SupplierDetail = NonNullable<Awaited<ReturnType<typeof getSupplierDe
 
 const openPurchaseStatuses = ["DRAFT", "PENDING", "PARTIAL_RECEIVED"] as const;
 
-// Real spend by product category (unit cost x quantity ordered), used by the "Gasto por
+// Ordered subtotal by product category (unit cost x quantity ordered), used by the "Subtotal por
 // categoría" donut instead of a fabricated breakdown.
 export async function getCategorySpend(filters: PurchasesFilters = {}) {
   const where = wherePurchases(filters);
@@ -493,7 +494,7 @@ export async function getCategorySpend(filters: PurchasesFilters = {}) {
   return rows.map((row) => ({ categoryId: row.categoryId, categoryName: row.categoryName, currency: row.currency, amount: num(row.amount) }));
 }
 
-// Real spend by supplier, used by the "Rendimiento por proveedor" ranking.
+// Ordered subtotal by supplier, used by the supplier subtotal ranking.
 export async function getSupplierSpendRanking(filters: PurchasesFilters = {}) {
   const where = wherePurchases(filters);
   const db = getDb();
@@ -534,7 +535,7 @@ export async function getSupplierScorecard() {
       .from(purchases)
       .leftJoin(latestReceipt, eq(latestReceipt.purchaseId, purchases.id))
       .where(eq(purchases.status, "RECEIVED")),
-    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems),
+    db.select({ ordered: sum(purchaseItems.quantityOrdered), received: sum(purchaseItems.quantityReceived) }).from(purchaseItems).innerJoin(purchases, eq(purchases.id, purchaseItems.purchaseId)).where(inArray(purchases.status, [...fillRatePurchaseStatuses])),
     db
       .select({ total: count(purchases.id) })
       .from(purchases)
