@@ -119,3 +119,27 @@ test("CP-037 ofrece error state accionable sin exponer detalles internos", () =>
   assert.match(shared, /Reintentar/);
   assert.doesNotMatch(shared, /error\.message/);
 });
+
+test("CP-037 fusiona y vende por búsqueda de clientes sin límite fijo", () => {
+  const optionsRoute = read("src/app/api/admin/clientes/opciones/route.ts");
+  const picker = read("src/components/admin/CustomerOptionPicker.tsx");
+  const customersPage = read("src/app/admin/clientes/page.tsx");
+  const customersUi = read("src/components/admin/CustomersControlCenter.tsx");
+  const salesPage = read("src/app/admin/ventas/page.tsx");
+  const salesUi = read("src/components/admin/SalesControlCenter.tsx");
+  assert.match(optionsRoute, /requireApiPermission\("customers\.view"\)/);
+  assert.match(optionsRoute, /query\.length < 2/);
+  assert.match(optionsRoute, /customers\.canonicalCustomerId/);
+  assert.match(optionsRoute, /limit\(20\)/);
+  for (const field of ["customers.name", "customers.legalName", "customers.ruc", "customers.documentNumber", "customers.email", "customers.phone"]) assert.ok(optionsRoute.includes(field), `falta búsqueda por ${field}`);
+  assert.match(picker, /api\/admin\/clientes\/opciones/);
+  assert.match(picker, /aria-autocomplete="list"/);
+  assert.match(picker, /AbortController/);
+  assert.match(customersUi, /excludeId=\{ids\.primaryId\}/);
+  assert.doesNotMatch(customersPage, /limit\(500\)/);
+  assert.doesNotMatch(customersUi, /mergeCandidates/);
+  assert.match(customersUi, /CustomerOptionPicker/);
+  assert.doesNotMatch(salesPage, /limit\(500\)/);
+  assert.doesNotMatch(salesPage, /customerOptions/);
+  assert.match(salesUi, /CustomerOptionPicker/);
+});

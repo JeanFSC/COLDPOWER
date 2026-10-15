@@ -22,12 +22,12 @@ import {
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import { AdminSelect } from "@/components/admin/AdminSelect";
+import { CustomerOptionPicker } from "@/components/admin/CustomerOptionPicker";
 import { filterOptionsWithSelection } from "@/lib/filter-options";
 import type { SalesListItem, SalesPageResponse } from "@/lib/sales-contract";
 import { paymentMethodLabel } from "@/lib/payment-display";
 import { parseDashboardSalesScope } from "@/lib/dashboard-sales-navigation";
 
-type CustomerOption = { id: string; name: string; phone: string | null };
 type LocationOption = { id: string; code: string; name: string };
 type ProductOption = {
   productId: string;
@@ -202,7 +202,6 @@ export function SalesControlCenter({
   canManage,
   canCancel,
   canPaymentsView,
-  customers,
   locations,
 }: {
   page: SalesPageResponse;
@@ -210,7 +209,6 @@ export function SalesControlCenter({
   canManage: boolean;
   canCancel: boolean;
   canPaymentsView: boolean;
-  customers: CustomerOption[];
   locations: LocationOption[];
 }) {
   const dashboardScopeRaw = new URLSearchParams(queryString).get("dashboardScope");
@@ -582,7 +580,7 @@ export function SalesControlCenter({
             </Link>
           </div>
         ) : (
-          <DirectSaleForm customers={customers} locations={locations} onDone={() => setMode(null)} />
+          <DirectSaleForm locations={locations} onDone={() => setMode(null)} />
         )}
       </AdminDrawer>
       <SaleDetailDrawer
@@ -677,7 +675,7 @@ function Queue({ title, rows, href, action }: { title: string; rows: SalesListIt
     </section>
   );
 }
-function DirectSaleForm({ customers, locations, onDone }: { customers: CustomerOption[]; locations: LocationOption[]; onDone: () => void }) {
+function DirectSaleForm({ locations, onDone }: { locations: LocationOption[]; onDone: () => void }) {
   const router = useRouter();
   const [customerId, setCustomerId] = useState("");
   const [locationId, setLocationId] = useState("");
@@ -743,11 +741,11 @@ function DirectSaleForm({ customers, locations, onDone }: { customers: CustomerO
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1.5 text-[11px] font-semibold text-slate-500">
           Cliente
-          <AdminSelect
+          <CustomerOptionPicker
             ariaLabel="Cliente"
             value={customerId}
-            onValueChange={setCustomerId}
-            options={[{ value: "", label: "Selecciona cliente" }, ...customers.map((customer) => ({ value: customer.id, label: customer.name }))]}
+            onChange={setCustomerId}
+            placeholder="Buscar por nombre, documento o teléfono"
           />
         </label>
         <label className="grid gap-1.5 text-[11px] font-semibold text-slate-500">

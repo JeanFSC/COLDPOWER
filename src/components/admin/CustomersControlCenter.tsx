@@ -19,6 +19,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
+import { CustomerOptionPicker } from "@/components/admin/CustomerOptionPicker";
 import { filterOptionsWithSelection } from "@/lib/filter-options";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { customerCreateStepError } from "@/lib/customer-create-step";
@@ -198,7 +199,6 @@ export function CustomersControlCenter({
   canOrdersView,
   canPaymentsView,
   customerId,
-  mergeCandidates,
 }: {
   page: CustomerListResponse;
   queryString: string;
@@ -210,7 +210,6 @@ export function CustomersControlCenter({
   canOrdersView: boolean;
   canPaymentsView: boolean;
   customerId?: string | null;
-  mergeCandidates: Array<{ id: string; name: string }>;
 }) {
   const router = useRouter();
   const [drawer, setDrawer] = useState<"create" | "edit" | "merge" | "deactivate" | null>(
@@ -1094,7 +1093,6 @@ export function CustomersControlCenter({
         }
       >
         <MergeForm
-          customers={mergeCandidates}
           ids={mergeIds}
           setIds={(ids) => {
             setMergeIds(ids.primaryId === ids.secondaryId ? { ...ids, secondaryId: "" } : ids);
@@ -1844,7 +1842,6 @@ function Field({
   );
 }
 function MergeForm({
-  customers,
   ids,
   setIds,
   preview,
@@ -1854,7 +1851,6 @@ function MergeForm({
   notice,
   onPreview,
 }: {
-  customers: Array<{ id: string; name: string }>;
   ids: { primaryId: string; secondaryId: string };
   setIds: (value: { primaryId: string; secondaryId: string }) => void;
   preview: Record<string, unknown> | null;
@@ -1879,40 +1875,27 @@ function MergeForm({
       </p>
       <label className="grid gap-1.5 text-[10px] font-extrabold text-[#526b84]">
         Principal
-        <select
+        <CustomerOptionPicker
+          ariaLabel="Cliente principal de fusión"
           value={ids.primaryId}
           disabled={busy}
-          onChange={(event) => setIds({ ...ids, primaryId: event.target.value })}
-          className="h-10 rounded-lg border border-[#dce6ee] px-3 text-xs font-semibold"
-        >
-          <option value="">Selecciona cliente</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-            </option>
-          ))}
-        </select>
+          placeholder="Buscar cliente principal"
+          onChange={(primaryId) => setIds({ primaryId, secondaryId: primaryId === ids.secondaryId ? "" : ids.secondaryId })}
+        />
       </label>
       <label className="grid gap-1.5 text-[10px] font-extrabold text-[#526b84]">
         Secundario
-        <select
+        <CustomerOptionPicker
+          ariaLabel="Cliente secundario de fusión"
+          excludeId={ids.primaryId}
           value={ids.secondaryId}
           disabled={busy}
-          onChange={(event) => setIds({ ...ids, secondaryId: event.target.value })}
-          className="h-10 rounded-lg border border-[#dce6ee] px-3 text-xs font-semibold"
-        >
-          <option value="">Selecciona cliente</option>
-          {customers
-            .filter((customer) => customer.id !== ids.primaryId)
-            .map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.name}
-              </option>
-            ))}
-        </select>
+          placeholder="Buscar cliente secundario"
+          onChange={(secondaryId) => setIds({ ...ids, secondaryId })}
+        />
       </label>
       <button
-        disabled={busy || !ids.primaryId || !ids.secondaryId}
+        disabled={busy || !ids.primaryId || !ids.secondaryId || ids.primaryId === ids.secondaryId}
         onClick={onPreview}
         className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#2277ee] px-3 text-[10px] font-extrabold text-[#2277ee] disabled:opacity-50"
       >

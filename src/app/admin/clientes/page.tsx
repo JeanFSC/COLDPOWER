@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { and, asc, eq, isNull, or } from "drizzle-orm";
 import { CustomersControlCenter } from "@/components/admin/CustomersControlCenter";
-import { getDb } from "@/db";
-import { customers } from "@/db/crm-schema";
 import { requirePermission } from "@/lib/auth";
 import { getCustomersPage } from "@/lib/customer-repository";
 import { parseCustomerFilters } from "@/lib/customer-contract";
@@ -25,21 +22,7 @@ export default async function AdminClientesPage({
     if (typeof value === "string") query.set(key, value);
     else if (Array.isArray(value) && value[0]) query.set(key, value[0]);
   }
-  const db = getDb();
-  const [page, mergeCandidates] = await Promise.all([
-    getCustomersPage(parseCustomerFilters(query)),
-    db
-      .select({ id: customers.id, name: customers.name })
-      .from(customers)
-      .where(
-        and(
-          or(eq(customers.status, "ACTIVE"), eq(customers.status, "PROSPECT")),
-          isNull(customers.canonicalCustomerId),
-        ),
-      )
-      .orderBy(asc(customers.name))
-      .limit(500),
-  ]);
+  const page = await getCustomersPage(parseCustomerFilters(query));
   return (
     <CustomersControlCenter
       key={query.get("new") === "1" ? "create-customer" : "customer-list"}
@@ -53,7 +36,6 @@ export default async function AdminClientesPage({
       canOrdersView={can(actor.role, "orders.view")}
       canPaymentsView={can(actor.role, "payments.view")}
       customerId={query.get("customerId")}
-      mergeCandidates={mergeCandidates}
     />
   );
 }
