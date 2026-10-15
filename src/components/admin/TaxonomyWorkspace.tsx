@@ -20,6 +20,7 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AdminDrawer } from "@/components/admin/AdminDrawer";
 import type { TaxonomyEntity, TaxonomyItem, TaxonomyTree } from "@/lib/taxonomy-admin";
+import { taxonomyNodeMatches, taxonomySearchChildren } from "@/lib/taxonomy-search";
 import { apiErrorMessage } from "@/lib/api-error-message";
 
 type NodeSelection = { entity: TaxonomyEntity; id: string };
@@ -118,12 +119,8 @@ export function TaxonomyWorkspace({ categories, families, brands, canManageCateg
   const selectedItem = allItems[selection.entity].find((item) => item.id === selection.id) ?? categories.items[0] ?? null;
   const selectedBrandCoverage = selectedItem ? ({ categories, families, brands }[selection.entity].brandCoverage[selectedItem.id] ?? []) : [];
   const selectedFamilies = selectedItem?.id && selection.entity === "categories" ? familyMap.get(selectedItem.id) ?? [] : [];
-  const filteredCategories = categories.items.filter((category) => {
-    const query = treeQuery.trim().toLocaleLowerCase();
-    if (!query) return true;
-    const children = familyMap.get(category.id) ?? [];
-    return `${category.name} ${category.slug} ${children.map((family) => family.name).join(" ")}`.toLocaleLowerCase().includes(query);
-  });
+  const filteredCategories = categories.items.filter((category) => taxonomyNodeMatches(category, treeQuery)
+    || taxonomySearchChildren(category, familyMap.get(category.id) ?? [], treeQuery).length > 0);
   const filteredBrands = brands.items.filter((brand) => `${brand.name} ${brand.slug}`.toLocaleLowerCase().includes(brandQuery.trim().toLocaleLowerCase()));
   const reviewTotal = categories.items.reduce((sum, row) => sum + row.reviewProductCount, 0);
   const activeCategories = categories.items.filter((row) => row.active).length;
@@ -230,8 +227,8 @@ export function TaxonomyWorkspace({ categories, families, brands, canManageCateg
           <label className="relative mt-4 block"><Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#8296a9]" aria-hidden="true" /><input value={treeQuery} onChange={(event) => setTreeQuery(event.currentTarget.value)} className={`${input} pl-9`} placeholder="Buscar categoría o familia" aria-label="Buscar categoría o familia" /></label>
           <div className="mt-4 space-y-1">
             {filteredCategories.map((category) => {
-              const children = familyMap.get(category.id) ?? [];
-              const isExpanded = expanded[category.id] ?? false;
+              const children = taxonomySearchChildren(category, familyMap.get(category.id) ?? [], treeQuery);
+              const isExpanded = expanded[category.id] ?? Boolean(treeQuery.trim());
               const isSelected = selection.entity === "categories" && selection.id === category.id;
               return <div key={category.id}>
                 <div className={`flex items-center gap-1 rounded-lg px-2 py-2 ${isSelected ? "bg-[#eaf2ff]" : "hover:bg-[#f5f8fb]"}`}>

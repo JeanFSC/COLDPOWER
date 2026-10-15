@@ -1,3 +1,4 @@
+import { taxonomyNodeMatches, taxonomySearchChildren } from "../src/lib/taxonomy-search";
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
@@ -35,4 +36,16 @@ test("taxonomía: contratos de listado, detalle, exportación y RBAC", () => {
   assert.match(read("src/app/admin/taxonomia/page.tsx"), /requireTaxonomyPageAccess/);
   assert.match(read("src/app/api/admin/taxonomia/route.ts"), /TAXONOMY_INVALID_FILTER/);
   assert.match(read("src/app/api/admin/taxonomia/[entity]/[id]/route.ts"), /products/);
+});
+
+
+test("taxonomy search keeps parents and filters sibling families", () => {
+  const category = { name: "Refrigeración", slug: "refrigeracion" };
+  const children = [{ name: "Capacitores", slug: "refrigeracion-capacitores" }, { name: "Relés", slug: "refrigeracion-reles" }];
+  assert.deepEqual(taxonomySearchChildren(category, children, "capacitores"), [children[0]]);
+  assert.deepEqual(taxonomySearchChildren(category, children, " REFRIGERACION "), children);
+  assert.deepEqual(taxonomySearchChildren(category, children, ""), children);
+  assert.deepEqual(taxonomySearchChildren(category, children, "inexistente"), []);
+  assert.deepEqual(taxonomySearchChildren(category, children, "reles"), [children[1]]);
+  assert.equal(taxonomyNodeMatches(category, "refrigeración"), true);
 });

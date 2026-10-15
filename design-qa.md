@@ -2965,3 +2965,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Buscar marca QA AUDITORÍA localiza marca existente con0productos; detalle confirma0publicados/sin revisión. Cerrar funciona. Búsqueda inexistente muestra No hay marcas que coincidan. Ambas búsquedas restauradas vacías. Sin mutaciones editoriales.
 - Mejora abierta: buscar Capacitores mantiene visibles45familias hermanas bajo Refrigeración; filtrar hijos por coincidencia conservando el padre para reducir ruido. Pendiente inspeccionar implementación y verificar ajuste.
 - En este módulo la interfaz declara categoría→familia y familia sin hijos; no se afirma una gestión de tercer nivel/tipos a partir de esta prueba. Resto de acciones editoriales, exportaciones y permisos no queda cubierto por esta revisión. CMS excluido, móvilF127pausado.
+## F295 — Búsqueda del árbol mejorada y verificada (2026-10-15)
+- Coincidencia de familia muestra solo las familias pertinentes bajo su categoría; coincidencia de categoría conserva todos sus hijos. Busca nombre/slug sin distinguir tildes ni mayúsculas. Apertura inicial durante búsqueda respeta cierres explícitos.
+- Brave: Capacitores muestra Refrigeración + Capacitores118 sin45hermanas; reles muestra Relés2enLavadoras yRelés6enRefrigeración; Refrigeracion conserva45familias (47botonesincluyendopadre/expansión). Búsqueda restaurada vacía.
+- Cuatro pruebas CP047 con casos de familia/categoría/vacío/sin coincidencia/tildes, ESLint, revisión independiente y build correctos. Captura visual revisada en sesión. No se modificó taxonomía persistida.
+- Objetivo integral abierto, CMS excluido y móvilF127detenido; no se declara cobertura completa por esta corrección.
