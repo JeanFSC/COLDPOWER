@@ -1279,7 +1279,9 @@ function CustomerTableRow({
       <td className="px-3 py-3">{row.location ?? "—"}</td>
       <td className="px-3 py-3">
         <span className="block font-bold text-[#304b66]">{activityText(row)}</span>
-        <span className="text-[9px] text-[#8296a9]">{dateText(row.lastActivityAt)}</span>
+        {row.lastActivityAt ? (
+          <span className="text-[9px] text-[#8296a9]">{dateText(row.lastActivityAt)}</span>
+        ) : null}
       </td>
       <td className="px-3 py-3">
         <span

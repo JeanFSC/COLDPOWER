@@ -2834,3 +2834,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave: Bajar Pendientes, Guardar cambios y recarga confirmó Módulos frecuentes antes de Pendientes. Se reabrió el panel, Subir Pendientes, guardar y recargar restauró Pendientes / Módulos frecuentes / Accesos rápidos. Preferencias previas conservadas; no Restablecer global.
 - Captura posterior a carga inspeccionada inline: etiquetas F273 correctas, distribución de escritorio sin superposición observada. Captura inicial de skeleton no se usa como evidencia final. Sin cambios de código; prueba de guardado y recuperación real completada.
 - Sigue pendiente revisión integral de escritorio/roles/export Guardar. CMS excluido y móvil detenido en F127.
+
+## F275 — Clientes y navegación Pipeline en escritorio
+- Captura Brave Clientes: duplicación Sin actividad en filas sin fecha. Corrección: omitir segunda línea cuando lastActivityAt es nulo. No cambia actividad/fecha existente ni datos.
+- Lint aprobado, dos pruebas admin-customers-ui-contract aprobadas; revisión estática readonly sin hallazgos. Build75325 exit0; servidor29617 reiniciado. Brave posterior confirma una sola etiqueta en Jean y cliente QA F260.
+- Búsqueda QA-F275-SIN-RESULTADOS: 0 resultados, 0 a 0, distribuciones vacías y Limpiar filtros visibles; limpieza recupera lista. Pipeline usado en tablero, Seguimientos (57) y Cerradas; vistas cargan sus registros. No se mutaron oportunidades ni clientes.
+- Capturas inspeccionadas inline, sin archivo persistido. No equivale a cobertura total de roles/errores/contraste. CMS excluido,móvil F127 detenido,export Guardar pendiente.
