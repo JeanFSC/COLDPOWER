@@ -2879,3 +2879,15 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave posterior: Chiclayo1disponible yPiura0 muestranSin mínimo;Cusco6disponibles/mínimo2 mantieneSobre mínimo. No cambios desaldos.
 - Imágenes: archivo sintético TEMP/coldpower-qa-f282-invalid.png concontenido texto. Primer intento noejecutado por reconexión; selectorvisible Seleccionar imagen sícargó. UIrechaza La firma del archivo no coincide con su tipo. Sigue Imagen pendiente yPublicar bloqueado; no se asoció imagen. Carga válida/galería aún pendiente.
 - Brave reconectado ID3 mismoextensionInstanceId23b9205c-32e5-495f-8952-f2dcf95bca51;ID4 dejó disponible. CMSexcluido,móvilF127detenido,exportGuardar yresto auditoríaintegral abiertos.
+
+## F283 — Carga válida de imagen y actualización de ficha (en curso)
+- UI cargó TEMP/coldpower-qa-f283-media.svg sintético identificado QA AUDITORIA/F283/NO COMERCIALIZAR. Asset media-f859baab-5ea4-4969-a13e-a8f9c9cf0b14 asociado alproductoQA. Éxito Imagen subida y marcada como principal,recarga conserva. Producto sigue borrador; no publicar.
+- Fallo confirmado: cabecera/checklist/vista previa no actualizan tras cargar hasta recarga. Cambio local: ProductMediaManager onChanged llama router.refresh. Revisión readonly sin hallazgos,lint exit0,cuatro pruebas contrato media aprobadas;build70189 exit0,servidor82434activo. Código aún sin publicar porprueba UIposterior pendiente.
+- Se pulsóQuitar para restaurar ausencia de media; confirmación conserva assetbiblioteca,soloquitalaasociación. Controladorbloqueado por diálogo confirm (focusEmulationtimeout). Se pidió alusuarioAceptar. NO afirmarretiradaconfirmada. No repetirupload ni borrarasset. Pendiente cerrar diálogo,verificarplaceholder/checklistactualizados sin recarga,documentar/publicar.
+- CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoría abiertos.
+
+## F284 — Confirmación de media dentro de la ficha y cierre F283
+- ProductMediaManager reemplaza confirmnativo por grupo accesible Confirmar retirada de imagen,conConfirmar retirada/Cancelar. Quitar no muta;Cancelar conserva;Confirmar usaDELETEexistente. Busy deshabilitaacciones,errorpermite reintento,éxitolimpiaconfirmación. Assetconservadoenbiblioteca.
+- Cinco pruebas contrato ylintaprobados,revisiónreadonlysin hallazgos,build86116exit0,servidor63222activo. PestañanuevaBrave permitió continuar; antigua sigueconproblemafocus,si diálogoviejosiguevisiblecancelar,ya no hacefalta aceptar.
+- Brave:Cancelar cierra grupoymantieneimagen;Confirmarretirada quitaasociación. SinrecargamanualcabeceramuestraRequiereimageneditorial,checklist5/6,placeholderyPublicar bloqueado. F283router.refresh comprobado trasretirada. ProductoQAborrador restauradosinmedia. Asset media-f859baab-5ea4-4969-a13e-a8f9c9cf0b14 retenido,no borrar ni repetirretirada.
+- Pendientevisualresto producto/galeríavariosassets/roles. Hallazgoa revisar: AdminAuditModule entidadproducts usa/catalogo?productId ignorado yentitylinksrequierenpermisosdestino. CMSexcluido,móvilF127detenido,exportGuardar pendiente.

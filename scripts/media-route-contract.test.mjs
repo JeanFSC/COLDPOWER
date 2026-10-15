@@ -6,6 +6,21 @@ import test from "node:test";
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), "utf8");
 
+test("producto actualiza la ficha tras cambios de media", () => {
+  const workspace = read("src/components/admin/ProductDetailWorkspace.tsx");
+  assert.match(workspace, /<ProductMediaManager[^>]*onChanged=\{\(\) => router\.refresh\(\)\}/);
+  const manager = read("src/components/admin/ProductMediaManager.tsx");
+  assert.match(manager, /onChanged\?\.\(next\)/);
+});
+
+test("retirar imagen exige confirmación visible sin bloquear el navegador", () => {
+  const manager = read("src/components/admin/ProductMediaManager.tsx");
+  assert.doesNotMatch(manager, /window\.confirm/);
+  assert.match(manager, /aria-label="Confirmar retirada de imagen"/);
+  assert.match(manager, /Confirmar retirada/);
+  assert.match(manager, /setPendingRemoval\(null\)/);
+});
+
 test("media admin exige permisos y usa validación de carga", () => {
   const route = read("src/app/api/admin/media/route.ts");
   assert.match(route, /requireApiPermission\("catalog\.media\.upload"\)/);

@@ -32,6 +32,7 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
   const [media, setMedia] = useState(initialMedia);
   const [busyAssetId, setBusyAssetId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState<string | null>(null);
 
   function applyMedia(next: ProductMediaItem[]) {
     setMedia(next);
@@ -97,7 +98,6 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
   }
 
   async function removeAsset(assetId: string) {
-    if (!window.confirm("¿Quitar esta imagen de la ficha? El asset seguirá disponible en la biblioteca.")) return;
     setBusyAssetId(assetId);
     setMessage("");
     try {
@@ -105,6 +105,7 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
       const result = await response.json();
       if (!response.ok) throw new Error(errorMessage(result, "No se pudo quitar la imagen."));
       await refreshMedia();
+      setPendingRemoval(null);
       setMessage("Imagen quitada. La ficha volverá al placeholder de su familia si no quedan assets.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo quitar la imagen.");
@@ -153,8 +154,17 @@ export function ProductMediaManager({ productId, productName, initialMedia, canE
               {canEdit ? (
                 <div className="mt-2 flex flex-wrap gap-1.5 border-t border-[#edf2f6] pt-2">
                   {!isPrimary ? <button type="button" disabled={busyAssetId !== null} onClick={() => void markPrimary(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#cfe0f7] px-2 text-[9px] font-extrabold text-[#2277ee] disabled:opacity-40"><CheckCircle2 className="h-3 w-3" aria-hidden="true" />Usar como principal</button> : null}
-                  <button type="button" disabled={busyAssetId !== null} onClick={() => void removeAsset(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#ffd0d0] px-2 text-[9px] font-extrabold text-[#d94848] disabled:opacity-40"><Trash2 className="h-3 w-3" aria-hidden="true" />Quitar</button>
+                  <button type="button" disabled={busyAssetId !== null} onClick={() => setPendingRemoval(asset.assetId)} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#ffd0d0] px-2 text-[9px] font-extrabold text-[#d94848] disabled:opacity-40"><Trash2 className="h-3 w-3" aria-hidden="true" />Quitar</button>
                   {busy ? <LoaderCircle className="ml-auto h-3.5 w-3.5 animate-spin text-[#8296a9]" aria-label="Procesando" /> : null}
+                </div>
+              ) : null}
+              {canEdit && pendingRemoval === asset.assetId ? (
+                <div role="group" aria-label="Confirmar retirada de imagen" className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <p role="status" className="text-xs text-slate-700">¿Quitar esta imagen de la ficha? El archivo seguirá disponible en la biblioteca.</p>
+                  <div className="mt-2 flex gap-2">
+                    <button type="button" disabled={busyAssetId !== null} onClick={() => void removeAsset(asset.assetId)} className="rounded border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-40">Confirmar retirada</button>
+                    <button type="button" disabled={busyAssetId !== null} onClick={() => setPendingRemoval(null)} className="rounded border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 disabled:opacity-40">Cancelar</button>
+                  </div>
                 </div>
               ) : null}
             </div>
