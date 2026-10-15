@@ -2813,3 +2813,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave cargó coldpower-qa-f271-stock-inicial.csv con única fila QA-AUD-20261006,CP-PIU-DEV,1. Preview1fila0errores. Confirmar aplicó y mostró Importación aplicada:1fila.
 - Ajuste por UI ADJUSTMENT_OUT1 enPiura, motivo QA AUDITORÍA F271 — retirar unidad de importación sintética, notas sin movimiento físico real. DBposterior confirma Piura0/0,Chiclayo1/0,Cusco7/1. No repetir ajuste/importación; apertura y lote QA quedan en historial.
 - Carga,preview,aplicación y restauración comprobados. Pendiente ampliar UI duplicados/cambioarchivo/límites y exportGuardar; CMS excluido,móvilF127detenido. No código modificado enesta fase.
+
+
+## F272 — Importación repetida y cambio de archivo
+- Brave revalidó mismo CSVF271 tras saldoPiura restaurado0/0. Preview1fila1error: ya existe stock,reservas o saldo inicial. Confirmar deshabilitado: apertura histórica bloquea repetición aunque saldoactual0.
+- Cambiar al CSVinválidoF268 elimina preview y botónConfirmar; soloValidar archivo permanece. Escape cierra diálogo. Sin aplicar archivo ni mutaciones.
+- Cobertura importador UI: archivo inválido,preview válido,aplicar,restauración,segunda apertura y resetporcambioarchivo comprobados. Límites/formatos tienen13pruebasparser; no se consideran todas manualmente usadas.
+- Auditoría integral abierta: exportGuardar y módulos/roles/visual restantes. CMS excluido,móvilF127detenido.
