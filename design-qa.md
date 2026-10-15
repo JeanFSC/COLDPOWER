@@ -2806,3 +2806,10 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - F269: TypeScript/lint y siete pruebas CP049 aprobados, revisión aprobada. Build82458 en curso al iniciar QAimportación; verificar salida antes reiniciar/publicar. Corrección responsable aún sin prueba Brave posterior.
 
 - F269 cierre: build82458exit0, servidor3405activo. Brave inspectorCOT-2026-C5C7EF muestraSin asignar enResumen yResponsable pendiente enActividad, coherente con fila. Consola sin errores. Sin cambios de asignaciones ni estado. Se publica corrección de presentación y evidenciaF270.
+
+
+## F271 — Importación completa QA y restauración
+- Precheck DB: producto QA-AUD-20261006 draft, sin saldo ni apertura en CP-PIU-DEV (cp-dashboard-v5-location-branch-3). Saldos iniciales Chiclayo1/0,Cusco7/1.
+- Brave cargó coldpower-qa-f271-stock-inicial.csv con única fila QA-AUD-20261006,CP-PIU-DEV,1. Preview1fila0errores. Confirmar aplicó y mostró Importación aplicada:1fila.
+- Ajuste por UI ADJUSTMENT_OUT1 enPiura, motivo QA AUDITORÍA F271 — retirar unidad de importación sintética, notas sin movimiento físico real. DBposterior confirma Piura0/0,Chiclayo1/0,Cusco7/1. No repetir ajuste/importación; apertura y lote QA quedan en historial.
+- Carga,preview,aplicación y restauración comprobados. Pendiente ampliar UI duplicados/cambioarchivo/límites y exportGuardar; CMS excluido,móvilF127detenido. No código modificado enesta fase.
