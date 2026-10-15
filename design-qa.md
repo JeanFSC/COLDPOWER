@@ -2934,3 +2934,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Indicador Aplicaciones 30 d muestra 24, pero su nota dice Sin aplicaciones en la ventana, gráfico Sin aplicaciones y leyendas Checkout 0% / Cotización 0%.
 - Detalle muestra 24 aplicaciones y S/26.40 como Checkout 100%. Código verificado: KPI cuenta solamente contextType quote/checkout; detalle etiqueta todo valor distinto de quote como Checkout. Los contextos distintos requieren presentación explícita y coherente, sin reescribir datos históricos.
 - Hallazgo pendiente de corregir y verificar. Captura del listado revisada en sesión. No se declara cobertura completa de Promociones, exportaciones ni aprobaciones.
+## F291 — Corrección y verificación (2026-10-15)
+- Resumen usa el total real y agrega segmento gris Otros para contextos distintos de checkout/quote. Porcentajes distribuidos por restos mayores suman 100% sin el error 101% detectado en revisión.
+- Detalle identifica explícitamente cada contexto adicional; Brave confirma Otro: QA_AUDITORIA, 24 aplicaciones, S/26.40 y 100%; resumen confirma Otros 100% y ya no indica ausencia de aplicaciones.
+- Once pruebas CP048, ESLint, revisión independiente y build completados sin errores. Servidor reiniciado con la versión nueva. No se modificaron registros históricos ni se activó la campaña.
+- Captura revisada en sesión. Al abrir el panel lateral, las tarjetas de indicadores se comprimen y truncan notas/leyendas; queda pendiente mejorar ese comportamiento visual, separado de la exactitud corregida aquí.

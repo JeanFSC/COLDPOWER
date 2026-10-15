@@ -1,3 +1,4 @@
+import { promotionChannelShares } from "@/lib/promotion-channel-shares";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -100,4 +101,20 @@ test("promociones usan pickers buscables, edicion gobernada y precio compartido"
   assert.match(page, /role=\"dialog\"/);
   assert.match(control, /\?edit=/);
   assert.match(sales, /loadRetailPricesWithPromotions/);
+});
+
+test("promotion channel summaries retain applications outside checkout and quote", () => {
+  const source = read("src/components/admin/PromotionsWorkspace.tsx");
+  assert.match(source, /const totalApplications = metrics\.applications30/);
+  assert.match(source, /totalApplications - metrics\.checkoutApplications30 - metrics\.quoteApplications30/);
+  assert.match(source, /Otros \{otherShare\}%/);
+  assert.match(source, /checkout \? "Checkout" : `Otro: \$\{row\.contextType\}`/);
+});
+
+
+test("promotion channel shares sum to 100 with consistent rounding", () => {
+  assert.deepEqual(promotionChannelShares([1, 7, 0]), [13, 87, 0]);
+  assert.deepEqual(promotionChannelShares([1, 1, 1]), [34, 33, 33]);
+  assert.deepEqual(promotionChannelShares([0, 0, 24]), [0, 0, 100]);
+  assert.deepEqual(promotionChannelShares([0, 0, 0]), [0, 0, 0]);
 });
