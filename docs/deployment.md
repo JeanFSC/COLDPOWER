@@ -38,9 +38,9 @@ No subir `.env.local` con datos reales al repositorio.
 
 El repositorio incluye el flujo de producción para Hetzner + PM2 + Caddy en `ops/deploy-production.sh`; Vercel queda como opción de preview, no como la configuración operativa de producción documentada aquí.
 
-El proceso PM2 activa `coldpower-expiry-sweep` cuando `CRON_SECRET` está configurado en `/var/www/coldpower/shared/.env.production`. El proceso espera a que Next.js arranque y después invoca cada cinco minutos la ruta protegida `/api/internal/cron/pedidos-expirados`, que cancela pedidos online impagos vencidos y expira reservas no asociadas a pedidos. Si falta el secreto, PM2 solo carga la aplicación y deja una advertencia; el barrido no corre.
+El proceso PM2 activa `coldpower-scheduler` cuando `CRON_SECRET` está configurado en `/var/www/coldpower/shared/.env.production`. Espera a que Next.js arranque y luego invoca cada cinco minutos las rutas protegidas `/api/internal/cron/pedidos-expirados` y `/api/cron/gestion`. La primera cancela pedidos online impagos vencidos y expira reservas no asociadas a pedidos; la segunda ejecuta reportes y notificaciones programados. Un fallo de una ruta no impide intentar la otra y se vuelve a intentar en el siguiente ciclo. Si falta el secreto, PM2 solo carga la aplicación y deja una advertencia; los procesos programados no corren.
 
-`CRON_SECRET` debe ser un secreto aleatorio compartido solo por el servidor y la ruta interna. No lo agregues al repositorio ni lo copies a logs. El scheduler registra cantidades procesadas, nunca códigos de pedido ni IDs de reserva.
+`CRON_SECRET` debe ser un secreto aleatorio compartido solo por el servidor y las rutas cron. No lo agregues al repositorio ni lo copies a logs. El scheduler registra cantidades procesadas, nunca códigos de pedido, IDs de reserva ni contenido de reportes/notificaciones.
 
 ## Checklist antes de publicar
 
