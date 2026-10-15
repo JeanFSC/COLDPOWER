@@ -1,8 +1,9 @@
-﻿import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { isNull, lt, ne, or } from "drizzle-orm";
-import { auditLogs, inventoryBalances, inventoryMovements, inventoryReservations, products, transfers, transferItems } from "@/db/schema";
+import { auditLogs, inventoryBalances, inventoryMovements, inventoryReservations, products, transfers, transferItems, locations } from "@/db/schema";
 import { applyInventoryOperation, availableQuantity, isAdminOperableReservation, validateInventoryMovementMetadata, type InventoryOperation } from "@/lib/inventory-domain";
+import { inventoryNotification } from "@/lib/inventory-notification";
 import { notifyStaffOnce } from "@/lib/notifications-service";
 import { canTransitionTransfer } from "@/lib/inventory-workflow";
 
@@ -42,12 +43,12 @@ export async function importOpeningBalanceInTransaction(tx: Transaction, input: 
 }
 
 export async function notifyInventoryState(productId: string, locationId: string, available?: number) {
-  const [product] = await getDb().select({ name: products.commercialName, normalizedName: products.normalizedName, minimumStock: inventoryBalances.minimumStock, computedAvailable: sql<number>`${inventoryBalances.onHand} - ${inventoryBalances.reserved}` }).from(inventoryBalances).innerJoin(products, eq(inventoryBalances.productId, products.id)).where(and(eq(inventoryBalances.productId, productId), eq(inventoryBalances.locationId, locationId))).limit(1);
+  const [product] = await getDb().select({ name: products.commercialName, normalizedName: products.normalizedName, minimumStock: inventoryBalances.minimumStock, locationName: locations.name, computedAvailable: sql<number>`${inventoryBalances.onHand} - ${inventoryBalances.reserved}` }).from(inventoryBalances).innerJoin(products, eq(inventoryBalances.productId, products.id)).leftJoin(locations, eq(inventoryBalances.locationId, locations.id)).where(and(eq(inventoryBalances.productId, productId), eq(inventoryBalances.locationId, locationId))).limit(1);
   if (!product) return [];
   const currentAvailable = available ?? Number(product.computedAvailable);
   const name = product.name || product.normalizedName || productId;
-  if (currentAvailable <= 0) return notifyStaffOnce({ type: "PRODUCT_OUT_OF_STOCK", title: "Producto agotado", body: `${name} quedó sin stock disponible.`, link: "/admin/inventario", metadata: { productId, locationId, available: currentAvailable }, dedupeKey: `stock:${productId}:${locationId}:out` });
-  if (product.minimumStock !== null && product.minimumStock !== undefined && currentAvailable <= product.minimumStock) return notifyStaffOnce({ type: "STOCK_MINIMUM", title: "Stock mínimo alcanzado", body: `${name} está en o por debajo del stock mínimo.`, link: "/admin/inventario", metadata: { productId, locationId, available: currentAvailable, minimumStock: product.minimumStock }, dedupeKey: `stock:${productId}:${locationId}:minimum:${currentAvailable}` });
+  const notification = inventoryNotification({ productId, productName: name, locationId, locationName: product.locationName, available: currentAvailable, minimumStock: product.minimumStock ?? null });
+  if (notification) return notifyStaffOnce(notification);
   return [];
 }export async function adjustInventory(input: InventoryInput & { type: "OPENING_BALANCE" | "PURCHASE_RECEIPT" | "ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "RETURN_IN" | "RETURN_OUT" }) {
   if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error("La cantidad debe ser positiva.");

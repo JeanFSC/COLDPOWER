@@ -35,8 +35,11 @@ test("el centro cubre los eventos operativos CP-027", () => {
   assert.match(purchasesService, /notifyInventoryState/);
 
   const inventoryService = read("src/lib/inventory.ts");
-  assert.match(inventoryService, /STOCK_MINIMUM/);
-  assert.match(inventoryService, /PRODUCT_OUT_OF_STOCK/);
+  assert.match(inventoryService, /inventoryNotification\(/);
+  assert.match(inventoryService, /notifyStaffOnce\(notification\)/);
+  const inventoryNotice = read("src/lib/inventory-notification.ts");
+  assert.match(inventoryNotice, /STOCK_MINIMUM/);
+  assert.match(inventoryNotice, /PRODUCT_OUT_OF_STOCK/);
 
   const transferRoute = read("src/app/api/admin/inventario/transferencias/[id]/route.ts");
   assert.match(transferRoute, /TRANSFER_APPROVAL_PENDING/);
