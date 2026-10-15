@@ -15,6 +15,7 @@ export async function getOperationsDaySummary(filters: OperationsFilters, dayOff
     .select({
       resolved: sql<number>`count(*) filter (where ${work.status} = 'RESOLVED' and ${work.resolvedAt} >= ${from} and ${work.resolvedAt} < ${to})`,
       overdue: sql<number>`count(*) filter (where ${work.status} in ('PENDING','IN_PROGRESS') and ${work.dueAt} < ${from})`,
+      overdueFollowUps: sql<number>`count(*) filter (where ${work.sourceType} = 'FOLLOW_UP' and ${work.status} in ('PENDING','IN_PROGRESS') and ${work.dueAt} < ${from})`,
       inProgress: sql<number>`count(*) filter (where ${work.status} = 'IN_PROGRESS' and (${work.dueAt} is null or ${work.dueAt} >= ${from}) and (${work.dueAt} < ${to} or ${work.updatedAt} >= ${from}))`,
       pending: sql<number>`count(*) filter (where ${work.status} = 'PENDING' and (${work.dueAt} is null or ${work.dueAt} >= ${from}) and (${work.dueAt} < ${to} or ${work.createdAt} >= ${from}))`,
     })
@@ -23,6 +24,7 @@ export async function getOperationsDaySummary(filters: OperationsFilters, dayOff
   return {
     resolved: Number(row.resolved),
     overdue: Number(row.overdue),
+    overdueFollowUps: Number(row.overdueFollowUps),
     inProgress: Number(row.inProgress),
     pending: Number(row.pending),
   };

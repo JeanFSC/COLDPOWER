@@ -162,7 +162,7 @@ const displayState = (value: unknown) => {
   );
 };
 type Row = Record<string, unknown>;
-type Day = { resolved: number; inProgress: number; pending: number; overdue: number };
+type Day = { resolved: number; inProgress: number; pending: number; overdue: number; overdueFollowUps: number };
 type DetailTab = "summary" | "kardex" | "activity";
 type Props = {
   snapshot: OperationsWorkspace;
@@ -1002,8 +1002,8 @@ export function OperationsCenter({
   }
   const alerts = [
     {
-      title: `${day.overdue} tareas vencidas hoy`,
-      copy: "Requieren atención inmediata.",
+      title: `${day.overdueFollowUps} seguimientos atrasados`,
+      copy: "Pendientes desde antes de hoy; abre la cola de seguimientos.",
       color: "#b42318",
       icon: TriangleAlert,
       queue: "followUps",
@@ -1025,8 +1025,8 @@ export function OperationsCenter({
       href: "/admin/inventario?tab=transfers#inventory-operations",
     },
     {
-      title: `${snapshot.metrics.overdueTasks} seguimientos críticos`,
-      copy: "Seguimientos que superaron su vencimiento.",
+      title: `${snapshot.metrics.overdueTasks} tareas CRM vencidas`,
+      copy: "Tareas del CRM que ya superaron su vencimiento.",
       color: "#8a4b08",
       icon: Target,
       queue: "followUps",
@@ -1043,9 +1043,9 @@ export function OperationsCenter({
       queue: selectedQueue,
     },
     {
-      label: "Vencidas hoy",
-      value: day.overdue,
-      previous: comparison.previousDay.overdue,
+      label: "Seguimientos atrasados",
+      value: day.overdueFollowUps,
+      previous: comparison.previousDay.overdueFollowUps,
       comparisonLabel: "vs. ayer",
       icon: TriangleAlert,
       color: "#ff2447",
@@ -1076,7 +1076,7 @@ export function OperationsCenter({
       href: "/admin/inventario?tab=transfers#inventory-operations",
     },
     {
-      label: "Seguimientos críticos",
+      label: "Críticos · 30 días",
       value: comparison.current.metrics.overdueTasks,
       previous: comparison.previous.metrics.overdueTasks,
       icon: Target,
