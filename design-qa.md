@@ -2929,3 +2929,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Validación: seis pruebas CP044, lint, revisión independiente y build correctos. Comprobación posterior en Brave sobre Colaborador 02 confirma Activo, Sincronizado y «Este usuario no tiene actividad registrada». Sin cambios de roles, estados o invitaciones.
 - Servidor local reiniciado tras detectar ausencia de listener en 3000. La página autenticada carga correctamente. Captura revisada en sesión; no se afirma archivo de evidencia persistido.
 - Continúan pendientes las demás coberturas consignadas. CMS excluido, móvil detenido en F127 y Guardar nativo de exportaciones pendiente; no se declara el sistema completo.
+## F291 — Promociones: inconsistencia confirmada en desglose por canal (2026-10-15, abierto)
+- Brave carga listado, calendario y detalle de campaña QA. Estado Pausada confirmado; no se activó ni editó.
+- Indicador Aplicaciones 30 d muestra 24, pero su nota dice Sin aplicaciones en la ventana, gráfico Sin aplicaciones y leyendas Checkout 0% / Cotización 0%.
+- Detalle muestra 24 aplicaciones y S/26.40 como Checkout 100%. Código verificado: KPI cuenta solamente contextType quote/checkout; detalle etiqueta todo valor distinto de quote como Checkout. Los contextos distintos requieren presentación explícita y coherente, sin reescribir datos históricos.
+- Hallazgo pendiente de corregir y verificar. Captura del listado revisada en sesión. No se declara cobertura completa de Promociones, exportaciones ni aprobaciones.
