@@ -3238,3 +3238,12 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 ## F340 — Ventas: guardia de motivo antes de cancelar (2026-10-15)
 - Antes de repetir la ficha, revisé F301 y F329: las pestañas y el contenido de la venta QA ya estaban cubiertos. En la ficha `QA-REFUND-UI-20261010`, «Cancelar venta» inicia deshabilitado sin motivo; al escribir un motivo de QA se habilita y al borrarlo vuelve a deshabilitarse.
 - No ejecuté la cancelación ni guardé cambios. Se cierra solo la comprobación visual de la guarda del formulario; quedan pendientes errores de red y permisos por rol de Ventas, además de los demás casos que F301 mantiene abiertos. CMS excluido, móvil detenido en F127 y exportaciones con «Guardar» reservadas para el final.
+
+## F341 — Compras: cancelar saldo luego de una recepción parcial (2026-10-15)
+- F310 aún marcaba pendiente cerrar el saldo de una OC con recepción parcial. En la OC QA `OC-20261015-6124C2` (2 pedidas, 1 recibida) comprobé que «Cancelar saldo pendiente» exige un motivo; la dejé en `Cancelada` con motivo QA y conservó la recepción registrada `REC-20261015-90F98A`.
+- La orden dejó de contar como abierta y pendiente de recepción. Inventario sigue mostrando 1 unidad física, 0 reservadas y 1 disponible en Almacén Lima; el movimiento más reciente del SKU sigue siendo la recepción de +1 y el Kardex global no aumentó con la cancelación.
+- Caso cerrado solo para cancelar saldo restante de una OC QA. No se cancelaron órdenes reales. Permisos/errores de Compras continúan pendientes; CMS excluido, móvil pausado en F127 y exportaciones con «Guardar» reservadas para el final.
+
+## F342 — Productos: estado actual de medios y cobertura de galería (2026-10-15)
+- Revisé F283/F284 antes de entrar al catálogo. En la primera página, los 10 productos visibles usan «Imagen referencial»; el resumen actual informa 1,351 productos y alerta de 1,351 sin imagen principal. La prueba de F284 había restaurado el producto QA sin asociación de medios y conservó el asset QA sin borrar.
+- Esto no valida una galería con varios assets. No encontré en la página observada una ficha adecuada para esa prueba y el selector nativo de archivos sigue sin estar disponible en este controlador; no subí archivos ni cambié productos. La revisión de galería multiasset y roles de menor acceso permanece pendiente, no se repite el flujo de retirada ya cerrado en F284.
