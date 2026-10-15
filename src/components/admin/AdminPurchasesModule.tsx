@@ -310,7 +310,8 @@ export function AdminPurchasesModule({
         </div>
 
         <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs xl:col-span-5">
-          <h2 className="text-sm font-bold tracking-tight text-slate-900">Subtotal de OC por proveedor</h2>
+          <h2 className="text-sm font-bold tracking-tight text-slate-900">Top 5 proveedores por subtotal</h2>
+          <p className="pt-1 text-[10.5px] font-medium text-slate-400">Participación sobre el total de OC de la misma moneda.</p>
           {supplierRows.length ? (
             <div className="flex-1 space-y-2.5 pt-3">
               <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(88px,0.8fr)_minmax(0,1fr)_42px] items-center gap-3 px-0.5 text-[10.5px] font-medium text-slate-400">

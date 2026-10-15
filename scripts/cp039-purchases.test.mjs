@@ -4,7 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 const root=process.cwd();const read=(file)=>readFileSync(join(root,file),"utf8");
 
-test("CP-039 métricas de Compras describen sus montos y alcance",()=>{const ui=read("src/components/admin/AdminPurchasesModule.tsx"),repo=read("src/lib/purchases-repository.ts");assert.match(ui,/label: "Subtotal de órdenes"/);assert.match(ui,/Subtotal de OC por categoría/);assert.match(ui,/Subtotal de OC por proveedor/);assert.match(ui,/Histórico de todos los proveedores; no cambia con los filtros/);assert.match(repo,/fillRatePurchaseStatuses = \["PENDING", "PARTIAL_RECEIVED", "RECEIVED"\]/);assert.doesNotMatch(ui,/Gasto por categoría|Rendimiento por proveedor|Gasto del período/)});
+test("CP-039 métricas de Compras describen sus montos y alcance",()=>{const ui=read("src/components/admin/AdminPurchasesModule.tsx"),repo=read("src/lib/purchases-repository.ts");assert.match(ui,/label: "Subtotal de órdenes"/);assert.match(ui,/Subtotal de OC por categoría/);assert.match(ui,/Top 5 proveedores por subtotal/);assert.match(ui,/Participación sobre el total de OC de la misma moneda/);assert.match(ui,/Histórico de todos los proveedores; no cambia con los filtros/);assert.match(repo,/fillRatePurchaseStatuses = \["PENDING", "PARTIAL_RECEIVED", "RECEIVED"\]/);assert.doesNotMatch(ui,/Gasto por categoría|Rendimiento por proveedor|Gasto del período/)});
 
 test("CP-039 identidad de proveedor comparte defensa entre alta y edición", () => {
   const service = read("src/lib/purchases-service.ts");
