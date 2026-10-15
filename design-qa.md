@@ -2891,3 +2891,9 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Cinco pruebas contrato ylintaprobados,revisiónreadonlysin hallazgos,build86116exit0,servidor63222activo. PestañanuevaBrave permitió continuar; antigua sigueconproblemafocus,si diálogoviejosiguevisiblecancelar,ya no hacefalta aceptar.
 - Brave:Cancelar cierra grupoymantieneimagen;Confirmarretirada quitaasociación. SinrecargamanualcabeceramuestraRequiereimageneditorial,checklist5/6,placeholderyPublicar bloqueado. F283router.refresh comprobado trasretirada. ProductoQAborrador restauradosinmedia. Asset media-f859baab-5ea4-4969-a13e-a8f9c9cf0b14 retenido,no borrar ni repetirretirada.
 - Pendientevisualresto producto/galeríavariosassets/roles. Hallazgoa revisar: AdminAuditModule entidadproducts usa/catalogo?productId ignorado yentitylinksrequierenpermisosdestino. CMSexcluido,móvilF127detenido,exportGuardar pendiente.
+
+## F285 — Objetos relacionados de Auditoría y permisos
+- auditEntityHref centraliza12tiposconpermiso depágina destino. actor.role llega delservidor,defaultcustomerdeniega. products yproduct abren /admin/catalogo/[id]; tipo desconocido/IDvacío sinenlace. No concedepermisos.
+- Doce pruebasCP043 aprobadas (incluyepermitido/denegado/IDcodificado/tipodesconocido),lintyrevisiónreadonlyaprobados,build52240exit0,servidor66869activo. BravefiltroporIDproductoQA devuelve5eventos;enlaceabre fichacorrectaQAAUDITORÍA.
+- Captura escritorio1536:documentWidth1521,sindesbordamientoglobal. HallazgoF286pendiente: gráficoVolumeneventos conmáximo3repiteetiqueta2 enejeYporredondeo;requiereescalaenterapara conteos. Entidadinventory_balance aúncrudaeninglés. No afirmarrolesmanualmenteusados;permisosprobadosporhelper.
+- CMSexcluido,móvilF127detenido,exportGuardar yrestoauditoríaintegral abiertos.

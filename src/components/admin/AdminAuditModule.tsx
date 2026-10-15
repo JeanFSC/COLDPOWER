@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { auditEntityHref } from "@/lib/audit-entity-navigation";
+import type { AppRole } from "@/lib/roles";
 import { AdminLineChart, AdminSparkline } from "@/components/admin/AdminChartsLazy";
 import { CopyButton, FilterDropdown, SaveFilterButton, SavedFiltersMenu } from "@/components/admin/AuditModuleControls";
 import {
@@ -111,39 +113,8 @@ function withParam(baseQuery: string, updates: Record<string, string | undefined
   return params.toString();
 }
 
-function entityHref(entityType: string, entityId: string): string | null {
-  const id = encodeURIComponent(entityId);
-  switch (entityType.toLowerCase()) {
-    case "product":
-      return `/admin/catalogo/${id}`;
-    case "products":
-      return `/admin/catalogo?productId=${id}`;
-    case "customer":
-      return `/admin/clientes?customerId=${id}`;
-    case "user":
-      return `/admin/usuarios?userId=${id}`;
-    case "order":
-      return `/admin/pedidos?orderId=${id}`;
-    case "quote":
-      return `/admin/cotizaciones?quoteId=${id}`;
-    case "sale":
-      return `/admin/ventas?saleId=${id}`;
-    case "payment":
-      return `/admin/pagos?paymentId=${id}`;
-    case "report_schedule":
-      return `/admin/reportes?scheduleId=${id}`;
-    case "company_settings":
-      return "/admin/configuracion";
-    case "integration":
-      return "/admin/configuracion#company-integrations";
-    case "notification":
-      return `/admin/notificaciones?notificationId=${id}`;
-    default:
-      return null;
-  }
-}
-
 export type AuditModuleProps = {
+  actorRole?: AppRole;
   metrics: AuditPageResponse["metrics"];
   trend: AuditTrendPoint[];
   trendPrevious: number[];
@@ -168,9 +139,10 @@ export type AuditModuleProps = {
 };
 
 export function AuditModule({
-  metrics, trend, trendPrevious, alerts, rows, pagination, facets, filters, baseQuery, exportHref,
+  actorRole = "customer", metrics, trend, trendPrevious, alerts, rows, pagination, facets, filters, baseQuery, exportHref,
   selected, relatedEvents, diff, canViewSensitive, tab, savedFilters, loadError, filterNotice, detailError, relatedEventsError, savedFiltersError,
 }: AuditModuleProps) {
+  const entityHref = (type: string, id: string) => auditEntityHref(type, id, actorRole);
   const hasActiveFilters = Boolean(filters.query || filters.module || filters.severity || filters.dateFrom || filters.dateTo);
   const paginationWindow = Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
     const start = Math.max(1, Math.min(pagination.page - 2, pagination.totalPages - 4));

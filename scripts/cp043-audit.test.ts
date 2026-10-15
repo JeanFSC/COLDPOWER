@@ -1,6 +1,17 @@
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
+import { auditEntityHref } from "../src/lib/audit-entity-navigation";
+
+test("auditoría: objetos relacionados respetan permisos y ruta de producto", () => {
+  assert.equal(auditEntityHref("products", "qa/id", "SUPERADMIN"), "/admin/catalogo/qa%2Fid");
+  assert.equal(auditEntityHref("product", "qa", "ALMACEN"), null);
+  assert.equal(auditEntityHref("order", "qa", "customer"), null);
+  assert.equal(auditEntityHref("order", "qa", "SUPERADMIN"), "/admin/pedidos?orderId=qa");
+  assert.equal(auditEntityHref("unknown", "qa", "SUPERADMIN"), null);
+  assert.equal(auditEntityHref("__proto__", "qa", "SUPERADMIN"), null);
+  assert.equal(auditEntityHref("product", " ", "SUPERADMIN"), null);
+});
 
 test("eliminar filtro usa confirmación visible y comunica errores", () => {
   const controls = readFileSync("src/components/admin/AuditModuleControls.tsx", "utf8");

@@ -85,6 +85,7 @@ export default async function AdminAuditoriaPage({ searchParams }: { searchParam
 
   return (
     <AuditModule
+      actorRole={actor.role}
       metrics={page.metrics}
       trend={page.trend}
       trendPrevious={page.trendPrevious}
