@@ -2954,3 +2954,8 @@ BuildF22718657exit0; servidor17131Ready204ms. FixtureDRAFTQAservicio conidempote
 - Brave: búsqueda QA-F293-SIN-CAMPANA, Porcentaje, Con productos; usados Por aprobar y Con conflicto. Ambas URL conservan query/type/scope, activan el eje correcto y resaltan el chip; tabla vacía coherente.
 - Trece pruebas CP048, ESLint, revisión independiente y build correctos. Sin cambios de campañas. Captura revisada en sesión.
 - Intento inicial con scope manual en minúsculas fue rechazado por validación y mostró error genérico. La interfaz usa PRODUCTS y funciona; queda pendiente mejorar recuperación de parámetros inválidos en URL. No confundir ese caso con el defecto de chips corregido.
+## F294 — Recuperación de filtros inválidos en Promociones (2026-10-15)
+- Parseo posterior a autorización captura exclusivamente PromotionInvalidFilterError, antes de consultar datos; errores de infraestructura mantienen tratamiento habitual.
+- Enlace inválido muestra Revisa los filtros de promociones y acción Restablecer filtros en vez de reintento sin solución. Brave usado con scope=products: mensaje visible y enlace devuelve a /admin/promociones con listado cargado.
+- Catorce pruebas CP048, ESLint, revisión independiente y build correctos. Captura visual revisada en sesión, sin archivo persistido. Sin cambios de campañas ni permisos.
+- Auditoría integral sigue abierta; CMS excluido y móvil detenido en F127.

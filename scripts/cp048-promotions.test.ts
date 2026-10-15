@@ -136,3 +136,13 @@ test("promotion queue chips preserve filters and match their complete selection"
   assert.doesNotMatch(source, /extra \? `\/admin\/promociones\?\$\{extra\}`/);
   assert.match(source, /params.get\("status"\) \|\| null\) === status/);
 });
+
+
+test("promotion page handles invalid filters after authorization and before loading data", () => {
+  const source = read("src/app/admin/promociones/page.tsx");
+  assert.ok(source.indexOf('requirePermission("promotions.manage")') < source.indexOf('filters = parsePromotionFilters(query)'));
+  assert.match(source, /if \(!\(error instanceof PromotionInvalidFilterError\)\) throw error/);
+  assert.match(source, /Restablecer filtros/);
+  assert.match(source, /href="\/admin\/promociones"/);
+  assert.match(source, /getPromotionPage\(filters\)/);
+});

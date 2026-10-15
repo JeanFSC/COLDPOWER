@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
@@ -7,7 +8,7 @@ import type { PromotionDraft, PromotionPickerOption } from "@/components/admin/P
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
 import { formatLimaDateTimeLocal } from "@/lib/lima-datetime";
-import { getPromotionDetail, getPromotionPage, parsePromotionFilters } from "@/lib/promotion-repository";
+import { getPromotionDetail, getPromotionPage, parsePromotionFilters, PromotionInvalidFilterError } from "@/lib/promotion-repository";
 
 export const metadata: Metadata = {
   title: "Promociones | Panel admin ColdPower",
@@ -32,12 +33,23 @@ function dateInput(value: Date) {
 export default async function AdminPromocionesPage({ searchParams }: { searchParams?: Promise<Params> }) {
   const actor = await requirePermission("promotions.manage");
   const query = toQuery((await searchParams) ?? {});
+  let filters: ReturnType<typeof parsePromotionFilters>;
+  try {
+    filters = parsePromotionFilters(query);
+  } catch (error) {
+    if (!(error instanceof PromotionInvalidFilterError)) throw error;
+    return <section role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+      <h1 className="text-xl font-bold text-slate-900">Revisa los filtros de promociones</h1>
+      <p className="mt-2 text-sm text-slate-700">El enlace contiene un filtro no válido. Restablece los filtros para volver al listado de campañas.</p>
+      <Link href="/admin/promociones" className="mt-4 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Restablecer filtros</Link>
+    </section>;
+  }
   const selectedId = query.get("id") || undefined;
   const editId = query.get("edit") || undefined;
   const formOpen = query.has("new") || Boolean(editId);
   const db = getDb();
   const [data, pickerRows, selectedDetail, editDetail] = await Promise.all([
-    getPromotionPage(parsePromotionFilters(query)),
+    getPromotionPage(filters),
     Promise.all([
       db.select({ id: products.id, label: products.commercialName, normalizedName: products.normalizedName, sku: products.sku }).from(products).orderBy(asc(products.normalizedName)).limit(1500),
       db.select({ id: categories.id, label: categories.name }).from(categories).where(eq(categories.active, true)).orderBy(asc(categories.name)).limit(500),
